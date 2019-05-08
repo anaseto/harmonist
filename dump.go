@@ -154,6 +154,7 @@ func (g *game) DetailedStatistics(w io.Writer) {
 	fmt.Fprintf(w, "You were spotted by %d monsters, %d times.\n", g.Stats.NUSpotted, g.Stats.NSpotted)
 	fmt.Fprintf(w, "You endured %d damage.\n", g.Stats.Damage)
 	fmt.Fprintf(w, "You activated %d magical stones.\n", g.Stats.UsedStones)
+	fmt.Fprintf(w, "You read %d lore messages out of %d.\n", len(g.Stats.Lore), len(g.Params.Lore))
 	fmt.Fprintf(w, "You climbed %d trees.\n", g.Stats.ClimbedTree)
 	fmt.Fprintf(w, "You crawled through %d holed walls.\n", g.Stats.HoledWallsCrawled)
 	fmt.Fprintf(w, "You hid under %d tables.\n", g.Stats.TableHides)
