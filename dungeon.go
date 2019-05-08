@@ -319,7 +319,6 @@ func (dg *dgen) ConnectRoomsShortestPath(i, j int) bool {
 	}
 	r1 := dg.rooms[i]
 	r2 := dg.rooms[j]
-	// TODO: more versatile and hand-made doors locations
 	var e1pos, e2pos position
 	var e1i, e2i int
 	e1i = r1.UnusedEntry()
