@@ -105,7 +105,7 @@ func (d *dungeon) HasFreeNeighbor(pos position) bool {
 
 func (d *dungeon) HasTooManyWallNeighbors(pos position) bool {
 	neighbors := pos.ValidNeighbors()
-	count := 0
+	count := 8 - len(neighbors)
 	for _, pos := range neighbors {
 		if !d.Cell(pos).IsPassable() {
 			count++
