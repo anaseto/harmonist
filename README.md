@@ -21,10 +21,10 @@ Shaedra's imprisoned on the eighth floor.*
 *You are small and have good night vision, so you hope the infiltration
 will go smoothly...*
 
-TODO: update the rest of the README.md when there is a website for the new game.
-
 Screenshot and Website
 ----------------------
+
+TODO: update this section with Harmonist's screenshots and links instead of Boohu's.
 
 [![Introduction Screeshot](https://download.tuxfamily.org/boohu/screenshot.png)](https://download.tuxfamily.org/boohu/index.html)
 
@@ -47,9 +47,9 @@ In all cases, you need first to perform the following preliminaries:
 
 You can build a native ASCII version from source by using this command:
 
-+ `go get -u git.tuxfamily.org/boohu/boohu.git`.
++ `go get -u git.tuxfamily.org/harmonist/harmonist.git`.
   
-The `boohu` command should now be available (you may have to rename it to
+The `harmonist` command should now be available (you may have to rename it to
 remove the `.git` suffix).
 
 The only dependency outside of the go standard library is the lightweight
@@ -66,14 +66,14 @@ portable (works on OpenBSD). The second will work on POSIX systems with a
 
 You can build a graphical version depending on Tcl/Tk (8.6) using this command:
 
-    go get -u git.tuxfamily.org/boohu/boohu.git --tags tk
+    go get -u git.tuxfamily.org/harmonist/harmonist.git --tags tk
 
 This will install the [gothic](https://github.com/nsf/gothic) Go bindings for
 Tcl/Tk. You need to install Tcl/Tk first.
 
 With Go 1.11 or later, you can also build the WebAssembly version with:
 
-    GOOS=js GOARCH=wasm go build --tags js -o boohu.wasm
+    GOOS=js GOARCH=wasm go build --tags js -o harmonist.wasm
 
 You can then play by serving a directory containing the wasm file via http. The
 directory should contain some other files that you can find in the main
@@ -83,7 +83,7 @@ Colors
 ------
 
 If the default colors do not display nicely on your terminal emulator, you can
-use the `-s` option: `boohu -s` to use the 16-color palette, which
+use the `-s` option: `harmonist -s` to use the 16-color palette, which
 will display nicely if the [solarized](http://ethanschoonover.com/solarized)
 palette is used. Configurations are available for most terminal emulators,
 otherwise, colors may have to be configured manually to one's liking in
@@ -94,9 +94,9 @@ Check also the other color options.
 Documentation
 -------------
 
-See the man page boohu(6) for more information on command line options and use
+See the man page harmonist(6) for more information on command line options and use
 of the replay file. For example:
 
-    boohu -r _
+    harmonist -r _
 
 launches an auto-replay of your last game.
