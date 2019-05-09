@@ -229,8 +229,8 @@ func (g *game) CollectGround() {
 				g.Player.Magaras[i] = g.Objects.Magaras[pos]
 				delete(g.Objects.Magaras, pos)
 				g.Dungeon.SetCell(pos, GroundCell)
-				g.Printf("You take %s.", Indefinite(g.Player.Magaras[i].String(), false))
-				g.StoryPrintf("You took %s.", Indefinite(g.Player.Magaras[i].String(), false))
+				g.Printf("You take the %s.", g.Player.Magaras[i])
+				g.StoryPrintf("You took the %s.", g.Player.Magaras[i])
 				break switchcell
 			}
 			g.Printf("You stand over %s.", Indefinite(g.Objects.Magaras[pos].String(), false))

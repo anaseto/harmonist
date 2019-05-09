@@ -66,8 +66,9 @@ func (g *game) EquipMagara(i int, ev event) (err error) {
 	omagara := g.Player.Magaras[i]
 	g.Player.Magaras[i] = g.Objects.Magaras[g.Player.Pos]
 	g.Objects.Magaras[g.Player.Pos] = omagara
-	g.Printf("You equip %s, leaving %s on the ground.", g.Player.Magaras[i], omagara)
-	g.StoryPrintf("You equip %s, leaving %s.", g.Player.Magaras[i], omagara)
+	g.Printf("You equip the %s.", g.Player.Magaras[i])
+	g.Printf("You leave the %s.", omagara)
+	g.StoryPrintf("You equip the %s.", g.Player.Magaras[i])
 	ev.Renew(g, 5)
 	return nil
 }
