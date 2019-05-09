@@ -160,8 +160,15 @@ func (g *game) DetailedStatistics(w io.Writer) {
 	fmt.Fprintf(w, "You hid under %d tables.\n", g.Stats.TableHides)
 	fmt.Fprintf(w, "You opened %d doors.\n", g.Stats.DoorsOpened)
 	fmt.Fprintf(w, "You hid in %d barrels.\n", g.Stats.BarrelHides)
-	fmt.Fprintf(w, "There were %d fires.\n", g.Stats.Burns)
-	fmt.Fprintf(w, "There were %d destroyed walls.\n", g.Stats.Digs)
+	if g.Stats.Extinguishments > 0 {
+		fmt.Fprintf(w, "You extinguished %d campfires.\n", g.Stats.Extinguishments)
+	}
+	if g.Stats.Burns > 0 {
+		fmt.Fprintf(w, "There were %d fires.\n", g.Stats.Burns)
+	}
+	if g.Stats.Digs > 0 {
+		fmt.Fprintf(w, "There were %d destroyed walls.\n", g.Stats.Digs)
+	}
 	fmt.Fprintf(w, "You spent %.1f%% turns wounded.\n", float64(g.Stats.TWounded)*100/float64(g.Stats.Turns+1))
 	fmt.Fprintf(w, "You spent %.1f%% turns with monsters in sight.\n", float64(g.Stats.TMonsLOS)*100/float64(g.Stats.Turns+1))
 	fmt.Fprintf(w, "You spent %.1f%% turns wounded with monsters in sight.\n", float64(g.Stats.TMWounded)*100/float64(g.Stats.Turns+1))
