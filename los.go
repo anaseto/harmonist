@@ -41,10 +41,13 @@ func (g *game) DiagonalOpaque(from, to position, rs raystyle) bool {
 			continue
 		}
 		c := g.Dungeon.Cell(pos)
-		if c.T == WallCell {
+		switch c.T {
+		case WallCell, HoledWallCell, WindowCell:
 			count++
-		} else if rs == TargetingRay && c.T == BarrierCell {
-			count++
+		case BarrierCell:
+			if rs == TargetingRay {
+				count++
+			}
 		}
 	}
 	return count > 1
@@ -85,21 +88,24 @@ func (g *game) losCost(from, pos, to position, rs raystyle) int {
 	var wallcost int
 	switch rs {
 	case TreePlayerRay:
-		wallcost = TreeRange
+		wallcost = TreeRange + 1
 	case MonsterRay:
-		wallcost = DefaultMonsterLOSRange
+		wallcost = DefaultMonsterLOSRange + 1
 	default:
-		wallcost = g.LosRange()
+		wallcost = g.LosRange() + 1
 	}
+	// diagonal costs
 	if g.DiagonalOpaque(pos, to, rs) {
 		return wallcost
 	}
+	// no terrain cost on origin
 	if from == pos {
 		if rs != TreePlayerRay && g.DiagonalDifficult(pos, to) {
 			return wallcost - 1
 		}
-		return to.Distance(pos) - 1
+		return to.Distance(pos)
 	}
+	// pos terrain specific costs
 	c := g.Dungeon.Cell(pos)
 	if c.T == WallCell {
 		return wallcost
@@ -123,8 +129,18 @@ func (g *game) losCost(from, pos, to position, rs raystyle) int {
 			}
 			fallthrough
 		default:
-			return wallcost + to.Distance(pos) - 2
+			return wallcost + to.Distance(pos) - 3
 		}
+	}
+	if rs != TreePlayerRay && g.DiagonalDifficult(pos, to) {
+		cost := wallcost - pos.Distance(from) - 1
+		if cost < 1 {
+			cost = 1
+		}
+		return cost
+	}
+	if rs == TreePlayerRay && c.T == WindowCell && from.Distance(pos) >= DefaultLOSRange {
+		return wallcost - from.Distance(pos) - 1
 	}
 	return to.Distance(pos)
 }
@@ -219,9 +235,9 @@ func (g *game) ComputeLOS() {
 	g.buildRayMap(g.Player.Pos, rs, g.Player.Rays)
 	nb := make([]position, 8)
 	for pos, n := range g.Player.Rays {
-		if n.Cost < DefaultLOSRange {
+		if n.Cost <= DefaultLOSRange {
 			g.Player.LOS[pos] = true
-		} else if c.T == TreeCell && g.Illuminated[pos.idx()] && n.Cost < TreeRange {
+		} else if c.T == TreeCell && g.Illuminated[pos.idx()] && n.Cost <= TreeRange {
 			if g.Dungeon.Cell(pos).T == WallCell {
 				// this is just an approximation, but ok in practice
 				nb = pos.Neighbors(nb, func(npos position) bool {
@@ -275,7 +291,7 @@ func (m *monster) ComputeLOS(g *game) {
 			m.LOS[pos] = true
 			continue
 		}
-		if n.Cost < losRange && g.Dungeon.Cell(pos).T != BarrelCell {
+		if n.Cost <= losRange && g.Dungeon.Cell(pos).T != BarrelCell {
 			ppos, _ := g.bestParent(g.RaysCache, m.Pos, pos, MonsterRay)
 			if !g.Dungeon.Cell(ppos).Hides() {
 				m.LOS[pos] = true
@@ -535,7 +551,7 @@ func (g *game) ComputeLights() {
 		}
 		g.buildRayMap(lpos, LightRay, g.RaysCache)
 		for pos, n := range g.RaysCache {
-			if n.Cost < LightRange {
+			if n.Cost <= LightRange {
 				g.Illuminated[pos.idx()] = true
 			}
 		}
@@ -549,7 +565,7 @@ func (g *game) ComputeLights() {
 		}
 		g.buildRayMap(mons.Pos, LightRay, g.RaysCache)
 		for pos, n := range g.RaysCache {
-			if n.Cost < LightRange {
+			if n.Cost <= LightRange {
 				g.Illuminated[pos.idx()] = true
 			}
 		}
