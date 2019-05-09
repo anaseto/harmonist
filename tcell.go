@@ -122,6 +122,8 @@ func (ui *gameui) PollEvent() (in uiInput) {
 			in.key = "Q"
 		case tcell.KeyCtrlP:
 			in.key = "m"
+		case tcell.KeyEnter:
+			in.key = "."
 		}
 		if tev.Rune() != 0 && in.key == "" {
 			in.key = string(tev.Rune())
