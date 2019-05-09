@@ -11,7 +11,7 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/gopherjs/gopherwasm/js"
+	"syscall/js"
 )
 
 func main() {
@@ -352,7 +352,7 @@ func (ui *gameui) Init() error {
 	canvas.Call(
 		"addEventListener", "mousemove", js.FuncOf(func(this js.Value, args []js.Value) interface{} {
 			if CenteredCamera {
-				return
+				return nil
 			}
 			e := args[0]
 			x, y := ui.GetMousePos(e)

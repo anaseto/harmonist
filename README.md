@@ -58,9 +58,8 @@ installed automatically by the previous `go get` command.
 
 *Portability note.* If you happen to experience input problems, try adding
 option `--tags tcell` or `--tags ansi` to the `go get` command. The first will use
-[tcell](https://github.com/gdamore/tcell) instead of termbox-go, which is more
-portable (works on OpenBSD). The second will work on POSIX systems with a
-`stty` command.
+[tcell](https://github.com/gdamore/tcell) instead of termbox-go, which may be
+more portable. The second will work on POSIX systems with a `stty` command.
 
 ### Tiles
 
