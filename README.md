@@ -21,15 +21,13 @@ Shaedra's imprisoned on the eighth floor.*
 *You are small and have good night vision, so you hope the infiltration
 will go smoothly...*
 
-Screenshot and Website
-----------------------
+Website
+-------
 
-TODO: update this section with Harmonist's screenshots and links instead of Boohu's.
-
-[![Introduction Screeshot](https://download.tuxfamily.org/boohu/screenshot.png)](https://download.tuxfamily.org/boohu/index.html)
+[![Introduction Screen](https://download.tuxfamily.org/harmonist/intro-screen-tiles.png)](https://harmonist.tuxfamily.org/index.html)
 
 You can visit the [game's
-website](https://download.tuxfamily.org/boohu/index.html)
+website](https://harmonist.tuxfamily.org/index.html)
 for more informations, tips, screenshots and asciicasts. You will also be able
 to play in the browser and download pre-built binaries for the latest release.
 
