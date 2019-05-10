@@ -233,14 +233,6 @@ func (ui *gameui) Small() bool {
 	return gameConfig.Small
 }
 
-func (ui *gameui) ColorLine(y int, fg uicolor) {
-	for x := 0; x < DungeonWidth; x++ {
-		i := ui.GetIndex(x, y)
-		c := ui.g.DrawBuffer[i]
-		ui.SetCell(x, y, c.R, fg, c.Bg)
-	}
-}
-
 func getImage(cell UICell) *image.RGBA {
 	var pngImg []byte
 	hastile := false

@@ -11,6 +11,3 @@ func (ui *gameui) PostConfig() {
 		UIWidth = 80
 	}
 }
-
-func (ui *gameui) ColorLine(y int, fg uicolor) {
-}

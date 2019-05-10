@@ -67,7 +67,8 @@ func main() {
 
 	load, err := g.LoadConfig()
 	if load && err != nil {
-		g.Print("Error loading config file.")
+		g.Print("Error Loading config file.")
+		g.Printf("Details: %v", err)
 	} else if load {
 		CustomKeys = true
 	}

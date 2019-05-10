@@ -42,6 +42,7 @@ func newGame(ui *gameui) {
 	load, err := g.LoadConfig()
 	if load && err != nil {
 		log.Println("Error loading config file.")
+		g.Printf("Details: %v", err)
 	} else if load {
 		CustomKeys = true
 	}
@@ -329,7 +330,7 @@ func (g *game) WriteDump() error {
 func (ui *gameui) Init() error {
 	canvas := js.Global().Get("document").Call("getElementById", "gamecanvas")
 	js.Global().Get("document").Call(
-		"addEventListener", "keypress", js.FuncOf(func(this js.Value, args []js.Value) interface{} {
+		"addEventListener", "keydown", js.FuncOf(func(this js.Value, args []js.Value) interface{} {
 			e := args[0]
 			if !e.Get("ctrlKey").Bool() && !e.Get("metaKey").Bool() {
 				e.Call("preventDefault")

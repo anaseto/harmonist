@@ -287,10 +287,10 @@ func (ui *gameui) Select(l int) (index int, alternate bool, err error) {
 			}
 			ui.itemHover = int(r-97) + 1
 			return int(r - 97), false, nil
-		case in.key == "2" && ui.itemHover < l:
+		case in.key == "2":
 			oih := ui.itemHover
 			ui.itemHover++
-			if ui.itemHover < 1 {
+			if ui.itemHover < 1 || ui.itemHover > l {
 				ui.itemHover = 1
 			}
 			if oih > 0 && oih <= l {
@@ -298,9 +298,12 @@ func (ui *gameui) Select(l int) (index int, alternate bool, err error) {
 			}
 			ui.ColorLine(ui.itemHover, ColorYellow)
 			ui.Flush()
-		case in.key == "8" && ui.itemHover > 1:
+		case in.key == "8":
 			oih := ui.itemHover
 			ui.itemHover--
+			if ui.itemHover < 1 {
+				ui.itemHover = l
+			}
 			if oih > 0 && oih <= l {
 				ui.ColorLine(oih, ColorFg)
 			}
@@ -1704,5 +1707,13 @@ func ApplyConfig() {
 		ApplyDarkLOS()
 	} else {
 		ApplyLightLOS()
+	}
+}
+
+func (ui *gameui) ColorLine(y int, fg uicolor) {
+	for x := 0; x < DungeonWidth; x++ {
+		i := ui.GetIndex(x, y)
+		c := ui.g.DrawBuffer[i]
+		ui.SetCell(x, y, c.R, fg, c.Bg)
 	}
 }
