@@ -1,3 +1,6 @@
+Harmonist: Dayoriah Clan Infiltration
+-------------------------------------
+
 Harmonist is a stealth coffee-break roguelike game.  The game has a heavy focus
 on tactical positioning, light and noise mechanisms, making use of various
 terrain types and cones of view for monsters.  Aiming for a replayable
