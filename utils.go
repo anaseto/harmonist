@@ -2,9 +2,8 @@ package main
 
 import (
 	"bytes"
-	"crypto/rand"
-	"log"
-	"math/big"
+	"math/rand"
+	"time"
 )
 
 func Abs(x int) int {
@@ -14,16 +13,16 @@ func Abs(x int) int {
 	return x
 }
 
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
+
 func RandInt(n int) int {
 	if n <= 0 {
 		return 0
 	}
-	x, err := rand.Int(rand.Reader, big.NewInt(int64(n)))
-	if err != nil {
-		log.Println(err, ":", n)
-		return n / 2
-	}
-	return int(x.Int64())
+	x := rand.Intn(n)
+	return x
 }
 
 func Min(x, y int) int {
