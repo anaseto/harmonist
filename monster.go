@@ -227,16 +227,6 @@ func (mk monsterKind) Definite(capital bool) (text string) {
 	return text
 }
 
-func (mk monsterKind) Living() bool {
-	// TODO: useless
-	switch mk {
-	//case MonsLich, MonsSkeletonWarrior, MonsMarevorHelith:
-	//return false
-	default:
-		return true
-	}
-}
-
 func (mk monsterKind) Size() monsize {
 	return MonsData[mk].size
 }
@@ -1562,8 +1552,8 @@ func (m *monster) MakeHunt(g *game) (noticed bool) {
 	return noticed
 }
 
-func (m *monster) MakeHuntIfHurt(g *game) {
-	// TODO: not used now. Maybe MakeWatchIfHurt?
+func (m *monster) MakeWatchIfHurt(g *game) {
+	// TODO: not used now.
 	if m.Exists() && m.State != Hunting {
 		m.MakeHunt(g)
 		if m.State == Resting {
