@@ -167,7 +167,6 @@ func (g *game) UseMagara(n int, ev event) (err error) {
 			AchTeleport.Get(g)
 		}
 	}
-	// TODO: animation
 	g.Player.MP -= mag.MPCost(g)
 	g.StoryPrintf("You evoked your %s.", mag)
 	ev.Renew(g, 5)
@@ -215,7 +214,6 @@ func (mag magara) String() (desc string) {
 }
 
 func (mag magara) Desc(g *game) (desc string) {
-	// TODO
 	switch mag {
 	case NoMagara:
 		desc = "can be used for a new magara."
@@ -290,7 +288,7 @@ func (g *game) Blink(ev event) {
 func (g *game) BlinkPos(mpassable bool) position {
 	losPos := []position{}
 	for pos, b := range g.Player.LOS {
-		// TODO: skip if not seen?
+		// XXX: skip if not seen by monster?
 		if !b {
 			continue
 		}
@@ -394,20 +392,6 @@ func (g *game) EvokeRefillMagic(ev event) error {
 	g.ui.PlayerGoodEffectAnimation()
 	return nil
 }
-
-//func (g *game) EvokeDescent(ev event) error {
-//if g.Depth >= MaxDepth {
-//return errors.New("You cannot descend any deeper!")
-//}
-//g.Printf("You fall through the ground.")
-//g.LevelStats()
-//g.StoryPrint("You descended deeper into the dungeon.")
-//g.Depth++
-//g.DepthPlayerTurn = 0
-//g.InitLevel()
-//g.Save()
-//return nil
-//}
 
 func (g *game) EvokeSwiftness(ev event) error {
 	if !g.PutStatus(StatusSwift, DurationSwiftness) {

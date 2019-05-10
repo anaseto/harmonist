@@ -335,9 +335,6 @@ func (g *game) SeePosition(pos position) {
 		mons.LastKnownPos = InvalidPos
 	}
 	delete(g.NoiseIllusion, pos)
-	// TODO: this has some limitations if you happen to see
-	// her from afar because of a window or because of some
-	// broken wall.
 	if g.Objects.Story[pos] == StoryShaedra && !g.LiberatedShaedra && g.Player.Pos.Distance(pos) <= 2 && g.Player.Pos != g.Places.Marevor &&
 		g.Player.Pos != g.Places.Monolith && g.Ev != nil {
 		g.PushEvent(&simpleEvent{ERank: g.Ev.Rank(), EAction: ShaedraAnimation})
@@ -538,7 +535,7 @@ func (g *game) ComputeMonsterLOS() {
 }
 
 func (g *game) ComputeLights() {
-	// XXX: could be optimized to avoid unnecessary recalculations
+	// XXX: could be optimized further to avoid unnecessary recalculations
 	for i := 0; i < DungeonNCells; i++ {
 		g.Illuminated[i] = false
 	}

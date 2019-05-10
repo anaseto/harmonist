@@ -546,7 +546,6 @@ func (g *game) Descend(style descendstyle) bool {
 
 func (g *game) WizardMode() {
 	g.Wizard = true
-	//g.Player.Consumables[DescentPotion] = 15
 	g.PrintStyled("You are now in wizard mode and cannot obtain winner status.", logSpecial)
 }
 

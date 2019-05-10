@@ -181,11 +181,7 @@ func (ap *autoexplorePath) Neighbors(pos position) []position {
 		return npos.valid() && (d.Cell(npos).T.IsPlayerPassable() && (!okT || t != WallCell)) &&
 			!ap.game.ExclusionsMap[npos]
 	}
-	//if ap.game.Player.HasStatus(StatusConfusion) {
 	nb = pos.CardinalNeighbors(nb, keep)
-	//} else {
-	//nb = pos.Neighbors(nb, keep)
-	//}
 	return nb
 }
 

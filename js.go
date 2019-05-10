@@ -48,7 +48,6 @@ func newGame(ui *gameui) {
 	ApplyConfig()
 	ui.PostConfig()
 	if runtime.GOARCH != "wasm" {
-		//if true { // TODO
 		ui.DrawWelcome()
 	} else {
 		again := ui.HandleStartMenu()
@@ -382,7 +381,7 @@ func init() {
 }
 
 func (ui *gameui) Close() {
-	// TODO
+	// nothing to do
 }
 
 func (ui *gameui) Flush() {

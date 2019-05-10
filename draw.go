@@ -840,7 +840,7 @@ func (ui *gameui) DrawDungeonView(m uiMode) {
 	}
 	line := 0
 	if !ui.Small() {
-		// TODO
+		// TODO: centered camera case
 	}
 	if ui.Small() {
 		ui.DrawStatusLine()
@@ -1005,7 +1005,7 @@ func (ui *gameui) PositionDrawing(pos position) (r rune, fgColor, bgColor uicolo
 		r = '@'
 		fgColor = ColorFgPlayer
 	default:
-		// TODO: wrong knowledge
+		// TODO: maybe some wrong knowledge issues
 		r, fgTerrain = c.Style(g, pos)
 		if fgTerrain != ColorFgLOS {
 			fgColor = fgTerrain
@@ -1552,7 +1552,7 @@ func (ui *gameui) DrawMonsterDescription(mons *monster) {
 		info += " " + fmt.Sprint("They can swim.")
 	}
 	md := mons.Kind.MovementDelay()
-	switch { // XXX this is no more useful: all monsters move at the same speed
+	switch { // XXX this is no more useful: all monsters move now at the same speed
 	case md == 10:
 	case md >= 20:
 		info += " " + fmt.Sprint("They move very slowly.")
