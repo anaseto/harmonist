@@ -84,7 +84,7 @@ func (ui *gameui) MonsterProjectileAnimation(ray []position, r rune, fg uicolor)
 		or, fgColor, bgColor := ui.PositionDrawing(pos)
 		ui.DrawAtPosition(pos, true, r, fg, bgColor)
 		ui.Flush()
-		time.Sleep(AnimDurMedium)
+		time.Sleep(AnimDurShortMedium)
 		ui.DrawAtPosition(pos, true, or, fgColor, bgColor)
 	}
 }
