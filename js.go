@@ -41,8 +41,7 @@ func newGame(ui *gameui) {
 	ui.g = g
 	load, err := g.LoadConfig()
 	if load && err != nil {
-		log.Println("Error loading config file.")
-		g.Printf("Details: %v", err)
+		log.Printf("Error loading config: %v\n", err)
 	} else if load {
 		CustomKeys = true
 	}

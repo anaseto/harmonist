@@ -66,9 +66,9 @@ func main() {
 	gameConfig.Version = Version
 
 	load, err := g.LoadConfig()
+	var cfgerrstr string
 	if load && err != nil {
-		g.Print("Error Loading config file.")
-		g.Printf("Details: %v", err)
+		cfgerrstr = err.Error()
 	} else if load {
 		CustomKeys = true
 	}
@@ -84,6 +84,9 @@ func main() {
 		g.PrintStyled("Could not load saved game… starting new game.", logError)
 	} else {
 		ui.DrawBufferInit()
+	}
+	if cfgerrstr != "" {
+		g.PrintStyled(cfgerrstr, logError)
 	}
 	g.ui = ui
 	g.EventLoop()
