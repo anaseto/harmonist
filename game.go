@@ -2,7 +2,7 @@ package main
 
 import "container/heap"
 
-var Version string = "v0.1"
+var Version string = "v0.2-dev"
 
 type game struct {
 	Dungeon            *dungeon
