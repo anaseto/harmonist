@@ -1061,7 +1061,8 @@ func (ui *gameui) PositionDrawing(pos position) (r rune, fgColor, bgColor uicolo
 				} else if mons.Kind.Peaceful() {
 					fgColor = ColorFgPlayer
 				} else {
-					fgColor = ColorFgWanderingMonster
+					//fgColor = ColorFgWanderingMonster
+					fgColor = ColorFgDark
 				}
 			}
 		} else if !g.Wizard && g.Noise[pos] {
