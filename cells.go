@@ -340,7 +340,7 @@ func (c cell) Style(g *game, pos position) (r rune, fg uicolor) {
 	case LightCell:
 		r, fg = '☼', ColorFgObject
 	case ExtinguishedLightCell:
-		r, fg = '☼', ColorFgLOS
+		r, fg = '○', ColorFgLOS
 	case TableCell:
 		r, fg = 'π', ColorFgObject
 	case TreeCell:

@@ -333,8 +333,17 @@ func (ui *gameui) Init() error {
 			e := args[0]
 			if !e.Get("ctrlKey").Bool() && !e.Get("metaKey").Bool() {
 				e.Call("preventDefault")
+			} else {
+				return nil
 			}
 			s := e.Get("key").String()
+			if s == "F11" {
+				screenfull := js.Global().Get("screenfull")
+				if screenfull.Get("enabled").Bool() {
+					screenfull.Call("request", canvas)
+				}
+				return nil
+			}
 			if s == "Unidentified" {
 				s = e.Get("code").String()
 			}
