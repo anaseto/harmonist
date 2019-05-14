@@ -443,20 +443,6 @@ func (g *game) SwapWithMonster(mons *monster) {
 	mons.MakeAware(g)
 }
 
-//func (g *game) EvokeShadows(ev event) error {
-//if g.Player.HasStatus(StatusShadows) {
-//return errors.New("You are already surrounded by shadows.")
-//}
-//g.Player.Statuses[StatusShadows] = 1
-//end := ev.Rank() + DurationShadows
-//g.PushEvent(&simpleEvent{ERank: end, EAction: ShadowsEnd})
-//g.Player.Expire[StatusShadows] = end
-//g.Printf("You feel surrounded by shadows.")
-//g.ui.PlayerGoodEffectAnimation()
-//g.ComputeLOS()
-//return nil
-//}
-
 type cloud int
 
 const (

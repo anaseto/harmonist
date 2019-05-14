@@ -51,6 +51,8 @@ func Dijkstra(dij Dijkstrer, sources []position, maxCost int) nodeMap {
 
 const unreachable = 9999
 
+// AutoExploreDijkstra is an optimized version of the dijkstra algorithm for
+// auto-exploration.
 func (g *game) AutoExploreDijkstra(dij Dijkstrer, sources []int) {
 	d := g.Dungeon
 	dmap := DijkstraMapCache[:]
