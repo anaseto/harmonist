@@ -51,10 +51,10 @@ $can create image 0 0 -anchor nw -image gamescreen
 		} else {
 			s = keysym
 		}
-		ch <- uiInput{key: s}
+		InCh <- uiInput{key: s}
 	})
 	ui.ir.RegisterCommand("MouseDown", func(x, y, b int) {
-		ch <- uiInput{mouse: true, mouseX: (x - 1) / ui.width, mouseY: (y - 1) / ui.height, button: b - 1}
+		InCh <- uiInput{mouse: true, mouseX: (x - 1) / ui.width, mouseY: (y - 1) / ui.height, button: b - 1}
 	})
 	ui.ir.RegisterCommand("MouseMotion", func(x, y int) {
 		if CenteredCamera {
@@ -65,7 +65,7 @@ $can create image 0 0 -anchor nw -image gamescreen
 		if nx != ui.mousepos.X || ny != ui.mousepos.Y {
 			ui.mousepos.X = nx
 			ui.mousepos.Y = ny
-			ch <- uiInput{mouse: true, mouseX: nx, mouseY: ny, button: -1}
+			InCh <- uiInput{mouse: true, mouseX: nx, mouseY: ny, button: -1}
 		}
 	})
 	ui.ir.Eval(`
@@ -84,7 +84,7 @@ bind .c <ButtonPress> {
 	SolarizedPalette()
 	ui.HideCursor()
 	settingsActions = append(settingsActions, toggleTiles)
-	gameConfig.Tiles = true
+	GameConfig.Tiles = true
 	return nil
 }
 
@@ -95,12 +95,12 @@ func (ui *gameui) InitElements() error {
 	return nil
 }
 
-var ch chan uiInput
-var interrupt chan bool
+var InCh chan uiInput
+var Interrupt chan bool
 
 func init() {
-	ch = make(chan uiInput, 100)
-	interrupt = make(chan bool)
+	InCh = make(chan uiInput, 100)
+	Interrupt = make(chan bool)
 }
 
 func (ui *gameui) Close() {
@@ -189,8 +189,8 @@ func (ui *gameui) ApplyToggleLayout() {
 }
 
 func (ui *gameui) ApplyToggleLayoutWithClear(clear bool) {
-	gameConfig.Small = !gameConfig.Small
-	if gameConfig.Small {
+	GameConfig.Small = !GameConfig.Small
+	if GameConfig.Small {
 		ui.ir.Eval("wm geometry . =1280x576")
 		if clear {
 			ui.Clear()
@@ -227,8 +227,8 @@ func (ui *gameui) Draw(cell UICell, x, y int) {
 
 func (ui *gameui) PollEvent() (in uiInput) {
 	select {
-	case in = <-ch:
-	case in.interrupt = <-interrupt:
+	case in = <-InCh:
+	case in.interrupt = <-Interrupt:
 	}
 	switch in.key {
 	case "KP_Enter", "Return", "\r", "\n":

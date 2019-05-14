@@ -9,12 +9,12 @@ import (
 	"os/exec"
 )
 
-var ch chan uiInput
-var interrupt chan bool
+var InCh chan uiInput
+var Interrupt chan bool
 
 func init() {
-	ch = make(chan uiInput, 100)
-	interrupt = make(chan bool)
+	InCh = make(chan uiInput, 100)
+	Interrupt = make(chan bool)
 }
 
 type gameui struct {
@@ -49,7 +49,7 @@ func (ui *gameui) Init() error {
 		for {
 			r, _, err := ui.bStdin.ReadRune()
 			if err == nil {
-				ch <- uiInput{key: string(r)}
+				InCh <- uiInput{key: string(r)}
 			}
 		}
 	}()
@@ -124,8 +124,8 @@ func (ui *gameui) Flush() {
 }
 
 func (ui *gameui) ApplyToggleLayout() {
-	gameConfig.Small = !gameConfig.Small
-	if gameConfig.Small {
+	GameConfig.Small = !GameConfig.Small
+	if GameConfig.Small {
 		ui.Clear()
 		ui.Flush()
 		UIHeight = 24
@@ -143,17 +143,17 @@ func (ui *gameui) ApplyToggleLayout() {
 }
 
 func (ui *gameui) Small() bool {
-	return gameConfig.Small
+	return GameConfig.Small
 }
 
 func (ui *gameui) Interrupt() {
-	interrupt <- true
+	Interrupt <- true
 }
 
 func (ui *gameui) PollEvent() (in uiInput) {
 	select {
-	case in = <-ch:
-	case in.interrupt = <-interrupt:
+	case in = <-InCh:
+	case in.interrupt = <-Interrupt:
 	}
 	return in
 }

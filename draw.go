@@ -159,7 +159,6 @@ var (
 	ColorBgDark,
 	ColorBgLOS,
 	ColorFg,
-	ColorFgAnimationHit,
 	ColorFgObject,
 	ColorFgTree,
 	ColorFgConfusedMonster,
@@ -183,14 +182,12 @@ var (
 	ColorFgMonster,
 	ColorFgPlace,
 	ColorFgPlayer,
-	ColorFgProjectile,
 	ColorFgBananas,
 	ColorFgSleepingMonster,
 	ColorFgStatusBad,
 	ColorFgStatusGood,
 	ColorFgStatusExpire,
 	ColorFgStatusOther,
-	ColorFgTargetMode,
 	ColorFgWanderingMonster uicolor
 )
 
@@ -203,7 +200,6 @@ func LinkColors() {
 	ColorFgDark = ColorBase01
 	ColorFgLOS = ColorBase0
 	ColorFgLOSLight = ColorBase1
-	ColorFgAnimationHit = ColorMagenta
 	ColorFgObject = ColorYellow
 	ColorFgTree = ColorGreen
 	ColorFgConfusedMonster = ColorGreen
@@ -224,14 +220,12 @@ func LinkColors() {
 	ColorFgMonster = ColorRed
 	ColorFgPlace = ColorMagenta
 	ColorFgPlayer = ColorBlue
-	ColorFgProjectile = ColorBlue
 	ColorFgBananas = ColorYellow
 	ColorFgSleepingMonster = ColorViolet
 	ColorFgStatusBad = ColorRed
 	ColorFgStatusGood = ColorBlue
 	ColorFgStatusExpire = ColorViolet
 	ColorFgStatusOther = ColorYellow
-	ColorFgTargetMode = ColorCyan
 	ColorFgWanderingMonster = ColorOrange
 }
 
@@ -680,7 +674,7 @@ func (ui *gameui) DescribePosition(pos position, targ Targeter) {
 		}
 	}
 	desc = ui.AddComma(see, desc)
-	desc += fmt.Sprintf("%s", c.ShortDesc(g, pos))
+	desc += c.ShortDesc(g, pos)
 	if g.MonsterLOS[pos] {
 		desc += " (unhidden)"
 	} else if g.Illuminated[pos.idx()] && c.IsIlluminable() {
@@ -1357,12 +1351,12 @@ func InRuneSlice(r rune, s []rune) bool {
 
 func (ui *gameui) RunesForKeyAction(k keyAction) string {
 	runes := []rune{}
-	for r, ka := range gameConfig.RuneNormalModeKeys {
+	for r, ka := range GameConfig.RuneNormalModeKeys {
 		if k == ka && !InRuneSlice(r, runes) {
 			runes = append(runes, r)
 		}
 	}
-	for r, ka := range gameConfig.RuneTargetModeKeys {
+	for r, ka := range GameConfig.RuneTargetModeKeys {
 		if k == ka && !InRuneSlice(r, runes) {
 			runes = append(runes, r)
 		}
@@ -1385,7 +1379,7 @@ const (
 func (ui *gameui) ChangeKeys() {
 	g := ui.g
 	lines := ui.MapHeight()
-	nmax := len(configurableKeyActions) - lines
+	nmax := len(ConfigurableKeyActions) - lines
 	n := 0
 	s := 0
 loop:
@@ -1398,11 +1392,11 @@ loop:
 			n = 0
 		}
 		to := n + lines
-		if to >= len(configurableKeyActions) {
-			to = len(configurableKeyActions)
+		if to >= len(ConfigurableKeyActions) {
+			to = len(ConfigurableKeyActions)
 		}
 		for i := n; i < to; i++ {
-			ka := configurableKeyActions[i]
+			ka := ConfigurableKeyActions[i]
 			desc := ka.NormalModeDescription()
 			if !ka.NormalModeKey() {
 				desc = ka.TargetingModeDescription()
@@ -1422,8 +1416,8 @@ loop:
 
 		var action keyConfigAction
 		s, action = ui.KeyMenuAction(s)
-		if s >= len(configurableKeyActions) {
-			s = len(configurableKeyActions) - 1
+		if s >= len(ConfigurableKeyActions) {
+			s = len(ConfigurableKeyActions) - 1
 		}
 		if s < 0 {
 			s = 0
@@ -1447,16 +1441,16 @@ loop:
 				continue loop
 			}
 			CustomKeys = true
-			ka := configurableKeyActions[s]
+			ka := ConfigurableKeyActions[s]
 			if ka.NormalModeKey() {
-				gameConfig.RuneNormalModeKeys[r] = ka
+				GameConfig.RuneNormalModeKeys[r] = ka
 			} else {
-				delete(gameConfig.RuneNormalModeKeys, r)
+				delete(GameConfig.RuneNormalModeKeys, r)
 			}
 			if ka.TargetingModeKey() {
-				gameConfig.RuneTargetModeKeys[r] = ka
+				GameConfig.RuneTargetModeKeys[r] = ka
 			} else {
-				delete(gameConfig.RuneTargetModeKeys, r)
+				delete(GameConfig.RuneTargetModeKeys, r)
 			}
 			err := g.SaveConfig()
 			if err != nil {
@@ -1968,12 +1962,12 @@ func (ui *gameui) HandleSettingAction() error {
 	case setKeys:
 		ui.ChangeKeys()
 	case invertLOS:
-		gameConfig.DarkLOS = !gameConfig.DarkLOS
+		GameConfig.DarkLOS = !GameConfig.DarkLOS
 		err := g.SaveConfig()
 		if err != nil {
 			g.Print(err.Error())
 		}
-		if gameConfig.DarkLOS {
+		if GameConfig.DarkLOS {
 			ApplyDarkLOS()
 		} else {
 			ApplyLightLOS()

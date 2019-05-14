@@ -96,7 +96,7 @@ func (sev *simpleEvent) Renew(g *game, delay int) {
 
 const DurationStatusStep = 10
 
-var endmsgs = [...]string{
+var StatusEndMsgs = [...]string{
 	SlowEnd:          "You no longer feel slow.",
 	ExhaustionEnd:    "You no longer feel exhausted.",
 	HasteEnd:         "You no longer feel speedy.",
@@ -109,7 +109,7 @@ var endmsgs = [...]string{
 	IlluminatedEnd:   "You no longer illuminated.",
 }
 
-var endstatuses = [...]status{
+var EndStatuses = [...]status{
 	SlowEnd:          StatusSlow,
 	ExhaustionEnd:    StatusExhausted,
 	HasteEnd:         StatusSwift,
@@ -122,7 +122,7 @@ var endstatuses = [...]status{
 	IlluminatedEnd:   StatusIlluminated,
 }
 
-var statusEndActions = [...]simpleAction{
+var StatusEndActions = [...]simpleAction{
 	StatusSlow:          SlowEnd,
 	StatusExhausted:     ExhaustionEnd,
 	StatusSwift:         HasteEnd,
@@ -159,10 +159,10 @@ func (sev *simpleEvent) Action(g *game) {
 		g.ComputeLOS()
 		g.ui.TakingArtifactAnimation()
 	case SlowEnd, ExhaustionEnd, HasteEnd, LignificationEnd, ConfusionEnd, NauseaEnd, DigEnd, LevitationEnd, ShadowsEnd, IlluminatedEnd:
-		g.Player.Statuses[endstatuses[sev.EAction]] -= DurationStatusStep
-		if g.Player.Statuses[endstatuses[sev.EAction]] <= 0 {
-			g.Player.Statuses[endstatuses[sev.EAction]] = 0
-			g.PrintStyled(endmsgs[sev.EAction], logStatusEnd)
+		g.Player.Statuses[EndStatuses[sev.EAction]] -= DurationStatusStep
+		if g.Player.Statuses[EndStatuses[sev.EAction]] <= 0 {
+			g.Player.Statuses[EndStatuses[sev.EAction]] = 0
+			g.PrintStyled(StatusEndMsgs[sev.EAction], logStatusEnd)
 			g.ui.StatusEndAnimation()
 			switch sev.EAction {
 			case LevitationEnd:
@@ -239,10 +239,6 @@ func (mev *monsterEvent) Action(g *game) {
 		mons := g.Monsters[mev.NMons]
 		if mons.Exists() {
 			mons.Statuses[MonsExhausted]--
-			//if mons.State != Resting && g.Player.LOS[mons.Pos] &&
-			//(mons.Kind.Ranged() || mons.Kind.Smiting()) && mons.Pos.Distance(g.Player.Pos) > 1 {
-			//g.Printf("%s is ready to fire again.", mons.Kind.Definite(true))
-			//}
 		}
 	case MonsSatiatedEnd:
 		mons := g.Monsters[mev.NMons]
@@ -312,7 +308,6 @@ func (cev *cloudEvent) Action(g *game) {
 		if _, ok := g.Clouds[cev.Pos]; !ok {
 			break
 		}
-		//g.BurnCreature(cev.Pos, cev)
 		for _, pos := range g.Dungeon.FreeNeighbors(cev.Pos) {
 			if RandInt(4) == 0 {
 				continue
@@ -371,30 +366,6 @@ func (g *game) MakeCreatureSleep(pos position, ev event) {
 	mons.ExhaustTime(g, 40+RandInt(10))
 }
 
-//func (g *game) BurnCreature(pos position, ev event) {
-//mons := g.MonsterAt(pos)
-//if mons.Exists() {
-//mons.HP -= 1
-//if mons.HP <= 0 {
-//if g.Player.Sees(mons.Pos) {
-//g.PrintfStyled("%s is killed by the fire.", logPlayerHit, mons.Kind.Definite(true))
-//}
-//g.HandleKill(mons, ev)
-//} else {
-//mons.MakeAwareIfHurt(g)
-//}
-//}
-//if pos == g.Player.Pos {
-//damage := 1
-//g.Player.HP -= damage
-//g.PrintfStyled("The fire burns you (%d dmg).", logMonsterHit, damage)
-//if g.Player.HP+damage < 10 {
-//g.Stats.TimesLucky++
-//}
-//g.StopAuto()
-//}
-//}
-
 func (g *game) Burn(pos position, ev event) {
 	if _, ok := g.Clouds[pos]; ok {
 		return
@@ -423,7 +394,6 @@ func (g *game) Burn(pos position, ev event) {
 		g.ComputeLOS()
 	}
 	g.PushEvent(&cloudEvent{ERank: ev.Rank() + DurationCloudProgression, EAction: FireProgression, Pos: pos})
-	//g.BurnCreature(pos, ev)
 }
 
 func (cev *cloudEvent) Renew(g *game, delay int) {

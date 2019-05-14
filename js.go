@@ -21,10 +21,10 @@ func main() {
 		log.Fatalf("harmonist: %v\n", err)
 	}
 	defer ui.Close()
-	gameConfig.Tiles = true
-	gameConfig.Version = Version
+	GameConfig.Tiles = true
+	GameConfig.Version = Version
 	LinkColors()
-	gameConfig.DarkLOS = true
+	GameConfig.DarkLOS = true
 	ApplyDarkLOS()
 	go func() {
 		for {
@@ -88,13 +88,13 @@ func (ui *gameui) HandleStartMenu() (again bool) {
 				log.Printf("Load replay: %v", err)
 				return true
 			}
-			small := gameConfig.Small
-			gameConfig.Small = true
+			small := GameConfig.Small
+			GameConfig.Small = true
 			ui.ApplyToggleLayoutWithClear(false)
 			ui.RestartDrawBuffers()
 			ui.Replay()
 			if small {
-				gameConfig.Small = false
+				GameConfig.Small = false
 				ui.ApplyToggleLayoutWithClear(false)
 			}
 			return true
@@ -198,7 +198,7 @@ func (g *game) SaveConfig() error {
 	if runtime.GOARCH != "wasm" {
 		return nil
 	}
-	conf, err := gameConfig.ConfigSave()
+	conf, err := GameConfig.ConfigSave()
 	if err != nil {
 		SaveError = err.Error()
 		return err
@@ -286,10 +286,10 @@ func (g *game) LoadConfig() (bool, error) {
 	if err != nil {
 		return true, err
 	}
-	if c.Version != gameConfig.Version {
+	if c.Version != GameConfig.Version {
 		return true, errors.New("Version mismatch, could not load old custom configuration.")
 	}
-	gameConfig = *c
+	GameConfig = *c
 	return true, nil
 }
 
@@ -347,14 +347,14 @@ func (ui *gameui) Init() error {
 			if s == "Unidentified" {
 				s = e.Get("code").String()
 			}
-			ch <- uiInput{key: s}
+			InCh <- uiInput{key: s}
 			return nil
 		}))
 	canvas.Call(
 		"addEventListener", "mousedown", js.FuncOf(func(this js.Value, args []js.Value) interface{} {
 			e := args[0]
 			x, y := ui.GetMousePos(e)
-			ch <- uiInput{mouse: true, mouseX: x, mouseY: y, button: e.Get("button").Int()}
+			InCh <- uiInput{mouse: true, mouseX: x, mouseY: y, button: e.Get("button").Int()}
 			return nil
 		}))
 	canvas.Call(
@@ -367,7 +367,7 @@ func (ui *gameui) Init() error {
 			if x != ui.mousepos.X || y != ui.mousepos.Y {
 				ui.mousepos.X = x
 				ui.mousepos.Y = y
-				ch <- uiInput{mouse: true, mouseX: x, mouseY: y, button: -1}
+				InCh <- uiInput{mouse: true, mouseX: x, mouseY: y, button: -1}
 			}
 			return nil
 		}))
@@ -379,14 +379,14 @@ func (ui *gameui) Init() error {
 	return nil
 }
 
-var ch chan uiInput
-var interrupt chan bool
+var InCh chan uiInput
+var Interrupt chan bool
 
 func init() {
-	ch = make(chan uiInput, 100)
-	interrupt = make(chan bool)
-	flushdone = make(chan bool)
-	reqframe = make(chan bool)
+	InCh = make(chan uiInput, 100)
+	Interrupt = make(chan bool)
+	Flushdone = make(chan bool)
+	ReqFrame = make(chan bool)
 }
 
 func (ui *gameui) Close() {
@@ -394,19 +394,19 @@ func (ui *gameui) Close() {
 }
 
 func (ui *gameui) Flush() {
-	reqframe <- true
-	<-flushdone
+	ReqFrame <- true
+	<-Flushdone
 }
 
 func (ui *gameui) ReqAnimFrame() {
-	<-reqframe
+	<-ReqFrame
 	js.Global().Get("window").Call("requestAnimationFrame",
 		js.FuncOf(func(this js.Value, args []js.Value) interface{} { ui.FlushCallback(args[0]); return nil }))
 }
 
 func (ui *gameui) ApplyToggleLayoutWithClear(clear bool) {
-	gameConfig.Small = !gameConfig.Small
-	if gameConfig.Small {
+	GameConfig.Small = !GameConfig.Small
+	if GameConfig.Small {
 		if clear {
 			ui.Clear()
 			ui.Flush()
@@ -435,8 +435,8 @@ func (ui *gameui) ApplyToggleLayout() {
 	ui.ApplyToggleLayoutWithClear(true)
 }
 
-var flushdone chan bool
-var reqframe chan bool
+var Flushdone chan bool
+var ReqFrame chan bool
 
 func (ui *gameui) FlushCallback(t js.Value) {
 	ui.DrawLogFrame()
@@ -444,13 +444,13 @@ func (ui *gameui) FlushCallback(t js.Value) {
 		cell := cdraw.Cell
 		ui.Draw(cell, cdraw.X, cdraw.Y)
 	}
-	flushdone <- true
+	Flushdone <- true
 }
 
 func (ui *gameui) PollEvent() (in uiInput) {
 	select {
-	case in = <-ch:
-	case in.interrupt = <-interrupt:
+	case in = <-InCh:
+	case in.interrupt = <-Interrupt:
 	}
 	switch in.key {
 	case "Escape", "Space":

@@ -578,7 +578,7 @@ const (
 	KeyMenuTargetingHelp
 )
 
-var configurableKeyActions = [...]keyAction{
+var ConfigurableKeyActions = [...]keyAction{
 	KeyW,
 	KeyS,
 	KeyN,
@@ -768,10 +768,10 @@ func (k keyAction) TargetingModeKey() bool {
 	}
 }
 
-var gameConfig config
+var GameConfig config
 
 func ApplyDefaultKeyBindings() {
-	gameConfig.RuneNormalModeKeys = map[rune]keyAction{
+	GameConfig.RuneNormalModeKeys = map[rune]keyAction{
 		'h': KeyW,
 		'j': KeyS,
 		'k': KeyN,
@@ -808,7 +808,7 @@ func ApplyDefaultKeyBindings() {
 		'>': KeyWizardDescend,
 		'=': KeyConfigure,
 	}
-	gameConfig.RuneTargetModeKeys = map[rune]keyAction{
+	GameConfig.RuneTargetModeKeys = map[rune]keyAction{
 		'h':    KeyW,
 		'j':    KeyS,
 		'k':    KeyN,
@@ -857,7 +857,7 @@ func (ui *gameui) HandleKeyAction(rka runeKeyAction) (err error, again bool, qui
 	g := ui.g
 	if rka.r != 0 {
 		var ok bool
-		rka.k, ok = gameConfig.RuneNormalModeKeys[rka.r]
+		rka.k, ok = GameConfig.RuneNormalModeKeys[rka.r]
 		if !ok {
 			switch rka.r {
 			case 's':
@@ -982,11 +982,7 @@ func (ui *gameui) HandleKey(rka runeKeyAction) (err error, again bool, quit bool
 		err = ui.SelectItem(g.Ev)
 		err = ui.CleanError(err)
 	case KeyExplore:
-		//ui.MenuSelectedAnimation(MenuExplore, true)
 		err = g.Autoexplore(g.Ev)
-		if err != nil {
-			//ui.MenuSelectedAnimation(MenuExplore, false)
-		}
 	case KeyExamine:
 		err, again, quit = ui.Examine(nil)
 	case KeyHelp, KeyMenuCommandHelp:
@@ -1206,7 +1202,7 @@ func (ui *gameui) CursorKeyAction(targ Targeter, rka runeKeyAction, data *examin
 	again = true
 	if rka.r != 0 {
 		var ok bool
-		rka.k, ok = gameConfig.RuneTargetModeKeys[rka.r]
+		rka.k, ok = GameConfig.RuneTargetModeKeys[rka.r]
 		if !ok {
 			err = fmt.Errorf("Invalid targeting mode key '%c'. Type ? for help.", rka.r)
 			return err, again, quit, notarg
@@ -1553,14 +1549,14 @@ func (a wizardAction) String() (text string) {
 	return text
 }
 
-var wizardActions = []wizardAction{
+var WizardActions = []wizardAction{
 	WizardInfoAction,
 	WizardToggleMap,
 }
 
 func (ui *gameui) HandleWizardAction() error {
 	g := ui.g
-	s, err := ui.SelectWizardMagic(wizardActions)
+	s, err := ui.SelectWizardMagic(WizardActions)
 	if err != nil {
 		return err
 	}
@@ -1700,10 +1696,10 @@ func (ui *gameui) DrawBufferInit() {
 }
 
 func ApplyConfig() {
-	if gameConfig.RuneNormalModeKeys == nil || gameConfig.RuneTargetModeKeys == nil {
+	if GameConfig.RuneNormalModeKeys == nil || GameConfig.RuneTargetModeKeys == nil {
 		ApplyDefaultKeyBindings()
 	}
-	if gameConfig.DarkLOS {
+	if GameConfig.DarkLOS {
 		ApplyDarkLOS()
 	} else {
 		ApplyLightLOS()

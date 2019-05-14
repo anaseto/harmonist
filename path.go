@@ -50,7 +50,6 @@ func (gp *gridPath) Estimation(from, to position) int {
 type mappingPath struct {
 	game      *game
 	neighbors [8]position
-	wcost     int
 }
 
 func (dp *mappingPath) Neighbors(pos position) []position {

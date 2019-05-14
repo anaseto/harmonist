@@ -142,7 +142,7 @@ func (stn stone) Desc(g *game) (text string) {
 }
 
 func (stn stone) ShortDesc(g *game) string {
-	return fmt.Sprintf("%s", Indefinite(stn.String(), false))
+	return Indefinite(stn.String(), false)
 }
 
 func (stn stone) Style(g *game) (r rune, fg uicolor) {
@@ -296,7 +296,7 @@ func (g *game) ActivateTeleportStone() error {
 
 func (g *game) TeleportToBarrel() {
 	barrels := []position{}
-	for pos, _ := range g.Objects.Barrels {
+	for pos := range g.Objects.Barrels {
 		barrels = append(barrels, pos)
 	}
 	pos := barrels[RandInt(len(barrels))]
@@ -315,7 +315,7 @@ func (g *game) MagicMapping(ev event, maxdist int) error {
 		cdists[n.Cost] = append(cdists[n.Cost], pos.idx())
 	})
 	var dists []int
-	for dist, _ := range cdists {
+	for dist := range cdists {
 		dists = append(dists, dist)
 	}
 	sort.Ints(dists)

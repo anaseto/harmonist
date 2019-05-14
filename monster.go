@@ -190,7 +190,7 @@ func (mk monsterKind) CanAttackOnTree() bool {
 }
 
 func (mk monsterKind) Desc() string {
-	return monsDesc[mk]
+	return MonsDesc[mk]
 }
 
 func (mk monsterKind) SeenStoryText() (text string) {
@@ -290,7 +290,7 @@ var MonsData = []monsterData{
 	MonsButterfly: {10, MonsSmall, 'b', "kerejat", 2},
 }
 
-var monsDesc = []string{
+var MonsDesc = []string{
 	MonsGuard:     "Guards are low rank soldiers who patrol between Dayoriah Clan's buildings.",
 	MonsTinyHarpy: "Tiny harpies are little humanoid flying creatures. They are aggressive when hungry, but peaceful when satiated. This Underground harpy species eats fruits (including bananas) and other vegetables.",
 	//MonsOgre:            "Ogres are big clunky humanoids that can hit really hard.",
@@ -821,7 +821,6 @@ func (m *monster) HandleWatching(g *game) {
 		}
 	}
 	g.Ev.Renew(g, m.MoveDelay(g))
-	return
 }
 
 func (m *monster) ComputePath(g *game) {

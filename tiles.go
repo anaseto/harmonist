@@ -13,7 +13,7 @@ import (
 )
 
 func (ui *gameui) ApplyToggleTiles() {
-	gameConfig.Tiles = !gameConfig.Tiles
+	GameConfig.Tiles = !GameConfig.Tiles
 	for c, _ := range ui.cache {
 		if c.InMap {
 			delete(ui.cache, c)
@@ -228,17 +228,17 @@ var LetterNames = map[rune]string{
 }
 
 func (ui *gameui) Interrupt() {
-	interrupt <- true
+	Interrupt <- true
 }
 
 func (ui *gameui) Small() bool {
-	return gameConfig.Small
+	return GameConfig.Small
 }
 
 func getImage(cell UICell) *image.RGBA {
 	var pngImg []byte
 	hastile := false
-	if cell.InMap && gameConfig.Tiles {
+	if cell.InMap && GameConfig.Tiles {
 		pngImg = TileImgs["map-notile"]
 		if im, ok := TileImgs["map-"+string(cell.R)]; ok {
 			pngImg = im
@@ -283,8 +283,8 @@ func getImage(cell UICell) *image.RGBA {
 }
 
 func (ui *gameui) PostConfig() {
-	if gameConfig.Small {
-		gameConfig.Small = false
+	if GameConfig.Small {
+		GameConfig.Small = false
 		ui.ApplyToggleLayoutWithClear(false)
 	}
 }

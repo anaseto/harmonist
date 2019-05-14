@@ -77,7 +77,7 @@ func (g *game) Dump() string {
 	fmt.Fprintf(buf, "\n")
 	fmt.Fprintf(buf, "You have %d/%d HP, %d/%d MP and %d/%d bananas.\n", g.Player.HP, g.Player.HPMax(), g.Player.MP, g.Player.MPMax(), g.Player.Bananas, MaxBananas)
 	fmt.Fprintf(buf, "\n")
-	fmt.Fprintf(buf, g.DumpStatuses())
+	fmt.Fprint(buf, g.DumpStatuses())
 	fmt.Fprintf(buf, "\n\n")
 	fmt.Fprintf(buf, "Magaras:\n")
 	for _, mag := range g.Player.Magaras {
@@ -119,11 +119,11 @@ func (g *game) Dump() string {
 	fmt.Fprintf(buf, "└%s┘\n", strings.Repeat("─", DungeonWidth))
 	fmt.Fprintf(buf, "\n")
 	if g.Stats.Killed > 0 {
-		fmt.Fprintf(buf, g.DumpedKilledMonsters())
+		fmt.Fprint(buf, g.DumpedKilledMonsters())
 		fmt.Fprintf(buf, "\n")
 	}
 	fmt.Fprintf(buf, "Timeline:\n")
-	fmt.Fprintf(buf, g.DumpStory())
+	fmt.Fprint(buf, g.DumpStory())
 	fmt.Fprintf(buf, "\n")
 	g.DetailedStatistics(buf)
 	return buf.String()
@@ -267,7 +267,7 @@ func (g *game) DetailedStatistics(w io.Writer) {
 	fmt.Fprintf(w, "\n")
 	fmt.Fprintf(w, "Achievements:\n")
 	achvs := []string{}
-	for achv, _ := range g.Stats.Achievements {
+	for achv := range g.Stats.Achievements {
 		achvs = append(achvs, string(achv))
 	}
 	sort.Strings(achvs)

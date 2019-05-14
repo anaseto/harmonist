@@ -59,20 +59,6 @@ const (
 	AroundWallExplosion
 )
 
-//func (ui *gameui) ProjectileTrajectoryAnimation(ray []position, fg uicolor) {
-//if DisableAnimations {
-//return
-//}
-//for i := len(ray) - 1; i >= 0; i-- {
-//pos := ray[i]
-//r, fgColor, bgColor := ui.PositionDrawing(pos)
-//ui.DrawAtPosition(pos, true, '•', fg, bgColor)
-//ui.Flush()
-//time.Sleep(30 * time.Millisecond)
-//ui.DrawAtPosition(pos, true, r, fgColor, bgColor)
-//}
-//}
-
 func (ui *gameui) MonsterProjectileAnimation(ray []position, r rune, fg uicolor) {
 	if DisableAnimations {
 		return
@@ -182,7 +168,7 @@ func (g *game) Waves(maxCost int, ws wavestyle, center position) (dists []int, c
 		pos := n.Pos
 		cdists[n.Cost] = append(cdists[n.Cost], pos.idx())
 	})
-	for dist, _ := range cdists {
+	for dist := range cdists {
 		dists = append(dists, dist)
 	}
 	sort.Ints(dists)
@@ -216,7 +202,6 @@ func (ui *gameui) WaveAnimation(wave []int, ws wavestyle) {
 		return
 	}
 	ui.DrawDungeonView(NormalMode)
-	//colors := [2]uicolor{ColorFgMagicPlace, ColorFgSleepingMonster}
 	for _, i := range wave {
 		pos := idxtopos(i)
 		switch ws {
@@ -253,27 +238,6 @@ func (ui *gameui) WaveAnimation(wave []int, ws wavestyle) {
 	ui.Flush()
 	time.Sleep(AnimDurShort)
 }
-
-//func (ui *gameui) TormentExplosionAnimation() {
-//g := ui.g
-//if DisableAnimations {
-//return
-//}
-//ui.DrawDungeonView(NormalMode)
-//time.Sleep(AnimDurShort)
-//colors := [3]uicolor{ColorFgExplosionStart, ColorFgExplosionEnd, ColorFgMagicPlace}
-//for i := 0; i < 3; i++ {
-//for npos, b := range g.Player.LOS {
-//if !b {
-//continue
-//}
-//fg := colors[RandInt(3)]
-//ui.ExplosionDrawAt(npos, fg)
-//}
-//ui.Flush()
-//time.Sleep(AnimDurMediumLong)
-//}
-//}
 
 func (ui *gameui) WallExplosionAnimation(pos position) {
 	if DisableAnimations {
@@ -321,45 +285,12 @@ func (ui *gameui) BeamsAnimation(ray []position, bs beamstyle) {
 			if RandInt(2) == 0 {
 				r = '×'
 			}
-			//if mons.Exists() {
-			//r = '√'
-			//}
-			//ui.DrawAtPosition(pos, true, r, fg, bgColor)
 			ui.DrawAtPosition(pos, true, r, bgColor, fg)
 		}
 		ui.Flush()
 		time.Sleep(AnimDurMediumLong)
 	}
 }
-
-//func (ui *gameui) FireBoltAnimation(ray []position) {
-//g := ui.g
-//if DisableAnimations {
-//return
-//}
-//ui.DrawDungeonView(NormalMode)
-//time.Sleep(AnimDurShort)
-//colors := [2]uicolor{ColorFgExplosionStart, ColorFgExplosionEnd}
-//for j := 0; j < 3; j++ {
-//for i := len(ray) - 1; i >= 0; i-- {
-//fg := colors[RandInt(2)]
-//pos := ray[i]
-//_, _, bgColor := ui.PositionDrawing(pos)
-//mons := g.MonsterAt(pos)
-//r := '*'
-//if RandInt(2) == 0 {
-//r = '×'
-//}
-//if mons.Exists() {
-//r = '√'
-//}
-////ui.DrawAtPosition(pos, true, r, fg, bgColor)
-//ui.DrawAtPosition(pos, true, r, bgColor, fg)
-//}
-//ui.Flush()
-//time.Sleep(AnimDurMediumLong)
-//}
-//}
 
 func (ui *gameui) SlowingMagaraAnimation(ray []position) {
 	if DisableAnimations {
@@ -398,28 +329,6 @@ func (ui *gameui) ProjectileSymbol(dir direction) (r rune) {
 	return r
 }
 
-//func (ui *gameui) ThrowAnimation(ray []position, hit bool) {
-//g := ui.g
-//if DisableAnimations {
-//return
-//}
-//ui.DrawDungeonView(NormalMode)
-//time.Sleep(AnimDurShort)
-//for i := len(ray) - 1; i >= 0; i-- {
-//pos := ray[i]
-//r, fgColor, bgColor := ui.PositionDrawing(pos)
-//ui.DrawAtPosition(pos, true, ui.ProjectileSymbol(pos.Dir(g.Player.Pos)), ColorFgProjectile, bgColor)
-//ui.Flush()
-//time.Sleep(30 * time.Millisecond)
-//ui.DrawAtPosition(pos, true, r, fgColor, bgColor)
-//}
-//if hit {
-//pos := ray[0]
-//ui.HitAnimation(pos, true)
-//}
-//time.Sleep(30 * time.Millisecond)
-//}
-
 func (ui *gameui) MonsterJavelinAnimation(ray []position, hit bool) {
 	g := ui.g
 	if DisableAnimations {
@@ -437,49 +346,6 @@ func (ui *gameui) MonsterJavelinAnimation(ray []position, hit bool) {
 	}
 	time.Sleep(AnimDurShort)
 }
-
-//func (ui *gameui) HitAnimation(pos position, targeting bool) {
-//g := ui.g
-//if DisableAnimations {
-//return
-//}
-//if !g.Player.LOS[pos] {
-//return
-//}
-//ui.DrawDungeonView(NoFlushMode)
-//_, _, bgColor := ui.PositionDrawing(pos)
-//mons := g.MonsterAt(pos)
-//if mons.Exists() || pos == g.Player.Pos {
-//ui.DrawAtPosition(pos, targeting, '√', ColorFgAnimationHit, bgColor)
-//} else {
-//ui.DrawAtPosition(pos, targeting, '∞', ColorFgAnimationHit, bgColor)
-//}
-//ui.Flush()
-//time.Sleep(AnimDurShortMedium)
-//}
-
-//func (ui *gameui) LightningHitAnimation(targets []position) {
-//g := ui.g
-//if DisableAnimations {
-//return
-//}
-//ui.DrawDungeonView(NormalMode)
-//time.Sleep(AnimDurShort)
-//colors := [2]uicolor{ColorFgExplosionStart, ColorFgExplosionEnd}
-//for j := 0; j < 2; j++ {
-//for _, pos := range targets {
-//_, _, bgColor := ui.PositionDrawing(pos)
-//mons := g.MonsterAt(pos)
-//if mons.Exists() || pos == g.Player.Pos {
-//ui.DrawAtPosition(pos, false, '√', bgColor, colors[RandInt(2)])
-//} else {
-//ui.DrawAtPosition(pos, false, '∞', bgColor, colors[RandInt(2)])
-//}
-//}
-//ui.Flush()
-//time.Sleep(AnimDurMediumLong)
-//}
-//}
 
 func (ui *gameui) WoundedAnimation() {
 	g := ui.g

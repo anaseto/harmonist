@@ -108,7 +108,7 @@ func (g *game) SaveConfig() error {
 		return err
 	}
 	saveFile := filepath.Join(dataDir, "config.gob")
-	data, err := gameConfig.ConfigSave()
+	data, err := GameConfig.ConfigSave()
 	if err != nil {
 		g.Print(err.Error())
 		return err
@@ -140,10 +140,10 @@ func (g *game) LoadConfig() (bool, error) {
 	if err != nil {
 		return true, err
 	}
-	if c.Version != gameConfig.Version {
+	if c.Version != GameConfig.Version {
 		return true, errors.New("Version mismatch, could not load old custom configuration.")
 	}
-	gameConfig = *c
+	GameConfig = *c
 	return true, nil
 }
 

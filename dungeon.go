@@ -134,7 +134,7 @@ func (dg *dgen) ComputeConnectedComponents(nf func(position) bool) {
 	index := 1
 	stack := []position{}
 	nb := make([]position, 0, 8)
-	for i, _ := range dg.d.Cells {
+	for i := range dg.d.Cells {
 		pos := idxtopos(i)
 		if dg.cc[i] != 0 || !nf(pos) {
 			continue
@@ -273,7 +273,6 @@ type dgen struct {
 	tunnel  map[position]bool
 	room    map[position]bool
 	rooms   []*room
-	fungus  map[position]vegetation
 	spl     places
 	special specialRoom
 	layout  maplayout
@@ -942,9 +941,6 @@ func (r *room) Dig(dg *dgen) {
 			dg.spl.Artifact = pos
 			dg.d.SetCell(pos, StoryCell)
 		}
-		if c != '"' {
-			delete(dg.fungus, pos)
-		}
 		x++
 	}
 }
@@ -1019,9 +1015,6 @@ func (dg *dgen) PutDoors(g *game) {
 			}
 			dg.d.SetCell(pl.pos, DoorCell)
 			r.places = append(r.places, place{pos: pl.pos, kind: PlaceDoor})
-			if _, ok := dg.fungus[pl.pos]; ok {
-				delete(dg.fungus, pl.pos)
-			}
 		}
 	}
 }
@@ -1051,7 +1044,7 @@ func (g *game) DoorCandidate(pos position) bool {
 
 func (dg *dgen) PutHoledWalls(g *game, n int) {
 	candidates := []position{}
-	for i, _ := range g.Dungeon.Cells {
+	for i := range g.Dungeon.Cells {
 		pos := idxtopos(i)
 		if dg.room[pos] && g.HoledWallCandidate(pos) {
 			candidates = append(candidates, pos)
@@ -1068,7 +1061,7 @@ func (dg *dgen) PutHoledWalls(g *game, n int) {
 
 func (dg *dgen) PutWindows(g *game, n int) {
 	candidates := []position{}
-	for i, _ := range g.Dungeon.Cells {
+	for i := range g.Dungeon.Cells {
 		pos := idxtopos(i)
 		if dg.room[pos] && g.HoledWallCandidate(pos) {
 			candidates = append(candidates, pos)
@@ -1181,7 +1174,6 @@ func (g *game) GenRoomTunnels(ml maplayout) {
 	dg.tunnel = make(map[position]bool)
 	dg.room = make(map[position]bool)
 	dg.rooms = []*room{}
-	dg.fungus = make(map[position]vegetation)
 	switch ml {
 	case AutomataCave:
 		dg.GenCellularAutomataCaveMap()
@@ -1858,12 +1850,6 @@ func (dg *dgen) GenStones(g *game) {
 	}
 }
 
-type vegetation int
-
-const (
-	foliage vegetation = iota
-)
-
 func (dg *dgen) GenCellularAutomataCaveMap() {
 	count := 0
 	for {
@@ -2388,21 +2374,6 @@ func (dg *dgen) PutRandomBandN(g *game, bands []monsterBand, n int) {
 		dg.PutMonsterBand(g, bands[RandInt(len(bands))])
 	}
 }
-
-type monspecial int
-
-const (
-	MonsNormal monspecial = iota
-	MonsSpecialFrogs
-	MonsSpecialPlants
-	MonsSpecialButterflies
-	MonsSpecialWorms
-	MonsSpecialNadres
-	MonsSpecialNixes
-	MonsSpecialVampires
-	MonsSpecialOricCelmists
-	MonsSpecialWingedMilfid
-)
 
 func (dg *dgen) GenMonsters(g *game) {
 	g.Monsters = []*monster{}

@@ -428,7 +428,7 @@ func (g *game) PutStatus(st status, duration int) bool {
 		return false
 	}
 	g.Player.Statuses[st] += duration
-	g.PushEvent(&simpleEvent{ERank: g.Ev.Rank() + DurationStatusStep, EAction: statusEndActions[st]})
+	g.PushEvent(&simpleEvent{ERank: g.Ev.Rank() + DurationStatusStep, EAction: StatusEndActions[st]})
 	g.Stats.Statuses[st]++
 	if st.Good() {
 		g.Player.Expire[st] = g.Ev.Rank() + duration

@@ -62,8 +62,8 @@ func main() {
 	defer ui.Close()
 
 	LinkColors()
-	gameConfig.DarkLOS = true
-	gameConfig.Version = Version
+	GameConfig.DarkLOS = true
+	GameConfig.Version = Version
 
 	load, err := g.LoadConfig()
 	var cfgerrstr string

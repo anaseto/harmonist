@@ -502,7 +502,7 @@ func (g *game) ComputeMonsterLOS() {
 		if !mons.Exists() || !g.Player.Sees(mons.Pos) {
 			continue
 		}
-		for pos, _ := range g.Player.LOS {
+		for pos := range g.Player.LOS {
 			if !g.Player.Sees(pos) {
 				continue
 			}
@@ -571,7 +571,7 @@ func (g *game) ComputeLights() {
 
 func (g *game) ComputeMonsterCone(m *monster) {
 	g.MonsterTargLOS = make(map[position]bool)
-	for pos, _ := range g.Player.LOS {
+	for pos := range g.Player.LOS {
 		if !g.Player.Sees(pos) {
 			continue
 		}
