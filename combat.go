@@ -151,7 +151,7 @@ const (
 	QueenStoneNoise     = 9
 )
 
-func (g *game) ArmourClang() (sclang string) {
+func (g *game) ClangMsg() (sclang string) {
 	if RandInt(2) == 0 {
 		sclang = " Clang!"
 	} else {

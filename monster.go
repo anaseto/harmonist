@@ -1074,7 +1074,7 @@ func (m *monster) HitPlayer(g *game, ev event) {
 	g.MakeNoise(noise, g.Player.Pos)
 	var sclang string
 	if clang {
-		sclang = g.ArmourClang()
+		sclang = g.ClangMsg()
 	}
 	g.PrintfStyled("%s hits you (%d dmg).%s", logMonsterHit, m.Kind.Definite(true), dmg, sclang)
 	m.InflictDamage(g, dmg, m.Attack)
@@ -1428,7 +1428,7 @@ func (m *monster) ThrowJavelin(g *game, ev event) bool {
 	noise := g.HitNoise(clang)
 	var sclang string
 	if clang {
-		sclang = g.ArmourClang()
+		sclang = g.ClangMsg()
 	}
 	g.Printf("%s throws %s at you (%d dmg).%s", m.Kind.Definite(true), Indefinite("javelin", false), dmg, sclang)
 	g.ui.MonsterJavelinAnimation(g.Ray(m.Pos), true)
