@@ -1,3 +1,18 @@
+// This file implements a line of sight algorithm.
+//
+// It works in a way that can remind of the Dijkstra algorithm, but within each
+// cone between a diagonal and an orthogonal line, only movements along those
+// two directions are allowed. This allows the algorithm to be a simple pass on
+// squares around the player, starting from radius 1 until line of sight range.
+//
+// Going from a position from to a position pos has a cost, which depends
+// essentially on the type of terrain in from. Some circumstances, such as
+// being on top of a tree, can influence the cost of terrains.
+//
+// The obtained light rays are lines formed using at most two adjacent
+// directions: a diagonal and an orthogonal one (for example north east and
+// east).
+
 package main
 
 type raynode struct {
@@ -6,18 +21,22 @@ type raynode struct {
 
 type rayMap map[position]raynode
 
-func (g *game) bestParent(rm rayMap, from, pos position, rs raystyle) (position, int) {
+func (g *game) BestParent(rm rayMap, from, pos position, rs raystyle) (position, int) {
 	var parents [2]position
 	p := parents[:0]
 	p = pos.Parents(from, p)
 	b := p[0]
-	if len(p) > 1 && rm[p[1]].Cost+g.losCost(from, p[1], pos, rs) < rm[b].Cost+g.losCost(from, b, pos, rs) {
+	if len(p) > 1 && rm[p[1]].Cost+g.LOSCost(from, p[1], pos, rs) < rm[b].Cost+g.LOSCost(from, b, pos, rs) {
 		b = p[1]
 	}
-	return b, rm[b].Cost + g.losCost(from, b, pos, rs)
+	return b, rm[b].Cost + g.LOSCost(from, b, pos, rs)
 }
 
 func (g *game) DiagonalOpaque(from, to position, rs raystyle) bool {
+	// The game uses cardinal movement only, so two diagonal walls should,
+	// for example, block line of sight. This is in contrast with the main
+	// mechanics of the line of sight algorithm, which for gameplay reasons
+	// allows diagonals for light rays in normal circumstances.
 	var cache [2]position
 	p := cache[:0]
 	switch to.Dir(from) {
@@ -54,6 +73,8 @@ func (g *game) DiagonalOpaque(from, to position, rs raystyle) bool {
 }
 
 func (g *game) DiagonalDifficult(from, to position) bool {
+	// For reasons similar as in DiagonalOpaque, two diagonal foliage cells
+	// should reduce range of line of sight in that diagonal direction.
 	var cache [2]position
 	p := cache[:0]
 	switch to.Dir(from) {
@@ -84,7 +105,9 @@ func (g *game) DiagonalDifficult(from, to position) bool {
 	return count > 1
 }
 
-func (g *game) losCost(from, pos, to position, rs raystyle) int {
+// LOSCost gives cost of expanding from 'pos' to 'to' light ray originated at
+// 'from', for particular circumstances rs of light ray.
+func (g *game) LOSCost(from, pos, to position, rs raystyle) int {
 	var wallcost int
 	switch rs {
 	case TreePlayerRay:
@@ -157,7 +180,7 @@ const (
 
 const LightRange = 6
 
-func (g *game) buildRayMap(from position, rs raystyle, rm rayMap) {
+func (g *game) BuildRayMap(from position, rs raystyle, rm rayMap) {
 	var wallcost int
 	switch rs {
 	case TreePlayerRay:
@@ -179,7 +202,7 @@ func (g *game) buildRayMap(from position, rs raystyle, rm rayMap) {
 				if !pos.valid() {
 					continue
 				}
-				_, c := g.bestParent(rm, from, pos, rs)
+				_, c := g.BestParent(rm, from, pos, rs)
 				rm[pos] = raynode{Cost: c}
 			}
 		}
@@ -188,7 +211,7 @@ func (g *game) buildRayMap(from position, rs raystyle, rm rayMap) {
 				if !pos.valid() {
 					continue
 				}
-				_, c := g.bestParent(rm, from, pos, rs)
+				_, c := g.BestParent(rm, from, pos, rs)
 				rm[pos] = raynode{Cost: c}
 			}
 		}
@@ -213,11 +236,6 @@ func (g *game) StopAuto() {
 	g.AutoHalt = true
 	g.AutoDir = NoDir
 	g.AutoTarget = InvalidPos
-	//if g.Resting {
-	//g.Stats.RestInterrupt++
-	//g.Resting = false
-	//g.Print("You could not sleep.")
-	//}
 }
 
 const TreeRange = 50
@@ -232,7 +250,7 @@ func (g *game) ComputeLOS() {
 	if c.T == TreeCell {
 		rs = TreePlayerRay
 	}
-	g.buildRayMap(g.Player.Pos, rs, g.Player.Rays)
+	g.BuildRayMap(g.Player.Pos, rs, g.Player.Rays)
 	nb := make([]position, 8)
 	for pos, n := range g.Player.Rays {
 		if n.Cost <= DefaultLOSRange {
@@ -285,14 +303,14 @@ func (m *monster) ComputeLOS(g *game) {
 		delete(m.LOS, k)
 	}
 	losRange := DefaultMonsterLOSRange
-	g.buildRayMap(m.Pos, MonsterRay, g.RaysCache)
+	g.BuildRayMap(m.Pos, MonsterRay, g.RaysCache)
 	for pos, n := range g.RaysCache {
 		if pos == m.Pos {
 			m.LOS[pos] = true
 			continue
 		}
 		if n.Cost <= losRange && g.Dungeon.Cell(pos).T != BarrelCell {
-			ppos, _ := g.bestParent(g.RaysCache, m.Pos, pos, MonsterRay)
+			ppos, _ := g.BestParent(g.RaysCache, m.Pos, pos, MonsterRay)
 			if !g.Dungeon.Cell(ppos).Hides() {
 				m.LOS[pos] = true
 			}
@@ -372,7 +390,7 @@ func (g *game) Ray(pos position) []position {
 	ray := []position{}
 	for pos != g.Player.Pos {
 		ray = append(ray, pos)
-		pos, _ = g.bestParent(g.Player.Rays, g.Player.Pos, pos, TargetingRay)
+		pos, _ = g.BestParent(g.Player.Rays, g.Player.Pos, pos, TargetingRay)
 	}
 	return ray
 }
@@ -412,16 +430,6 @@ func (g *game) ComputeNoise() {
 					g.Print("You hear an imperceptible air movement.")
 					count++
 				}
-				// no footsteps
-				//case MonsTinyHarpy, MonsWingedMilfid, MonsGiantBee:
-				//noise[pos] = true
-				//g.Print("You hear the flapping of wings.")
-				//count++
-				//case MonsOgre, MonsCyclop, MonsBrizzia, MonsHydra, MonsEarthDragon, MonsTreeMushroom:
-				//noise[pos] = true
-				//g.Print("You hear heavy footsteps.")
-				//count++
-				//case MonsWorm, MonsAcidMound:
 			case MonsWingedMilfid, MonsTinyHarpy:
 				g.Noise[pos] = true
 				g.Print("You hear the flapping of wings.")
@@ -510,15 +518,6 @@ func (g *game) ComputeMonsterLOS() {
 				g.MonsterLOS[pos] = true
 			}
 		}
-		// unoptimized version for testing:
-		//if !mons.Exists() {
-		//continue
-		//}
-		//for pos := range mons.LOS {
-		//if mons.Sees(g, pos) {
-		//g.MonsterLOS[pos] = true
-		//}
-		//}
 	}
 	if g.MonsterLOS[g.Player.Pos] {
 		g.Player.Statuses[StatusUnhidden] = 1
@@ -546,7 +545,7 @@ func (g *game) ComputeLights() {
 		if lpos.Distance(g.Player.Pos) > DefaultLOSRange+LightRange && g.Dungeon.Cell(g.Player.Pos).T != TreeCell {
 			continue
 		}
-		g.buildRayMap(lpos, LightRay, g.RaysCache)
+		g.BuildRayMap(lpos, LightRay, g.RaysCache)
 		for pos, n := range g.RaysCache {
 			if n.Cost <= LightRange {
 				g.Illuminated[pos.idx()] = true
@@ -560,7 +559,7 @@ func (g *game) ComputeLights() {
 		if mons.Pos.Distance(g.Player.Pos) > DefaultLOSRange+LightRange && g.Dungeon.Cell(g.Player.Pos).T != TreeCell {
 			continue
 		}
-		g.buildRayMap(mons.Pos, LightRay, g.RaysCache)
+		g.BuildRayMap(mons.Pos, LightRay, g.RaysCache)
 		for pos, n := range g.RaysCache {
 			if n.Cost <= LightRange {
 				g.Illuminated[pos.idx()] = true
