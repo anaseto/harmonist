@@ -339,6 +339,7 @@ func (ui *gameui) Init() error {
 			}
 			s := e.Get("key").String()
 			if s == "F11" {
+				e.Call("preventDefault")
 				screenfull := js.Global().Get("screenfull")
 				if screenfull.Get("enabled").Bool() {
 					screenfull.Call("toggle", gamediv)
