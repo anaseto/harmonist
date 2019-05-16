@@ -1398,7 +1398,7 @@ loop:
 		for i := n; i < to; i++ {
 			ka := ConfigurableKeyActions[i]
 			desc := ka.NormalModeDescription()
-			if !ka.NormalModeKey() {
+			if !ka.NormalModeAction() {
 				desc = ka.TargetingModeDescription()
 			}
 			bg := ui.ListItemBG(i)
@@ -1442,12 +1442,12 @@ loop:
 			}
 			CustomKeys = true
 			ka := ConfigurableKeyActions[s]
-			if ka.NormalModeKey() {
+			if ka.NormalModeAction() {
 				GameConfig.RuneNormalModeKeys[r] = ka
 			} else {
 				delete(GameConfig.RuneNormalModeKeys, r)
 			}
-			if ka.TargetingModeKey() {
+			if ka.TargetingModeAction() {
 				GameConfig.RuneTargetModeKeys[r] = ka
 			} else {
 				delete(GameConfig.RuneTargetModeKeys, r)
@@ -1841,7 +1841,7 @@ func (ui *gameui) ActionItem(i, lnum int, ka action, fg uicolor) {
 	bg := ui.ListItemBG(i)
 	ui.ClearLineWithColor(lnum, bg)
 	desc := ka.NormalModeDescription()
-	if !ka.NormalModeKey() {
+	if !ka.NormalModeAction() {
 		desc = ka.TargetingModeDescription()
 	}
 	ui.DrawColoredTextOnBG(fmt.Sprintf("%c - %s", rune(i+97), desc), 0, lnum, fg, bg)

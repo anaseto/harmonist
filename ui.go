@@ -611,14 +611,14 @@ var CustomKeys bool
 
 func FixedRuneKey(r rune) bool {
 	switch r {
-	case ' ', '?', '=':
+	case ' ', '?', '=', '2', '4', '8', '6', '.', '5', '\x1b':
 		return true
 	default:
 		return false
 	}
 }
 
-func (k action) NormalModeKey() bool {
+func (k action) NormalModeAction() bool {
 	switch k {
 	case ActionW, ActionS, ActionN, ActionE,
 		ActionRunW, ActionRunS, ActionRunN, ActionRunE,
@@ -749,7 +749,7 @@ func (k action) TargetingModeDescription() (text string) {
 	return text
 }
 
-func (k action) TargetingModeKey() bool {
+func (k action) TargetingModeAction() bool {
 	switch k {
 	case ActionW, ActionS, ActionN, ActionE,
 		ActionRunW, ActionRunS, ActionRunN, ActionRunE,
