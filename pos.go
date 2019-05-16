@@ -128,7 +128,7 @@ func (dir direction) String() (s string) {
 	return s
 }
 
-func KeyToDir(k keyAction) (dir direction) {
+func KeyToDir(k action) (dir direction) {
 	switch k {
 	case ActionW, ActionRunW:
 		dir = W

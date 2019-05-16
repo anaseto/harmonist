@@ -1349,7 +1349,7 @@ func InRuneSlice(r rune, s []rune) bool {
 	return false
 }
 
-func (ui *gameui) RunesForKeyAction(k keyAction) string {
+func (ui *gameui) RunesForKeyAction(k action) string {
 	runes := []rune{}
 	for r, ka := range GameConfig.RuneNormalModeKeys {
 		if k == ka && !InRuneSlice(r, runes) {
@@ -1837,7 +1837,7 @@ func (ui *gameui) ReadScroll() error {
 	return errors.New(DoNothing)
 }
 
-func (ui *gameui) ActionItem(i, lnum int, ka keyAction, fg uicolor) {
+func (ui *gameui) ActionItem(i, lnum int, ka action, fg uicolor) {
 	bg := ui.ListItemBG(i)
 	ui.ClearLineWithColor(lnum, bg)
 	desc := ka.NormalModeDescription()
@@ -1847,7 +1847,7 @@ func (ui *gameui) ActionItem(i, lnum int, ka keyAction, fg uicolor) {
 	ui.DrawColoredTextOnBG(fmt.Sprintf("%c - %s", rune(i+97), desc), 0, lnum, fg, bg)
 }
 
-var menuActions = []keyAction{
+var menuActions = []action{
 	ActionLogs,
 	ActionMenuCommandHelp,
 	ActionMenuTargetingHelp,
@@ -1856,7 +1856,7 @@ var menuActions = []keyAction{
 	ActionQuit,
 }
 
-func (ui *gameui) SelectAction(actions []keyAction, ev event) (keyAction, error) {
+func (ui *gameui) SelectAction(actions []action, ev event) (action, error) {
 	ui.DrawDungeonView(NoFlushMode)
 	for {
 		ui.ClearLine(0)

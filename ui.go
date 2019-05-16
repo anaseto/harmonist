@@ -534,10 +534,10 @@ func (ui *gameui) CleanError(err error) error {
 	return err
 }
 
-type keyAction int
+type action int
 
 const (
-	ActionNothing keyAction = iota
+	ActionNothing action = iota
 	ActionW
 	ActionS
 	ActionN
@@ -578,7 +578,7 @@ const (
 	ActionMenuTargetingHelp
 )
 
-var ConfigurableKeyActions = [...]keyAction{
+var ConfigurableKeyActions = [...]action{
 	ActionW,
 	ActionS,
 	ActionN,
@@ -618,7 +618,7 @@ func FixedRuneKey(r rune) bool {
 	}
 }
 
-func (k keyAction) NormalModeKey() bool {
+func (k action) NormalModeKey() bool {
 	switch k {
 	case ActionW, ActionS, ActionN, ActionE,
 		ActionRunW, ActionRunS, ActionRunN, ActionRunE,
@@ -647,7 +647,7 @@ func (k keyAction) NormalModeKey() bool {
 	}
 }
 
-func (k keyAction) NormalModeDescription() (text string) {
+func (k action) NormalModeDescription() (text string) {
 	switch k {
 	case ActionW:
 		text = "Move west"
@@ -707,7 +707,7 @@ func (k keyAction) NormalModeDescription() (text string) {
 	return text
 }
 
-func (k keyAction) TargetingModeDescription() (text string) {
+func (k action) TargetingModeDescription() (text string) {
 	switch k {
 	case ActionW:
 		text = "Move cursor west"
@@ -749,7 +749,7 @@ func (k keyAction) TargetingModeDescription() (text string) {
 	return text
 }
 
-func (k keyAction) TargetingModeKey() bool {
+func (k action) TargetingModeKey() bool {
 	switch k {
 	case ActionW, ActionS, ActionN, ActionE,
 		ActionRunW, ActionRunS, ActionRunN, ActionRunE,
@@ -771,7 +771,7 @@ func (k keyAction) TargetingModeKey() bool {
 var GameConfig config
 
 func ApplyDefaultKeyBindings() {
-	GameConfig.RuneNormalModeKeys = map[rune]keyAction{
+	GameConfig.RuneNormalModeKeys = map[rune]action{
 		'h': ActionW,
 		'j': ActionS,
 		'k': ActionN,
@@ -808,7 +808,7 @@ func ApplyDefaultKeyBindings() {
 		'>': ActionWizardDescend,
 		'=': ActionConfigure,
 	}
-	GameConfig.RuneTargetModeKeys = map[rune]keyAction{
+	GameConfig.RuneTargetModeKeys = map[rune]action{
 		'h':    ActionW,
 		'j':    ActionS,
 		'k':    ActionN,
@@ -850,7 +850,7 @@ func ApplyDefaultKeyBindings() {
 
 type runeKeyAction struct {
 	r rune
-	k keyAction
+	k action
 }
 
 func (ui *gameui) HandleKeyAction(rka runeKeyAction) (again bool, quit bool, err error) {
@@ -1435,7 +1435,7 @@ func (m menu) String() (text string) {
 	return "[" + text + "]"
 }
 
-func (m menu) Key(g *game) (key keyAction) {
+func (m menu) Key(g *game) (key action) {
 	switch m {
 	//case MenuExplore:
 	//key = KeyExplore
