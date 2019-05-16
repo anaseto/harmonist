@@ -1,7 +1,5 @@
 package main
 
-// TODO: many animations are obsolete so remove them
-
 import (
 	"sort"
 	"time"
