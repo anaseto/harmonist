@@ -151,7 +151,7 @@ func (ui *gameui) StartMenu(l int) startAction {
 	}
 }
 
-func (ui *gameui) PlayerTurnEvent(ev event) (err error, again, quit bool) {
+func (ui *gameui) PlayerTurnEvent(ev event) (again, quit bool, err error) {
 	g := ui.g
 	again = true
 	in := ui.PollEvent()
@@ -193,22 +193,22 @@ func (ui *gameui) PlayerTurnEvent(ev event) (err error, again, quit bool) {
 						again = true
 						break
 					}
-					err, again, quit = ui.HandleKeyAction(runeKeyAction{k: m.Key(g)})
+					again, quit, err = ui.HandleKeyAction(runeKeyAction{k: m.Key(g)})
 					if err != nil {
 						again = true
 					}
-					return err, again, quit
+					return again, quit, err
 				} else if in.mouseX >= ui.MapWidth() || in.mouseY >= ui.MapHeight() {
 					again = true
 				} else {
-					err, again, quit = ui.ExaminePos(ev, mpos)
+					again, quit, err = ui.ExaminePos(ev, mpos)
 				}
 			case 2:
-				err, again, quit = ui.HandleKeyAction(runeKeyAction{k: KeyMenu})
+				again, quit, err = ui.HandleKeyAction(runeKeyAction{k: KeyMenu})
 				if err != nil {
 					again = true
 				}
-				return err, again, quit
+				return again, quit, err
 			}
 		}
 	default:
@@ -216,13 +216,13 @@ func (ui *gameui) PlayerTurnEvent(ev event) (err error, again, quit bool) {
 		if r == 0 {
 			again = true
 		} else {
-			err, again, quit = ui.HandleKeyAction(runeKeyAction{r: r})
+			again, quit, err = ui.HandleKeyAction(runeKeyAction{r: r})
 		}
 	}
 	if err != nil {
 		again = true
 	}
-	return err, again, quit
+	return again, quit, err
 }
 
 func (ui *gameui) Scroll(n int) (m int, quit bool) {
@@ -394,7 +394,7 @@ func (ui *gameui) KeyMenuAction(n int) (m int, action keyConfigAction) {
 	return n, action
 }
 
-func (ui *gameui) TargetModeEvent(targ Targeter, data *examineData) (err error, again, quit, notarg bool) {
+func (ui *gameui) TargetModeEvent(targ Targeter, data *examineData) (again, quit, notarg bool, err error) {
 	g := ui.g
 	again = true
 	in := ui.PollEvent()
@@ -452,7 +452,7 @@ func (ui *gameui) TargetModeEvent(targ Targeter, data *examineData) (err error, 
 					err = errors.New(DoNothing)
 					break
 				}
-				err, again, quit, notarg = ui.CursorKeyAction(targ, runeKeyAction{k: m.Key(g)}, data)
+				again, quit, notarg, err = ui.CursorKeyAction(targ, runeKeyAction{k: m.Key(g)}, data)
 			} else if in.mouseX >= ui.MapWidth() || in.mouseY >= ui.MapHeight() {
 				g.Targeting = InvalidPos
 				notarg = true
@@ -468,12 +468,12 @@ func (ui *gameui) TargetModeEvent(targ Targeter, data *examineData) (err error, 
 			}
 		case 2:
 			if in.mouseY >= ui.MapHeight() || in.mouseX >= ui.MapWidth() {
-				err, again, quit, notarg = ui.CursorKeyAction(targ, runeKeyAction{k: KeyMenu}, data)
+				again, quit, notarg, err = ui.CursorKeyAction(targ, runeKeyAction{k: KeyMenu}, data)
 			} else {
-				err, again, quit, notarg = ui.CursorKeyAction(targ, runeKeyAction{k: KeyDescription}, data)
+				again, quit, notarg, err = ui.CursorKeyAction(targ, runeKeyAction{k: KeyDescription}, data)
 			}
 		case 1:
-			err, again, quit, notarg = ui.CursorKeyAction(targ, runeKeyAction{k: KeyExclude}, data)
+			again, quit, notarg, err = ui.CursorKeyAction(targ, runeKeyAction{k: KeyExclude}, data)
 		}
 	default:
 		r := ui.KeyToRuneKeyAction(in)
@@ -853,7 +853,7 @@ type runeKeyAction struct {
 	k keyAction
 }
 
-func (ui *gameui) HandleKeyAction(rka runeKeyAction) (err error, again bool, quit bool) {
+func (ui *gameui) HandleKeyAction(rka runeKeyAction) (again bool, quit bool, err error) {
 	g := ui.g
 	if rka.r != 0 {
 		var ok bool
@@ -867,14 +867,14 @@ func (ui *gameui) HandleKeyAction(rka runeKeyAction) (err error, again bool, qui
 			default:
 				err = fmt.Errorf("Unknown key '%c'. Type ? for help.", rka.r)
 			}
-			return err, again, quit
+			return again, quit, err
 		}
 	}
 	if rka.k == KeyMenu {
 		rka.k, err = ui.SelectAction(menuActions, g.Ev)
 		if err != nil {
 			err = ui.CleanError(err)
-			return err, again, quit
+			return again, quit, err
 		}
 	}
 	return ui.HandleKey(rka)
@@ -889,7 +889,7 @@ func (ui *gameui) OptionalDescendConfirmation(st stair) (err error) {
 
 }
 
-func (ui *gameui) HandleKey(rka runeKeyAction) (err error, again bool, quit bool) {
+func (ui *gameui) HandleKey(rka runeKeyAction) (again bool, quit bool, err error) {
 	g := ui.g
 	switch rka.k {
 	case KeyW, KeyS, KeyN, KeyE:
@@ -932,7 +932,7 @@ func (ui *gameui) HandleKey(rka runeKeyAction) (err error, again bool, quit bool
 				if g.Descend(DescendNormal) {
 					ui.Win()
 					quit = true
-					return err, again, quit
+					return again, quit, err
 				}
 				ui.DrawDungeonView(NormalMode)
 			} else if g.Dungeon.Cell(g.Player.Pos).T == StairCell && g.Objects.Stairs[g.Player.Pos] == BlockedStair {
@@ -984,7 +984,7 @@ func (ui *gameui) HandleKey(rka runeKeyAction) (err error, again bool, quit bool
 	case KeyExplore:
 		err = g.Autoexplore(g.Ev)
 	case KeyExamine:
-		err, again, quit = ui.Examine(nil)
+		again, quit, err = ui.Examine(nil)
 	case KeyHelp, KeyMenuCommandHelp:
 		ui.KeysHelp()
 		again = true
@@ -1028,19 +1028,19 @@ func (ui *gameui) HandleKey(rka runeKeyAction) (err error, again bool, quit bool
 			if g.Descend(DescendNormal) {
 				ui.Win()
 				quit = true
-				return err, again, quit
+				return again, quit, err
 			}
 		} else {
 			err = errors.New("Unknown key. Type ? for help.")
 		}
 	case KeyWizard:
 		ui.EnterWizard()
-		return nil, true, false
+		return true, false, nil
 	case KeyQuit:
 		if ui.Quit() {
-			return nil, false, true
+			return false, true, nil
 		}
-		return nil, true, false
+		return true, false, nil
 	case KeyConfigure:
 		err = ui.HandleSettingAction()
 		again = true
@@ -1055,26 +1055,26 @@ func (ui *gameui) HandleKey(rka runeKeyAction) (err error, again bool, quit bool
 	if err != nil {
 		again = true
 	}
-	return err, again, quit
+	return again, quit, err
 }
 
-func (ui *gameui) ExaminePos(ev event, pos position) (err error, again, quit bool) {
+func (ui *gameui) ExaminePos(ev event, pos position) (again, quit bool, err error) {
 	var start *position
 	if pos.valid() {
 		start = &pos
 	}
-	err, again, quit = ui.Examine(start)
-	return err, again, quit
+	again, quit, err = ui.Examine(start)
+	return again, quit, err
 }
 
-func (ui *gameui) Examine(start *position) (err error, again, quit bool) {
+func (ui *gameui) Examine(start *position) (again, quit bool, err error) {
 	ex := &examiner{}
-	err, again, quit = ui.CursorAction(ex, start)
-	return err, again, quit
+	again, quit, err = ui.CursorAction(ex, start)
+	return again, quit, err
 }
 
 func (ui *gameui) ChooseTarget(targ Targeter) error {
-	err, _, _ := ui.CursorAction(targ, nil)
+	_, _, err := ui.CursorAction(targ, nil)
 	if err != nil {
 		return err
 	}
@@ -1196,7 +1196,7 @@ func (ui *gameui) CursorMouseLeft(targ Targeter, pos position, data *examineData
 	return again, notarg
 }
 
-func (ui *gameui) CursorKeyAction(targ Targeter, rka runeKeyAction, data *examineData) (err error, again, quit, notarg bool) {
+func (ui *gameui) CursorKeyAction(targ Targeter, rka runeKeyAction, data *examineData) (again, quit, notarg bool, err error) {
 	g := ui.g
 	pos := data.npos
 	again = true
@@ -1205,14 +1205,14 @@ func (ui *gameui) CursorKeyAction(targ Targeter, rka runeKeyAction, data *examin
 		rka.k, ok = GameConfig.RuneTargetModeKeys[rka.r]
 		if !ok {
 			err = fmt.Errorf("Invalid targeting mode key '%c'. Type ? for help.", rka.r)
-			return err, again, quit, notarg
+			return again, quit, notarg, err
 		}
 	}
 	if rka.k == KeyMenu {
 		rka.k, err = ui.SelectAction(menuActions, g.Ev)
 		if err != nil {
 			err = ui.CleanError(err)
-			return err, again, quit, notarg
+			return again, quit, notarg, err
 		}
 	}
 	switch rka.k {
@@ -1242,7 +1242,7 @@ func (ui *gameui) CursorKeyAction(targ Targeter, rka runeKeyAction, data *examin
 			if g.Descend(DescendNormal) {
 				ui.Win()
 				quit = true
-				return err, again, quit, notarg
+				return again, quit, notarg, err
 			}
 		} else if g.Dungeon.Cell(g.Player.Pos).T == StairCell && g.Objects.Stairs[g.Player.Pos] == BlockedStair {
 			err = errors.New("The stairs are blocked by a magical stone barrier energies.")
@@ -1288,7 +1288,7 @@ func (ui *gameui) CursorKeyAction(targ Targeter, rka runeKeyAction, data *examin
 		if _, ok := targ.(*examiner); !ok {
 			break
 		}
-		err, again, quit = ui.HandleKey(rka)
+		again, quit, err = ui.HandleKey(rka)
 		if err != nil {
 			notarg = true
 		}
@@ -1316,7 +1316,7 @@ func (ui *gameui) CursorKeyAction(targ Targeter, rka runeKeyAction, data *examin
 	default:
 		err = fmt.Errorf("Invalid targeting mode key '%c'. Type ? for help.", rka.r)
 	}
-	return err, again, quit, notarg
+	return again, quit, notarg, err
 }
 
 type examineData struct {
@@ -1330,7 +1330,7 @@ type examineData struct {
 
 var InvalidPos = position{-1, -1}
 
-func (ui *gameui) CursorAction(targ Targeter, start *position) (err error, again, quit bool) {
+func (ui *gameui) CursorAction(targ Targeter, start *position) (again, quit bool, err error) {
 	g := ui.g
 	pos := g.Player.Pos
 	if start != nil {
@@ -1389,7 +1389,7 @@ loop:
 		ui.Flush()
 		data.npos = pos
 		var notarg bool
-		err, again, quit, notarg = ui.TargetModeEvent(targ, data)
+		again, quit, notarg, err = ui.TargetModeEvent(targ, data)
 		if err != nil {
 			err = ui.CleanError(err)
 		}
@@ -1406,7 +1406,7 @@ loop:
 	g.Highlight = nil
 	g.MonsterTargLOS = nil
 	ui.HideCursor()
-	return err, again, quit
+	return again, quit, err
 }
 
 type menu int
@@ -1648,10 +1648,10 @@ getKey:
 		var err error
 		var again, quit bool
 		if g.Targeting.valid() {
-			err, again, quit = ui.ExaminePos(ev, g.Targeting)
+			again, quit, err = ui.ExaminePos(ev, g.Targeting)
 		} else {
 			ui.DrawDungeonView(NormalMode)
-			err, again, quit = ui.PlayerTurnEvent(ev)
+			again, quit, err = ui.PlayerTurnEvent(ev)
 		}
 		if err != nil && err.Error() != "" {
 			g.Print(err.Error())
