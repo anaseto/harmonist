@@ -148,6 +148,8 @@ func (ui *gameui) Draw(cell UICell, x, y int) {
 		ctx := canvas.Call("getContext", "2d")
 		ctx.Set("imageSmoothingEnabled", false)
 		buf := getImage(cell).Pix
+		// TODO: change that after they merge CL177537. Seems to be
+		// short lived enough in practice that this does not crash.
 		ta := js.TypedArrayOf(buf)
 		ca := js.Global().Get("Uint8ClampedArray").New(ta)
 		imgdata := js.Global().Get("ImageData").New(ca, 16, 24)
