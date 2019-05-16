@@ -1848,12 +1848,12 @@ func (ui *gameui) ActionItem(i, lnum int, ka keyAction, fg uicolor) {
 }
 
 var menuActions = []keyAction{
-	KeyLogs,
-	KeyMenuCommandHelp,
-	KeyMenuTargetingHelp,
-	KeyConfigure,
-	KeySave,
-	KeyQuit,
+	ActionLogs,
+	ActionMenuCommandHelp,
+	ActionMenuTargetingHelp,
+	ActionConfigure,
+	ActionSave,
+	ActionQuit,
 }
 
 func (ui *gameui) SelectAction(actions []keyAction, ev event) (keyAction, error) {
@@ -1878,7 +1878,7 @@ func (ui *gameui) SelectAction(actions []keyAction, ev event) (keyAction, error)
 		}
 		if err != nil {
 			ui.DrawDungeonView(NoFlushMode)
-			return KeyExamine, err
+			return ActionExamine, err
 		}
 		ui.ActionItem(index, index+1, actions[index], ColorYellow)
 		ui.Flush()

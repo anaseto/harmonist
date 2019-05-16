@@ -130,13 +130,13 @@ func (dir direction) String() (s string) {
 
 func KeyToDir(k keyAction) (dir direction) {
 	switch k {
-	case KeyW, KeyRunW:
+	case ActionW, ActionRunW:
 		dir = W
-	case KeyE, KeyRunE:
+	case ActionE, ActionRunE:
 		dir = E
-	case KeyS, KeyRunS:
+	case ActionS, ActionRunS:
 		dir = S
-	case KeyN, KeyRunN:
+	case ActionN, ActionRunN:
 		dir = N
 	}
 	return dir

@@ -204,7 +204,7 @@ func (ui *gameui) PlayerTurnEvent(ev event) (again, quit bool, err error) {
 					again, quit, err = ui.ExaminePos(ev, mpos)
 				}
 			case 2:
-				again, quit, err = ui.HandleKeyAction(runeKeyAction{k: KeyMenu})
+				again, quit, err = ui.HandleKeyAction(runeKeyAction{k: ActionMenu})
 				if err != nil {
 					again = true
 				}
@@ -468,12 +468,12 @@ func (ui *gameui) TargetModeEvent(targ Targeter, data *examineData) (again, quit
 			}
 		case 2:
 			if in.mouseY >= ui.MapHeight() || in.mouseX >= ui.MapWidth() {
-				again, quit, notarg, err = ui.CursorKeyAction(targ, runeKeyAction{k: KeyMenu}, data)
+				again, quit, notarg, err = ui.CursorKeyAction(targ, runeKeyAction{k: ActionMenu}, data)
 			} else {
-				again, quit, notarg, err = ui.CursorKeyAction(targ, runeKeyAction{k: KeyDescription}, data)
+				again, quit, notarg, err = ui.CursorKeyAction(targ, runeKeyAction{k: ActionDescription}, data)
 			}
 		case 1:
-			again, quit, notarg, err = ui.CursorKeyAction(targ, runeKeyAction{k: KeyExclude}, data)
+			again, quit, notarg, err = ui.CursorKeyAction(targ, runeKeyAction{k: ActionExclude}, data)
 		}
 	default:
 		r := ui.KeyToRuneKeyAction(in)
@@ -537,75 +537,75 @@ func (ui *gameui) CleanError(err error) error {
 type keyAction int
 
 const (
-	KeyNothing keyAction = iota
-	KeyW
-	KeyS
-	KeyN
-	KeyE
-	KeyRunW
-	KeyRunS
-	KeyRunN
-	KeyRunE
-	KeyWaitTurn
-	KeyDescend
-	KeyGoToStairs
-	KeyExplore
-	KeyExamine
-	KeyEvoke
-	KeyInteract
-	KeyInventory
-	KeyLogs
-	KeyDump
-	KeyHelp
-	KeySave
-	KeyQuit
-	KeyWizard
-	KeyWizardInfo
-	KeyWizardDescend
+	ActionNothing keyAction = iota
+	ActionW
+	ActionS
+	ActionN
+	ActionE
+	ActionRunW
+	ActionRunS
+	ActionRunN
+	ActionRunE
+	ActionWaitTurn
+	ActionDescend
+	ActionGoToStairs
+	ActionExplore
+	ActionExamine
+	ActionEvoke
+	ActionInteract
+	ActionInventory
+	ActionLogs
+	ActionDump
+	ActionHelp
+	ActionSave
+	ActionQuit
+	ActionWizard
+	ActionWizardInfo
+	ActionWizardDescend
 
-	KeyPreviousMonster
-	KeyNextMonster
-	KeyNextObject
-	KeyDescription
-	KeyTarget
-	KeyExclude
-	KeyEscape
+	ActionPreviousMonster
+	ActionNextMonster
+	ActionNextObject
+	ActionDescription
+	ActionTarget
+	ActionExclude
+	ActionEscape
 
-	KeyConfigure
-	KeyMenu
-	KeyNextStairs
-	KeyMenuCommandHelp
-	KeyMenuTargetingHelp
+	ActionConfigure
+	ActionMenu
+	ActionNextStairs
+	ActionMenuCommandHelp
+	ActionMenuTargetingHelp
 )
 
 var ConfigurableKeyActions = [...]keyAction{
-	KeyW,
-	KeyS,
-	KeyN,
-	KeyE,
-	KeyRunW,
-	KeyRunS,
-	KeyRunN,
-	KeyRunE,
-	KeyWaitTurn,
-	KeyEvoke,
-	KeyInteract,
-	KeyInventory,
-	KeyExamine,
-	KeyGoToStairs,
-	KeyExplore,
-	KeyLogs,
-	KeyDump,
-	KeySave,
-	KeyQuit,
-	KeyMenu,
-	KeyPreviousMonster,
-	KeyNextMonster,
-	KeyNextObject,
-	KeyNextStairs,
-	KeyDescription,
-	KeyTarget,
-	KeyExclude}
+	ActionW,
+	ActionS,
+	ActionN,
+	ActionE,
+	ActionRunW,
+	ActionRunS,
+	ActionRunN,
+	ActionRunE,
+	ActionWaitTurn,
+	ActionEvoke,
+	ActionInteract,
+	ActionInventory,
+	ActionExamine,
+	ActionGoToStairs,
+	ActionExplore,
+	ActionLogs,
+	ActionDump,
+	ActionSave,
+	ActionQuit,
+	ActionMenu,
+	ActionPreviousMonster,
+	ActionNextMonster,
+	ActionNextObject,
+	ActionNextStairs,
+	ActionDescription,
+	ActionTarget,
+	ActionExclude}
 
 var CustomKeys bool
 
@@ -620,27 +620,27 @@ func FixedRuneKey(r rune) bool {
 
 func (k keyAction) NormalModeKey() bool {
 	switch k {
-	case KeyW, KeyS, KeyN, KeyE,
-		KeyRunW, KeyRunS, KeyRunN, KeyRunE,
-		KeyWaitTurn,
-		KeyDescend,
-		KeyGoToStairs,
-		KeyExplore,
-		KeyExamine,
-		KeyEvoke,
-		KeyInteract,
-		KeyInventory,
-		KeyLogs,
-		KeyDump,
-		KeyHelp,
-		KeyMenu,
-		KeyMenuCommandHelp,
-		KeyMenuTargetingHelp,
-		KeySave,
-		KeyQuit,
-		KeyConfigure,
-		KeyWizard,
-		KeyWizardInfo:
+	case ActionW, ActionS, ActionN, ActionE,
+		ActionRunW, ActionRunS, ActionRunN, ActionRunE,
+		ActionWaitTurn,
+		ActionDescend,
+		ActionGoToStairs,
+		ActionExplore,
+		ActionExamine,
+		ActionEvoke,
+		ActionInteract,
+		ActionInventory,
+		ActionLogs,
+		ActionDump,
+		ActionHelp,
+		ActionMenu,
+		ActionMenuCommandHelp,
+		ActionMenuTargetingHelp,
+		ActionSave,
+		ActionQuit,
+		ActionConfigure,
+		ActionWizard,
+		ActionWizardInfo:
 		return true
 	default:
 		return false
@@ -649,59 +649,59 @@ func (k keyAction) NormalModeKey() bool {
 
 func (k keyAction) NormalModeDescription() (text string) {
 	switch k {
-	case KeyW:
+	case ActionW:
 		text = "Move west"
-	case KeyS:
+	case ActionS:
 		text = "Move south"
-	case KeyN:
+	case ActionN:
 		text = "Move north"
-	case KeyE:
+	case ActionE:
 		text = "Move east"
-	case KeyRunW:
+	case ActionRunW:
 		text = "Travel west"
-	case KeyRunS:
+	case ActionRunS:
 		text = "Travel south"
-	case KeyRunN:
+	case ActionRunN:
 		text = "Travel north"
-	case KeyRunE:
+	case ActionRunE:
 		text = "Travel east"
-	case KeyWaitTurn:
+	case ActionWaitTurn:
 		text = "Wait a turn"
-	case KeyDescend:
+	case ActionDescend:
 		text = "Descend stairs"
-	case KeyGoToStairs:
+	case ActionGoToStairs:
 		text = "Go to nearest stairs"
-	case KeyExplore:
+	case ActionExplore:
 		text = "Autoexplore"
-	case KeyExamine:
+	case ActionExamine:
 		text = "Examine"
-	case KeyEvoke:
+	case ActionEvoke:
 		text = "Evoke card"
-	case KeyInteract:
+	case ActionInteract:
 		text = "Interact"
-	case KeyInventory:
+	case ActionInventory:
 		text = "Inventory"
-	case KeyLogs:
+	case ActionLogs:
 		text = "View previous messages"
-	case KeyDump:
+	case ActionDump:
 		text = "Write game statistics to file"
-	case KeySave:
+	case ActionSave:
 		text = "Save and Quit"
-	case KeyQuit:
+	case ActionQuit:
 		text = "Quit without saving"
-	case KeyHelp:
+	case ActionHelp:
 		text = "Help (keys and mouse)"
-	case KeyMenuCommandHelp:
+	case ActionMenuCommandHelp:
 		text = "Help (general commands)"
-	case KeyMenuTargetingHelp:
+	case ActionMenuTargetingHelp:
 		text = "Help (targeting commands)"
-	case KeyConfigure:
+	case ActionConfigure:
 		text = "Settings and key bindings"
-	case KeyWizard:
+	case ActionWizard:
 		text = "Wizard (debug) mode"
-	case KeyWizardInfo:
+	case ActionWizardInfo:
 		text = "Wizard (debug) mode information"
-	case KeyMenu:
+	case ActionMenu:
 		text = "Action Menu"
 	}
 	return text
@@ -709,41 +709,41 @@ func (k keyAction) NormalModeDescription() (text string) {
 
 func (k keyAction) TargetingModeDescription() (text string) {
 	switch k {
-	case KeyW:
+	case ActionW:
 		text = "Move cursor west"
-	case KeyS:
+	case ActionS:
 		text = "Move cursor south"
-	case KeyN:
+	case ActionN:
 		text = "Move cursor north"
-	case KeyE:
+	case ActionE:
 		text = "Move cursor east"
-	case KeyRunW:
+	case ActionRunW:
 		text = "Big move cursor west"
-	case KeyRunS:
+	case ActionRunS:
 		text = "Big move cursor south"
-	case KeyRunN:
+	case ActionRunN:
 		text = "Big move north"
-	case KeyRunE:
+	case ActionRunE:
 		text = "Big move east"
-	case KeyDescend:
+	case ActionDescend:
 		text = "Target next stair"
-	case KeyPreviousMonster:
+	case ActionPreviousMonster:
 		text = "Target previous monster"
-	case KeyNextMonster:
+	case ActionNextMonster:
 		text = "Target next monster"
-	case KeyNextObject:
+	case ActionNextObject:
 		text = "Target next object"
-	case KeyNextStairs:
+	case ActionNextStairs:
 		text = "Target next stairs"
-	case KeyDescription:
+	case ActionDescription:
 		text = "View target description"
-	case KeyTarget:
+	case ActionTarget:
 		text = "Go to"
-	case KeyExclude:
+	case ActionExclude:
 		text = "Toggle exclude area from auto-travel"
-	case KeyEscape:
+	case ActionEscape:
 		text = "Quit targeting mode"
-	case KeyMenu:
+	case ActionMenu:
 		text = "Action Menu"
 	}
 	return text
@@ -751,17 +751,17 @@ func (k keyAction) TargetingModeDescription() (text string) {
 
 func (k keyAction) TargetingModeKey() bool {
 	switch k {
-	case KeyW, KeyS, KeyN, KeyE,
-		KeyRunW, KeyRunS, KeyRunN, KeyRunE,
-		KeyDescend,
-		KeyPreviousMonster,
-		KeyNextMonster,
-		KeyNextObject,
-		KeyNextStairs,
-		KeyDescription,
-		KeyTarget,
-		KeyExclude,
-		KeyEscape:
+	case ActionW, ActionS, ActionN, ActionE,
+		ActionRunW, ActionRunS, ActionRunN, ActionRunE,
+		ActionDescend,
+		ActionPreviousMonster,
+		ActionNextMonster,
+		ActionNextObject,
+		ActionNextStairs,
+		ActionDescription,
+		ActionTarget,
+		ActionExclude,
+		ActionEscape:
 		return true
 	default:
 		return false
@@ -772,78 +772,78 @@ var GameConfig config
 
 func ApplyDefaultKeyBindings() {
 	GameConfig.RuneNormalModeKeys = map[rune]keyAction{
-		'h': KeyW,
-		'j': KeyS,
-		'k': KeyN,
-		'l': KeyE,
-		'a': KeyW,
-		's': KeyS,
-		'w': KeyN,
-		'd': KeyE,
-		'4': KeyW,
-		'2': KeyS,
-		'8': KeyN,
-		'6': KeyE,
-		'H': KeyRunW,
-		'J': KeyRunS,
-		'K': KeyRunN,
-		'L': KeyRunE,
-		'.': KeyWaitTurn,
-		'5': KeyWaitTurn,
-		'G': KeyGoToStairs,
-		'o': KeyExplore,
-		'x': KeyExamine,
-		'v': KeyEvoke,
-		'z': KeyEvoke,
-		'e': KeyInteract, // intEract
-		'i': KeyInventory,
-		'm': KeyLogs,
-		'M': KeyMenu,
-		'#': KeyDump,
-		'?': KeyHelp,
-		'S': KeySave,
-		'Q': KeyQuit,
-		'W': KeyWizard,
-		'@': KeyWizardInfo,
-		'>': KeyWizardDescend,
-		'=': KeyConfigure,
+		'h': ActionW,
+		'j': ActionS,
+		'k': ActionN,
+		'l': ActionE,
+		'a': ActionW,
+		's': ActionS,
+		'w': ActionN,
+		'd': ActionE,
+		'4': ActionW,
+		'2': ActionS,
+		'8': ActionN,
+		'6': ActionE,
+		'H': ActionRunW,
+		'J': ActionRunS,
+		'K': ActionRunN,
+		'L': ActionRunE,
+		'.': ActionWaitTurn,
+		'5': ActionWaitTurn,
+		'G': ActionGoToStairs,
+		'o': ActionExplore,
+		'x': ActionExamine,
+		'v': ActionEvoke,
+		'z': ActionEvoke,
+		'e': ActionInteract,
+		'i': ActionInventory,
+		'm': ActionLogs,
+		'M': ActionMenu,
+		'#': ActionDump,
+		'?': ActionHelp,
+		'S': ActionSave,
+		'Q': ActionQuit,
+		'W': ActionWizard,
+		'@': ActionWizardInfo,
+		'>': ActionWizardDescend,
+		'=': ActionConfigure,
 	}
 	GameConfig.RuneTargetModeKeys = map[rune]keyAction{
-		'h':    KeyW,
-		'j':    KeyS,
-		'k':    KeyN,
-		'l':    KeyE,
-		'a':    KeyW,
-		's':    KeyS,
-		'w':    KeyN,
-		'd':    KeyE,
-		'4':    KeyW,
-		'2':    KeyS,
-		'8':    KeyN,
-		'6':    KeyE,
-		'H':    KeyRunW,
-		'J':    KeyRunS,
-		'K':    KeyRunN,
-		'L':    KeyRunE,
-		'>':    KeyNextStairs,
-		'-':    KeyPreviousMonster,
-		'+':    KeyNextMonster,
-		'o':    KeyNextObject,
-		']':    KeyNextObject,
-		')':    KeyNextObject,
-		'(':    KeyNextObject,
-		'[':    KeyNextObject,
-		'_':    KeyNextObject,
-		'=':    KeyNextObject,
-		'v':    KeyDescription,
-		'.':    KeyTarget,
-		't':    KeyTarget,
-		'g':    KeyTarget,
-		'e':    KeyExclude,
-		' ':    KeyEscape,
-		'\x1b': KeyEscape,
-		'x':    KeyEscape,
-		'?':    KeyHelp,
+		'h':    ActionW,
+		'j':    ActionS,
+		'k':    ActionN,
+		'l':    ActionE,
+		'a':    ActionW,
+		's':    ActionS,
+		'w':    ActionN,
+		'd':    ActionE,
+		'4':    ActionW,
+		'2':    ActionS,
+		'8':    ActionN,
+		'6':    ActionE,
+		'H':    ActionRunW,
+		'J':    ActionRunS,
+		'K':    ActionRunN,
+		'L':    ActionRunE,
+		'>':    ActionNextStairs,
+		'-':    ActionPreviousMonster,
+		'+':    ActionNextMonster,
+		'o':    ActionNextObject,
+		']':    ActionNextObject,
+		')':    ActionNextObject,
+		'(':    ActionNextObject,
+		'[':    ActionNextObject,
+		'_':    ActionNextObject,
+		'=':    ActionNextObject,
+		'v':    ActionDescription,
+		'.':    ActionTarget,
+		't':    ActionTarget,
+		'g':    ActionTarget,
+		'e':    ActionExclude,
+		' ':    ActionEscape,
+		'\x1b': ActionEscape,
+		'x':    ActionEscape,
+		'?':    ActionHelp,
 	}
 	CustomKeys = false
 }
@@ -870,7 +870,7 @@ func (ui *gameui) HandleKeyAction(rka runeKeyAction) (again bool, quit bool, err
 			return again, quit, err
 		}
 	}
-	if rka.k == KeyMenu {
+	if rka.k == ActionMenu {
 		rka.k, err = ui.SelectAction(menuActions, g.Ev)
 		if err != nil {
 			err = ui.CleanError(err)
@@ -892,13 +892,13 @@ func (ui *gameui) OptionalDescendConfirmation(st stair) (err error) {
 func (ui *gameui) HandleKey(rka runeKeyAction) (again bool, quit bool, err error) {
 	g := ui.g
 	switch rka.k {
-	case KeyW, KeyS, KeyN, KeyE:
+	case ActionW, ActionS, ActionN, ActionE:
 		err = g.MovePlayer(g.Player.Pos.To(KeyToDir(rka.k)), g.Ev)
-	case KeyRunW, KeyRunS, KeyRunN, KeyRunE:
+	case ActionRunW, ActionRunS, ActionRunN, ActionRunE:
 		err = g.GoToDir(KeyToDir(rka.k), g.Ev)
-	case KeyWaitTurn:
+	case ActionWaitTurn:
 		g.WaitTurn(g.Ev)
-	case KeyGoToStairs:
+	case ActionGoToStairs:
 		stairs := g.StairsSlice()
 		sortedStairs := g.SortedNearestTo(stairs, g.Player.Pos)
 		if len(sortedStairs) > 0 {
@@ -918,7 +918,7 @@ func (ui *gameui) HandleKey(rka runeKeyAction) (again bool, quit bool, err error
 		} else {
 			err = errors.New("You cannot go to any stairs.")
 		}
-	case KeyInteract:
+	case ActionInteract:
 		c := g.Dungeon.Cell(g.Player.Pos)
 		switch c.T {
 		case StairCell:
@@ -975,26 +975,26 @@ func (ui *gameui) HandleKey(rka runeKeyAction) (again bool, quit bool, err error
 		default:
 			err = errors.New("You cannot interact with anything here.")
 		}
-	case KeyEvoke:
+	case ActionEvoke:
 		err = ui.SelectMagara(g.Ev)
 		err = ui.CleanError(err)
-	case KeyInventory:
+	case ActionInventory:
 		err = ui.SelectItem(g.Ev)
 		err = ui.CleanError(err)
-	case KeyExplore:
+	case ActionExplore:
 		err = g.Autoexplore(g.Ev)
-	case KeyExamine:
+	case ActionExamine:
 		again, quit, err = ui.Examine(nil)
-	case KeyHelp, KeyMenuCommandHelp:
+	case ActionHelp, ActionMenuCommandHelp:
 		ui.KeysHelp()
 		again = true
-	case KeyMenuTargetingHelp:
+	case ActionMenuTargetingHelp:
 		ui.ExamineHelp()
 		again = true
-	case KeyLogs:
+	case ActionLogs:
 		ui.DrawPreviousLogs()
 		again = true
-	case KeySave:
+	case ActionSave:
 		g.Ev.Renew(g, 0)
 		errsave := g.Save()
 		if errsave != nil {
@@ -1003,7 +1003,7 @@ func (ui *gameui) HandleKey(rka runeKeyAction) (again bool, quit bool, err error
 		} else {
 			quit = true
 		}
-	case KeyDump:
+	case ActionDump:
 		errdump := g.WriteDump()
 		if errdump != nil {
 			g.PrintfStyled("Error: %v", logError, errdump)
@@ -1016,14 +1016,14 @@ func (ui *gameui) HandleKey(rka runeKeyAction) (again bool, quit bool, err error
 			}
 		}
 		again = true
-	case KeyWizardInfo:
+	case ActionWizardInfo:
 		if g.Wizard {
 			err = ui.HandleWizardAction()
 			again = true
 		} else {
 			err = errors.New("Unknown key. Type ? for help.")
 		}
-	case KeyWizardDescend:
+	case ActionWizardDescend:
 		if g.Wizard && g.Depth < MaxDepth && g.Depth != WinDepth {
 			if g.Descend(DescendNormal) {
 				ui.Win()
@@ -1033,21 +1033,21 @@ func (ui *gameui) HandleKey(rka runeKeyAction) (again bool, quit bool, err error
 		} else {
 			err = errors.New("Unknown key. Type ? for help.")
 		}
-	case KeyWizard:
+	case ActionWizard:
 		ui.EnterWizard()
 		return true, false, nil
-	case KeyQuit:
+	case ActionQuit:
 		if ui.Quit() {
 			return false, true, nil
 		}
 		return true, false, nil
-	case KeyConfigure:
+	case ActionConfigure:
 		err = ui.HandleSettingAction()
 		again = true
-	case KeyDescription:
+	case ActionDescription:
 		//ui.MenuSelectedAnimation(MenuView, false)
 		err = fmt.Errorf("You must choose a target to describe.")
-	case KeyExclude:
+	case ActionExclude:
 		err = fmt.Errorf("You must choose a target for exclusion.")
 	default:
 		err = fmt.Errorf("Unknown key '%c'. Type ? for help.", rka.r)
@@ -1208,7 +1208,7 @@ func (ui *gameui) CursorKeyAction(targ Targeter, rka runeKeyAction, data *examin
 			return again, quit, notarg, err
 		}
 	}
-	if rka.k == KeyMenu {
+	if rka.k == ActionMenu {
 		rka.k, err = ui.SelectAction(menuActions, g.Ev)
 		if err != nil {
 			err = ui.CleanError(err)
@@ -1216,9 +1216,9 @@ func (ui *gameui) CursorKeyAction(targ Targeter, rka runeKeyAction, data *examin
 		}
 	}
 	switch rka.k {
-	case KeyW, KeyS, KeyN, KeyE:
+	case ActionW, ActionS, ActionN, ActionE:
 		data.npos = pos.To(KeyToDir(rka.k))
-	case KeyRunW, KeyRunS, KeyRunN, KeyRunE:
+	case ActionRunW, ActionRunS, ActionRunN, ActionRunE:
 		for i := 0; i < 5; i++ {
 			p := data.npos.To(KeyToDir(rka.k))
 			if !p.valid() {
@@ -1226,9 +1226,9 @@ func (ui *gameui) CursorKeyAction(targ Targeter, rka runeKeyAction, data *examin
 			}
 			data.npos = p
 		}
-	case KeyNextStairs:
+	case ActionNextStairs:
 		ui.NextStair(data)
-	case KeyDescend:
+	case ActionDescend:
 		if g.Dungeon.Cell(g.Player.Pos).T == StairCell && g.Objects.Stairs[g.Player.Pos] != BlockedStair {
 			ui.MenuSelectedAnimation(MenuInteract, true)
 			strt := g.Objects.Stairs[g.Player.Pos]
@@ -1249,19 +1249,19 @@ func (ui *gameui) CursorKeyAction(targ Targeter, rka runeKeyAction, data *examin
 		} else {
 			err = errors.New("No stairs here.")
 		}
-	case KeyPreviousMonster, KeyNextMonster:
+	case ActionPreviousMonster, ActionNextMonster:
 		ui.NextMonster(rka.r, pos, data)
-	case KeyNextObject:
+	case ActionNextObject:
 		ui.NextObject(pos, data)
-	case KeyHelp, KeyMenuTargetingHelp:
+	case ActionHelp, ActionMenuTargetingHelp:
 		ui.HideCursor()
 		ui.ExamineHelp()
 		ui.SetCursor(pos)
-	case KeyMenuCommandHelp:
+	case ActionMenuCommandHelp:
 		ui.HideCursor()
 		ui.KeysHelp()
 		ui.SetCursor(pos)
-	case KeyTarget:
+	case ActionTarget:
 		err = targ.Action(g, pos)
 		if err != nil {
 			break
@@ -1273,17 +1273,17 @@ func (ui *gameui) CursorKeyAction(targ Targeter, rka runeKeyAction, data *examin
 		if targ.Done() {
 			notarg = true
 		}
-	case KeyDescription:
+	case ActionDescription:
 		ui.HideCursor()
 		ui.ViewPositionDescription(pos)
 		ui.SetCursor(pos)
-	case KeyExclude:
+	case ActionExclude:
 		ui.ExcludeZone(pos)
-	case KeyEscape:
+	case ActionEscape:
 		g.Targeting = InvalidPos
 		notarg = true
 		err = errors.New(DoNothing)
-	case KeyExplore, KeyLogs, KeyEvoke, KeyInventory:
+	case ActionExplore, ActionLogs, ActionEvoke, ActionInventory:
 		// XXX: hm, this is only useful with mouse in terminal, rarely tested.
 		if _, ok := targ.(*examiner); !ok {
 			break
@@ -1293,9 +1293,9 @@ func (ui *gameui) CursorKeyAction(targ Targeter, rka runeKeyAction, data *examin
 			notarg = true
 		}
 		g.Targeting = InvalidPos
-	case KeyConfigure:
+	case ActionConfigure:
 		err = ui.HandleSettingAction()
-	case KeySave:
+	case ActionSave:
 		g.Ev.Renew(g, 0)
 		g.Highlight = nil
 		g.Targeting = InvalidPos
@@ -1308,7 +1308,7 @@ func (ui *gameui) CursorKeyAction(targ Targeter, rka runeKeyAction, data *examin
 			again = false
 			quit = true
 		}
-	case KeyQuit:
+	case ActionQuit:
 		if ui.Quit() {
 			quit = true
 			again = false
@@ -1440,13 +1440,13 @@ func (m menu) Key(g *game) (key keyAction) {
 	//case MenuExplore:
 	//key = KeyExplore
 	case MenuOther:
-		key = KeyMenu
+		key = ActionMenu
 	case MenuInventory:
-		key = KeyInventory
+		key = ActionInventory
 	case MenuEvoke:
-		key = KeyEvoke
+		key = ActionEvoke
 	case MenuInteract:
-		key = KeyInteract
+		key = ActionInteract
 	}
 	return key
 }
