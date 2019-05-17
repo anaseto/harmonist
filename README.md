@@ -46,6 +46,10 @@ In all cases, you need first to perform the following preliminaries:
 You can build a native ASCII version from source by using this command:
 
 + `go get -u git.tuxfamily.org/harmonist/harmonist.git`.
+
+or using the github repos:
+
++ `go get -u github.com/anaseto/harmonist`.
   
 The `harmonist` command should now be available (you may have to rename it to
 remove the `.git` suffix).
