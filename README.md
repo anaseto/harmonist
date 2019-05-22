@@ -67,7 +67,7 @@ more portable. The second will work on POSIX systems with a `stty` command.
 
 You can build a graphical version depending on Tcl/Tk (8.6) using this command:
 
-    go get -u git.tuxfamily.org/harmonist/harmonist.git --tags tk
+    go get -u --tags tk git.tuxfamily.org/harmonist/harmonist.git
 
 This will install the [gothic](https://github.com/nsf/gothic) Go bindings for
 Tcl/Tk. You need to install Tcl/Tk first.
