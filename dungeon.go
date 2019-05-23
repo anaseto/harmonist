@@ -431,7 +431,7 @@ const (
 ?####?#++#?####?
 #_..!##..##!..>#
 #"""..#..#.."""#
-#"""P.|..|.P"""#
+#"""P.|.P|.P"""#
 #"""..#..#.."""#
 #>..!##..##!..>#
 ?####?#++#?####?`
@@ -442,6 +442,15 @@ const (
 #.#!##>#.#
 +..P..P..+
 ###+##+###`
+	RoomTriangles = `
+?####?######?
+#...>#_.....#
++.P.#...#.P.+
+#..#_...!#..#
+#!....P...#>#
+?#..!#|#..>#?
+??###.-.###??
+`
 	RoomHome1 = `
 ?#########+#?
 #>..P..|..P.#
@@ -485,8 +494,8 @@ const (
 ????##########?
 ??###!...>#..!#
 ?###>.....!#..#
-#P.#...P._.#.P+
-+..#_......#..+
+#..#...P._.#.P+
++P.#_......#..+
 #..####|####..#
 #!.....P....._#
 ?######+######?
@@ -618,7 +627,7 @@ const (
 )
 
 var roomBigTemplates = []string{RoomBigColumns, RoomBigGarden, RoomColumns, RoomRoundColumns, RoomRoundGarden, RoomLongHall,
-	RoomGardenHall, RoomHome1, RoomHome2, RoomHome3, RoomHome4, RoomHome5, RoomTriangle, RoomSpiraling, RoomAltar, RoomCircleDouble, RoomGardenHome, RoomBigRooms, RoomCaban, RoomDolmen, RoomRuins, RoomPillars}
+	RoomGardenHall, RoomTriangles, RoomHome1, RoomHome2, RoomHome3, RoomHome4, RoomHome5, RoomTriangle, RoomSpiraling, RoomAltar, RoomCircleDouble, RoomGardenHome, RoomBigRooms, RoomCaban, RoomDolmen, RoomRuins, RoomPillars}
 
 const (
 	CellShaedra = `
