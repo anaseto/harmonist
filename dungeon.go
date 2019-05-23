@@ -482,12 +482,12 @@ const (
 `
 	RoomHome4 = `
 ?############?
-#.....#.....!#
+#..._.#.....!#
 #.P...|......#
 ##|####....P.+
-#....>#>.##|##
-+..P..####...#
-#!....|....P.#
+#...._#>.##|##
++..P..####>..#
+#!....|....P!#
 ?###+########?
 `
 	RoomHome5 = `
@@ -569,6 +569,14 @@ const (
 #####>.#
 +...P.!#
 #+#####?`
+	RoomSpiralingCircle = `
+???#+#?##??
+##...!#.>#?
++...##....#
+#._#...#_.#
+#....##!..+
+?#.>#...##?
+??###+##???`
 	RoomCircleDouble = `
 ???####+#???
 ??#""..P#???
@@ -627,7 +635,7 @@ const (
 )
 
 var roomBigTemplates = []string{RoomBigColumns, RoomBigGarden, RoomColumns, RoomRoundColumns, RoomRoundGarden, RoomLongHall,
-	RoomGardenHall, RoomTriangles, RoomHome1, RoomHome2, RoomHome3, RoomHome4, RoomHome5, RoomTriangle, RoomSpiraling, RoomAltar, RoomCircleDouble, RoomGardenHome, RoomBigRooms, RoomCaban, RoomDolmen, RoomRuins, RoomPillars}
+	RoomGardenHall, RoomTriangles, RoomHome1, RoomHome2, RoomHome3, RoomHome4, RoomHome5, RoomTriangle, RoomSpiraling, RoomSpiralingCircle, RoomAltar, RoomCircleDouble, RoomGardenHome, RoomBigRooms, RoomCaban, RoomDolmen, RoomRuins, RoomPillars}
 
 const (
 	CellShaedra = `
