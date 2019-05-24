@@ -516,6 +516,45 @@ const (
 ????.!#!.????
 ????.....????
 ???????-?????`
+	RoomSmallTemple = `
+?????????????
+?????...?????
+????..#..????
+???..#>#..???
+??..#>._#..??
+??..#...#..??
+?...#!P!#...?
+-.P..#|#..P.-
+?..#.....#..?
+??..#.P_#..??
+???.......???
+??????-??????`
+	RoomTemple = `
+????.....????
+???..###...??
+?..##!>!##..?
+..#_....._#..
+.#...._....#.
+.#.##.P.##.#.
+.#.>#...#>.#.
+-#..P...P..#.
+..###|||###..
+?.....P.....-
+??."T...T".??
+???"".-.""???`
+	RoomSchool = `
+???#######???
+??#l..!..l#??
+?#!..Pπ..!##?
+#.........|.#
+W.π.π..π..#>#
+#.........l##
+W.π.π..π.##>#
+#........#..#
+W.π.π..π.#P.#
+#l...P...|._#
+-####||#####-
+.....--P.....`
 	RoomRuins = `
 ????????-????
 ????....P????
@@ -569,8 +608,8 @@ const (
 +.P.##....#
 #._#...#_.#
 #....##!P.+
-?#.>#.P.##?
-??###+##???`
+?#.>#.P..##
+??###+###??`
 	RoomCircleDouble = `
 ???####+#???
 ??#""..P#???
@@ -629,7 +668,7 @@ const (
 )
 
 var roomBigTemplates = []string{RoomBigColumns, RoomBigGarden, RoomColumns, RoomRoundColumns, RoomRoundGarden, RoomLongHall,
-	RoomGardenHall, RoomTriangles, RoomHome1, RoomHome2, RoomHome3, RoomHome4, RoomHome5, RoomTriangle, RoomSpiraling, RoomSpiralingCircle, RoomAltar, RoomCircleDouble, RoomGardenHome, RoomBigRooms, RoomCaban, RoomDolmen, RoomRuins, RoomPillars}
+	RoomGardenHall, RoomTriangles, RoomHome1, RoomHome2, RoomHome3, RoomHome4, RoomHome5, RoomTriangle, RoomSpiraling, RoomSpiralingCircle, RoomAltar, RoomCircleDouble, RoomGardenHome, RoomBigRooms, RoomCaban, RoomDolmen, RoomSmallTemple, RoomTemple, RoomSchool, RoomRuins, RoomPillars}
 
 const (
 	CellShaedra = `
@@ -894,6 +933,14 @@ func (r *room) Dig(dg *dgen) {
 		case 'T':
 			if pos.valid() {
 				dg.d.SetCell(pos, TreeCell)
+			}
+		case 'π':
+			if pos.valid() {
+				dg.d.SetCell(pos, TableCell)
+			}
+		case 'l':
+			if pos.valid() {
+				dg.d.SetCell(pos, LightCell)
 			}
 		case 'W':
 			if pos.valid() {
