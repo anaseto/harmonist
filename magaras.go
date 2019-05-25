@@ -68,7 +68,7 @@ func (g *game) EquipMagara(i int, ev event) (err error) {
 	g.Objects.Magaras[g.Player.Pos] = omagara
 	g.Printf("You equip the %s.", g.Player.Magaras[i])
 	g.Printf("You leave the %s.", omagara)
-	g.StoryPrintf("You equip the %s.", g.Player.Magaras[i])
+	g.StoryPrintf("You equipped the %s, leaving the %s.", g.Player.Magaras[i], omagara)
 	ev.Renew(g, 5)
 	return nil
 }
@@ -269,20 +269,21 @@ func (g *game) EvokeBlink(ev event) error {
 	return nil
 }
 
-func (g *game) Blink(ev event) {
+func (g *game) Blink(ev event) bool {
 	if g.Player.HasStatus(StatusLignification) {
-		return
+		return false
 	}
 	npos := g.BlinkPos(false)
 	if !npos.valid() {
 		// should not happen
 		g.Print("You could not blink.")
-		return
+		return false
 	}
 	opos := g.Player.Pos
 	g.Print("You blink away.")
 	g.ui.TeleportAnimation(opos, npos, true)
 	g.PlacePlayerAt(npos)
+	return true
 }
 
 func (g *game) BlinkPos(mpassable bool) position {

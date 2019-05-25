@@ -83,7 +83,7 @@ const (
 	//MonsMindCelmist
 	MonsVampire
 	MonsTreeMushroom
-	MonsMarevorHelith
+	//MonsMarevorHelith
 	MonsButterfly
 )
 
@@ -191,16 +191,6 @@ func (mk monsterKind) CanAttackOnTree() bool {
 
 func (mk monsterKind) Desc() string {
 	return MonsDesc[mk]
-}
-
-func (mk monsterKind) SeenStoryText() (text string) {
-	switch mk {
-	//case MonsMarevorHelith:
-	//text = "You saw Marevor."
-	default:
-		text = fmt.Sprintf("You saw %s.", Indefinite(mk.String(), false))
-	}
-	return text
 }
 
 func (mk monsterKind) Indefinite(capital bool) (text string) {
@@ -606,6 +596,7 @@ func (m *monster) AttackAction(g *game, ev event) {
 	switch m.Kind {
 	case MonsExplosiveNadre:
 		m.Explode(g, ev)
+		g.StoryPrint("An explosive nadre exploded on you.")
 		return
 	default:
 		m.HitPlayer(g, ev)
@@ -1154,8 +1145,10 @@ func (m *monster) HitSideEffects(g *game, ev event) {
 		}
 		g.Confusion(ev)
 	case MonsBlinkingFrog:
-		g.Blink(ev)
-		g.Stats.TimesBlinked++
+		if g.Blink(ev) {
+			g.StoryPrint("A blinking frog made you blink away.")
+			g.Stats.TimesBlinked++
+		}
 	case MonsYack:
 		m.PushPlayer(g, 5)
 	case MonsWingedMilfid:
@@ -1166,6 +1159,7 @@ func (m *monster) HitSideEffects(g *game, ev event) {
 		m.MoveTo(g, g.Player.Pos)
 		g.PlacePlayerAt(ompos)
 		g.Print("The flying milfid makes you swap positions.")
+		g.StoryPrint("A flying milfid made you swap positions.")
 		m.ExhaustTime(g, 50+RandInt(50))
 	case MonsTinyHarpy:
 		if m.Status(MonsSatiated) {
@@ -1178,6 +1172,7 @@ func (m *monster) HitSideEffects(g *game, ev event) {
 			m.Statuses[MonsSatiated]++
 			g.PushEvent(&monsterEvent{ERank: g.Ev.Rank() + DurationMonsterSatiation, NMons: m.Index, EAction: MonsSatiatedEnd})
 			g.Print("The tiny harpy steals a banana from you.")
+			g.StoryPrint("A tiny harpy stole a banana from you.")
 			g.Stats.StolenBananas++
 			m.Target = m.NextTarget(g)
 			m.MakeWander()
@@ -1227,9 +1222,11 @@ func (m *monster) PushPlayer(g *game, dist int) {
 	if c.T.IsPlayerPassable() {
 		g.PlacePlayerAt(pos)
 		g.Printf("%s pushes you%s.", m.Kind.Definite(true), cs)
+		g.StoryPrintf("%s pushed you%s.", m.Kind.Indefinite(true), cs)
 		g.ui.PushAnimation(path)
 	} else if c.T == ChasmCell {
 		g.Printf("%s pushes you%s.", m.Kind.Definite(true), cs)
+		g.StoryPrintf("%s pushed you%s.", m.Kind.Indefinite(true), cs)
 		g.ui.PushAnimation(path)
 		g.FallAbyss(DescendFall)
 	}
@@ -1372,7 +1369,8 @@ func (m *monster) CreateBarrier(g *game, ev event) bool {
 		}
 		g.MagicalBarrierAt(pos, ev)
 		done = true
-		g.Print("The oric celmist creates a barrier.")
+		g.Print("The oric celmist creates a magical barrier.")
+		g.StoryPrint("An oric celmist used a magical barrier on you.")
 		break
 	}
 	if !done {
@@ -1386,6 +1384,7 @@ func (m *monster) CreateBarrier(g *game, ev event) bool {
 func (m *monster) Illuminate(g *game, ev event) bool {
 	if g.PutStatus(StatusIlluminated, DurationIlluminated) {
 		g.Print("The harmonic celmist casts a magical light on you.")
+		g.StoryPrint("A harmonic celmist cast a magical light on you.")
 		ev.Renew(g, m.Kind.AttackDelay())
 		m.Exhaust(g)
 		return true
@@ -1399,6 +1398,7 @@ func (m *monster) VampireSpit(g *game, ev event) bool {
 		return false
 	}
 	g.Print("The vampire spits at you.")
+	g.Print("A vampire spitted at you.")
 	g.Confusion(ev)
 	m.Exhaust(g)
 	ev.Renew(g, m.Kind.AttackDelay())
@@ -1411,6 +1411,7 @@ func (m *monster) ThrowSpores(g *game, ev event) bool {
 		return false
 	}
 	g.Print("The tree mushroom releases spores.")
+	g.StoryPrint("A tree mushroom threw its spores at you.")
 	g.EnterLignification(ev)
 	m.Exhaust(g)
 	ev.Renew(g, m.Kind.AttackDelay())
@@ -1429,7 +1430,8 @@ func (m *monster) ThrowJavelin(g *game, ev event) bool {
 	if clang {
 		sclang = g.ClangMsg()
 	}
-	g.Printf("%s throws %s at you (%d dmg).%s", m.Kind.Definite(true), Indefinite("javelin", false), dmg, sclang)
+	g.Printf("%s throws a javelin at you (%d dmg).%s", m.Kind.Definite(true), dmg, sclang)
+	g.StoryPrintf("%s threw a javelin at you.", m.Kind.Indefinite(true))
 	g.ui.MonsterJavelinAnimation(g.Ray(m.Pos), true)
 	g.MakeNoise(noise, g.Player.Pos)
 	m.InflictDamage(g, dmg, dmg)
@@ -1451,6 +1453,7 @@ func (m *monster) ThrowAcid(g *game, ev event) bool {
 	m.InflictDamage(g, dmg, dmg)
 	if g.PutStatus(StatusSlow, DurationSleepSlow) {
 		g.Print("The viscous substance slows you.")
+		g.StoryPrint("A satowalga threw a slowing viscous substance at you.")
 	}
 	m.ExhaustTime(g, 40)
 	ev.Renew(g, m.Kind.AttackDelay())
@@ -1464,6 +1467,7 @@ func (m *monster) NixeAttraction(g *game, ev event) bool {
 	}
 	g.MakeNoise(MagicCastNoise, m.Pos)
 	g.PrintfStyled("%s lures you to her.", logMonsterHit, m.Kind.Definite(true))
+	g.StoryPrintf("%s lured you to her.", m.Kind.Definite(true))
 	ray := g.Ray(m.Pos)
 	g.ui.MonsterProjectileAnimation(ray, '*', ColorCyan)
 	if len(ray) > 1 {
@@ -1519,6 +1523,7 @@ func (m *monster) AbsorbMana(g *game, ev event) bool {
 	}
 	g.Player.MP -= 1
 	g.Printf("%s absorbs your mana.", m.Kind.Definite(true))
+	g.StoryPrintf("%s absorbed mana from you.", m.Kind.Indefinite(true))
 	m.ExhaustTime(g, 10+RandInt(10))
 	ev.Renew(g, m.Kind.AttackDelay())
 	return true
@@ -1587,6 +1592,7 @@ func (m *monster) MakeAware(g *game) {
 	noticed := m.MakeHunt(g)
 	if noticed && m.Kind == MonsDog {
 		g.Printf("%s barks.", m.Kind.Definite(true))
+		g.StoryPrintf("%s barked at you.", m.Kind.Indefinite(true))
 		g.MakeNoise(BarkNoise, m.Pos)
 	}
 }
