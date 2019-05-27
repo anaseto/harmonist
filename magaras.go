@@ -230,7 +230,7 @@ func (mag magara) Desc(g *game) (desc string) {
 	case FireMagara:
 		desc = "throws small magical sparks at flammable terrain adjacent to you. Flammable terrain is first consumed by magical flames that are at first harmless to creatures. Then smoke will produce night clouds inducing sleep in monsters. As a gawalt monkey, you resist sleepiness, but you will still feel slowed."
 	case FogMagara:
-		desc = "creates a dense fog in a 2-range radius using harmonic energies."
+		desc = "creates a dense fog in a 2-range radius using harmonic energies. The fog will dissipate with time."
 	case ShadowsMagara:
 		desc = "surrounds you by harmonic shadows, making you detectable only by adjacent monsters when you're not in an lighted cell."
 	case NoiseMagara:
@@ -249,6 +249,28 @@ func (mag magara) Desc(g *game) (desc string) {
 		desc = "creates temporal barriers with oric energy between you and monsters in sight."
 	case LignificationMagara:
 		desc = "liberates magical spores that lignify up to 2 monsters in view, so that they cannot move. The monsters can still fight."
+	}
+	duration := 0
+	switch mag {
+	case ConfusionMagara:
+		duration = DurationConfusion
+	case SlowingMagara:
+		duration = DurationSlow
+	case ObstructionMagara:
+		duration = DurationMagicalBarrier
+	case LignificationMagara:
+		duration = DurationLignification
+	case ShadowsMagara:
+		duration = DurationShadows
+	case DigMagara:
+		duration = DurationDigging
+	case SwiftnessMagara:
+		duration = DurationSwiftness
+	case LevitationMagara:
+		duration = DurationLevitation
+	}
+	if duration > 0 {
+		desc += fmt.Sprintf(" Effect lasts for %d turns.", duration/10)
 	}
 	return fmt.Sprintf("The %s %s", mag, desc)
 }
