@@ -203,11 +203,11 @@ func (mp *monPath) Neighbors(pos position) []position {
 			return false
 		}
 		c := d.Cell(npos)
-		return (c.IsPassable() || c.IsDestructible() && mp.destruct ||
+		return c.IsPassable() || c.IsDestructible() && mp.destruct ||
 			c.T == DoorCell && (mp.monster.Kind.CanOpenDoors() || mp.destruct) ||
 			c.IsLevitatePassable() && mp.monster.Kind.CanFly() ||
 			c.IsSwimPassable() && (mp.monster.Kind.CanSwim() || mp.monster.Kind.CanFly()) ||
-			c.T == HoledWallCell && mp.monster.Kind.Size() == MonsSmall)
+			c.T == HoledWallCell && mp.monster.Kind.Size() == MonsSmall
 	}
 	ret := pos.CardinalNeighbors(nb, keep)
 	// shuffle so that monster movement is not unnaturally predictable
