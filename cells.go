@@ -76,7 +76,7 @@ func (c cell) IsSwimPassable() bool {
 	case WaterCell:
 		return true
 	default:
-		return c.IsLevitatePassable()
+		return c.IsPassable()
 	}
 }
 
