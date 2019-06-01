@@ -1148,7 +1148,7 @@ func (m *monster) HitSideEffects(g *game, ev event) {
 		g.Confusion(ev)
 	case MonsBlinkingFrog:
 		if g.Blink(ev) {
-			g.StoryPrint("A blinking frog made you blink away.")
+			g.StoryPrint("The blinking frog made you blink away.")
 			g.Stats.TimesBlinked++
 		}
 	case MonsYack:
@@ -1161,7 +1161,7 @@ func (m *monster) HitSideEffects(g *game, ev event) {
 		m.MoveTo(g, g.Player.Pos)
 		g.PlacePlayerAt(ompos)
 		g.Print("The flying milfid makes you swap positions.")
-		g.StoryPrint("A flying milfid made you swap positions.")
+		g.StoryPrint("The flying milfid made you swap positions.")
 		m.ExhaustTime(g, 50+RandInt(50))
 	case MonsTinyHarpy:
 		if m.Status(MonsSatiated) {
@@ -1174,7 +1174,7 @@ func (m *monster) HitSideEffects(g *game, ev event) {
 			m.Statuses[MonsSatiated]++
 			g.PushEvent(&monsterEvent{ERank: g.Ev.Rank() + DurationMonsterSatiation, NMons: m.Index, EAction: MonsSatiatedEnd})
 			g.Print("The tiny harpy steals a banana from you.")
-			g.StoryPrint("A tiny harpy stole a banana from you.")
+			g.StoryPrint("The tiny harpy stole a banana from you.")
 			g.Stats.StolenBananas++
 			m.Target = m.NextTarget(g)
 			m.MakeWander()
@@ -1224,11 +1224,11 @@ func (m *monster) PushPlayer(g *game, dist int) {
 	if c.T.IsPlayerPassable() {
 		g.PlacePlayerAt(pos)
 		g.Printf("%s pushes you%s.", m.Kind.Definite(true), cs)
-		g.StoryPrintf("%s pushed you%s.", m.Kind.Indefinite(true), cs)
+		g.StoryPrintf("%s pushed you%s.", m.Kind.Definite(true), cs)
 		g.ui.PushAnimation(path)
 	} else if c.T == ChasmCell {
 		g.Printf("%s pushes you%s.", m.Kind.Definite(true), cs)
-		g.StoryPrintf("%s pushed you%s.", m.Kind.Indefinite(true), cs)
+		g.StoryPrintf("%s pushed you%s.", m.Kind.Definite(true), cs)
 		g.ui.PushAnimation(path)
 		g.FallAbyss(DescendFall)
 	}
@@ -1455,7 +1455,7 @@ func (m *monster) ThrowAcid(g *game, ev event) bool {
 	m.InflictDamage(g, dmg, dmg)
 	if g.PutStatus(StatusSlow, DurationSleepSlow) {
 		g.Print("The viscous substance slows you.")
-		g.StoryPrint("A satowalga threw a slowing viscous substance at you.")
+		g.StoryPrint("The satowalga's viscous substance slowed you.")
 	}
 	m.ExhaustTime(g, 40)
 	ev.Renew(g, m.Kind.AttackDelay())

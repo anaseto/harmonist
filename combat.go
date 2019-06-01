@@ -20,8 +20,10 @@ func (m *monster) InflictDamage(g *game, damage, max int) {
 	g.DamagePlayer(damage)
 	g.ui.WoundedAnimation()
 	if oldHP > max && g.Player.HP <= max {
-		g.StoryPrintf("Critical HP: %d (hit by %s)", g.Player.HP, m.Kind.Indefinite(false))
+		g.StoryPrintf("Critical: hit by %s (HP: %d)", m.Kind.Indefinite(false), g.Player.HP)
 		g.ui.CriticalHPWarning()
+	} else {
+		g.StoryPrintf("Hit by %s (HP: %d)", m.Kind.Indefinite(false), g.Player.HP)
 	}
 }
 
