@@ -66,9 +66,9 @@ func (g *game) EquipMagara(i int, ev event) (err error) {
 	omagara := g.Player.Magaras[i]
 	g.Player.Magaras[i] = g.Objects.Magaras[g.Player.Pos]
 	g.Objects.Magaras[g.Player.Pos] = omagara
-	g.Printf("You equip the %s.", g.Player.Magaras[i])
+	g.Printf("You take the %s.", g.Player.Magaras[i])
 	g.Printf("You leave the %s.", omagara)
-	g.StoryPrintf("You equipped the %s, leaving the %s.", g.Player.Magaras[i], omagara)
+	g.StoryPrintf("Took %s, left %s", g.Player.Magaras[i], omagara)
 	ev.Renew(g, 5)
 	return nil
 }
@@ -168,7 +168,7 @@ func (g *game) UseMagara(n int, ev event) (err error) {
 		}
 	}
 	g.Player.MP -= mag.MPCost(g)
-	g.StoryPrintf("You evoked your %s (MP: %d)", mag, g.Player.MP)
+	g.StoryPrintf("Evoked %s (MP: %d)", mag, g.Player.MP)
 	ev.Renew(g, 5)
 	return nil
 }

@@ -158,7 +158,7 @@ func (stn stone) Style(g *game) (r rune, fg uicolor) {
 }
 
 func (g *game) UseStone(pos position) {
-	g.StoryPrintf("You activated %s.", g.Objects.Stones[pos].ShortDesc(g))
+	g.StoryPrintf("Activated %s", g.Objects.Stones[pos])
 	g.Objects.Stones[pos] = InertStone
 	g.Stats.UsedStones++
 	g.Print("The stone becomes inert.")
@@ -624,12 +624,12 @@ func (g *game) EquipItem() error {
 		g.Objects.Items[g.Player.Pos] = oitem
 		g.Printf("You equip the %s.", it.ShortDesc(g))
 		g.Printf("You leave the %s.", oitem.ShortDesc(g))
-		g.StoryPrintf("You equip the %s.", it.ShortDesc(g))
+		g.StoryPrintf("Equipped %s", it.ShortDesc(g))
 	} else {
 		delete(g.Objects.Items, g.Player.Pos)
 		g.Dungeon.SetCell(g.Player.Pos, GroundCell)
 		g.Printf("You equip the %s.", it.ShortDesc(g))
-		g.StoryPrintf("You equip the %s.", it.ShortDesc(g))
+		g.StoryPrintf("Equipped %s", it.ShortDesc(g))
 	}
 	g.Ev.Renew(g, 5)
 	return nil

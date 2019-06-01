@@ -520,7 +520,7 @@ func (g *game) Descend(style descendstyle) bool {
 	}
 	c := g.Dungeon.Cell(g.Player.Pos)
 	if c.T == StairCell && g.Objects.Stairs[g.Player.Pos] == WinStair {
-		g.StoryPrint("You escaped!")
+		g.StoryPrint("Escaped!")
 		g.ExploredLevels = g.Depth
 		g.Depth = -1
 		return true
@@ -528,10 +528,10 @@ func (g *game) Descend(style descendstyle) bool {
 	if style != DescendNormal {
 		// TODO: add animation?
 		g.Print("You fall into the abyss. It hurts!")
-		g.StoryPrint("You fell deeper in the dungeon.")
+		g.StoryPrint("Fell into the abyss")
 	} else {
 		g.Print("You descend deeper in the dungeon.")
-		g.StoryPrint("You descended deeper in the dungeon.")
+		g.StoryPrint("Descended stairs")
 	}
 	g.Depth++
 	g.DepthPlayerTurn = 0
@@ -556,6 +556,7 @@ func (g *game) ApplyRest() {
 	g.Stats.Rest++
 	g.Stats.DRests[g.Depth]++
 	g.PrintStyled("You feel fresh again after eating banana and sleeping.", logStatusEnd)
+	g.StoryPrintf("Rested in barrel (Bananas: %d)", g.Player.Bananas)
 	if g.Stats.Rest == 10 {
 		AchSleepy.Get(g)
 	}

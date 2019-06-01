@@ -215,6 +215,7 @@ func (g *game) CollectGround() {
 			} else {
 				g.Print("You take a banana.")
 				g.Player.Bananas++
+				g.StoryPrintf("Found banana (Bananas: %d)", g.Player.Bananas)
 				g.Dungeon.SetCell(pos, GroundCell)
 				delete(g.Objects.Bananas, pos)
 				if g.Player.Bananas == MaxBananas {
@@ -230,7 +231,7 @@ func (g *game) CollectGround() {
 				delete(g.Objects.Magaras, pos)
 				g.Dungeon.SetCell(pos, GroundCell)
 				g.Printf("You take the %s.", g.Player.Magaras[i])
-				g.StoryPrintf("You took the %s.", g.Player.Magaras[i])
+				g.StoryPrintf("Took %s", g.Player.Magaras[i])
 				break switchcell
 			}
 			g.Printf("You stand over %s.", Indefinite(g.Objects.Magaras[pos].String(), false))
