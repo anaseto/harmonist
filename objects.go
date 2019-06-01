@@ -626,11 +626,9 @@ func (g *game) EquipItem() error {
 	case it.IsCloak():
 		oitem = g.Player.Inventory.Body
 		g.Player.Inventory.Body = it
-		AchCloak.Get(g)
 	case it.IsAmulet():
 		oitem = g.Player.Inventory.Neck
 		g.Player.Inventory.Neck = it
-		AchAmulet.Get(g)
 	}
 	if oitem != NoItem {
 		g.Objects.Items[g.Player.Pos] = oitem
@@ -642,6 +640,12 @@ func (g *game) EquipItem() error {
 		g.Dungeon.SetCell(g.Player.Pos, GroundCell)
 		g.Printf("You equip the %s.", it.ShortDesc(g))
 		g.StoryPrintf("Equipped %s", it.ShortDesc(g))
+	}
+	switch {
+	case it.IsCloak():
+		AchCloak.Get(g)
+	case it.IsAmulet():
+		AchAmulet.Get(g)
 	}
 	g.Ev.Renew(g, 5)
 	return nil
