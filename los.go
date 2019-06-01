@@ -322,9 +322,9 @@ func (g *game) SeeNotable(c cell, pos position) {
 		dp := &mappingPath{game: g}
 		_, l, ok := AstarPath(dp, g.Player.Pos, pos)
 		if ok {
-			g.Printf("Discovered %s (distance: %d)", st, l)
+			g.StoryPrintf("Discovered %s (distance: %d)", st, l)
 		} else {
-			g.Printf("Discovered %s", st)
+			g.StoryPrintf("Discovered %s", st)
 		}
 	case StoryCell:
 		st := g.Objects.Story[pos]
@@ -332,9 +332,9 @@ func (g *game) SeeNotable(c cell, pos position) {
 			dp := &mappingPath{game: g}
 			_, l, ok := AstarPath(dp, g.Player.Pos, pos)
 			if ok {
-				g.Printf("Discovered Portal Moon Gem Artifact (distance: %d)", st, l)
+				g.StoryPrintf("Discovered Portal Moon Gem Artifact (distance: %d)", st, l)
 			} else {
-				g.Printf("Discovered Portal Moon Gem Artifact", st)
+				g.StoryPrintf("Discovered Portal Moon Gem Artifact", st)
 			}
 		}
 	}
