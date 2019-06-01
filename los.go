@@ -315,6 +315,31 @@ func (m *monster) ComputeLOS(g *game) {
 	}
 }
 
+func (g *game) SeeNotable(c cell, pos position) {
+	switch c.T {
+	case StairCell:
+		st := g.Objects.Stairs[pos]
+		dp := &mappingPath{game: g}
+		_, l, ok := AstarPath(dp, g.Player.Pos, pos)
+		if ok {
+			g.Printf("Discovered %s (distance: %d)", st, l)
+		} else {
+			g.Printf("Discovered %s", st)
+		}
+	case StoryCell:
+		st := g.Objects.Story[pos]
+		if st == StoryArtifactSealed {
+			dp := &mappingPath{game: g}
+			_, l, ok := AstarPath(dp, g.Player.Pos, pos)
+			if ok {
+				g.Printf("Discovered Portal Moon Gem Artifact (distance: %d)", st, l)
+			} else {
+				g.Printf("Discovered Portal Moon Gem Artifact", st)
+			}
+		}
+	}
+}
+
 func (g *game) SeePosition(pos position) {
 	c := g.Dungeon.Cell(pos)
 	t, okT := g.TerrainKnowledge[pos]
@@ -325,6 +350,7 @@ func (g *game) SeePosition(pos position) {
 			g.StopAuto()
 		}
 		g.Dungeon.SetExplored(pos)
+		g.SeeNotable(c, pos)
 		g.DijkstraMapRebuild = true
 	} else {
 		// XXX this can be improved to handle more terrain types changes

@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"sort"
 )
 
@@ -27,14 +26,26 @@ const (
 	BlockedStair
 )
 
+func (st stair) String() (desc string) {
+	switch st {
+	case NormalStair:
+		desc = "stairs downwards"
+	case WinStair:
+		desc = "monolith portal"
+	case BlockedStair:
+		desc = "sealed stairs downwards"
+	}
+	return desc
+}
+
 func (st stair) ShortDesc(g *game) (desc string) {
 	switch st {
 	case NormalStair:
-		desc = fmt.Sprintf("stairs downwards")
+		desc = "stairs downwards"
 	case WinStair:
-		desc = fmt.Sprintf("a monolith portal")
+		desc = "a monolith portal"
 	case BlockedStair:
-		desc = fmt.Sprintf("blocked stairs downwards")
+		desc = "blocked stairs downwards"
 	}
 	return desc
 }
@@ -330,6 +341,7 @@ func (g *game) MagicMapping(ev event, maxdist int) error {
 			c := g.Dungeon.Cell(pos)
 			if !c.Explored {
 				g.Dungeon.SetExplored(pos)
+				g.SeeNotable(c, pos)
 				draw = true
 			}
 		}

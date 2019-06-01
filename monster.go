@@ -1174,7 +1174,7 @@ func (m *monster) HitSideEffects(g *game, ev event) {
 			m.Statuses[MonsSatiated]++
 			g.PushEvent(&monsterEvent{ERank: g.Ev.Rank() + DurationMonsterSatiation, NMons: m.Index, EAction: MonsSatiatedEnd})
 			g.Print("The tiny harpy steals a banana from you.")
-			g.StoryPrintf("Banana stolen by %s (Bananas: %d)", m.Kind, g.Player.Bananas)
+			g.StoryPrintf("Banana stolen by %s (bananas: %d)", m.Kind, g.Player.Bananas)
 			g.Stats.StolenBananas++
 			m.Target = m.NextTarget(g)
 			m.MakeWander()
