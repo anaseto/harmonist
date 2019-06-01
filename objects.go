@@ -29,11 +29,11 @@ const (
 func (st stair) String() (desc string) {
 	switch st {
 	case NormalStair:
-		desc = "stairs downwards"
+		desc = "stairs"
 	case WinStair:
 		desc = "monolith portal"
 	case BlockedStair:
-		desc = "sealed stairs downwards"
+		desc = "sealed stairs"
 	}
 	return desc
 }
