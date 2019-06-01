@@ -317,6 +317,24 @@ func (m *monster) ComputeLOS(g *game) {
 
 func (g *game) SeeNotable(c cell, pos position) {
 	switch c.T {
+	case MagaraCell:
+		mag := g.Objects.Magaras[pos]
+		dp := &mappingPath{game: g}
+		_, l, ok := AstarPath(dp, g.Player.Pos, pos)
+		if ok {
+			g.StoryPrintf("Spotted %s (distance: %d)", mag, l)
+		} else {
+			g.StoryPrintf("Spotted %s", mag)
+		}
+	case ItemCell:
+		it := g.Objects.Items[pos]
+		dp := &mappingPath{game: g}
+		_, l, ok := AstarPath(dp, g.Player.Pos, pos)
+		if ok {
+			g.StoryPrintf("Spotted %s (distance: %d)", it.ShortDesc(g), l)
+		} else {
+			g.StoryPrintf("Spotted %s", it.ShortDesc(g))
+		}
 	case StairCell:
 		st := g.Objects.Stairs[pos]
 		dp := &mappingPath{game: g}
