@@ -1525,7 +1525,7 @@ func (m *monster) AbsorbMana(g *game, ev event) bool {
 	}
 	g.Player.MP -= 1
 	g.Printf("%s absorbs your mana.", m.Kind.Definite(true))
-	g.StoryPrintf("%s absorbed mana from you.", m.Kind.Indefinite(true))
+	g.StoryPrintf("%s absorbed mana from you (MP: %d).", m.Kind.Indefinite(true), g.Player.MP)
 	m.ExhaustTime(g, 10+RandInt(10))
 	ev.Renew(g, m.Kind.AttackDelay())
 	return true

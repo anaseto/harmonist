@@ -168,7 +168,7 @@ func (g *game) UseMagara(n int, ev event) (err error) {
 		}
 	}
 	g.Player.MP -= mag.MPCost(g)
-	g.StoryPrintf("You evoked your %s.", mag)
+	g.StoryPrintf("You evoked your %s (MP: %d)", mag, g.Player.MP)
 	ev.Renew(g, 5)
 	return nil
 }
