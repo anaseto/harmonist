@@ -108,6 +108,7 @@ func (g *game) Jump(mons *monster, ev event) error {
 	}
 	g.PlacePlayerAt(pos)
 	g.Stats.Jumps++
+	g.StoryPrintf("Jumped over %s", mons.Kind)
 	if g.Stats.Jumps == 10 {
 		AchAcrobat.Get(g)
 	}
