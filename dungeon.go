@@ -114,7 +114,7 @@ func (d *dungeon) HasTooManyWallNeighbors(pos position) bool {
 	return count > 1
 }
 
-func (g *game) HasFreeExploredNeighbor(pos position) bool {
+func (g *game) HasNonWallExploredNeighbor(pos position) bool {
 	d := g.Dungeon
 	neighbors := pos.ValidCardinalNeighbors()
 	for _, pos := range neighbors {
@@ -122,7 +122,7 @@ func (g *game) HasFreeExploredNeighbor(pos position) bool {
 		if t, ok := g.TerrainKnowledge[pos]; ok {
 			c.T = t
 		}
-		if c.IsPassable() && c.Explored {
+		if !c.IsWall() && c.Explored {
 			return true
 		}
 	}

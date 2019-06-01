@@ -939,7 +939,7 @@ func (ui *gameui) PositionDrawing(pos position) (r rune, fgColor, bgColor uicolo
 	if !c.Explored && !g.Wizard {
 		r = ' '
 		bgColor = ColorBgDark
-		if g.HasFreeExploredNeighbor(pos) {
+		if g.HasNonWallExploredNeighbor(pos) {
 			r = '¤'
 			fgColor = ColorFgDark
 		}
@@ -957,7 +957,7 @@ func (ui *gameui) PositionDrawing(pos position) (r rune, fgColor, bgColor uicolo
 		return
 	}
 	if g.Wizard {
-		if !c.Explored && g.HasFreeExploredNeighbor(pos) && !g.WizardMap {
+		if !c.Explored && g.HasNonWallExploredNeighbor(pos) && !g.WizardMap {
 			r = '¤'
 			fgColor = ColorFgDark
 			bgColor = ColorBgDark
