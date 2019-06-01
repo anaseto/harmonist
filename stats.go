@@ -48,6 +48,7 @@ type stats struct {
 	StolenBananas     int
 	TimesPushed       int
 	TimesBlinked      int
+	TimesBlocked      int
 }
 
 func (g *game) TurnStats() {

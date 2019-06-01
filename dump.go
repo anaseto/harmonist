@@ -142,6 +142,9 @@ func (g *game) DetailedStatistics(w io.Writer) {
 	if g.Stats.Statuses[StatusIlluminated] > 0 {
 		fmt.Fprintf(w, "You were illuminated by an harmonic celmist %d times.\n", g.Stats.Statuses[StatusIlluminated])
 	}
+	if g.Stats.TimesBlocked > 0 {
+		fmt.Fprintf(w, "You were blocked by an oric celmist barrier %d times.\n", g.Stats.TimesBlocked)
+	}
 	if g.Stats.TimesPushed > 0 {
 		fmt.Fprintf(w, "You were pushed %d times.\n", g.Stats.TimesPushed)
 	}

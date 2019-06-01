@@ -1373,6 +1373,7 @@ func (m *monster) CreateBarrier(g *game, ev event) bool {
 		done = true
 		g.Print("The oric celmist creates a magical barrier.")
 		g.StoryPrintf("Blocked by %s barrier", m.Kind)
+		g.Stats.TimesBlocked++
 		break
 	}
 	if !done {
