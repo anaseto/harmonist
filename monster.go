@@ -597,8 +597,8 @@ func (m *monster) AttackAction(g *game, ev event) {
 	m.CorrectDir()
 	switch m.Kind {
 	case MonsExplosiveNadre:
+		g.StoryPrint("Nadre explosion")
 		m.Explode(g, ev)
-		g.StoryPrint("Hurt by nadre explosion")
 		return
 	default:
 		m.HitPlayer(g, ev)
