@@ -126,6 +126,8 @@ func (g *game) UseMagara(n int, ev event) (err error) {
 	g.Stats.MagarasUsed++
 	g.Stats.UsedMagaras[mag]++
 	g.Stats.DMagaraUses[g.Depth]++
+	g.Player.MP -= mag.MPCost(g)
+	g.StoryPrintf("Evoked %s (MP: %d)", mag, g.Player.MP)
 	if mag.Harmonic() {
 		g.Stats.HarmonicMagUse++
 		if g.Stats.HarmonicMagUse == 7 {
@@ -167,8 +169,6 @@ func (g *game) UseMagara(n int, ev event) (err error) {
 			AchTeleport.Get(g)
 		}
 	}
-	g.Player.MP -= mag.MPCost(g)
-	g.StoryPrintf("Evoked %s (MP: %d)", mag, g.Player.MP)
 	ev.Renew(g, 5)
 	return nil
 }
