@@ -556,7 +556,7 @@ func (g *game) ApplyRest() {
 	g.Stats.Rest++
 	g.Stats.DRests[g.Depth]++
 	g.PrintStyled("You feel fresh again after eating banana and sleeping.", logStatusEnd)
-	g.StoryPrintf("Rested in barrel (Bananas: %d)", g.Player.Bananas)
+	g.StoryPrintf("Rested in barrel (bananas: %d)", g.Player.Bananas)
 	if g.Stats.Rest == 10 {
 		AchSleepy.Get(g)
 	}
