@@ -150,11 +150,13 @@ func (ui *gameui) Draw(cell UICell, x, y int) {
 		buf := getImage(cell).Pix
 		// TODO: change that after they merge CL177537. Seems to be
 		// short lived enough in practice that this does not crash.
-		ta := js.TypedArrayOf(buf)
-		ca := js.Global().Get("Uint8ClampedArray").New(ta)
+		//ta := js.TypedArrayOf(buf)
+		ua := js.Global().Get("Uint8Array").New(js.ValueOf(len(buf)))
+		js.CopyBytesToJS(ua, buf)
+		ca := js.Global().Get("Uint8ClampedArray").New(ua)
 		imgdata := js.Global().Get("ImageData").New(ca, 16, 24)
 		ctx.Call("putImageData", imgdata, 0, 0)
-		ta.Release()
+		//ta.Release()
 		ui.cache[cell] = canvas
 	}
 	ui.ctx.Call("drawImage", canvas, x*ui.width, ui.height*y)
