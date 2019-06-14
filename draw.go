@@ -1820,9 +1820,13 @@ func (ui *gameui) ReadScroll() error {
 	if !ok {
 		return errors.New("Internal error: no scroll found")
 	}
+	ui.g.Print("You read the message.")
 	switch sc {
 	case ScrollLore:
 		ui.DrawDescription(sc.Text(ui.g), "Lore Message")
+		if !ui.g.Stats.Lore[ui.g.Depth] {
+			ui.g.StoryPrint("Read lore message")
+		}
 		ui.g.Stats.Lore[ui.g.Depth] = true
 		if len(ui.g.Stats.Lore) == 4 {
 			AchLoreStudent.Get(ui.g)
@@ -1833,7 +1837,6 @@ func (ui *gameui) ReadScroll() error {
 	default:
 		ui.DrawDescription(sc.Text(ui.g), "Story Message")
 	}
-	ui.g.Print("You read the message.")
 	return errors.New(DoNothing)
 }
 
