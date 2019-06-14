@@ -503,17 +503,12 @@ func (g *game) Descend(style descendstyle) bool {
 		}
 	}
 	if g.Depth >= 5 {
-		if g.Stats.DUSpotted[g.Depth] == 0 && g.Stats.DSpotted[g.Depth-1] < 3 && g.Stats.DSpotted[g.Depth-2] < 3 {
-			AchStealthInitiate.Get(g)
-		}
-	}
-	if g.Depth >= 5 {
-		if g.Stats.DUSpotted[g.Depth] == 0 && g.Stats.DSpotted[g.Depth-1] < 3 && g.Stats.DSpotted[g.Depth-2] < 3 {
+		if g.Stats.DUSpotted[g.Depth] < 3 && g.Stats.DSpotted[g.Depth-1] < 3 && g.Stats.DSpotted[g.Depth-2] < 3 {
 			AchStealthInitiate.Get(g)
 		}
 	}
 	if g.Depth >= 8 {
-		if g.Stats.DUSpotted[g.Depth] == 0 && g.Stats.DUSpotted[g.Depth-1] == 0 && g.Stats.DSpotted[g.Depth-2] < 3 &&
+		if g.Stats.DUSpotted[g.Depth] < 3 && g.Stats.DUSpotted[g.Depth-1] < 3 && g.Stats.DSpotted[g.Depth-2] < 3 &&
 			g.Stats.DSpotted[g.Depth-3] < 3 {
 			AchStealthMaster.Get(g)
 		}
