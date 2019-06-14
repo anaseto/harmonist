@@ -399,6 +399,7 @@ func (g *game) InitLevel() {
 
 	// Events
 	if g.Depth == 1 {
+		g.StoryPrintf("Started with %s", g.Player.Magaras[0])
 		g.Events = &eventQueue{}
 		heap.Init(g.Events)
 		g.PushEvent(&simpleEvent{ERank: 0, EAction: PlayerTurn})
