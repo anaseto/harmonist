@@ -9,6 +9,8 @@ import (
 	"image"
 	"image/draw"
 	"image/png"
+	"log"
+	"os"
 	"unicode/utf8"
 
 	"github.com/nsf/gothic"
@@ -68,6 +70,15 @@ $can create image 0 0 -anchor nw -image gamescreen
 			InCh <- uiInput{mouse: true, mouseX: nx, mouseY: ny, button: -1}
 		}
 	})
+	ui.ir.RegisterCommand("OnClosing", func() {
+		ui.g.Ev.Renew(ui.g, 0)
+		errsave := ui.g.Save()
+		if errsave != nil {
+			log.Printf("Error: %v\n", errsave)
+			log.Print("Could not save game.\n")
+		}
+		os.Exit(0)
+	})
 	ui.ir.Eval(`
 bind .c <Key> {
 	GetKey %A %K
@@ -78,6 +89,7 @@ bind .c <Motion> {
 bind .c <ButtonPress> {
 	MouseDown %x %y %b
 }
+wm protocol . WM_DELETE_WINDOW OnClosing
 `)
 	ui.menuHover = -1
 
