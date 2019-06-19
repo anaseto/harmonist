@@ -71,11 +71,13 @@ $can create image 0 0 -anchor nw -image gamescreen
 		}
 	})
 	ui.ir.RegisterCommand("OnClosing", func() {
-		ui.g.Ev.Renew(ui.g, 0)
-		errsave := ui.g.Save()
-		if errsave != nil {
-			log.Printf("Error: %v\n", errsave)
-			log.Print("Could not save game.\n")
+		if ui.g != nil && ui.g.Depth > 0 {
+			ui.g.Ev.Renew(ui.g, 0)
+			errsave := ui.g.Save()
+			if errsave != nil {
+				log.Printf("Error: %v\n", errsave)
+				log.Print("Could not save game.\n")
+			}
 		}
 		os.Exit(0)
 	})
