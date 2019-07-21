@@ -1,10 +1,11 @@
 v0.2-dev
 
-+ New special rooms.
++ Many new special rooms.
 + Improved story timeline in character game statistics.
 + Add effect duration in magara description when possible.
-+ Fullscreen with F11 in browser version.
++ Improved fullscreen support with F11 in browser version.
 + New tile for extinguished lights, and improved tile for doors.
++ Handle window closing gracefully in Tk version.
 
 -----------------------------------------------------------------------------
 v0.1 2019-05-11
