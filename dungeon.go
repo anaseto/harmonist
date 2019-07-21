@@ -558,6 +558,41 @@ const (
 .#l...P...|._#
 -.####||#####-
 ?.....--P.....`
+	RoomShop = `
+??????###???
+?????#>P>#??
+??#####|##??
+?#l...P..l#?
+.W.π.π!.π.#?
+.#.π.π..π.#?
+.W.π.π..π.#?
+.#...π....l#
+.#l!..P._!#?
+-.####||##-?
+?.....--P..?`
+	RoomTavern = `
+??##########??
+?#l.π...|..P#?
+.#..!...###>#?
+.W.π.π...!###?
+.#......π.#>.#
+.W.π.π..π.#P.#
+.#l...P.π.|._#
+-.####||###|#-
+?.....--P.....`
+	RoomDoctor = `
+????#####??
+???#l...!#?
+??##.Pππ.#?
+?#.|.....#?
+.W>#_...l#?
+.####|###??
+.W...P#>.#?
+.#.π..##|#.
+.W.!.....W-
+.#l...P._#.
+-.####|##..
+?.....-.P.?`
 	RoomRuins = `
 ????????-????
 ????....P????
@@ -671,7 +706,7 @@ const (
 )
 
 var roomBigTemplates = []string{RoomBigColumns, RoomBigGarden, RoomColumns, RoomRoundColumns, RoomRoundGarden, RoomLongHall,
-	RoomGardenHall, RoomTriangles, RoomHome1, RoomHome2, RoomHome3, RoomHome4, RoomHome5, RoomTriangle, RoomSpiraling, RoomSpiralingCircle, RoomAltar, RoomCircleDouble, RoomGardenHome, RoomBigRooms, RoomCaban, RoomDolmen, RoomSmallTemple, RoomTemple, RoomSchool, RoomRuins, RoomPillars}
+	RoomGardenHall, RoomTriangles, RoomHome1, RoomHome2, RoomHome3, RoomHome4, RoomHome5, RoomTriangle, RoomSpiraling, RoomSpiralingCircle, RoomAltar, RoomCircleDouble, RoomGardenHome, RoomBigRooms, RoomCaban, RoomDolmen, RoomSmallTemple, RoomTemple, RoomSchool, RoomTavern, RoomShop, RoomDoctor, RoomRuins, RoomPillars}
 
 const (
 	CellShaedra = `
@@ -2128,6 +2163,10 @@ func (d *dungeon) DigBlock(block []position) []position {
 	count := 0
 	for {
 		count++
+		if count > 3000 && count%500 == 0 {
+			pos = d.WallCell()
+			block = block[:0]
+		}
 		if count > 10000 {
 			panic("DigBlock")
 		}

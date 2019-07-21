@@ -350,9 +350,9 @@ func (g *game) SeeNotable(c cell, pos position) {
 			dp := &mappingPath{game: g}
 			_, l, ok := AstarPath(dp, g.Player.Pos, pos)
 			if ok {
-				g.StoryPrintf("Discovered Portal Moon Gem Artifact (distance: %d)", st, l)
+				g.StoryPrintf("Discovered Portal Moon Gem Artifact (distance: %d)", l)
 			} else {
-				g.StoryPrintf("Discovered Portal Moon Gem Artifact", st)
+				g.StoryPrint("Discovered Portal Moon Gem Artifact")
 			}
 		}
 	}
