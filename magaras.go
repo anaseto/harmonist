@@ -302,7 +302,11 @@ func (g *game) Blink(ev event) bool {
 		return false
 	}
 	opos := g.Player.Pos
-	g.Print("You blink away.")
+	if npos == opos {
+		g.Print("You blink in-place.")
+	} else {
+		g.Print("You blink away.")
+	}
 	g.ui.TeleportAnimation(opos, npos, true)
 	g.PlacePlayerAt(npos)
 	return true

@@ -386,6 +386,9 @@ func (g *game) Confusion(ev event) {
 }
 
 func (g *game) PlacePlayerAt(pos position) {
+	if pos == g.Player.Pos {
+		return
+	}
 	g.Player.Dir = pos.Dir(g.Player.Pos)
 	switch g.Player.Dir {
 	case ENE, ESE:
