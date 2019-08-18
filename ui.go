@@ -365,7 +365,7 @@ func (ui *gameui) KeyMenuAction(n int) (m int, action keyConfigAction) {
 	switch string(r) {
 	case "a":
 		action = ChangeKeys
-	case "\x1b", " ":
+	case "\x1b", " ", "x", "X":
 		action = QuitKeyConfig
 	case "u":
 		n -= ui.MapHeight() / 2
