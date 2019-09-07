@@ -255,7 +255,7 @@ func (g *game) FallAbyss(style descendstyle) {
 	if g.Player.MP < 0 {
 		g.Player.MP = 0
 	}
-	if g.Player.Bananas >= 0 {
+	if g.Player.Bananas > 0 {
 		g.Player.Bananas--
 	}
 	g.Descend(style)
