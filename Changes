@@ -1,3 +1,11 @@
+v0.3-dev
+
++ Fix rare bug when blinking to the same place.
++ Make “x” key work in key settings menu.
++ Fix bug which could lead to negative number of bananas when jumping into
+  chasm.
+
+-----------------------------------------------------------------------------
 v0.2 2019-07-22
 
 + Many new special room shapes.
