@@ -82,7 +82,7 @@ func (g *game) UseMagara(n int, ev event) (err error) {
 	}
 	mag := g.Player.Magaras[n]
 	if mag.MPCost(g) > g.Player.MP {
-		return errors.New("Not enough magic points for using this rod.")
+		return errors.New("Not enough magic points for using this magara.")
 	}
 	switch mag {
 	case NoMagara:
@@ -218,7 +218,7 @@ func (mag magara) Desc(g *game) (desc string) {
 	case NoMagara:
 		desc = "can be used for a new magara."
 	case BlinkMagara:
-		desc = "makes you blink away within your line of sight by using an oric energy disturbance. The rod is more susceptible to send you to the cells that are most far from you."
+		desc = "makes you blink away within your line of sight by using an oric energy disturbance. The magara is more susceptible to send you to the cells that are most far from you."
 	case DigMagara:
 		desc = "makes you dig walls by walking into them like an earth dragon thanks to destructive oric magic."
 	case TeleportMagara:
@@ -440,7 +440,7 @@ func (g *game) EvokeLevitation(ev event) error {
 
 func (g *game) EvokeSwapping(ev event) error {
 	if g.Player.HasStatus(StatusLignification) {
-		return errors.New("You cannot use this rod while lignified.")
+		return errors.New("You cannot use this magara while lignified.")
 	}
 	ms := g.MonstersInLOS()
 	var mons *monster
