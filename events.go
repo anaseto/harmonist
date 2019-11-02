@@ -290,7 +290,6 @@ func (cev *cloudEvent) Action(g *game) {
 			delete(g.MagicalBarriers, cev.Pos)
 			delete(g.TerrainKnowledge, cev.Pos)
 		}
-		// TODO: rework temporal walls so that they preserve doors and foliage
 		if g.Dungeon.Cell(cev.Pos).T != BarrierCell {
 			break
 		}
