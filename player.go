@@ -347,22 +347,6 @@ func (g *game) MovePlayer(pos position, ev event) error {
 	return nil
 }
 
-func (g *game) HealPlayer(ev event) {
-	if g.Player.HP < g.Player.HPMax() {
-		g.Player.HP++
-	}
-	delay := 50
-	ev.Renew(g, delay)
-}
-
-func (g *game) MPRegen(ev event) {
-	if g.Player.MP < g.Player.MPMax() {
-		g.Player.MP++
-	}
-	delay := 100
-	ev.Renew(g, delay)
-}
-
 func (g *game) SwiftFog(ev event) {
 	dij := &noisePath{game: g}
 	nm := Dijkstra(dij, []position{g.Player.Pos}, 2)
