@@ -47,7 +47,7 @@ loop:
 		in := ui.PollEvent()
 		r := ui.KeyToRuneKeyAction(in)
 		switch r {
-		case '\x1b', ' ', 'x':
+		case '\x1b', ' ', 'x', 'X':
 			break loop
 		}
 		if in.mouse && in.button == -1 {
@@ -228,7 +228,7 @@ func (ui *gameui) PlayerTurnEvent(ev event) (again, quit bool, err error) {
 func (ui *gameui) Scroll(n int) (m int, quit bool) {
 	in := ui.PollEvent()
 	switch in.key {
-	case "Escape", "\x1b", " ", "x":
+	case "Escape", "\x1b", " ", "x", "X":
 		quit = true
 	case "u", "9", "b":
 		n -= 12
@@ -277,7 +277,7 @@ func (ui *gameui) Select(l int) (index int, alternate bool, err error) {
 		in := ui.PollEvent()
 		r := ui.ReadKey(in.key)
 		switch {
-		case in.key == "\x1b" || in.key == "Escape" || in.key == " " || in.key == "x":
+		case in.key == "\x1b" || in.key == "Escape" || in.key == " " || in.key == "x" || in.key == "X":
 			return -1, false, errors.New(DoNothing)
 		case in.key == "?":
 			return -1, true, nil
@@ -399,7 +399,7 @@ func (ui *gameui) TargetModeEvent(targ Targeter, data *examineData) (again, quit
 	again = true
 	in := ui.PollEvent()
 	switch in.key {
-	case "\x1b", "Escape", " ", "x":
+	case "\x1b", "Escape", " ", "x", "X":
 		g.Targeting = InvalidPos
 		notarg = true
 	case "":
@@ -489,7 +489,7 @@ func (ui *gameui) ReadRuneKey() rune {
 	for {
 		in := ui.PollEvent()
 		switch in.key {
-		case "\x1b", "Escape", " ":
+		case "\x1b", "Escape", " ", "x", "X":
 			return 0
 		case "Enter":
 			return '.'
@@ -611,7 +611,7 @@ var CustomKeys bool
 
 func FixedRuneKey(r rune) bool {
 	switch r {
-	case ' ', '?', '=', '2', '4', '8', '6', '.', '5', '\x1b':
+	case ' ', '?', '=', '2', '4', '8', '6', '.', '5', '\x1b', 'x', 'X':
 		return true
 	default:
 		return false
@@ -843,6 +843,7 @@ func ApplyDefaultKeyBindings() {
 		' ':    ActionEscape,
 		'\x1b': ActionEscape,
 		'x':    ActionEscape,
+		'X':    ActionEscape,
 		'?':    ActionHelp,
 	}
 	CustomKeys = false
