@@ -4,6 +4,7 @@ v0.3-dev
 + Make “x” key work in key settings menu.
 + Fix bug which could lead to negative number of bananas when jumping into
   chasm.
++ Minor UI/messages improvements.
 
 -----------------------------------------------------------------------------
 v0.2 2019-07-22
