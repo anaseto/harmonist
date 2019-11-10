@@ -157,10 +157,5 @@ const (
 )
 
 func (g *game) ClangMsg() (sclang string) {
-	if RandInt(2) == 0 {
-		sclang = " Clang!"
-	} else {
-		sclang = " Smash!"
-	}
-	return sclang
+	return " Smash!"
 }
