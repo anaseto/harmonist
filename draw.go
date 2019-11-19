@@ -1104,9 +1104,17 @@ func (ui *gameui) DrawStatusBar(line int) {
 	if hp < 0 {
 		hp = 0
 	}
-	ui.DrawColoredText(strings.Repeat("♥", hp), BarCol+4, line, hpColor)
-	ui.DrawColoredText(strings.Repeat("♥", g.Player.HPbonus), BarCol+4+hp, line, ColorCyan) // TODO: define color variables
-	ui.DrawColoredText(strings.Repeat("♥", nWounds), BarCol+4+hp+g.Player.HPbonus, line, ColorFg)
+	if !GameConfig.ShowNumbers {
+		ui.DrawColoredText(strings.Repeat("♥", hp), BarCol+4, line, hpColor)
+		ui.DrawColoredText(strings.Repeat("♥", g.Player.HPbonus), BarCol+4+hp, line, ColorCyan) // TODO: define color variables
+		ui.DrawColoredText(strings.Repeat("♥", nWounds), BarCol+4+hp+g.Player.HPbonus, line, ColorFg)
+	} else {
+		if g.Player.HPbonus > 0 {
+			ui.DrawColoredText(fmt.Sprintf("%d+%d/%d", hp, g.Player.HPbonus, g.Player.HPMax()), BarCol+4, line, hpColor)
+		} else {
+			ui.DrawColoredText(fmt.Sprintf("%d/%d", hp, g.Player.HPMax()), BarCol+4, line, hpColor)
+		}
+	}
 
 	line++
 	mpColor := ColorFgMPok
@@ -1116,15 +1124,19 @@ func (ui *gameui) DrawStatusBar(line int) {
 	case 2:
 		mpColor = ColorFgMPpartial
 	}
-	ui.DrawColoredText(fmt.Sprintf("MP: %d", g.Player.MP), BarCol, line, mpColor)
+	ui.DrawColoredText("MP: ", BarCol, line, mpColor)
 
 	MPspent := g.Player.MPMax() - g.Player.MP
 	if MPspent <= 0 {
 		MPspent = 0
 	}
 	ui.DrawColoredText("MP: ", BarCol, line, mpColor)
-	ui.DrawColoredText(strings.Repeat("♥", g.Player.MP), BarCol+4, line, mpColor)
-	ui.DrawColoredText(strings.Repeat("♥", MPspent), BarCol+4+g.Player.MP, line, ColorFg)
+	if !GameConfig.ShowNumbers {
+		ui.DrawColoredText(strings.Repeat("♥", g.Player.MP), BarCol+4, line, mpColor)
+		ui.DrawColoredText(strings.Repeat("♥", MPspent), BarCol+4+g.Player.MP, line, ColorFg)
+	} else {
+		ui.DrawColoredText(fmt.Sprintf("%d/%d", g.Player.MP, g.Player.MPMax()), BarCol+4, line, mpColor)
+	}
 
 	line++
 	line++
@@ -1217,23 +1229,39 @@ func (ui *gameui) DrawStatusLine() {
 	if hp < 0 {
 		hp = 0
 	}
-	ui.DrawColoredText(strings.Repeat("♥", hp), col, line, hpColor)
-	col += hp
-	ui.DrawColoredText(strings.Repeat("♥", g.Player.HPbonus), col, line, ColorCyan) // TODO: define color variables
-	col += g.Player.HPbonus
-	ui.DrawColoredText(strings.Repeat("♥", nWounds), col, line, ColorFg)
-	col += nWounds
+	if !GameConfig.ShowNumbers {
+		ui.DrawColoredText(strings.Repeat("♥", hp), col, line, hpColor)
+		col += hp
+		ui.DrawColoredText(strings.Repeat("♥", g.Player.HPbonus), col, line, ColorCyan) // TODO: define color variables
+		col += g.Player.HPbonus
+		ui.DrawColoredText(strings.Repeat("♥", nWounds), col, line, ColorFg)
+		col += nWounds
+	} else {
+		if g.Player.HPbonus > 0 {
+			ui.DrawColoredText(fmt.Sprintf("%d+%d/%d", hp, g.Player.HPbonus, g.Player.HPMax()), col, line, hpColor)
+			col += 5
+		} else {
+			ui.DrawColoredText(fmt.Sprintf("%d/%d", hp, g.Player.HPMax()), col, line, hpColor)
+			col += 3
+		}
+	}
 
 	MPspent := g.Player.MPMax() - g.Player.MP
 	if MPspent <= 0 {
 		MPspent = 0
 	}
 	ui.DrawColoredText(" MP:", col, line, mpColor)
-	col += 4
-	ui.DrawColoredText(strings.Repeat("♥", g.Player.MP), col, line, mpColor)
-	col += g.Player.MP
-	ui.DrawColoredText(strings.Repeat("♥", MPspent), col, line, ColorFg)
-	col += MPspent
+	if !GameConfig.ShowNumbers {
+		col += 4
+		ui.DrawColoredText(strings.Repeat("♥", g.Player.MP), col, line, mpColor)
+		col += g.Player.MP
+		ui.DrawColoredText(strings.Repeat("♥", MPspent), col, line, ColorFg)
+		col += MPspent
+	} else {
+		col += 4
+		ui.DrawColoredText(fmt.Sprintf("%d/%d", g.Player.MP, g.Player.MPMax()), col, line, mpColor)
+		col += 3
+	}
 
 	ui.SetMapCell(col, line, ' ', ColorFg, ColorBg)
 	col++
@@ -1898,6 +1926,7 @@ const (
 	invertLOS
 	toggleLayout
 	toggleTiles
+	toggleShowNumbers
 )
 
 func (s setting) String() (text string) {
@@ -1909,7 +1938,9 @@ func (s setting) String() (text string) {
 	case toggleLayout:
 		text = "Toggle normal/compact layout"
 	case toggleTiles:
-		text = "Toggle Tiles/Ascii display"
+		text = "Toggle tiles/ascii display"
+	case toggleShowNumbers:
+		text = "Toggle hearts/numbers"
 	}
 	return text
 }
@@ -1918,6 +1949,7 @@ var settingsActions = []setting{
 	setKeys,
 	invertLOS,
 	toggleLayout,
+	toggleShowNumbers,
 }
 
 func (ui *gameui) ConfItem(i, lnum int, s setting, fg uicolor) {
@@ -1983,6 +2015,12 @@ func (ui *gameui) HandleSettingAction() error {
 		}
 	case toggleTiles:
 		ui.ApplyToggleTiles()
+		err := g.SaveConfig()
+		if err != nil {
+			g.Print(err.Error())
+		}
+	case toggleShowNumbers:
+		GameConfig.ShowNumbers = !GameConfig.ShowNumbers
 		err := g.SaveConfig()
 		if err != nil {
 			g.Print(err.Error())

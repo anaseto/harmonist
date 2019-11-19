@@ -33,6 +33,7 @@ type config struct {
 	Small              bool
 	Tiles              bool
 	Version            string
+	ShowNumbers        bool
 }
 
 func (c *config) ConfigSave() ([]byte, error) {
