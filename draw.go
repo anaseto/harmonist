@@ -720,7 +720,7 @@ func (ui *gameui) MonsterInfo(m *monster) string {
 	infos = append(infos, state)
 	for st, i := range m.Statuses {
 		if i > 0 {
-			infos = append(infos, monsterStatus(st).String())
+			infos = append(infos, fmt.Sprintf("%s %d", monsterStatus(st), m.Statuses[monsterStatus(st)]/10))
 		}
 	}
 	return strings.Join(infos, ", ")

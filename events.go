@@ -202,6 +202,30 @@ func (mev *monsterEvent) Rank() int {
 	return mev.ERank
 }
 
+var MonsStatusEndMsgs = [...]string{
+	MonsConfusionEnd:     "confused",
+	MonsLignificationEnd: "lignified",
+	MonsSlowEnd:          "slowed",
+	MonsExhaustionEnd:    "exhausted",
+	MonsSatiatedEnd:      "satiated",
+}
+
+var MonsEndStatuses = [...]monsterStatus{
+	MonsConfusionEnd:     MonsConfused,
+	MonsLignificationEnd: MonsLignified,
+	MonsSlowEnd:          MonsSlow,
+	MonsExhaustionEnd:    MonsExhausted,
+	MonsSatiatedEnd:      MonsSatiated,
+}
+
+var MonsStatusEndActions = [...]monsterAction{
+	MonsConfused:  MonsConfusionEnd,
+	MonsLignified: MonsLignificationEnd,
+	MonsSlow:      MonsSlowEnd,
+	MonsExhausted: MonsExhaustionEnd,
+	MonsSatiated:  MonsSatiatedEnd,
+}
+
 func (mev *monsterEvent) Action(g *game) {
 	switch mev.EAction {
 	case MonsterTurn:
@@ -209,44 +233,20 @@ func (mev *monsterEvent) Action(g *game) {
 		if mons.Exists() {
 			mons.HandleTurn(g, mev)
 		}
-	case MonsConfusionEnd:
+	default:
 		mons := g.Monsters[mev.NMons]
-		if mons.Exists() {
-			mons.Statuses[MonsConfused] = 0
+		mons.Statuses[MonsEndStatuses[mev.EAction]] -= DurationStatusStep
+		if mons.Statuses[MonsEndStatuses[mev.EAction]] <= 0 {
+			mons.Statuses[MonsEndStatuses[mev.EAction]] = 0
 			if g.Player.Sees(mons.Pos) {
-				g.Printf("The %s is no longer confused.", mons.Kind)
+				g.Printf("%s is no longer %s.", mons.Kind.Definite(true), StatusEndMsgs[mev.EAction])
 			}
-			mons.Path = mons.APath(g, mons.Pos, mons.Target)
-		}
-	case MonsLignificationEnd:
-		mons := g.Monsters[mev.NMons]
-		if mons.Exists() {
-			mons.Statuses[MonsLignified] = 0
-			if g.Player.Sees(mons.Pos) {
-				g.Printf("%s is no longer lignified.", mons.Kind.Definite(true))
+			switch mev.EAction {
+			case MonsConfusionEnd, MonsLignificationEnd:
+				mons.Path = mons.APath(g, mons.Pos, mons.Target)
 			}
-			mons.Path = mons.APath(g, mons.Pos, mons.Target)
-		}
-	case MonsSlowEnd:
-		mons := g.Monsters[mev.NMons]
-		if mons.Exists() {
-			mons.Statuses[MonsSlow]--
-			if g.Player.Sees(mons.Pos) {
-				g.Printf("%s is no longer slowed.", mons.Kind.Definite(true))
-			}
-		}
-	case MonsExhaustionEnd:
-		mons := g.Monsters[mev.NMons]
-		if mons.Exists() {
-			mons.Statuses[MonsExhausted]--
-		}
-	case MonsSatiatedEnd:
-		mons := g.Monsters[mev.NMons]
-		if mons.Exists() {
-			mons.Statuses[MonsSatiated]--
-			if g.Player.Sees(mons.Pos) {
-				g.Printf("%s is no longer satiated.", mons.Kind.Definite(true))
-			}
+		} else {
+			g.PushEvent(&monsterEvent{NMons: mev.NMons, ERank: mev.Rank() + DurationStatusStep, EAction: mev.EAction})
 		}
 	}
 }
@@ -411,9 +411,9 @@ const (
 	DurationCloudProgression       = 10
 	DurationFog                    = 150
 	DurationExhaustion             = 60
-	DurationConfusion              = 120
+	DurationConfusion              = 130
 	DurationConfusionPlayer        = 50
-	DurationLignification          = 120
+	DurationLignification          = 150
 	DurationLignificationPlayer    = 40
 	DurationMagicalBarrier         = 150
 	DurationObstructionProgression = 150

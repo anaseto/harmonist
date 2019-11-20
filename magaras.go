@@ -514,8 +514,7 @@ func (g *game) EvokeSlowing(ev event) error {
 		if !mons.Exists() || !g.Player.Sees(mons.Pos) {
 			continue
 		}
-		mons.Statuses[MonsSlow]++
-		g.PushEvent(&monsterEvent{ERank: g.Ev.Rank() + DurationSlow, NMons: mons.Index, EAction: MonsSlowEnd})
+		mons.PutStatus(g, MonsSlow, DurationSlow)
 	}
 	g.Print("Whoosh! A slowing luminous wave emerges.")
 	g.ui.LOSWavesAnimation(DefaultLOSRange, WaveSlowing, g.Player.Pos)

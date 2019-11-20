@@ -1048,8 +1048,7 @@ func (m *monster) Exhaust(g *game) {
 }
 
 func (m *monster) ExhaustTime(g *game, t int) {
-	m.Statuses[MonsExhausted]++
-	g.PushEvent(&monsterEvent{ERank: g.Ev.Rank() + t, NMons: m.Index, EAction: MonsExhaustionEnd})
+	m.PutStatus(g, MonsExhausted, t)
 }
 
 func (m *monster) HitPlayer(g *game, ev event) {
@@ -1103,21 +1102,30 @@ func (m *monster) HitPlayer(g *game, ev event) {
 	}
 }
 
+func (m *monster) PutStatus(g *game, st monsterStatus, duration int) bool {
+	if m.Status(st) {
+		return false
+	}
+	m.Statuses[st] += duration
+	g.PushEvent(&monsterEvent{
+		ERank:   g.Ev.Rank() + DurationStatusStep,
+		NMons:   m.Index,
+		EAction: MonsStatusEndActions[st]})
+	return true
+}
+
 func (m *monster) EnterConfusion(g *game, ev event) {
-	if !m.Status(MonsConfused) {
-		m.Statuses[MonsConfused] = 1
+	if m.PutStatus(g, MonsConfused, DurationConfusion) {
 		m.Path = m.Path[:0]
-		g.PushEvent(&monsterEvent{
-			ERank: ev.Rank() + DurationConfusion + RandInt(DurationConfusion/4), NMons: m.Index, EAction: MonsConfusionEnd})
+		if g.Player.Sees(m.Pos) {
+			g.Printf("%s looks confused.", m.Kind.Definite(true))
+		}
 	}
 }
 
 func (m *monster) EnterLignification(g *game, ev event) {
-	if !m.Status(MonsLignified) {
-		m.Statuses[MonsLignified] = 1
+	if m.PutStatus(g, MonsLignified, DurationLignification) {
 		m.Path = m.Path[:0]
-		g.PushEvent(&monsterEvent{
-			ERank: ev.Rank() + DurationLignification + RandInt(DurationLignification/2), NMons: m.Index, EAction: MonsLignificationEnd})
 		if g.Player.Sees(m.Pos) {
 			g.Printf("%s is rooted to the ground.", m.Kind.Definite(true))
 		}
@@ -1126,19 +1134,6 @@ func (m *monster) EnterLignification(g *game, ev event) {
 
 func (m *monster) HitSideEffects(g *game, ev event) {
 	switch m.Kind {
-	//case MonsSpider:
-	//if RandInt(2) == 0 {
-	//g.Confusion(ev)
-	//}
-	//case MonsGiantBee:
-	//if RandInt(5) == 0 && !g.Player.HasStatus(StatusBerserk) && !g.Player.HasStatus(StatusExhausted) {
-	//g.Player.Statuses[StatusBerserk] = 1
-	//g.Player.HP += 2
-	//end := ev.Rank() + DurationShortBerserk
-	//g.PushEvent(&simpleEvent{ERank: end, EAction: BerserkEnd})
-	//g.Player.Expire[StatusBerserk] = end
-	//g.Print("You feel a sudden urge to kill things.")
-	//}
 	case MonsEarthDragon:
 		if m.Status(MonsConfused) {
 			m.PushPlayer(g, 3)
@@ -1171,8 +1166,7 @@ func (m *monster) HitSideEffects(g *game, ev event) {
 		if g.Player.Bananas < 0 {
 			g.Player.Bananas = 0
 		} else {
-			m.Statuses[MonsSatiated]++
-			g.PushEvent(&monsterEvent{ERank: g.Ev.Rank() + DurationMonsterSatiation, NMons: m.Index, EAction: MonsSatiatedEnd})
+			m.PutStatus(g, MonsSatiated, DurationMonsterSatiation)
 			g.Print("The tiny harpy steals a banana from you.")
 			g.StoryPrintf("Banana stolen by %s (bananas: %d)", m.Kind, g.Player.Bananas)
 			g.Stats.StolenBananas++
