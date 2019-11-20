@@ -1724,6 +1724,7 @@ func (ui *gameui) SelectMagara(ev event) error {
 		ui.ClearLine(0)
 		if !ui.Small() {
 			ui.DrawColoredText(MenuEvoke.String(), MenuCols[MenuEvoke][0], ui.MapHeight(), ColorCyan)
+			ui.DrawSelectDescBasics()
 		}
 		if desc {
 			ui.DrawColoredText("Describe", 0, 0, ColorBlue)
@@ -1738,7 +1739,6 @@ func (ui *gameui) SelectMagara(ev event) error {
 			ui.MagaraItem(i, i+1, r, ColorFg)
 		}
 		ui.DrawTextLine(" press (x) to cancel ", len(magaras)+1)
-		ui.DrawSelectDescBasics()
 		ui.Flush()
 		index, alt, err := ui.Select(len(magaras))
 		if alt {
@@ -1768,6 +1768,7 @@ func (ui *gameui) EquipMagara(ev event) error {
 		ui.ClearLine(0)
 		if !ui.Small() {
 			ui.DrawColoredText(MenuInteract.String(), MenuCols[MenuInteract][0], ui.MapHeight(), ColorCyan)
+			ui.DrawSelectDescBasics()
 		}
 		if desc {
 			ui.DrawColoredText("Describe", 0, 0, ColorBlue)
@@ -1782,7 +1783,6 @@ func (ui *gameui) EquipMagara(ev event) error {
 			ui.MagaraItem(i, i+1, r, ColorFg)
 		}
 		ui.DrawTextLine(" press (x) to cancel ", len(magaras)+1)
-		ui.DrawSelectDescBasics()
 		ui.Flush()
 		index, alt, err := ui.Select(len(magaras))
 		if alt {
@@ -1818,6 +1818,7 @@ func (ui *gameui) SelectItem(ev event) error {
 		ui.ClearLine(0)
 		if !ui.Small() {
 			ui.DrawColoredText(MenuInventory.String(), MenuCols[MenuInventory][0], ui.MapHeight(), ColorCyan)
+			ui.DrawSelectBasics()
 		}
 		ui.DrawColoredText("Inventory", 0, 0, ColorCyan)
 		col := utf8.RuneCountInString("Inventory")
@@ -1826,7 +1827,6 @@ func (ui *gameui) SelectItem(ev event) error {
 			ui.InventoryItem(i, i+1, items[i], ColorFg, parts[i])
 		}
 		ui.DrawTextLine(" press (x) to cancel ", len(items)+1)
-		ui.DrawSelectBasics()
 		ui.Flush()
 		index, alt, err := ui.Select(len(items))
 		if alt {
@@ -1893,6 +1893,7 @@ func (ui *gameui) SelectAction(actions []action, ev event) (action, error) {
 		ui.ClearLine(0)
 		if !ui.Small() {
 			ui.DrawColoredText(MenuOther.String(), MenuCols[MenuOther][0], ui.MapHeight(), ColorCyan)
+			ui.DrawSelectBasics()
 		}
 		ui.DrawColoredText("Choose", 0, 0, ColorCyan)
 		col := utf8.RuneCountInString("Choose")
@@ -1901,7 +1902,6 @@ func (ui *gameui) SelectAction(actions []action, ev event) (action, error) {
 			ui.ActionItem(i, i+1, r, ColorFg)
 		}
 		ui.DrawTextLine(" press (x) to cancel ", len(actions)+1)
-		ui.DrawSelectBasics()
 		ui.Flush()
 		index, alt, err := ui.Select(len(actions))
 		if alt {
@@ -1969,7 +1969,9 @@ func (ui *gameui) SelectConfigure(actions []setting) (setting, error) {
 			ui.ConfItem(i, i+1, r, ColorFg)
 		}
 		ui.DrawTextLine(" press (x) to cancel ", len(actions)+1)
-		ui.DrawSelectBasics()
+		if !ui.Small() {
+			ui.DrawSelectBasics()
+		}
 		ui.Flush()
 		index, alt, err := ui.Select(len(actions))
 		if alt {
@@ -2045,7 +2047,9 @@ func (ui *gameui) SelectWizardMagic(actions []wizardAction) (wizardAction, error
 			ui.WizardItem(i, i+1, r, ColorFg)
 		}
 		ui.DrawTextLine(" press (x) to cancel ", len(actions)+1)
-		ui.DrawSelectBasics()
+		if !ui.Small() {
+			ui.DrawSelectBasics()
+		}
 		ui.Flush()
 		index, alt, err := ui.Select(len(actions))
 		if alt {
