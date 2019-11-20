@@ -4,6 +4,7 @@ v0.3-dev
 + Make “x” key work in key settings menu.
 + Fix bug which could lead to negative number of bananas when jumping into
   chasm.
++ Display number of remaining turns for monsters statuses too.
 + Minor UI/messages improvements.
 
 -----------------------------------------------------------------------------
