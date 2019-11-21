@@ -406,19 +406,19 @@ const (
 	DurationLevitation             = 180
 	DurationShortSwiftness         = 30
 	DurationDigging                = 80
-	DurationSlow                   = 170
+	DurationSlowMonster            = 170
 	DurationSleepSlow              = 40
 	DurationCloudProgression       = 10
 	DurationFog                    = 150
 	DurationExhaustion             = 60
-	DurationConfusion              = 130
+	DurationConfusionMonster       = 130
 	DurationConfusionPlayer        = 50
-	DurationLignification          = 150
+	DurationLignificationMonster   = 150
 	DurationLignificationPlayer    = 40
 	DurationMagicalBarrier         = 150
 	DurationObstructionProgression = 150
 	DurationSmokingCloakFog        = 20
-	DurationMonsterExhaustion      = 100
-	DurationMonsterSatiation       = 400
+	DurationExhaustionMonster      = 100
+	DurationSatiationMonster       = 400
 	DurationIlluminated            = 70
 )

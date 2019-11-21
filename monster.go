@@ -1044,7 +1044,7 @@ func (m *monster) InvertFoliage(g *game) {
 }
 
 func (m *monster) Exhaust(g *game) {
-	m.ExhaustTime(g, DurationMonsterExhaustion+RandInt(DurationMonsterExhaustion/2))
+	m.ExhaustTime(g, DurationExhaustionMonster+RandInt(DurationExhaustionMonster/2))
 }
 
 func (m *monster) ExhaustTime(g *game, t int) {
@@ -1115,7 +1115,7 @@ func (m *monster) PutStatus(g *game, st monsterStatus, duration int) bool {
 }
 
 func (m *monster) EnterConfusion(g *game, ev event) {
-	if m.PutStatus(g, MonsConfused, DurationConfusion) {
+	if m.PutStatus(g, MonsConfused, DurationConfusionMonster) {
 		m.Path = m.Path[:0]
 		if g.Player.Sees(m.Pos) {
 			g.Printf("%s looks confused.", m.Kind.Definite(true))
@@ -1124,7 +1124,7 @@ func (m *monster) EnterConfusion(g *game, ev event) {
 }
 
 func (m *monster) EnterLignification(g *game, ev event) {
-	if m.PutStatus(g, MonsLignified, DurationLignification) {
+	if m.PutStatus(g, MonsLignified, DurationLignificationMonster) {
 		m.Path = m.Path[:0]
 		if g.Player.Sees(m.Pos) {
 			g.Printf("%s is rooted to the ground.", m.Kind.Definite(true))
@@ -1166,7 +1166,7 @@ func (m *monster) HitSideEffects(g *game, ev event) {
 		if g.Player.Bananas < 0 {
 			g.Player.Bananas = 0
 		} else {
-			m.PutStatus(g, MonsSatiated, DurationMonsterSatiation)
+			m.PutStatus(g, MonsSatiated, DurationSatiationMonster)
 			g.Print("The tiny harpy steals a banana from you.")
 			g.StoryPrintf("Banana stolen by %s (bananas: %d)", m.Kind, g.Player.Bananas)
 			g.Stats.StolenBananas++

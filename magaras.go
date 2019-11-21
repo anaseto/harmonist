@@ -253,13 +253,13 @@ func (mag magara) Desc(g *game) (desc string) {
 	duration := 0
 	switch mag {
 	case ConfusionMagara:
-		duration = DurationConfusion
+		duration = DurationConfusionMonster
 	case SlowingMagara:
-		duration = DurationSlow
+		duration = DurationSlowMonster
 	case ObstructionMagara:
 		duration = DurationMagicalBarrier
 	case LignificationMagara:
-		duration = DurationLignification
+		duration = DurationLignificationMonster
 	case ShadowsMagara:
 		duration = DurationShadows
 	case DigMagara:
@@ -514,7 +514,7 @@ func (g *game) EvokeSlowing(ev event) error {
 		if !mons.Exists() || !g.Player.Sees(mons.Pos) {
 			continue
 		}
-		mons.PutStatus(g, MonsSlow, DurationSlow)
+		mons.PutStatus(g, MonsSlow, DurationSlowMonster)
 	}
 	g.Print("Whoosh! A slowing luminous wave emerges.")
 	g.ui.LOSWavesAnimation(DefaultLOSRange, WaveSlowing, g.Player.Pos)
