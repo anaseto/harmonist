@@ -2580,6 +2580,9 @@ func (dg *dgen) GenMonsters(g *game) {
 		}
 	}
 	dg.PutRandomBandN(g, bandsButterfly, 2)
+	if dg.layout == RandomSmallWalkCaveUrbanised {
+		dg.PutRandomBandN(g, bandsGuard, 1+(g.Depth+1)/4)
+	}
 	switch g.Depth {
 	case 1:
 		// 8
