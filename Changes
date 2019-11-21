@@ -6,6 +6,7 @@ v0.3-dev
   chasm.
 + Display number of remaining turns for monsters statuses too.
 + Minor UI/messages improvements.
++ New special map layouts more or less urbanised than the common ones.
 
 -----------------------------------------------------------------------------
 v0.2 2019-07-22
