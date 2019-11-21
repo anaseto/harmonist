@@ -105,8 +105,8 @@ var StatusEndMsgs = [...]string{
 	NauseaEnd:        "You no longer feel sick.",
 	DigEnd:           "You no longer feel like an earth dragon.",
 	LevitationEnd:    "You no longer levitate.",
-	ShadowsEnd:       "You no longer are surrounded by shadows.",
-	IlluminatedEnd:   "You no longer illuminated.",
+	ShadowsEnd:       "You are no longer surrounded by shadows.",
+	IlluminatedEnd:   "You are no longer illuminated.",
 }
 
 var EndStatuses = [...]status{
