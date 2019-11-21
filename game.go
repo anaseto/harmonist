@@ -183,12 +183,31 @@ const (
 
 func (g *game) GenDungeon() {
 	ml := AutomataCave
-	//ml := RandomWalkTreeCave
 	switch g.Depth {
 	case 2, 6, 7:
 		ml = RandomWalkCave
+		if RandInt(4) == 0 {
+			ml = NaturalCave
+		}
+		if RandInt(10) == 0 {
+			ml = RandomSmallWalkCaveUrbanised
+		}
 	case 4, 10, 11:
 		ml = RandomWalkTreeCave
+		if RandInt(4) == 0 && g.Depth < 11 {
+			ml = RandomSmallWalkCaveUrbanised
+		} else if g.Depth == 11 && RandInt(2) == 0 {
+			ml = RandomSmallWalkCaveUrbanised
+		}
+		if RandInt(30) == 0 {
+			ml = NaturalCave
+		}
+	default:
+		if RandInt(15) == 0 {
+			ml = RandomSmallWalkCaveUrbanised
+		} else if RandInt(15) == 0 {
+			ml = NaturalCave
+		}
 	}
 	g.GenRoomTunnels(ml)
 }

@@ -1260,6 +1260,8 @@ const (
 	AutomataCave maplayout = iota
 	RandomWalkCave
 	RandomWalkTreeCave
+	RandomSmallWalkCaveUrbanised
+	NaturalCave
 )
 
 func (g *game) GenRoomTunnels(ml maplayout) {
@@ -1275,9 +1277,17 @@ func (g *game) GenRoomTunnels(ml maplayout) {
 	case AutomataCave:
 		dg.GenCellularAutomataCaveMap()
 	case RandomWalkCave:
-		dg.GenCaveMap()
+		dg.GenCaveMap(21 * 40)
 	case RandomWalkTreeCave:
 		dg.GenTreeCaveMap()
+	case RandomSmallWalkCaveUrbanised:
+		dg.GenCaveMap(10 * 10)
+	case NaturalCave:
+		if RandInt(3) == 0 {
+			dg.GenCellularAutomataCaveMap()
+		} else {
+			dg.GenCaveMap(21 * 45)
+		}
 	}
 	var places []position
 	var nspecial = 4
@@ -1323,6 +1333,20 @@ func (g *game) GenRoomTunnels(ml maplayout) {
 			dg.GenRooms(roomBigTemplates, nspecial, PlacementRandom)
 			dg.GenRooms(roomNormalTemplates, 7, PlacementRandom)
 		}
+	case RandomSmallWalkCaveUrbanised:
+		nspecial += 3
+		if g.Depth == WinDepth {
+			nspecial--
+		}
+		dg.GenRooms(roomBigTemplates, nspecial, PlacementRandom)
+		dg.GenRooms(roomNormalTemplates, 12, PlacementRandom)
+	case NaturalCave:
+		nspecial += 2
+		if g.Depth == WinDepth {
+			nspecial--
+		}
+		dg.GenRooms(roomBigTemplates, nspecial, PlacementRandom)
+		dg.GenRooms(roomNormalTemplates, 2, PlacementRandom)
 	default:
 		if g.Depth == WinDepth {
 			g.Objects.Story = map[position]story{}
@@ -1429,13 +1453,13 @@ func (dg *dgen) AddSpecial(g *game, ml maplayout) {
 	dg.GenStones(g)
 	ntables := 4
 	switch ml {
-	case AutomataCave, RandomWalkCave:
+	case AutomataCave, RandomWalkCave, NaturalCave:
 		if RandInt(3) == 0 {
 			ntables++
 		} else if RandInt(10) == 0 {
 			ntables--
 		}
-	case RandomWalkTreeCave:
+	case RandomWalkTreeCave, RandomSmallWalkCaveUrbanised:
 		if RandInt(4) > 0 {
 			ntables++
 		}
@@ -1465,7 +1489,12 @@ func (dg *dgen) AddSpecial(g *game, ml maplayout) {
 		if RandInt(8) == 0 {
 			ntrees++
 		}
-	case RandomWalkTreeCave:
+	case NaturalCave:
+		ntrees++
+		if RandInt(2) > 0 {
+			ntrees++
+		}
+	case RandomWalkTreeCave, RandomSmallWalkCaveUrbanised:
 		if RandInt(2) == 0 {
 			ntrees--
 		}
@@ -2121,14 +2150,14 @@ func (dg *dgen) Foliage(less bool) {
 	}
 }
 
-func (dg *dgen) GenCaveMap() {
+func (dg *dgen) GenCaveMap(size int) {
 	d := dg.d
 	for i := range d.Cells {
 		pos := idxtopos(i)
 		d.SetCell(pos, WallCell)
 	}
 	pos := position{40, 10}
-	max := 21 * 40
+	max := size
 	d.SetCell(pos, GroundCell)
 	cells := 1
 	notValid := 0

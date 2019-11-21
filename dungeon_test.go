@@ -58,3 +58,27 @@ func TestRandomWalkTreeCave(t *testing.T) {
 		}
 	}
 }
+
+func TestRandomSmallWalkCaveUrbanised(t *testing.T) {
+	for i := 0; i < Rounds; i++ {
+		g := &game{}
+		g.InitFirstLevel()
+		g.InitLevelStructures()
+		g.GenRoomTunnels(RandomSmallWalkCaveUrbanised)
+		if !g.Dungeon.connex() {
+			t.Errorf("Not connex:\n%s\n", g.Dungeon.String())
+		}
+	}
+}
+
+func TestNaturalCave(t *testing.T) {
+	for i := 0; i < Rounds; i++ {
+		g := &game{}
+		g.InitFirstLevel()
+		g.InitLevelStructures()
+		g.GenRoomTunnels(NaturalCave)
+		if !g.Dungeon.connex() {
+			t.Errorf("Not connex:\n%s\n", g.Dungeon.String())
+		}
+	}
+}
