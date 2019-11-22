@@ -2484,12 +2484,12 @@ func (dg *dgen) PutMonsterBand(g *game, band monsterBand) bool {
 		if awake {
 			mons.State = Wandering
 		}
+		g.Monsters = append(g.Monsters, mons)
 		mons.Init()
-		mons.Index = len(g.Monsters)
+		mons.Index = len(g.Monsters) - 1
 		mons.Band = len(g.Bands) - 1
 		mons.PlaceAt(g, pos)
 		mons.Target = mons.NextTarget(g)
-		g.Monsters = append(g.Monsters, mons)
 		pos = g.FreeCellForBandMonster(pos)
 	}
 	return true
