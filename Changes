@@ -1,5 +1,7 @@
 v0.3-dev
 
++ Magaras now have a maximum number of charges, to avoid spamming of a single
+  magara.
 + Fix rare bug when blinking to the same place.
 + Make “x” key work in key settings menu.
 + Fix bug which could lead to negative number of bananas when jumping into
