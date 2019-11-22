@@ -5,10 +5,15 @@ import (
 	"fmt"
 )
 
-type magara int
+type magara struct {
+	Kind    magaraKind
+	Charges int
+}
+
+type magaraKind int
 
 const (
-	NoMagara magara = iota
+	NoMagara magaraKind = iota
 	BlinkMagara
 	DigMagara
 	TeleportMagara
@@ -31,7 +36,7 @@ const (
 const NumMagaras = int(LignificationMagara)
 
 func (mag magara) Harmonic() bool {
-	switch mag {
+	switch mag.Kind {
 	case FogMagara, ShadowsMagara, NoiseMagara, ConfusionMagara, SleepingMagara, SlowingMagara:
 		return true
 	default:
@@ -40,7 +45,7 @@ func (mag magara) Harmonic() bool {
 }
 
 func (mag magara) Oric() bool {
-	switch mag {
+	switch mag.Kind {
 	case BlinkMagara, DigMagara, TeleportMagara, LevitationMagara, TeleportOtherMagara, SwappingMagara, ObstructionMagara:
 		return true
 	default:
@@ -48,10 +53,24 @@ func (mag magara) Oric() bool {
 	}
 }
 
-func (g *game) RandomMagara() (mag magara) {
+func (m magaraKind) DefaultCharges() int {
+	switch m {
+	case FireMagara:
+		return 10
+	case BlinkMagara, LevitationMagara, FogMagara, NoiseMagara:
+		return 9
+	case SlowingMagara, ObstructionMagara, SwiftnessMagara:
+		return 8
+	default:
+		return 7
+	}
+}
+
+func (g *game) RandomMagara() magara {
+	var mag magaraKind
 loop:
 	for {
-		mag = magara(1 + RandInt(NumMagaras))
+		mag = magaraKind(1 + RandInt(NumMagaras))
 		for _, m := range g.GeneratedMagaras {
 			if m == mag {
 				continue loop
@@ -59,7 +78,7 @@ loop:
 		}
 		break
 	}
-	return mag
+	return magara{Kind: mag, Charges: mag.DefaultCharges()}
 }
 
 func (g *game) EquipMagara(i int, ev event) (err error) {
@@ -68,7 +87,7 @@ func (g *game) EquipMagara(i int, ev event) (err error) {
 	g.Objects.Magaras[g.Player.Pos] = omagara
 	g.Printf("You take the %s.", g.Player.Magaras[i])
 	g.Printf("You leave the %s.", omagara)
-	g.StoryPrintf("Took %s, left %s", g.Player.Magaras[i], omagara)
+	g.StoryPrintf("Took %s (%d), left %s (%d)", g.Player.Magaras[i], g.Player.Magaras[i].Charges, omagara, omagara.Charges)
 	ev.Renew(g, 5)
 	return nil
 }
@@ -81,12 +100,16 @@ func (g *game) UseMagara(n int, ev event) (err error) {
 		return errors.New("You cannot use magaras while confused.")
 	}
 	mag := g.Player.Magaras[n]
+	if mag.Kind == NoMagara {
+		return errors.New("You cannot evoke an empty slot!")
+	}
 	if mag.MPCost(g) > g.Player.MP {
 		return errors.New("Not enough magic points for using this magara.")
 	}
-	switch mag {
-	case NoMagara:
-		err = errors.New("You cannot evoke an empty slot!")
+	if mag.Charges <= 0 {
+		return errors.New("Not enough charges for using this magara.")
+	}
+	switch mag.Kind {
 	case BlinkMagara:
 		err = g.EvokeBlink(ev)
 	case DigMagara:
@@ -127,7 +150,8 @@ func (g *game) UseMagara(n int, ev event) (err error) {
 	g.Stats.UsedMagaras[mag]++
 	g.Stats.DMagaraUses[g.Depth]++
 	g.Player.MP -= mag.MPCost(g)
-	g.StoryPrintf("Evoked %s (MP: %d)", mag, g.Player.MP)
+	g.Player.Magaras[n].Charges--
+	g.StoryPrintf("Evoked %s (MP: %d, Charges: %d)", mag, g.Player.MP, g.Player.Magaras[n].Charges)
 	if mag.Harmonic() {
 		g.Stats.HarmonicMagUse++
 		if g.Stats.HarmonicMagUse == 7 {
@@ -150,19 +174,19 @@ func (g *game) UseMagara(n int, ev event) (err error) {
 		if g.Stats.OricMagUse == 21 {
 			AchMasterOricCelmist.Get(g)
 		}
-	} else if mag == FireMagara {
+	} else if mag.Kind == FireMagara {
 		g.Stats.FireUse++
-		if g.Stats.FireUse == 4 {
+		if g.Stats.FireUse == 3 {
 			AchPyromancerNovice.Get(g)
 		}
-		if g.Stats.FireUse == 8 {
+		if g.Stats.FireUse == 6 {
 			AchPyromancerInitiate.Get(g)
 		}
-		if g.Stats.FireUse == 12 {
+		if g.Stats.FireUse == 10 {
 			AchPyromancerMaster.Get(g)
 		}
 	}
-	switch mag {
+	switch mag.Kind {
 	case TeleportMagara, TeleportOtherMagara, BlinkMagara, SwappingMagara:
 		g.Stats.OricTelUse++
 		if g.Stats.OricTelUse == 15 {
@@ -174,7 +198,7 @@ func (g *game) UseMagara(n int, ev event) (err error) {
 }
 
 func (mag magara) String() (desc string) {
-	switch mag {
+	switch mag.Kind {
 	case NoMagara:
 		desc = "empty slot"
 	case BlinkMagara:
@@ -213,8 +237,12 @@ func (mag magara) String() (desc string) {
 	return desc
 }
 
+func (mag magara) ShortDesc() string {
+	return fmt.Sprintf("%s (%d)", mag.String(), mag.Charges)
+}
+
 func (mag magara) Desc(g *game) (desc string) {
-	switch mag {
+	switch mag.Kind {
 	case NoMagara:
 		desc = "can be used for a new magara."
 	case BlinkMagara:
@@ -251,7 +279,7 @@ func (mag magara) Desc(g *game) (desc string) {
 		desc = "liberates magical spores that lignify up to 2 monsters in view, so that they cannot move. The monsters can still fight."
 	}
 	duration := 0
-	switch mag {
+	switch mag.Kind {
 	case ConfusionMagara:
 		duration = DurationConfusionMonster
 	case SlowingMagara:
@@ -272,11 +300,12 @@ func (mag magara) Desc(g *game) (desc string) {
 	if duration > 0 {
 		desc += fmt.Sprintf(" Effect lasts for %d turns.", duration/10)
 	}
+	desc += fmt.Sprintf("\n\nIt currently has %d charges.", mag.Charges)
 	return fmt.Sprintf("The %s %s", mag, desc)
 }
 
 func (mag magara) MPCost(g *game) int {
-	if mag == NoMagara {
+	if mag.Kind == NoMagara {
 		return 0
 	}
 	cost := 1

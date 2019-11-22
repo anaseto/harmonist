@@ -1868,7 +1868,7 @@ func (dg *dgen) GenMagara(g *game) {
 	g.Dungeon.SetCell(pos, MagaraCell)
 	mag := g.RandomMagara()
 	g.Objects.Magaras[pos] = mag
-	g.GeneratedMagaras = append(g.GeneratedMagaras, mag)
+	g.GeneratedMagaras = append(g.GeneratedMagaras, mag.Kind)
 }
 
 func (dg *dgen) GenStairs(g *game, st stair) {

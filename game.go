@@ -23,7 +23,7 @@ type game struct {
 	MagicalBarriers    map[position]terrain
 	GeneratedUniques   map[monsterBand]int
 	GeneratedLore      map[int]bool
-	GeneratedMagaras   []magara
+	GeneratedMagaras   []magaraKind
 	GeneratedCloaks    []item
 	GeneratedAmulets   []item
 	GenPlan            [MaxDepth + 1]genFlavour
@@ -223,14 +223,14 @@ func (g *game) InitPlayer() {
 	g.Player.Statuses = map[status]int{}
 	g.Player.Expire = map[status]int{}
 	g.Player.Magaras = []magara{
-		NoMagara,
-		NoMagara,
-		NoMagara,
-		NoMagara,
+		magara{},
+		magara{},
+		magara{},
+		magara{},
 	}
-	g.GeneratedMagaras = []magara{}
+	g.GeneratedMagaras = []magaraKind{}
 	g.Player.Magaras[0] = g.RandomMagara()
-	g.GeneratedMagaras = append(g.GeneratedMagaras, g.Player.Magaras[0])
+	g.GeneratedMagaras = append(g.GeneratedMagaras, g.Player.Magaras[0].Kind)
 	g.Player.Inventory.Misc = MarevorMagara
 	// Testing
 	//g.Player.Magaras[2] = NoiseMagara

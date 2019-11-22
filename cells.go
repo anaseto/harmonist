@@ -204,7 +204,7 @@ func (c cell) ShortDesc(g *game, pos position) (desc string) {
 	case StairCell:
 		desc = g.Objects.Stairs[pos].ShortDesc(g)
 	case MagaraCell:
-		desc = g.Objects.Magaras[pos].String()
+		desc = g.Objects.Magaras[pos].ShortDesc()
 	case BananaCell:
 		desc = "a banana"
 	case LightCell:

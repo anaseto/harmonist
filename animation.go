@@ -494,7 +494,7 @@ func (ui *gameui) FreeingShaedraAnimation() {
 	g.Objects.Scrolls[g.Places.Marevor] = ScrollExtended
 	ui.DrawDungeonView(NoFlushMode)
 	ui.Flush()
-	g.Player.Magaras = append(g.Player.Magaras, NoMagara)
+	g.Player.Magaras = append(g.Player.Magaras, magara{})
 	g.Player.Inventory.Misc = NoItem
 	g.PrintStyled("You have a new empty slot for a magara.", logSpecial)
 	AchRescuedShaedra.Get(g)

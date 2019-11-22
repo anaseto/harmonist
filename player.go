@@ -224,7 +224,7 @@ func (g *game) CollectGround() {
 			}
 		case MagaraCell:
 			for i, mag := range g.Player.Magaras {
-				if mag != NoMagara {
+				if mag.Kind != NoMagara {
 					continue
 				}
 				g.Player.Magaras[i] = g.Objects.Magaras[pos]

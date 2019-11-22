@@ -81,8 +81,8 @@ func (g *game) Dump() string {
 	fmt.Fprintf(buf, "\n\n")
 	fmt.Fprintf(buf, "Magaras:\n")
 	for _, mag := range g.Player.Magaras {
-		if mag != NoMagara {
-			fmt.Fprintf(buf, "- %s (used %d times)\n", mag, g.Stats.UsedMagaras[mag])
+		if mag.Kind != NoMagara {
+			fmt.Fprintf(buf, "- %s (used %d times, charges: %d)\n", mag, g.Stats.UsedMagaras[mag], mag.Charges)
 		}
 	}
 	fmt.Fprintf(buf, "\n")
