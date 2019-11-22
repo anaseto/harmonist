@@ -720,7 +720,6 @@ func (m *monster) SearchAround(g *game, pos position, radius int) position {
 		SearchAroundCache = append(SearchAroundCache, n.Pos)
 	})
 	if len(SearchAroundCache) > 0 {
-		g.Printf("Length: %d", len(SearchAroundCache))
 		p := SearchAroundCache[RandInt(len(SearchAroundCache))]
 		return p
 	}
