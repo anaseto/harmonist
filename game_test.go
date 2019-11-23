@@ -8,12 +8,17 @@ func TestInitLevel(t *testing.T) {
 		g := &game{}
 		for depth := 0; depth < 11; depth++ {
 			g.InitLevel()
-			g.Depth++
+			if g.Depth == WinDepth {
+				if g.Dungeon.Cell(g.Places.Shaedra).T != StoryCell {
+					t.Errorf("Shaedra not there: %+v", g.Places.Shaedra)
+				}
+			}
 			for _, m := range g.Monsters {
 				if !g.Dungeon.Cell(m.Pos).IsPassable() {
 					t.Errorf("Not free: %+v", m.Pos)
 				}
 			}
+			g.Depth++
 		}
 	}
 }

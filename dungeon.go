@@ -1264,6 +1264,26 @@ const (
 	NaturalCave
 )
 
+func (dg *dgen) GenShaedraCell(g *game) {
+	g.Objects.Story = map[position]story{}
+	g.Places.Shaedra = dg.spl.Shaedra
+	g.Objects.Story[g.Places.Shaedra] = StoryShaedra
+	g.Places.Monolith = dg.spl.Monolith
+	g.Objects.Story[g.Places.Monolith] = NoStory
+	g.Places.Marevor = dg.spl.Marevor
+	g.Objects.Story[g.Places.Marevor] = NoStory
+}
+
+func (dg *dgen) GenArtifactPlace(g *game) {
+	g.Objects.Story = map[position]story{}
+	g.Places.Artifact = dg.spl.Artifact
+	g.Objects.Story[g.Places.Artifact] = StoryArtifactSealed
+	g.Places.Monolith = dg.spl.Monolith
+	g.Objects.Story[g.Places.Monolith] = NoStory
+	g.Places.Marevor = dg.spl.Marevor
+	g.Objects.Story[g.Places.Marevor] = NoStory
+}
+
 func (g *game) GenRoomTunnels(ml maplayout) {
 	dg := dgen{}
 	dg.layout = ml
@@ -1314,54 +1334,31 @@ func (g *game) GenRoomTunnels(ml maplayout) {
 			}
 		}
 	}
+	if g.Depth == WinDepth {
+		dg.GenShaedraCell(g)
+		nspecial--
+	} else if g.Depth == MaxDepth {
+		dg.GenArtifactPlace(g)
+		nspecial--
+	}
 	switch ml {
 	case RandomWalkCave:
 		dg.GenRooms(roomBigTemplates, nspecial, PlacementRandom)
 		dg.GenRooms(roomNormalTemplates, 5, PlacementRandom)
 	case RandomWalkTreeCave:
-		if g.Depth == MaxDepth {
-			g.Objects.Story = map[position]story{}
-			g.Places.Artifact = dg.spl.Artifact
-			g.Objects.Story[g.Places.Artifact] = StoryArtifactSealed
-			g.Places.Monolith = dg.spl.Monolith
-			g.Objects.Story[g.Places.Monolith] = NoStory
-			g.Places.Marevor = dg.spl.Marevor
-			g.Objects.Story[g.Places.Marevor] = NoStory
-			dg.GenRooms(roomBigTemplates, nspecial+1, PlacementRandom)
-			dg.GenRooms(roomNormalTemplates, 7, PlacementRandom)
-		} else {
-			dg.GenRooms(roomBigTemplates, nspecial, PlacementRandom)
-			dg.GenRooms(roomNormalTemplates, 7, PlacementRandom)
-		}
+		dg.GenRooms(roomBigTemplates, nspecial+1, PlacementRandom)
+		dg.GenRooms(roomNormalTemplates, 7, PlacementRandom)
 	case RandomSmallWalkCaveUrbanised:
 		nspecial += 3
-		if g.Depth == WinDepth {
-			nspecial--
-		}
 		dg.GenRooms(roomBigTemplates, nspecial, PlacementRandom)
 		dg.GenRooms(roomNormalTemplates, 12, PlacementRandom)
 	case NaturalCave:
 		nspecial += 2
-		if g.Depth == WinDepth {
-			nspecial--
-		}
 		dg.GenRooms(roomBigTemplates, nspecial, PlacementRandom)
 		dg.GenRooms(roomNormalTemplates, 2, PlacementRandom)
 	default:
-		if g.Depth == WinDepth {
-			g.Objects.Story = map[position]story{}
-			g.Places.Shaedra = dg.spl.Shaedra
-			g.Objects.Story[g.Places.Shaedra] = StoryShaedra
-			g.Places.Monolith = dg.spl.Monolith
-			g.Objects.Story[g.Places.Monolith] = NoStory
-			g.Places.Marevor = dg.spl.Marevor
-			g.Objects.Story[g.Places.Marevor] = NoStory
-			dg.GenRooms(roomBigTemplates, nspecial, PlacementRandom)
-			dg.GenRooms(roomNormalTemplates, 7, PlacementRandom)
-		} else {
-			dg.GenRooms(roomBigTemplates, nspecial-1, PlacementRandom)
-			dg.GenRooms(roomNormalTemplates, 7, PlacementRandom)
-		}
+		dg.GenRooms(roomBigTemplates, nspecial, PlacementRandom)
+		dg.GenRooms(roomNormalTemplates, 7, PlacementRandom)
 	}
 	dg.ConnectRooms()
 	g.Dungeon = d
