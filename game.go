@@ -258,7 +258,7 @@ func (g *game) InitFirstLevel() {
 	g.GeneratedUniques = map[monsterBand]int{}
 	g.GeneratedLore = map[int]bool{}
 	g.Stats.KilledMons = map[monsterKind]int{}
-	g.Stats.UsedMagaras = map[magara]int{}
+	g.Stats.UsedMagaras = map[magaraKind]int{}
 	g.Stats.Achievements = map[achievement]int{}
 	g.Stats.Lore = map[int]bool{}
 	g.Stats.Statuses = map[status]int{}

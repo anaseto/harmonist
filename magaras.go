@@ -147,7 +147,7 @@ func (g *game) UseMagara(n int, ev event) (err error) {
 		return err
 	}
 	g.Stats.MagarasUsed++
-	g.Stats.UsedMagaras[mag]++
+	g.Stats.UsedMagaras[mag.Kind]++
 	g.Stats.DMagaraUses[g.Depth]++
 	g.Player.MP -= mag.MPCost(g)
 	g.Player.Magaras[n].Charges--
