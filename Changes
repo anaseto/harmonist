@@ -6,13 +6,13 @@ v0.3-dev
   to their normal duties.
 + Magaras now have a maximum number of charges, to avoid spamming of a single
   magara.
++ New special map layouts more or less urbanised than the common ones.
++ Display number of remaining turns for monsters statuses too.
 + Fix rare bug when blinking to the same place.
 + Make “x” key work in key settings menu.
 + Fix bug which could lead to negative number of bananas when jumping into
   chasm.
-+ Display number of remaining turns for monsters statuses too.
 + Minor UI/messages improvements.
-+ New special map layouts more or less urbanised than the common ones.
 
 -----------------------------------------------------------------------------
 v0.2 2019-07-22
