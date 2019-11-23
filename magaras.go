@@ -56,13 +56,13 @@ func (mag magara) Oric() bool {
 func (m magaraKind) DefaultCharges() int {
 	switch m {
 	case FireMagara:
-		return 10
-	case BlinkMagara, LevitationMagara, FogMagara, NoiseMagara:
-		return 9
-	case SlowingMagara, ObstructionMagara, SwiftnessMagara:
 		return 8
-	default:
+	case BlinkMagara, LevitationMagara, FogMagara, NoiseMagara:
 		return 7
+	case SlowingMagara, ObstructionMagara, SwiftnessMagara:
+		return 6
+	default:
+		return 5
 	}
 }
 
@@ -157,10 +157,10 @@ func (g *game) UseMagara(n int, ev event) (err error) {
 		if g.Stats.HarmonicMagUse == 7 {
 			AchHarmonistNovice.Get(g)
 		}
-		if g.Stats.HarmonicMagUse == 14 {
+		if g.Stats.HarmonicMagUse == 12 {
 			AchHarmonistInitiate.Get(g)
 		}
-		if g.Stats.HarmonicMagUse == 21 {
+		if g.Stats.HarmonicMagUse == 20 {
 			AchHarmonistMaster.Get(g)
 		}
 	} else if mag.Oric() {
@@ -168,21 +168,21 @@ func (g *game) UseMagara(n int, ev event) (err error) {
 		if g.Stats.OricMagUse == 7 {
 			AchNoviceOricCelmist.Get(g)
 		}
-		if g.Stats.OricMagUse == 14 {
+		if g.Stats.OricMagUse == 12 {
 			AchInitiateOricCelmist.Get(g)
 		}
-		if g.Stats.OricMagUse == 21 {
+		if g.Stats.OricMagUse == 20 {
 			AchMasterOricCelmist.Get(g)
 		}
 	} else if mag.Kind == FireMagara {
 		g.Stats.FireUse++
-		if g.Stats.FireUse == 3 {
+		if g.Stats.FireUse == 2 {
 			AchPyromancerNovice.Get(g)
 		}
-		if g.Stats.FireUse == 6 {
+		if g.Stats.FireUse == 4 {
 			AchPyromancerInitiate.Get(g)
 		}
-		if g.Stats.FireUse == 10 {
+		if g.Stats.FireUse == 8 {
 			AchPyromancerMaster.Get(g)
 		}
 	}
