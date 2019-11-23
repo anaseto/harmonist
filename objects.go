@@ -518,6 +518,7 @@ const (
 	CloakAcrobat // no exhaustion between jumps?
 	CloakShadows // reduce monster los?
 	CloakSmoke
+	CloakConversion
 	AmuletTeleport
 	AmuletConfusion
 	AmuletFog
@@ -533,7 +534,8 @@ func (it item) IsCloak() bool {
 		CloakVitality,
 		CloakAcrobat,
 		CloakSmoke,
-		CloakShadows:
+		CloakShadows,
+		CloakConversion:
 		return true
 	}
 	return false
@@ -567,6 +569,8 @@ func (it item) ShortDesc(g *game) (desc string) {
 		desc = "cloak of shadows"
 	case CloakSmoke:
 		desc = "cloak of smoking"
+	case CloakConversion:
+		desc = "cloak of conversion"
 	case AmuletTeleport:
 		desc = "amulet of teleport"
 	case AmuletConfusion:
@@ -599,6 +603,8 @@ func (it item) Desc(g *game) (desc string) {
 		desc = "reduces the range at which foes see you in the dark."
 	case CloakSmoke:
 		desc = "leaves smoke behind as you move, making you difficult to spot."
+	case CloakConversion:
+		desc = "converts lost health from wounds into magical energy."
 	case AmuletTeleport:
 		desc = "teleports away foes that critically hit you."
 	case AmuletConfusion:
@@ -666,7 +672,8 @@ func (g *game) RandomCloak() (it item) {
 		CloakVitality,
 		CloakAcrobat,
 		CloakSmoke,
-		CloakShadows}
+		CloakShadows,
+		CloakConversion}
 loop:
 	for {
 		it = cloaks[RandInt(len(cloaks))]

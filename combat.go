@@ -27,6 +27,9 @@ func (m *monster) InflictDamage(g *game, damage, max int) {
 	} else {
 		g.StoryPrintf("Killed by %s", m.Kind)
 	}
+	if g.Player.HP > 0 && g.Player.Inventory.Body == CloakConversion && g.Player.MP < g.Player.MPMax() {
+		g.Player.MP++
+	}
 }
 
 func (g *game) MakeMonstersAware() {
