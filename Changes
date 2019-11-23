@@ -1,5 +1,9 @@
 v0.3-dev
 
++ Improve monster AI: now they behave differently after they have spotted you
+  at least once. Exact behavior depends on the type of monster, but they all
+  have a chance of exploring around the last place they saw you at, in addition
+  to their normal duties.
 + Magaras now have a maximum number of charges, to avoid spamming of a single
   magara.
 + Fix rare bug when blinking to the same place.
