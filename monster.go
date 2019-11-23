@@ -733,7 +733,9 @@ func (m *monster) NextTarget(g *game) (pos position) {
 	case BehWander:
 		if m.Pos.Distance(band.Path[0]) < 8+RandInt(8) {
 			pos = m.SearchAround(g, m.Pos, 4)
-			break
+			if pos != InvalidPos {
+				break
+			}
 		}
 		if m.Noticed != InvalidPos && RandInt(2) == 0 {
 			pos = m.SearchAround(g, m.Noticed, 7)
@@ -761,7 +763,9 @@ func (m *monster) NextTarget(g *game) (pos position) {
 	case BehGuard:
 		if m.Noticed != InvalidPos && m.Noticed.Distance(m.Pos) < 4 && RandInt(2) == 0 {
 			pos = m.SearchAround(g, m.Noticed, 3)
-			break
+			if pos != InvalidPos {
+				break
+			}
 		}
 		pos = band.Path[0]
 	case BehPatrol:
