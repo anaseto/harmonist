@@ -429,6 +429,9 @@ func (g *game) EvokeTeleportOther(ev event) error {
 		max = len(ms)
 	}
 	for i := 0; i < max; i++ {
+		if ms[i].Noticed == InvalidPos {
+			ms[i].Noticed = ms[i].Pos
+		}
 		ms[i].TeleportAway(g)
 	}
 
@@ -485,6 +488,10 @@ func (g *game) EvokeSwapping(ev event) error {
 	}
 	if !mons.Exists() {
 		return errors.New("No monsters suitable for swapping in view.")
+	}
+	if mons.Kind.CanOpenDoors() {
+		// only intelligent monsters understand swapping
+		mons.Noticed = mons.Pos
 	}
 	g.SwapWithMonster(mons)
 	return nil
@@ -544,6 +551,9 @@ func (g *game) EvokeSlowing(ev event) error {
 			continue
 		}
 		mons.PutStatus(g, MonsSlow, DurationSlowMonster)
+		if mons.Noticed == InvalidPos {
+			mons.Noticed = mons.Pos
+		}
 	}
 	g.Print("Whoosh! A slowing luminous wave emerges.")
 	g.ui.LOSWavesAnimation(DefaultLOSRange, WaveSlowing, g.Player.Pos)
@@ -598,6 +608,9 @@ func (g *game) EvokeLignification(ev event) error {
 			continue
 		}
 		mons.EnterLignification(g, ev)
+		if mons.Noticed == InvalidPos {
+			mons.Noticed = mons.Pos
+		}
 		targets = append(targets, g.Ray(mons.Pos)...)
 	}
 	if max == 1 {
@@ -664,6 +677,9 @@ func (g *game) EvokeConfusion(ev event) error {
 			continue
 		}
 		mons.EnterConfusion(g, ev)
+		if mons.Noticed == InvalidPos {
+			mons.Noticed = mons.Pos
+		}
 	}
 	g.ui.LOSWavesAnimation(DefaultLOSRange, WaveConfusion, g.Player.Pos)
 	return nil
