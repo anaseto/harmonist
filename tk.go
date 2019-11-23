@@ -113,7 +113,7 @@ var InCh chan uiInput
 var Interrupt chan bool
 
 func init() {
-	InCh = make(chan uiInput, 100)
+	InCh = make(chan uiInput, 500)
 	Interrupt = make(chan bool)
 }
 
