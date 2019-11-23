@@ -1303,7 +1303,7 @@ func (g *game) GenRoomTunnels(ml maplayout) {
 		for {
 			places, ok = dg.GenRooms(sr.Templates(), 1, pl)
 			count++
-			if count > 100 {
+			if count > 150 {
 				if g.Depth == WinDepth || g.Depth == MaxDepth {
 					panic("special room")
 				}
@@ -1680,7 +1680,7 @@ func (dg *dgen) OutsideGroundCell(g *game) position {
 	count := 0
 	for {
 		count++
-		if count > 1000 {
+		if count > 1500 {
 			panic("OutsideGroundCell")
 		}
 		x := RandInt(DungeonWidth)
@@ -1701,8 +1701,8 @@ func (dg *dgen) OutsideCavernMiddleCell(g *game) position {
 	count := 0
 	for {
 		count++
-		if count > 2000 {
-			panic("OutsideCavernMiddleCell")
+		if count > 2500 {
+			return InvalidPos
 		}
 		x := RandInt(DungeonWidth)
 		y := RandInt(DungeonHeight)
@@ -1726,7 +1726,7 @@ func (dg *dgen) SatowalgaCell(g *game) position {
 	for {
 		count++
 		if count > 2000 {
-			panic("SatowalgaCell")
+			return g.FreeCellForMonster()
 		}
 		x := RandInt(DungeonWidth)
 		y := RandInt(DungeonHeight)
@@ -1749,7 +1749,7 @@ func (dg *dgen) FoliageCell(g *game) position {
 	count := 0
 	for {
 		count++
-		if count > 1000 {
+		if count > 1500 {
 			panic("FoliageCell")
 		}
 		x := RandInt(DungeonWidth)
@@ -1773,7 +1773,7 @@ func (dg *dgen) OutsideCell(g *game) position {
 	count := 0
 	for {
 		count++
-		if count > 1000 {
+		if count > 1500 {
 			panic("OutsideCell")
 		}
 		x := RandInt(DungeonWidth)
@@ -1794,7 +1794,7 @@ func (dg *dgen) InsideCell(g *game) position {
 	count := 0
 	for {
 		count++
-		if count > 1000 {
+		if count > 1500 {
 			panic("InsideCell")
 		}
 		x := RandInt(DungeonWidth)
@@ -1921,7 +1921,9 @@ func (dg *dgen) GenTable(g *game) {
 
 func (dg *dgen) GenTree(g *game) {
 	pos := dg.OutsideCavernMiddleCell(g)
-	g.Dungeon.SetCell(pos, TreeCell)
+	if pos != InvalidPos {
+		g.Dungeon.SetCell(pos, TreeCell)
+	}
 }
 
 func (dg *dgen) CaveGroundCell(g *game) position {
