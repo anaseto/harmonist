@@ -53,10 +53,14 @@ $can create image 0 0 -anchor nw -image gamescreen
 		} else {
 			s = keysym
 		}
-		InCh <- uiInput{key: s}
+		if len(InCh) < cap(InCh) {
+			InCh <- uiInput{key: s}
+		}
 	})
 	ui.ir.RegisterCommand("MouseDown", func(x, y, b int) {
-		InCh <- uiInput{mouse: true, mouseX: (x - 1) / ui.width, mouseY: (y - 1) / ui.height, button: b - 1}
+		if len(InCh) < cap(InCh) {
+			InCh <- uiInput{mouse: true, mouseX: (x - 1) / ui.width, mouseY: (y - 1) / ui.height, button: b - 1}
+		}
 	})
 	ui.ir.RegisterCommand("MouseMotion", func(x, y int) {
 		if CenteredCamera {
@@ -65,9 +69,11 @@ $can create image 0 0 -anchor nw -image gamescreen
 		nx := (x - 1) / ui.width
 		ny := (y - 1) / ui.height
 		if nx != ui.mousepos.X || ny != ui.mousepos.Y {
-			ui.mousepos.X = nx
-			ui.mousepos.Y = ny
-			InCh <- uiInput{mouse: true, mouseX: nx, mouseY: ny, button: -1}
+			if len(InCh) < cap(InCh) {
+				ui.mousepos.X = nx
+				ui.mousepos.Y = ny
+				InCh <- uiInput{mouse: true, mouseX: nx, mouseY: ny, button: -1}
+			}
 		}
 	})
 	ui.ir.RegisterCommand("OnClosing", func() {
@@ -113,7 +119,7 @@ var InCh chan uiInput
 var Interrupt chan bool
 
 func init() {
-	InCh = make(chan uiInput, 500)
+	InCh = make(chan uiInput, 5)
 	Interrupt = make(chan bool)
 }
 
