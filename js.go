@@ -348,14 +348,18 @@ func (ui *gameui) Init() error {
 			if s == "Unidentified" {
 				s = e.Get("code").String()
 			}
-			InCh <- uiInput{key: s}
+			if len(InCh) < cap(InCh) {
+				InCh <- uiInput{key: s}
+			}
 			return nil
 		}))
 	canvas.Call(
 		"addEventListener", "mousedown", js.FuncOf(func(this js.Value, args []js.Value) interface{} {
 			e := args[0]
 			x, y := ui.GetMousePos(e)
-			InCh <- uiInput{mouse: true, mouseX: x, mouseY: y, button: e.Get("button").Int()}
+			if len(InCh) < cap(InCh) {
+				InCh <- uiInput{mouse: true, mouseX: x, mouseY: y, button: e.Get("button").Int()}
+			}
 			return nil
 		}))
 	canvas.Call(
@@ -368,7 +372,9 @@ func (ui *gameui) Init() error {
 			if x != ui.mousepos.X || y != ui.mousepos.Y {
 				ui.mousepos.X = x
 				ui.mousepos.Y = y
-				InCh <- uiInput{mouse: true, mouseX: x, mouseY: y, button: -1}
+				if len(InCh) < cap(InCh) {
+					InCh <- uiInput{mouse: true, mouseX: x, mouseY: y, button: -1}
+				}
 			}
 			return nil
 		}))
@@ -384,7 +390,7 @@ var InCh chan uiInput
 var Interrupt chan bool
 
 func init() {
-	InCh = make(chan uiInput, 500)
+	InCh = make(chan uiInput, 5)
 	Interrupt = make(chan bool)
 	Flushdone = make(chan bool)
 	ReqFrame = make(chan bool)
