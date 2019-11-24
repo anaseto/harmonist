@@ -990,7 +990,9 @@ func (m *monster) HandleMove(g *game) {
 		m.MoveTo(g, target)
 		m.Path = m.Path[:len(m.Path)-1]
 		mons.MoveTo(g, monstarget)
-		mons.Path = mons.Path[:len(mons.Path)-1]
+		if len(mons.Path) > 0 {
+			mons.Path = mons.Path[:len(mons.Path)-1]
+		}
 		g.MonstersPosCache[m.Pos.idx()] = m.Index + 1
 		mons.Swapped = true
 	case m.State == Hunting && mons.State != Hunting:
