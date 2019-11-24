@@ -2333,7 +2333,7 @@ func (dg *dgen) BandInfoPatrol(g *game, band monsterBand, pl placeKind) bandInfo
 		// TODO: only find place in other room?
 		count++
 		if count > 5000 {
-			pos = dg.InsideCell(g)
+			target = dg.InsideCell(g)
 			break
 		}
 		target = dg.rooms[RandInt(len(dg.rooms)-1)].RandomPlace(pl)
