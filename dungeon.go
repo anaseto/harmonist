@@ -2321,7 +2321,7 @@ func (dg *dgen) BandInfoPatrol(g *game, band monsterBand, pl placeKind) bandInfo
 	count := 0
 	for pos == InvalidPos {
 		count++
-		if count > 5000 {
+		if count > 4000 {
 			pos = dg.InsideCell(g)
 			break
 		}
@@ -2332,7 +2332,7 @@ func (dg *dgen) BandInfoPatrol(g *game, band monsterBand, pl placeKind) bandInfo
 	for target == InvalidPos {
 		// TODO: only find place in other room?
 		count++
-		if count > 5000 {
+		if count > 4000 {
 			target = dg.InsideCell(g)
 			break
 		}
