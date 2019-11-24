@@ -394,6 +394,20 @@ func (ui *gameui) StatusEndAnimation() {
 	ui.Flush()
 }
 
+func (ui *gameui) FoundFakeStairsAnimation() {
+	g := ui.g
+	if DisableAnimations {
+		return
+	}
+	ui.DrawDungeonView(NoFlushMode)
+	r, fg, bg := ui.PositionDrawing(g.Player.Pos)
+	ui.DrawAtPosition(g.Player.Pos, false, r, ColorMagenta, bg)
+	ui.Flush()
+	time.Sleep(AnimDurMediumLong)
+	ui.DrawAtPosition(g.Player.Pos, false, r, fg, bg)
+	ui.Flush()
+}
+
 func (ui *gameui) PushAnimation(path []position) {
 	if DisableAnimations {
 		return

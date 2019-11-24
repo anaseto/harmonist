@@ -1131,6 +1131,9 @@ func (ui *gameui) NextObject(pos position, data *examineData) {
 		for p := range g.Objects.Stairs {
 			data.objects = append(data.objects, p)
 		}
+		for p := range g.Objects.FakeStairs {
+			data.objects = append(data.objects, p)
+		}
 		for p := range g.Objects.Stones {
 			data.objects = append(data.objects, p)
 		}

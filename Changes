@@ -8,6 +8,7 @@ v0.3-dev
   magara.
 + New special map layouts more or less urbanised than the common ones.
 + New cloak of conversion, that generates MP from lost HP.
++ New terrain feature: fake stairs (harmonic illusions).
 + Display number of remaining turns for monsters statuses too.
 + Fix rare bug when blinking to the same place.
 + Make “x” key work in key settings menu.

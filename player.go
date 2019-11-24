@@ -235,6 +235,12 @@ func (g *game) CollectGround() {
 				break switchcell
 			}
 			g.Printf("You stand over %s.", Indefinite(g.Objects.Magaras[pos].String(), false))
+		case FakeStairCell:
+			g.Dungeon.SetCell(pos, GroundCell)
+			g.Print("You stand over fake stairs.")
+			g.Print("Harmonic illusions!")
+			g.StoryPrint("Found harmonic fake stairs!")
+			g.ui.FoundFakeStairsAnimation()
 		default:
 			g.Printf("You are standing over %s.", c.ShortDesc(g, pos))
 		}

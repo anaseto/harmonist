@@ -6,16 +6,17 @@ import (
 )
 
 type objects struct {
-	Stairs  map[position]stair // TODO simplify? (there's never more than one)
-	Stones  map[position]stone
-	Magaras map[position]magara // TODO simplify? (there's never more than one)
-	Barrels map[position]bool
-	Bananas map[position]bool
-	Lights  map[position]bool // true: on, false: off
-	Scrolls map[position]scroll
-	Story   map[position]story
-	Lore    map[position]int // TODO simplify? (there's never more than one)
-	Items   map[position]item
+	Stairs     map[position]stair // TODO simplify? (there's never more than one)
+	Stones     map[position]stone
+	Magaras    map[position]magara // TODO simplify? (there's never more than one)
+	Barrels    map[position]bool
+	Bananas    map[position]bool
+	Lights     map[position]bool // true: on, false: off
+	Scrolls    map[position]scroll
+	Story      map[position]story
+	Lore       map[position]int // TODO simplify? (there's never more than one)
+	Items      map[position]item
+	FakeStairs map[position]bool
 }
 
 type stair int
@@ -38,10 +39,12 @@ func (st stair) String() (desc string) {
 	return desc
 }
 
+const NormalStairShortDesc = "stairs downwards"
+
 func (st stair) ShortDesc(g *game) (desc string) {
 	switch st {
 	case NormalStair:
-		desc = "stairs downwards"
+		desc = NormalStairShortDesc
 	case WinStair:
 		desc = "a monolith portal"
 	case BlockedStair:
@@ -49,6 +52,8 @@ func (st stair) ShortDesc(g *game) (desc string) {
 	}
 	return desc
 }
+
+const NormalStairDesc = "Stairs lead to the next level of Dayoriah Clan's domain in Hareka's Underground. You will not be able to come back, because an oric barrier seals the stairs when they are traversed by intruders. The upside of this is that ennemies cannot follow you either."
 
 func (st stair) Desc(g *game) (desc string) {
 	switch st {
@@ -58,7 +63,7 @@ func (st stair) Desc(g *game) (desc string) {
 			desc += " If you're courageous enough, you may skip this portal and continue going deeper in the dungeon, to find Marevor's magara, finishing Shaedra's failed mission."
 		}
 	case NormalStair:
-		desc = "Stairs lead to the next level of Dayoriah Clan's domain in Hareka's Underground. You will not be able to come back, because an oric barrier seals the stairs when they are traversed by intruders. The upside of this is that ennemies cannot follow you either."
+		desc = NormalStairDesc
 		if g.Depth == WinDepth {
 			desc += " You may want to take those after freeing Shaedra from her cell."
 		}

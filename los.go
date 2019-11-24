@@ -344,6 +344,14 @@ func (g *game) SeeNotable(c cell, pos position) {
 		} else {
 			g.StoryPrintf("Discovered %s", st)
 		}
+	case FakeStairCell:
+		dp := &mappingPath{game: g}
+		_, l, ok := AstarPath(dp, g.Player.Pos, pos)
+		if ok {
+			g.StoryPrintf("Discovered %s (distance: %d)", NormalStairShortDesc, l)
+		} else {
+			g.StoryPrintf("Discovered %s", NormalStairShortDesc)
+		}
 	case StoryCell:
 		st := g.Objects.Story[pos]
 		if st == StoryArtifactSealed {

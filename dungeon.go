@@ -1386,6 +1386,7 @@ func (g *game) GenRoomTunnels(ml maplayout) {
 		} else {
 			dg.GenStairs(g, NormalStair)
 		}
+		dg.GenFakeStairs(g)
 	}
 	for i := 0; i < 4+RandInt(2); i++ {
 		dg.GenBarrel(g)
@@ -1887,6 +1888,36 @@ func (dg *dgen) GenStairs(g *game, st stair) {
 	pos := r.places[pj].pos
 	g.Dungeon.SetCell(pos, StairCell)
 	g.Objects.Stairs[pos] = st
+}
+
+func (dg *dgen) GenFakeStairs(g *game) {
+	if !g.Params.FakeStair[g.Depth] {
+		return
+	}
+	var ri, pj int
+	best := 0
+loop:
+	for i, r := range dg.rooms {
+		for _, pl := range r.places {
+			if dg.d.Cell(pl.pos).T == StairCell {
+				continue loop
+			}
+		}
+		for j, pl := range r.places {
+			score := pl.pos.Distance(g.Player.Pos) + RandInt(20)
+			if !pl.used && pl.kind == PlaceSpecialStatic && score > best {
+				ri = i
+				pj = j
+				best = pl.pos.Distance(g.Player.Pos)
+			}
+		}
+	}
+	r := dg.rooms[ri]
+	r.places[pj].used = true
+	r.places[pj].used = true
+	pos := r.places[pj].pos
+	g.Dungeon.SetCell(pos, FakeStairCell)
+	g.Objects.FakeStairs[pos] = true
 }
 
 func (dg *dgen) GenBarrel(g *game) {

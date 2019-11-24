@@ -67,16 +67,17 @@ type game struct {
 }
 
 type startParams struct {
-	Lore     map[int]bool
-	Blocked  map[int]bool
-	Special  []specialRoom
-	Unstable map[int]bool
-	Windows  map[int]bool
-	Trees    map[int]bool
-	Holes    map[int]bool
-	Stones   map[int]bool
-	Tables   map[int]bool
-	NoMagara map[int]bool
+	Lore      map[int]bool
+	Blocked   map[int]bool
+	Special   []specialRoom
+	Unstable  map[int]bool
+	Windows   map[int]bool
+	Trees     map[int]bool
+	Holes     map[int]bool
+	Stones    map[int]bool
+	Tables    map[int]bool
+	NoMagara  map[int]bool
+	FakeStair map[int]bool
 }
 
 type places struct {
@@ -323,6 +324,16 @@ func (g *game) InitFirstLevel() {
 			g.Params.Unstable[2+RandInt(MaxDepth-1)] = true
 		}
 	}
+	g.Params.FakeStair = map[int]bool{}
+	if RandInt(MaxDepth) > MaxDepth/4 {
+		g.Params.FakeStair[2+RandInt(MaxDepth-2)] = true
+		if RandInt(MaxDepth) > MaxDepth/2 {
+			g.Params.FakeStair[2+RandInt(MaxDepth-2)] = true
+			if RandInt(MaxDepth) == 0 {
+				g.Params.FakeStair[2+RandInt(MaxDepth-2)] = true
+			}
+		}
+	}
 	g.Params.Windows = map[int]bool{}
 	if RandInt(MaxDepth) > MaxDepth/2 {
 		g.Params.Windows[2+RandInt(MaxDepth-1)] = true
@@ -395,6 +406,7 @@ func (g *game) InitLevelStructures() {
 	g.Objects.Bananas = make(map[position]bool, 2)
 	g.Objects.Barrels = map[position]bool{}
 	g.Objects.Lights = map[position]bool{}
+	g.Objects.FakeStairs = map[position]bool{}
 	g.NoiseIllusion = map[position]bool{}
 	g.Clouds = map[position]cloud{}
 	g.MonsterLOS = map[position]bool{}
@@ -466,7 +478,7 @@ func (g *game) StairsSlice() []position {
 	// TODO: use cache?
 	stairs := []position{}
 	for i, c := range g.Dungeon.Cells {
-		if c.T != StairCell || !c.Explored {
+		if (c.T != StairCell && c.T != FakeStairCell) || !c.Explored {
 			continue
 		}
 		pos := idxtopos(i)

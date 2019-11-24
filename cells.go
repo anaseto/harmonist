@@ -33,6 +33,7 @@ const (
 	WaterCell
 	RubbleCell
 	CavernCell
+	FakeStairCell
 )
 
 func (c cell) IsPassable() bool {
@@ -46,7 +47,7 @@ func (c cell) IsPassable() bool {
 
 func (c cell) IsNormalPatrolWay() bool {
 	switch c.T {
-	case GroundCell, ScrollCell, DoorCell, StairCell, LightCell, ItemCell, ExtinguishedLightCell, StoneCell, MagaraCell:
+	case GroundCell, ScrollCell, DoorCell, StairCell, LightCell, ItemCell, ExtinguishedLightCell, StoneCell, MagaraCell, FakeStairCell:
 		return true
 	default:
 		return false
@@ -180,7 +181,7 @@ func (c cell) IsGround() bool {
 
 func (c cell) IsNotable() bool {
 	switch c.T {
-	case StairCell, StoneCell, BarrelCell, MagaraCell, BananaCell, ScrollCell, ItemCell:
+	case StairCell, StoneCell, BarrelCell, MagaraCell, BananaCell, ScrollCell, ItemCell, FakeStairCell:
 		return true
 	default:
 		return false
@@ -235,6 +236,8 @@ func (c cell) ShortDesc(g *game, pos position) (desc string) {
 		desc = "rubblestone"
 	case CavernCell:
 		desc = "cave ground"
+	case FakeStairCell:
+		desc = NormalStairShortDesc
 	}
 	return desc
 }
@@ -287,6 +290,8 @@ func (c cell) Desc(g *game, pos position) (desc string) {
 		desc = "Rubblestone is a collection of rocks broken into smaller stones."
 	case CavernCell:
 		desc = "This is natural cave ground."
+	case FakeStairCell:
+		desc = NormalStairDesc
 	}
 	var autodesc string
 	if !c.T.IsPlayerPassable() {
@@ -365,6 +370,8 @@ func (c cell) Style(g *game, pos position) (r rune, fg uicolor) {
 		r, fg = '^', ColorFgLOS
 	case CavernCell:
 		r, fg = ',', ColorFgLOS
+	case FakeStairCell:
+		r, fg = '>', ColorFgPlace
 	}
 	return r, fg
 }
