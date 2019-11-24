@@ -438,6 +438,7 @@ type monster struct {
 	Watching      int
 	Left          bool
 	Noticed       position
+	Waiting       int
 }
 
 func (m *monster) Init() {
@@ -451,7 +452,7 @@ func (m *monster) Init() {
 	}
 	switch m.Kind {
 	case MonsButterfly:
-		m.State = Wandering
+		m.MakeWander()
 	case MonsSatowalgaPlant:
 		m.StartWatching()
 	}
@@ -509,7 +510,7 @@ func (m *monster) TeleportAway(g *game) {
 	case Hunting:
 		// TODO: change the target or state?
 	case Resting, Wandering:
-		m.State = Wandering
+		m.MakeWander()
 		m.Target = m.Pos
 	}
 	if g.Player.Sees(m.Pos) {
@@ -578,6 +579,7 @@ func (m *monster) PlaceAt(g *game, pos position) {
 	g.MonstersPosCache[m.Pos.idx()] = 0
 	m.Pos = pos
 	g.MonstersPosCache[m.Pos.idx()] = m.Index + 1
+	m.Waiting = 0
 }
 
 func (m *monster) CorrectDir() {
@@ -656,7 +658,7 @@ func (m *monster) NaturalAwake(g *game) {
 	case BehGuard:
 		m.StartWatching()
 	default:
-		m.State = Wandering
+		m.MakeWander()
 	}
 	m.GatherBand(g)
 }
@@ -847,7 +849,7 @@ func (m *monster) HandleWatching(g *game) {
 			nm := Dijkstra(dij, []position{m.Pos}, 5)
 			if _, ok := nm.at(g.Player.Pos); ok {
 				m.Target = g.Player.Pos
-				m.State = Wandering
+				m.MakeWander()
 			}
 		}
 	} else {
@@ -857,11 +859,11 @@ func (m *monster) HandleWatching(g *game) {
 		case BehGuard:
 			m.Alternate()
 			if m.Pos != m.Target {
-				m.State = Wandering
+				m.MakeWander()
 				m.GatherBand(g)
 			}
 		default:
-			m.State = Wandering
+			m.MakeWander()
 			m.GatherBand(g)
 		}
 	}
@@ -978,7 +980,7 @@ func (m *monster) HandleMove(g *game) {
 			}
 			m.Path = m.Path[:len(m.Path)-1]
 		}
-	case mons.Pos == target && m.Pos == monstarget && !mons.Status(MonsLignified):
+	case (mons.Pos == target && m.Pos == monstarget || m.Waiting > 5+RandInt(2)) && !mons.Status(MonsLignified):
 		m.MoveTo(g, target)
 		m.Path = m.Path[:len(m.Path)-1]
 		mons.MoveTo(g, monstarget)
@@ -987,10 +989,9 @@ func (m *monster) HandleMove(g *game) {
 		mons.Swapped = true
 		// XXX this is perhaps not the optimal to handle that case.
 	case m.State == Hunting && mons.State != Hunting:
-		r := RandInt(5)
-		if r == 0 {
+		if m.Waiting > 2+RandInt(3) {
 			if mons.Peaceful(g) {
-				mons.State = Wandering
+				mons.MakeWander()
 			} else {
 				mons.MakeWanderAt(m.Target)
 				mons.GatherBand(g)
@@ -998,16 +999,17 @@ func (m *monster) HandleMove(g *game) {
 		} else {
 			m.Path = m.APath(g, m.Pos, m.Target)
 		}
+		m.Waiting++
 	case !mons.SeesPlayer(g) && mons.State != Hunting:
-		r := RandInt(4)
-		if r == 0 && mons.Kind != MonsSatowalgaPlant {
-			mons.Target = mons.RandomFreeNeighbor(g)
-			mons.State = Wandering
+		if m.Waiting > 1+RandInt(2) && mons.Kind != MonsSatowalgaPlant {
+			mons.MakeWanderAt(mons.RandomFreeNeighbor(g))
 		} else {
 			m.Path = m.APath(g, m.Pos, m.Target)
 		}
+		m.Waiting++
 	default:
 		m.Path = m.APath(g, m.Pos, m.Target)
+		m.Waiting++
 	}
 	g.Ev.Renew(g, m.MoveDelay(g))
 }
@@ -1663,7 +1665,7 @@ func (m *monster) GatherBand(g *game) {
 			}
 			mons.Target = m.Target
 			if mons.State == Resting {
-				mons.State = Wandering
+				mons.MakeWander()
 			}
 		}
 	}
