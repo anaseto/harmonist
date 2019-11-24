@@ -901,6 +901,10 @@ func (m *monster) Peaceful(g *game) bool {
 }
 
 func (m *monster) HandleEndPath(g *game) {
+	if len(m.Path) == 0 && m.Noticed != InvalidPos && m.Noticed.Distance(m.Target) < 10 && m.Pos != m.Target {
+		// the cell where the player was last noticed may not be recheable for the monster
+		m.Noticed = InvalidPos
+	}
 	switch m.State {
 	case Wandering, Hunting:
 		if !m.Peaceful(g) {
@@ -981,13 +985,14 @@ func (m *monster) HandleMove(g *game) {
 			m.Path = m.Path[:len(m.Path)-1]
 		}
 	case (mons.Pos == target && m.Pos == monstarget || m.Waiting > 5+RandInt(2)) && !mons.Status(MonsLignified):
+		target := mons.Pos
+		monstarget := m.Pos
 		m.MoveTo(g, target)
 		m.Path = m.Path[:len(m.Path)-1]
 		mons.MoveTo(g, monstarget)
 		mons.Path = mons.Path[:len(mons.Path)-1]
 		g.MonstersPosCache[m.Pos.idx()] = m.Index + 1
 		mons.Swapped = true
-		// XXX this is perhaps not the optimal to handle that case.
 	case m.State == Hunting && mons.State != Hunting:
 		if m.Waiting > 2+RandInt(3) {
 			if mons.Peaceful(g) {
