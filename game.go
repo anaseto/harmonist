@@ -325,7 +325,7 @@ func (g *game) InitFirstLevel() {
 		}
 	}
 	g.Params.FakeStair = map[int]bool{}
-	if RandInt(MaxDepth) > MaxDepth/4 {
+	if RandInt(MaxDepth) > 0 {
 		g.Params.FakeStair[2+RandInt(MaxDepth-2)] = true
 		if RandInt(MaxDepth) > MaxDepth/2 {
 			g.Params.FakeStair[2+RandInt(MaxDepth-2)] = true
