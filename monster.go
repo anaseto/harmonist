@@ -850,10 +850,11 @@ func (m *monster) HandleMonsSpecifics(g *game) (done bool) {
 			}
 		}
 	case MonsSingingImp:
-		if g.Player.Sees(m.Pos) && RandInt(5) == 0 {
+		if g.Player.Sees(m.Pos) && RandInt(2) == 0 && !m.Status(MonsConfused) && !m.Status(MonsExhausted) {
 			g.PrintStyled("Crazy Imp: “♫ larilon, larila ♫ ♪”", logSpecial)
 			g.MakeNoise(SingingNoise, m.Pos)
-			g.ui.MusicAnimation(m.Pos)
+			//g.ui.MusicAnimation(m.Pos)
+			m.Exhaust(g)
 		}
 	}
 	return false
@@ -1055,7 +1056,7 @@ func (m *monster) HandleTurn(g *game, ev event) {
 	}
 	m.MakeAware(g)
 	if m.State == Resting {
-		if RandInt(3000) == 0 || m.Kind == MonsSingingImp && RandInt(5) == 0 {
+		if RandInt(3000) == 0 || m.Kind == MonsSingingImp && RandInt(20) == 0 {
 			m.NaturalAwake(g)
 		}
 		ev.Renew(g, m.MoveDelay(g))
