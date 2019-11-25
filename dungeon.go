@@ -2497,6 +2497,9 @@ func (dg *dgen) PutMonsterBand(g *game, band monsterBand) bool {
 		} else {
 			bdinf = dg.BandInfoGuardSpecial(g, band)
 		}
+	case UniqueSingingImp:
+		bdinf = dg.BandInfoOutside(g, band)
+		bdinf.Beh = BehCrazyImp
 	default:
 		bdinf = dg.BandInfoPatrol(g, band, PlacePatrol)
 	}
@@ -2608,6 +2611,9 @@ func (dg *dgen) GenMonsters(g *game) {
 			bandOricCelmists := []monsterBand{SpecialLoneOricCelmist}
 			dg.PutRandomBandN(g, bandOricCelmists, 2)
 		}
+	}
+	if g.Depth == g.Params.CrazyImp {
+		dg.PutRandomBand(g, []monsterBand{UniqueSingingImp})
 	}
 	dg.PutRandomBandN(g, bandsButterfly, 2)
 	if dg.layout == RandomSmallWalkCaveUrbanised {

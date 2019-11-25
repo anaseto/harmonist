@@ -87,6 +87,7 @@ const (
 	MonsTreeMushroom
 	//MonsMarevorHelith
 	MonsButterfly
+	MonsSingingImp
 )
 
 func (mk monsterKind) String() string {
@@ -135,7 +136,7 @@ func (mk monsterKind) Smiting() bool {
 
 func (mk monsterKind) Peaceful() bool {
 	switch mk {
-	case MonsButterfly, MonsEarthDragon:
+	case MonsButterfly, MonsEarthDragon, MonsSingingImp:
 		return true
 	default:
 		return false
@@ -279,7 +280,8 @@ var MonsData = []monsterData{
 	MonsVampire:      {10, MonsMedium, 'V', "vampire", 13},
 	MonsTreeMushroom: {10, MonsLarge, 'T', "tree mushroom", 16},
 	//MonsMarevorHelith: {10, MonsMedium, 'M', "Marevor Helith", 18},
-	MonsButterfly: {10, MonsSmall, 'b', "kerejat", 2},
+	MonsButterfly:  {10, MonsSmall, 'b', "kerejat", 2},
+	MonsSingingImp: {10, MonsSmall, 'i', "Crazy Imp", 11},
 }
 
 var MonsDesc = []string{
@@ -310,7 +312,8 @@ var MonsDesc = []string{
 	MonsVampire:      "Vampires are humanoids that drink blood to survive. Their nauseous spitting can cause confusion, impeding the use of magaras for a few turns.",
 	MonsTreeMushroom: "Tree mushrooms are big clunky slow-moving creatures. They can throw lignifying spores at you, leaving you unable to move for a few turns, though the spores will also provide some protection against harm.",
 	//MonsMarevorHelith: "Marevor Helith is an ancient undead nakrus very fond of teleporting people away. He is a well-known expert in the field of magaras - items that many people simply call magical objects. His current research focus is monolith creation. Marevor, a repentant necromancer, is now searching for his old disciple Jaixel in the Underground to help him overcome the past.",
-	MonsButterfly: "Underground's butterflies, called kerejats, wander peacefully around, illuminating their surroundings.",
+	MonsButterfly:  "Underground's butterflies, called kerejats, wander peacefully around, illuminating their surroundings.",
+	MonsSingingImp: "Crazy Imp is a crazy creature that likes to sing with its small guitar. It seems to be fond of monkeys and quite capable at finding them by flair. While singing it may attract unwanted attention.",
 }
 
 type bandInfo struct {
@@ -364,6 +367,7 @@ const (
 	SpecialLoneHarpy
 	SpecialLoneTreeMushroom
 	SpecialLoneMirrorSpecter
+	UniqueSingingImp
 )
 
 type monsterBandData struct {
@@ -415,6 +419,7 @@ var MonsBands = []monsterBandData{
 	SpecialLoneHarpy:           {Monster: MonsTinyHarpy},
 	SpecialLoneTreeMushroom:    {Monster: MonsTreeMushroom},
 	SpecialLoneMirrorSpecter:   {Monster: MonsMirrorSpecter},
+	UniqueSingingImp:           {Monster: MonsSingingImp, Unique: true},
 }
 
 type monster struct {
@@ -710,6 +715,7 @@ const (
 	BehGuard
 	BehWander
 	BehExplore
+	BehCrazyImp
 )
 
 var SearchAroundCache []position
@@ -786,6 +792,13 @@ func (m *monster) NextTarget(g *game) (pos position) {
 		} else {
 			pos = band.Path[1]
 		}
+	case BehCrazyImp:
+		path := m.APath(g, m.Pos, g.Player.Pos)
+		if len(path) == 0 {
+			pos = m.SearchAround(g, m.Pos, 3)
+		} else {
+			pos = g.Player.Pos
+		}
 	}
 	return pos
 }
@@ -835,6 +848,12 @@ func (m *monster) HandleMonsSpecifics(g *game) (done bool) {
 			} else if !on && m.SeesLight(g, pos) {
 				m.Target = pos
 			}
+		}
+	case MonsSingingImp:
+		if g.Player.Sees(m.Pos) && RandInt(5) == 0 {
+			g.PrintStyled("Crazy Imp: “♫ larilon, larila ♫ ♪”", logSpecial)
+			g.MakeNoise(SingingNoise, m.Pos)
+			g.ui.MusicAnimation(m.Pos)
 		}
 	}
 	return false
@@ -1036,7 +1055,7 @@ func (m *monster) HandleTurn(g *game, ev event) {
 	}
 	m.MakeAware(g)
 	if m.State == Resting {
-		if RandInt(3000) == 0 {
+		if RandInt(3000) == 0 || m.Kind == MonsSingingImp && RandInt(5) == 0 {
 			m.NaturalAwake(g)
 		}
 		ev.Renew(g, m.MoveDelay(g))

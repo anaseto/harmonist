@@ -78,6 +78,7 @@ type startParams struct {
 	Tables    map[int]bool
 	NoMagara  map[int]bool
 	FakeStair map[int]bool
+	CrazyImp  int
 }
 
 type places struct {
@@ -389,6 +390,7 @@ func (g *game) InitFirstLevel() {
 	if RandInt(4) == 0 {
 		g.GenPlan[MaxDepth-1], g.GenPlan[MaxDepth] = g.GenPlan[MaxDepth], g.GenPlan[MaxDepth-1]
 	}
+	g.Params.CrazyImp = 2 + RandInt(MaxDepth-2)
 }
 
 func (g *game) InitLevelStructures() {

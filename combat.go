@@ -157,6 +157,7 @@ const (
 	MagicCastNoise      = 5
 	BaseHitNoise        = 2
 	QueenStoneNoise     = 9
+	SingingNoise        = 11
 )
 
 func (g *game) ClangMsg() (sclang string) {

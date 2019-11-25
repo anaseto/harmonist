@@ -951,7 +951,7 @@ func (ui *gameui) PositionDrawing(pos position) (r rune, fgColor, bgColor uicolo
 			r = '♫'
 			fgColor = ColorFgWanderingMonster
 		} else if g.NoiseIllusion[pos] {
-			r = '♫'
+			r = '♪'
 			fgColor = ColorFgMagicPlace
 		}
 		return

@@ -399,13 +399,25 @@ func (ui *gameui) FoundFakeStairsAnimation() {
 	if DisableAnimations {
 		return
 	}
-	ui.DrawDungeonView(NoFlushMode)
 	r, fg, bg := ui.PositionDrawing(g.Player.Pos)
 	ui.DrawAtPosition(g.Player.Pos, false, r, ColorMagenta, bg)
 	ui.Flush()
 	time.Sleep(AnimDurMediumLong)
 	ui.DrawAtPosition(g.Player.Pos, false, r, fg, bg)
 	ui.Flush()
+}
+
+func (ui *gameui) MusicAnimation(pos position) {
+	if DisableAnimations {
+		return
+	}
+	// TODO: not convinced by this animation
+	//r, fg, bg := ui.PositionDrawing(pos)
+	//ui.DrawAtPosition(pos, false, '♪', ColorCyan, bg)
+	//ui.Flush()
+	//time.Sleep(AnimDurMediumLong)
+	//ui.DrawAtPosition(pos, false, r, fg, bg)
+	//ui.Flush()
 }
 
 func (ui *gameui) PushAnimation(path []position) {

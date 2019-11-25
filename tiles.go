@@ -110,6 +110,7 @@ var MapNames = map[rune]string{
 	'√':  "hit",
 	'Φ':  "magic",
 	'☻':  "dreaming",
+	'♪':  "music1",
 	'♫':  "footsteps",
 	'#':  "wall",
 	'@':  "player",
