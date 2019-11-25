@@ -534,8 +534,11 @@ func (m *monster) Sees(g *game, pos position) bool {
 	if g.Player.HasStatus(StatusShadows) {
 		darkRange = 1
 	}
+	if m.Kind == MonsHazeCat {
+		darkRange++
+	}
 	const tableRange = 1
-	if !(m.LOS[pos] && m.Dir.InViewCone(m.Pos, pos)) {
+	if !(m.LOS[pos] && (m.Dir.InViewCone(m.Pos, pos) || m.Kind == MonsHazeCat)) {
 		return false
 	}
 	if m.State == Resting && m.Pos.Distance(pos) > 1 {

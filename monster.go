@@ -88,6 +88,7 @@ const (
 	//MonsMarevorHelith
 	MonsButterfly
 	MonsSingingImp
+	MonsHazeCat
 )
 
 func (mk monsterKind) String() string {
@@ -185,7 +186,7 @@ func (mk monsterKind) CanAttackOnTree() bool {
 		return true
 	case mk.CanFly():
 		return true
-	case mk == MonsBlinkingFrog:
+	case mk == MonsBlinkingFrog || mk == MonsHazeCat:
 		return true
 	default:
 		return false
@@ -282,6 +283,7 @@ var MonsData = []monsterData{
 	//MonsMarevorHelith: {10, MonsMedium, 'M', "Marevor Helith", 18},
 	MonsButterfly:  {10, MonsSmall, 'b', "kerejat", 2},
 	MonsSingingImp: {10, MonsSmall, 'i', "Crazy Imp", 11},
+	MonsHazeCat:    {10, MonsSmall, 'c', "Haze Cat", 11},
 }
 
 var MonsDesc = []string{
@@ -314,6 +316,7 @@ var MonsDesc = []string{
 	//MonsMarevorHelith: "Marevor Helith is an ancient undead nakrus very fond of teleporting people away. He is a well-known expert in the field of magaras - items that many people simply call magical objects. His current research focus is monolith creation. Marevor, a repentant necromancer, is now searching for his old disciple Jaixel in the Underground to help him overcome the past.",
 	MonsButterfly:  "Underground's butterflies, called kerejats, wander peacefully around, illuminating their surroundings.",
 	MonsSingingImp: "Crazy Imp is a crazy creature that likes to sing with its small guitar. It seems to be fond of monkeys and quite capable at finding them by flair. While singing it may attract unwanted attention.",
+	MonsHazeCat:    "Haze cats are a special variety of cats found in the Underground. They have so good vision that people often say they have more than two eyes.",
 }
 
 type bandInfo struct {
@@ -344,6 +347,7 @@ const (
 	LoneButterfly
 	LoneVampire
 	LoneHarpy
+	LoneHazeCat
 	PairGuard
 	PairYack
 	PairFrog
@@ -396,6 +400,7 @@ var MonsBands = []monsterBandData{
 	LoneButterfly:              {Monster: MonsButterfly},
 	LoneVampire:                {Monster: MonsVampire},
 	LoneHarpy:                  {Monster: MonsTinyHarpy},
+	LoneHazeCat:                {Monster: MonsHazeCat},
 	PairGuard:                  {Band: true, Distribution: map[monsterKind]int{MonsGuard: 2}},
 	PairYack:                   {Band: true, Distribution: map[monsterKind]int{MonsYack: 2}},
 	PairFrog:                   {Band: true, Distribution: map[monsterKind]int{MonsBlinkingFrog: 2}},
