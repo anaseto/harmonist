@@ -1546,7 +1546,7 @@ func (m *monster) ThrowAcid(g *game, ev event) bool {
 	}
 	if count > 0 {
 		g.Printf("You lose %d magara charges by corrosion.", count)
-		g.StoryPrintf("Corroded by %s (lost %d charges)", m.Kind, count)
+		g.StoryPrintf("Corroded by %s (lost %d magara charges)", m.Kind, count)
 	}
 	m.ExhaustTime(g, 20)
 	ev.Renew(g, m.Kind.AttackDelay())
