@@ -2481,7 +2481,7 @@ func (dg *dgen) PutMonsterBand(g *game, band monsterBand) bool {
 		bdinf = dg.BandInfoOutsideExplore(g, band)
 	case LoneButterfly:
 		bdinf = dg.BandInfoOutsideExploreButterfly(g, band)
-	case LoneTreeMushroom:
+	case LoneTreeMushroom, LoneAcidMound:
 		bdinf = dg.BandInfoOutside(g, band)
 	case LoneHighGuard:
 		bdinf = dg.BandInfoGuard(g, band, PlacePatrol)
@@ -2542,7 +2542,7 @@ func (dg *dgen) GenMonsters(g *game) {
 	bandsGuard := []monsterBand{LoneGuard}
 	bandsButterfly := []monsterBand{LoneButterfly}
 	bandsHighGuard := []monsterBand{LoneHighGuard}
-	bandsAnimals := []monsterBand{LoneYack, LoneWorm, LoneDog, LoneBlinkingFrog, LoneExplosiveNadre, LoneHarpy}
+	bandsAnimals := []monsterBand{LoneYack, LoneWorm, LoneDog, LoneBlinkingFrog, LoneExplosiveNadre, LoneHarpy, LoneAcidMound}
 	bandsPlants := []monsterBand{LoneSatowalgaPlant}
 	bandsBipeds := []monsterBand{LoneOricCelmist, LoneMirrorSpecter, LoneWingedMilfid, LoneMadNixe, LoneVampire, LoneHarmonicCelmist}
 	bandsRare := []monsterBand{LoneTreeMushroom, LoneEarthDragon, LoneHazeCat}

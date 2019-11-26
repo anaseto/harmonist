@@ -80,7 +80,7 @@ const (
 	MonsWingedMilfid
 	//MonsLich
 	MonsEarthDragon
-	//MonsAcidMound
+	MonsAcidMound
 	MonsExplosiveNadre
 	//MonsMindCelmist
 	MonsVampire
@@ -270,9 +270,9 @@ var MonsData = []monsterData{
 	MonsHarmonicCelmist: {10, MonsMedium, 'h', "harmonic celmist", 9},
 	MonsWorm:            {10, MonsSmall, 'w', "farmer worm", 4},
 	//MonsBrizzia:         {15, 1, 10, 3, 'z', "brizzia", 6},
-	//MonsAcidMound:       {10, 1, 10, 2, 'a', "acid mound", 6},
-	MonsDog:  {10, MonsMedium, 'd', "dog", 5},
-	MonsYack: {10, MonsMedium, 'y', "yack", 5},
+	MonsAcidMound: {10, MonsSmall, 'a', "acid mound", 4},
+	MonsDog:       {10, MonsMedium, 'd', "dog", 5},
+	MonsYack:      {10, MonsMedium, 'y', "yack", 5},
 	//MonsGiantBee:        {5, 1, 10, 1, 'B', "giant bee", 6},
 	MonsHighGuard: {10, MonsMedium, 'G', "high guard", 5},
 	//MonsHydra:           {10, 1, 10, 4, 'H', "hydra", 10},
@@ -303,9 +303,9 @@ var MonsDesc = []string{
 	MonsHarmonicCelmist: "Harmonic celmists are mages specialized in manipulation of sound and light. They can illuminate you with harmonic light, making it more difficult to hide from them.\n\nHarmonies are usually mainly used for sneaking around in the shadows, but they can also be used to reveal ennemies, sadly for you. Although harmonies are often considered as less prestigious magic energies than oric energies, the Dayoriah Clan knows how to make good use of them, as they clearly showed when they stole Marevor's Gem Portal Artifact.",
 	MonsWorm:            "Farmer worms are ugly slow moving creatures. They furrow as they move, helping new foliage to grow.",
 	//MonsBrizzia:         "Brizzias are big slow moving biped creatures. They are quite hardy, and when hurt they can cause nausea, impeding the use of potions.",
-	//MonsAcidMound:       "Acid mounds are acidic creatures. They can temporarily corrode your equipment.",
-	MonsDog:  "Dogs are fast moving carnivore quadrupeds. They can bark, and smell you.",
-	MonsYack: "Yacks are quite large herbivorous quadrupeds. They tend to eat grass peacefully, but upon seing you they may attack, pushing you up to 5 cells away.",
+	MonsAcidMound: "Acid mounds are acidic creatures. They can corrode your magaras, reducing their number of charges.",
+	MonsDog:       "Dogs are fast moving carnivore quadrupeds. They can bark, and smell you.",
+	MonsYack:      "Yacks are quite large herbivorous quadrupeds. They tend to eat grass peacefully, but upon seing you they may attack, pushing you up to 5 cells away.",
 	//MonsGiantBee:        "Giant bees are fragile but extremely fast moving creatures. Their bite can sometimes enrage you.",
 	MonsHighGuard: "High guards watch over a particular location. They can throw javelins.",
 	//MonsHydra:           "Hydras are enormous creatures with four heads that can hit you each at once.",
@@ -357,6 +357,7 @@ const (
 	LoneVampire
 	LoneHarpy
 	LoneHazeCat
+	LoneAcidMound
 	PairGuard
 	PairYack
 	PairFrog
@@ -409,6 +410,7 @@ var MonsBands = []monsterBandData{
 	LoneVampire:                {Monster: MonsVampire},
 	LoneHarpy:                  {Monster: MonsTinyHarpy},
 	LoneHazeCat:                {Monster: MonsHazeCat},
+	LoneAcidMound:              {Monster: MonsAcidMound},
 	PairGuard:                  {Band: true, Distribution: map[monsterKind]int{MonsGuard: 2}},
 	PairYack:                   {Band: true, Distribution: map[monsterKind]int{MonsYack: 2}},
 	PairFrog:                   {Band: true, Distribution: map[monsterKind]int{MonsBlinkingFrog: 2}},
@@ -1238,6 +1240,8 @@ func (m *monster) HitSideEffects(g *game, ev event) {
 		}
 	case MonsYack:
 		m.PushPlayer(g, 5)
+	case MonsAcidMound:
+		m.Corrode(g)
 	case MonsWingedMilfid:
 		if m.Status(MonsExhausted) || g.Player.HasStatus(StatusLignification) {
 			break
@@ -1504,17 +1508,7 @@ func (m *monster) ThrowJavelin(g *game, ev event) bool {
 	return true
 }
 
-func (m *monster) ThrowAcid(g *game, ev event) bool {
-	blocked := m.RangeBlocked(g)
-	if blocked {
-		return false
-	}
-	dmg := DmgNormal
-	noise := g.HitNoise(false) // no clang with acid projectiles
-	g.Printf("%s throws acid at you (%d dmg).", m.Kind.Definite(true), dmg)
-	g.ui.MonsterProjectileAnimation(g.Ray(m.Pos), '*', ColorGreen)
-	g.MakeNoise(noise, g.Player.Pos)
-	m.InflictDamage(g, dmg, dmg)
+func (m *monster) Corrode(g *game) {
 	count := 0
 	for i, _ := range g.Player.Magaras {
 		n := RandInt(2)
@@ -1529,6 +1523,20 @@ func (m *monster) ThrowAcid(g *game, ev event) bool {
 		g.Printf("You lose %d magara charges by corrosion.", count)
 		g.StoryPrintf("Corroded by %s (lost %d magara charges)", m.Kind, count)
 	}
+}
+
+func (m *monster) ThrowAcid(g *game, ev event) bool {
+	blocked := m.RangeBlocked(g)
+	if blocked {
+		return false
+	}
+	dmg := DmgNormal
+	noise := g.HitNoise(false) // no clang with acid projectiles
+	g.Printf("%s throws acid at you (%d dmg).", m.Kind.Definite(true), dmg)
+	g.ui.MonsterProjectileAnimation(g.Ray(m.Pos), '*', ColorGreen)
+	g.MakeNoise(noise, g.Player.Pos)
+	m.InflictDamage(g, dmg, dmg)
+	m.Corrode(g)
 	m.ExhaustTime(g, 20)
 	ev.Renew(g, m.Kind.AttackDelay())
 	return true
