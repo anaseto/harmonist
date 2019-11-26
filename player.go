@@ -252,9 +252,9 @@ func (g *game) CollectGround() {
 	}
 }
 
-func (g *game) FallAbyss(style descendstyle) bool {
+func (g *game) FallAbyss(style descendstyle) {
 	if g.Player.HasStatus(StatusLevitation) {
-		return false
+		return
 	}
 	g.Player.HP -= 2
 	if g.Player.HP <= 0 {
@@ -268,7 +268,6 @@ func (g *game) FallAbyss(style descendstyle) bool {
 		g.Player.Bananas--
 	}
 	g.Descend(style)
-	return true
 }
 
 func (g *game) MovePlayer(pos position, ev event) error {

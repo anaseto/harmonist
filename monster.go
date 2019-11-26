@@ -1162,9 +1162,7 @@ func (m *monster) HitPlayer(g *game, ev event) {
 	if g.Player.HP <= 0 {
 		return
 	}
-	if m.HitSideEffects(g, ev) {
-		return
-	}
+	m.HitSideEffects(g, ev)
 	const HeavyWoundHP = 2
 	if g.Player.HP >= HeavyWoundHP {
 		return
@@ -1224,9 +1222,7 @@ func (m *monster) EnterLignification(g *game, ev event) {
 	}
 }
 
-// HitSideEffects applies monster specific side effects and returns true if no
-// more processing should be done (currently, if you fall into the abyss).
-func (m *monster) HitSideEffects(g *game, ev event) bool {
+func (m *monster) HitSideEffects(g *game, ev event) {
 	switch m.Kind {
 	case MonsEarthDragon:
 		if m.Status(MonsConfused) {
@@ -1253,13 +1249,11 @@ func (m *monster) HitSideEffects(g *game, ev event) bool {
 		g.StoryPrintf("Position swap by %s", m.Kind)
 		m.ExhaustTime(g, 50+RandInt(50))
 		if g.Dungeon.Cell(g.Player.Pos).T == ChasmCell {
-			if g.FallAbyss(DescendFall) {
-				return true
-			}
+			g.PushEvent(&simpleEvent{ERank: ev.Rank(), EAction: AbyssFall})
 		}
 	case MonsTinyHarpy:
 		if m.Status(MonsSatiated) {
-			return false
+			return
 		}
 		g.Player.Bananas--
 		if g.Player.Bananas < 0 {
@@ -1273,7 +1267,6 @@ func (m *monster) HitSideEffects(g *game, ev event) bool {
 			m.MakeWander()
 		}
 	}
-	return false
 }
 
 func (m *monster) PushPlayer(g *game, dist int) {
@@ -1315,16 +1308,12 @@ func (m *monster) PushPlayer(g *game, dist int) {
 			cs = " out of confusion"
 		}
 	}
-	if c.T.IsPlayerPassable() {
-		g.PlacePlayerAt(pos)
-		g.Printf("%s pushes you%s.", m.Kind.Definite(true), cs)
-		g.StoryPrintf("Pushed by %s%s", m.Kind.Definite(true), cs)
-		g.ui.PushAnimation(path)
-	} else if c.T == ChasmCell {
-		g.Printf("%s pushes you%s.", m.Kind.Definite(true), cs)
-		g.StoryPrintf("Pushed by %s%s", m.Kind.Definite(true), cs)
-		g.ui.PushAnimation(path)
-		g.FallAbyss(DescendFall)
+	g.PlacePlayerAt(pos)
+	g.Printf("%s pushes you%s.", m.Kind.Definite(true), cs)
+	g.StoryPrintf("Pushed by %s%s", m.Kind.Definite(true), cs)
+	g.ui.PushAnimation(path)
+	if c.T == ChasmCell {
+		g.PushEvent(&simpleEvent{ERank: g.Ev.Rank(), EAction: AbyssFall})
 	}
 }
 

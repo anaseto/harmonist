@@ -503,7 +503,7 @@ func (g *game) SwapWithMonster(mons *monster) {
 	g.PlacePlayerAt(ompos)
 	mons.MakeAware(g)
 	if g.Dungeon.Cell(g.Player.Pos).T == ChasmCell {
-		g.FallAbyss(DescendFall)
+		g.PushEvent(&simpleEvent{ERank: g.Ev.Rank(), EAction: AbyssFall})
 	}
 }
 

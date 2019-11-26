@@ -58,6 +58,7 @@ const (
 	IlluminatedEnd
 	ShaedraAnimation
 	ArtifactAnimation
+	AbyssFall
 )
 
 func (g *game) PushEvent(ev event) {
@@ -158,6 +159,10 @@ func (sev *simpleEvent) Action(g *game) {
 	case ArtifactAnimation:
 		g.ComputeLOS()
 		g.ui.TakingArtifactAnimation()
+	case AbyssFall:
+		if g.Dungeon.Cell(g.Player.Pos).T == ChasmCell {
+			g.FallAbyss(DescendFall)
+		}
 	case SlowEnd, ExhaustionEnd, HasteEnd, LignificationEnd, ConfusionEnd, NauseaEnd, DigEnd, LevitationEnd, ShadowsEnd, IlluminatedEnd:
 		g.Player.Statuses[EndStatuses[sev.EAction]] -= DurationStatusStep
 		if g.Player.Statuses[EndStatuses[sev.EAction]] <= 0 {
