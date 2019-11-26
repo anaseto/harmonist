@@ -30,10 +30,11 @@ const (
 	SlowingMagara
 	ObstructionMagara
 	LignificationMagara
+	EnergyMagara
 	//BarrierMagara
 )
 
-const NumMagaras = int(LignificationMagara)
+const NumMagaras = int(EnergyMagara)
 
 func (mag magara) Harmonic() bool {
 	switch mag.Kind {
@@ -59,9 +60,31 @@ func (m magaraKind) DefaultCharges() int {
 		return 7
 	case SlowingMagara, ObstructionMagara, SwiftnessMagara, BlinkMagara:
 		return 6
+	case EnergyMagara:
+		return 1
 	default:
 		return 5
 	}
+}
+
+func (g *game) RandomStartingMagara() magara {
+	mags := []magaraKind{BlinkMagara, DigMagara, TeleportMagara,
+		SwiftnessMagara, LevitationMagara, FireMagara, FogMagara,
+		ShadowsMagara, NoiseMagara, ConfusionMagara, SleepingMagara,
+		TeleportOtherMagara, SwappingMagara, SlowingMagara,
+		ObstructionMagara, LignificationMagara}
+	var mag magaraKind
+loop:
+	for {
+		mag = mags[RandInt(len(mags))]
+		for _, m := range g.GeneratedMagaras {
+			if m == mag {
+				continue loop
+			}
+		}
+		break
+	}
+	return magara{Kind: mag, Charges: mag.DefaultCharges()}
 }
 
 func (g *game) RandomMagara() magara {
@@ -140,6 +163,8 @@ func (g *game) UseMagara(n int, ev event) (err error) {
 		err = g.EvokeObstruction(ev)
 	case LignificationMagara:
 		err = g.EvokeLignification(ev)
+	case EnergyMagara:
+		err = g.EvokeEnergyMagara(ev)
 	}
 	if err != nil {
 		return err
@@ -231,6 +256,8 @@ func (mag magara) String() (desc string) {
 		desc = "magara of obstruction"
 	case LignificationMagara:
 		desc = "magara of lignification"
+	case EnergyMagara:
+		desc = "magara of energy"
 	}
 	return desc
 }
@@ -275,6 +302,8 @@ func (mag magara) Desc(g *game) (desc string) {
 		desc = "creates temporal barriers with oric energy between you and monsters in sight."
 	case LignificationMagara:
 		desc = "liberates magical spores that lignify up to 2 monsters in view, so that they cannot move. The monsters can still fight."
+	case EnergyMagara:
+		desc = "replenishes your MP and HP."
 	}
 	duration := 0
 	switch mag.Kind {
@@ -303,7 +332,7 @@ func (mag magara) Desc(g *game) (desc string) {
 }
 
 func (mag magara) MPCost(g *game) int {
-	if mag.Kind == NoMagara {
+	if mag.Kind == NoMagara || mag.Kind == EnergyMagara {
 		return 0
 	}
 	cost := 1
@@ -745,4 +774,15 @@ func (g *game) CreateMagicalBarrierAt(pos position, ev event) {
 	delete(g.Clouds, pos)
 	g.MagicalBarriers[pos] = t
 	g.PushEvent(&cloudEvent{ERank: ev.Rank() + DurationMagicalBarrier + RandInt(DurationMagicalBarrier/2), Pos: pos, EAction: ObstructionEnd})
+}
+
+func (g *game) EvokeEnergyMagara(ev event) error {
+	if g.Player.MP == g.Player.MPMax() && g.Player.HP == g.Player.HPMax() {
+		return errors.New("You are already full of energy.")
+	}
+	g.Print("The magara glows.")
+	g.ui.PlayerGoodEffectAnimation()
+	g.Player.MP = g.Player.MPMax()
+	g.Player.HP = g.Player.HPMax()
+	return nil
 }

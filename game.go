@@ -230,7 +230,7 @@ func (g *game) InitPlayer() {
 		magara{},
 	}
 	g.GeneratedMagaras = []magaraKind{}
-	g.Player.Magaras[0] = g.RandomMagara()
+	g.Player.Magaras[0] = g.RandomStartingMagara()
 	g.GeneratedMagaras = append(g.GeneratedMagaras, g.Player.Magaras[0].Kind)
 	g.Player.Inventory.Misc = MarevorMagara
 	// Testing
