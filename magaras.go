@@ -502,6 +502,9 @@ func (g *game) SwapWithMonster(mons *monster) {
 	mons.MoveTo(g, g.Player.Pos)
 	g.PlacePlayerAt(ompos)
 	mons.MakeAware(g)
+	if g.Dungeon.Cell(g.Player.Pos).T == ChasmCell {
+		g.FallAbyss(DescendFall)
+	}
 }
 
 type cloud int

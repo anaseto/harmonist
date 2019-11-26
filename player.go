@@ -253,6 +253,9 @@ func (g *game) CollectGround() {
 }
 
 func (g *game) FallAbyss(style descendstyle) {
+	if g.Player.HasStatus(StatusLevitation) {
+		return
+	}
 	g.Player.HP -= 2
 	if g.Player.HP <= 0 {
 		g.Player.HP = 1

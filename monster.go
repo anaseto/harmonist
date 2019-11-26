@@ -1151,10 +1151,6 @@ func (m *monster) HitPlayer(g *game, ev event) {
 	}
 	dmg := m.Attack
 	clang := RandInt(4) == 0
-	if g.Player.HasStatus(StatusSwap) && !g.Player.HasStatus(StatusLignification) && !m.Status(MonsLignified) {
-		g.SwapWithMonster(m)
-		return
-	}
 	noise := g.HitNoise(clang)
 	g.MakeNoise(noise, g.Player.Pos)
 	var sclang string
@@ -1252,6 +1248,9 @@ func (m *monster) HitSideEffects(g *game, ev event) {
 		g.Print("The flying milfid makes you swap positions.")
 		g.StoryPrintf("Position swap by %s", m.Kind)
 		m.ExhaustTime(g, 50+RandInt(50))
+		if g.Dungeon.Cell(g.Player.Pos).T == ChasmCell {
+			g.FallAbyss(DescendFall)
+		}
 	case MonsTinyHarpy:
 		if m.Status(MonsSatiated) {
 			return
