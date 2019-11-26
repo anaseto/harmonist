@@ -245,11 +245,12 @@ type room struct {
 	places  []place
 	kind    string
 	special bool
+	tunnels int
 }
 
 func roomDistance(r1, r2 *room) int {
 	// TODO: use the center?
-	return Abs(r1.pos.X-r2.pos.X) + Abs(r1.pos.Y-r2.pos.Y)
+	return Abs(r1.pos.X+r1.w/2-r2.pos.X-r2.w/2) + Abs(r1.pos.Y+r1.h/2-r2.pos.Y-r2.h/2)
 }
 
 type roomSlice []*room
@@ -342,6 +343,8 @@ func (dg *dgen) ConnectRoomsShortestPath(i, j int) bool {
 	}
 	r1.entries[e1i].used = true
 	r2.entries[e2i].used = true
+	r1.tunnels++
+	r2.tunnels++
 	return true
 }
 
@@ -1082,13 +1085,32 @@ func (dg *dgen) NewRoom(rpos position, kind string) *room {
 	return r
 }
 
-func (dg *dgen) nearestRoom(i int) (k int) {
+func (dg *dgen) nearestConnectedRoom(i int) (k int) {
 	r := dg.rooms[i]
-	d := roomDistance(r, dg.rooms[k])
-	for j, nextRoom := range dg.rooms[i:] {
+	d := unreachable
+	for j, nextRoom := range dg.rooms[:i] {
+		if j == i {
+			continue
+		}
 		nd := roomDistance(r, nextRoom)
 		if nd < d {
-			n := RandInt(15)
+			d = nd
+			k = j
+		}
+	}
+	return k
+}
+
+func (dg *dgen) nearRoom(i int) (k int) {
+	r := dg.rooms[i]
+	d := unreachable
+	for j, nextRoom := range dg.rooms {
+		if j == i {
+			continue
+		}
+		nd := roomDistance(r, nextRoom)
+		if nd < d {
+			n := RandInt(5)
 			if n > 0 {
 				d = nd
 				k = j
@@ -1236,21 +1258,49 @@ func (dg *dgen) GenRooms(templates []string, n int, pl placement) (ps []position
 
 func (dg *dgen) ConnectRooms() {
 	sort.Sort(roomSlice(dg.rooms))
-	for i := range dg.rooms {
+	for i, r := range dg.rooms {
 		if i == 0 {
 			continue
 		}
-		ok := dg.ConnectRoomsShortestPath(dg.nearestRoom(i), i)
+		if r.tunnels > 0 {
+			continue
+		}
+		nearest := dg.nearestConnectedRoom(i)
+		ok := dg.ConnectRoomsShortestPath(nearest, i)
 		for !ok {
-			ok = dg.ConnectRoomsShortestPath(RandInt(len(dg.rooms)), i)
+			panic("connect rooms")
 		}
 	}
-	for i := 0; i < 4; i++ {
-		j := RandInt(len(dg.rooms))
-		k := RandInt(len(dg.rooms))
-		if j != k {
-			dg.ConnectRoomsShortestPath(j, k)
+	extraTunnels := 6
+	switch dg.layout {
+	case RandomSmallWalkCaveUrbanised:
+		extraTunnels = 7
+	case NaturalCave:
+		extraTunnels = 4
+	}
+	count := 0
+	for i, r := range dg.rooms {
+		if count >= extraTunnels {
+			break
 		}
+		if r.tunnels > 1 {
+			continue
+		}
+		count++
+		dg.ConnectRoomsShortestPath(i, dg.nearRoom(i))
+	}
+	if count >= extraTunnels {
+		return
+	}
+	for i, r := range dg.rooms {
+		if count >= extraTunnels {
+			break
+		}
+		if r.tunnels > 2 {
+			continue
+		}
+		count++
+		dg.ConnectRoomsShortestPath(i, dg.nearRoom(i))
 	}
 }
 
@@ -1297,16 +1347,16 @@ func (g *game) GenRoomTunnels(ml maplayout) {
 	case AutomataCave:
 		dg.GenCellularAutomataCaveMap()
 	case RandomWalkCave:
-		dg.GenCaveMap(21 * 40)
+		dg.GenCaveMap(21 * 42)
 	case RandomWalkTreeCave:
 		dg.GenTreeCaveMap()
 	case RandomSmallWalkCaveUrbanised:
-		dg.GenCaveMap(10 * 10)
+		dg.GenCaveMap(20 * 10)
 	case NaturalCave:
 		if RandInt(3) == 0 {
 			dg.GenCellularAutomataCaveMap()
 		} else {
-			dg.GenCaveMap(21 * 45)
+			dg.GenCaveMap(21 * 47)
 		}
 	}
 	var places []position
@@ -1748,7 +1798,7 @@ func (dg *dgen) FoliageCell(g *game) position {
 	for {
 		count++
 		if count > 1500 {
-			panic("FoliageCell")
+			return dg.OutsideCell(g)
 		}
 		x := RandInt(DungeonWidth)
 		y := RandInt(DungeonHeight)
@@ -2131,9 +2181,9 @@ func (dg *dgen) Foliage(less bool) {
 	// walls will become foliage
 	d := &dungeon{}
 	d.Cells = make([]cell, DungeonNCells)
-	limit := 45
+	limit := 47
 	if less {
-		limit = 43
+		limit = 45
 	}
 	for i := range d.Cells {
 		r := RandInt(100)
@@ -2173,8 +2223,8 @@ func (dg *dgen) Foliage(less bool) {
 		}
 		d.Cells = bufm.Cells
 	}
-	for i, c := range d.Cells {
-		if c.T == GroundCell {
+	for i, c := range dg.d.Cells {
+		if c.T == GroundCell && d.Cells[i].T == GroundCell {
 			dg.d.SetCell(idxtopos(i), FoliageCell)
 		}
 	}
@@ -2258,7 +2308,7 @@ func (dg *dgen) GenTreeCaveMap() {
 	d.SetCell(center.NW(), GroundCell)
 	d.SetCell(center.W(), GroundCell)
 	d.SetCell(center.SW(), GroundCell)
-	max := 21 * 19
+	max := 21 * 21
 	cells := 1
 	block := make([]position, 0, 64)
 loop:
