@@ -2868,13 +2868,13 @@ func (dg *dgen) GenMonsters(g *game) {
 			dg.PutRandomBandN(g, []monsterBand{PairSatowalga}, 1)
 		}
 	case 10:
-		// 20
+		// 21
 		dg.PutRandomBandN(g, bandsHighGuard, 2)
 		if RandInt(2) == 0 {
-			// 18
+			// 19
 			dg.PutRandomBandN(g, bandsGuard, 7)
 			dg.PutRandomBandN(g, bandGuardPair, 1)
-			dg.PutRandomBandN(g, bandsRare, 1)
+			dg.PutRandomBandN(g, bandsRare, 2)
 			if RandInt(2) == 0 {
 				dg.PutRandomBandN(g, bandsBipeds, 8)
 			} else {
@@ -2882,7 +2882,7 @@ func (dg *dgen) GenMonsters(g *game) {
 				dg.PutRandomBandN(g, bandMirrorSpecter, 4)
 			}
 		} else {
-			// 18
+			// 19
 			dg.PutRandomBandN(g, bandGuardPair, 1)
 			if RandInt(3) == 0 {
 				dg.PutRandomBandN(g, bandsGuard, 4)
@@ -2901,6 +2901,7 @@ func (dg *dgen) GenMonsters(g *game) {
 			}
 			dg.PutRandomBandN(g, bandsAnimals, 2)
 			dg.PutRandomBandN(g, bandsPlants, 1)
+			dg.PutRandomBandN(g, bandsRare, 1)
 		}
 	case 11:
 		// 25-26
