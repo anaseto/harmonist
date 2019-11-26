@@ -21,7 +21,6 @@ type game struct {
 	Objects            objects
 	Clouds             map[position]cloud
 	MagicalBarriers    map[position]terrain
-	GeneratedUniques   map[monsterBand]int
 	GeneratedLore      map[int]bool
 	GeneratedMagaras   []magaraKind
 	GeneratedCloaks    []item
@@ -257,7 +256,6 @@ func (g *game) InitFirstLevel() {
 	g.Targeting = InvalidPos
 	g.Illuminated = make([]bool, DungeonNCells)
 	g.RaysCache = rayMap{}
-	g.GeneratedUniques = map[monsterBand]int{}
 	g.GeneratedLore = map[int]bool{}
 	g.Stats.KilledMons = map[monsterKind]int{}
 	g.Stats.UsedMagaras = map[magaraKind]int{}

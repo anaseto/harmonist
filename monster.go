@@ -387,7 +387,6 @@ type monsterBandData struct {
 	Distribution map[monsterKind]int
 	Band         bool
 	Monster      monsterKind
-	Unique       bool
 }
 
 var MonsBands = []monsterBandData{
@@ -433,7 +432,7 @@ var MonsBands = []monsterBandData{
 	SpecialLoneHarpy:           {Monster: MonsTinyHarpy},
 	SpecialLoneTreeMushroom:    {Monster: MonsTreeMushroom},
 	SpecialLoneMirrorSpecter:   {Monster: MonsMirrorSpecter},
-	UniqueSingingImp:           {Monster: MonsCrazyImp, Unique: true},
+	UniqueSingingImp:           {Monster: MonsCrazyImp},
 }
 
 type monster struct {

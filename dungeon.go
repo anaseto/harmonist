@@ -2281,9 +2281,6 @@ loop:
 
 func (g *game) GenBand(band monsterBand) []monsterKind {
 	mbd := MonsBands[band]
-	if g.GeneratedUniques[band] > 0 && mbd.Unique {
-		return nil
-	}
 	if !mbd.Band {
 		return []monsterKind{mbd.Monster}
 	}
