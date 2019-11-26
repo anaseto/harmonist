@@ -1383,28 +1383,6 @@ func (m *monster) RangeBlocked(g *game) bool {
 	return false
 }
 
-//func (m *monster) TormentBolt(g *game, ev event) bool {
-//blocked := m.RangeBlocked(g)
-//if blocked {
-//return false
-//}
-//g.MakeNoise(MagicCastNoise, m.Pos)
-//if RandInt(3) > 0 {
-//damage := g.Player.HP / 2
-//g.PrintfStyled("%s throws a bolt of torment at you.", logMonsterHit, m.Kind.Definite(true))
-//g.ui.MonsterProjectileAnimation(g.Ray(m.Pos), '*', ColorCyan)
-//g.MakeNoise(MagicHitNoise, g.Player.Pos)
-//m.InflictDamage(g, damage, 1)
-//} else {
-//g.Printf("You dodge the %s's bolt of torment.", m.Kind)
-//g.ui.MonsterProjectileAnimation(g.Ray(m.Pos), '*', ColorCyan)
-//// TODO: hit monster behind?
-//}
-//m.Exhaust(g)
-//ev.Renew(g, m.Kind.AttackDelay())
-//return true
-//}
-
 func (g *game) BarrierCandidates(pos position, todir direction) []position {
 	candidates := pos.ValidCardinalNeighbors()
 	bestpos := pos.To(todir)
