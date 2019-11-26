@@ -87,7 +87,7 @@ const (
 	MonsTreeMushroom
 	//MonsMarevorHelith
 	MonsButterfly
-	MonsSingingImp
+	MonsCrazyImp
 	MonsHazeCat
 )
 
@@ -137,7 +137,7 @@ func (mk monsterKind) Smiting() bool {
 
 func (mk monsterKind) Peaceful() bool {
 	switch mk {
-	case MonsButterfly, MonsEarthDragon, MonsSingingImp:
+	case MonsButterfly, MonsEarthDragon, MonsCrazyImp:
 		return true
 	default:
 		return false
@@ -146,7 +146,7 @@ func (mk monsterKind) Peaceful() bool {
 
 func (mk monsterKind) Notable() bool {
 	switch mk {
-	case MonsSingingImp, MonsEarthDragon, MonsHazeCat:
+	case MonsCrazyImp, MonsEarthDragon, MonsHazeCat:
 		return true
 	default:
 		return false
@@ -290,9 +290,9 @@ var MonsData = []monsterData{
 	MonsVampire:      {10, MonsMedium, 'V', "vampire", 13},
 	MonsTreeMushroom: {10, MonsLarge, 'T', "tree mushroom", 16},
 	//MonsMarevorHelith: {10, MonsMedium, 'M', "Marevor Helith", 18},
-	MonsButterfly:  {10, MonsSmall, 'b', "kerejat", 2},
-	MonsSingingImp: {10, MonsSmall, 'i', "Crazy Imp", 11},
-	MonsHazeCat:    {10, MonsSmall, 'c', "Haze Cat", 11},
+	MonsButterfly: {10, MonsSmall, 'b', "kerejat", 2},
+	MonsCrazyImp:  {10, MonsSmall, 'i', "Crazy Imp", 11},
+	MonsHazeCat:   {10, MonsSmall, 'c', "Haze Cat", 11},
 }
 
 var MonsDesc = []string{
@@ -323,9 +323,9 @@ var MonsDesc = []string{
 	MonsVampire:      "Vampires are humanoids that drink blood to survive. Their nauseous spitting can cause confusion, impeding the use of magaras for a few turns.",
 	MonsTreeMushroom: "Tree mushrooms are big clunky slow-moving creatures. They can throw lignifying spores at you, leaving you unable to move for a few turns, though the spores will also provide some protection against harm.",
 	//MonsMarevorHelith: "Marevor Helith is an ancient undead nakrus very fond of teleporting people away. He is a well-known expert in the field of magaras - items that many people simply call magical objects. His current research focus is monolith creation. Marevor, a repentant necromancer, is now searching for his old disciple Jaixel in the Underground to help him overcome the past.",
-	MonsButterfly:  "Underground's butterflies, called kerejats, wander peacefully around, illuminating their surroundings.",
-	MonsSingingImp: "Crazy Imp is a crazy creature that likes to sing with its small guitar. It seems to be fond of monkeys and quite capable at finding them by flair. While singing it may attract unwanted attention.",
-	MonsHazeCat:    "Haze cats are a special variety of cats found in the Underground. They have so good vision that people often say they have more than two eyes.",
+	MonsButterfly: "Underground's butterflies, called kerejats, wander peacefully around, illuminating their surroundings.",
+	MonsCrazyImp:  "Crazy Imp is a crazy creature that likes to sing with its small guitar. It seems to be fond of monkeys and quite capable at finding them by flair. While singing it may attract unwanted attention.",
+	MonsHazeCat:   "Haze cats are a special variety of cats found in the Underground. They have so good vision that people often say they have more than two eyes.",
 }
 
 type bandInfo struct {
@@ -433,7 +433,7 @@ var MonsBands = []monsterBandData{
 	SpecialLoneHarpy:           {Monster: MonsTinyHarpy},
 	SpecialLoneTreeMushroom:    {Monster: MonsTreeMushroom},
 	SpecialLoneMirrorSpecter:   {Monster: MonsMirrorSpecter},
-	UniqueSingingImp:           {Monster: MonsSingingImp, Unique: true},
+	UniqueSingingImp:           {Monster: MonsCrazyImp, Unique: true},
 }
 
 type monster struct {
@@ -863,7 +863,7 @@ func (m *monster) HandleMonsSpecifics(g *game) (done bool) {
 				m.Target = pos
 			}
 		}
-	case MonsSingingImp:
+	case MonsCrazyImp:
 		if g.Player.Sees(m.Pos) && RandInt(2) == 0 && !m.Status(MonsConfused) && !m.Status(MonsExhausted) {
 			g.PrintStyled("Crazy Imp: “♫ larilon, larila ♫ ♪”", logSpecial)
 			g.MakeNoise(SingingNoise, m.Pos)
@@ -1070,7 +1070,7 @@ func (m *monster) HandleTurn(g *game, ev event) {
 	}
 	m.MakeAware(g)
 	if m.State == Resting {
-		if RandInt(3000) == 0 || m.Kind == MonsSingingImp && RandInt(20) == 0 {
+		if RandInt(3000) == 0 || m.Kind == MonsCrazyImp && RandInt(20) == 0 {
 			m.NaturalAwake(g)
 		}
 		ev.Renew(g, m.MoveDelay(g))
