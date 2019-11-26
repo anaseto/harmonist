@@ -308,7 +308,7 @@ var MonsDesc = []string{
 	MonsEarthDragon:    "Earth dragons are big creatures from a dragon species that wander in the Underground. They are peaceful creatures, but they may hurt you inadvertently, pushing you up to 6 tiles away (3 if confused). They naturally emit powerful oric energies, allowing them to eat rocks and dig tunnels. Their oric energies can confuse you if you're close enough, for example if they hurt you or you jump over them.",
 	MonsMirrorSpecter:  "Mirror specters are very insubstantial creatures, which can absorb your mana.",
 	MonsExplosiveNadre: "Nadres are dragon-like biped creatures that are famous for exploding upon dying. Explosive nadres are a tiny nadre race that explodes upon attacking. The explosion confuses any adjacent creatures and occasionally destroys walls.",
-	MonsSatowalgaPlant: "Satowalga Plants are immobile bushes that throw slowing viscous acidic projectiles at you, halving the speed of your movements. They attack at half normal speed.",
+	MonsSatowalgaPlant: "Satowalga Plants are immobile bushes that throw slowing viscous acidic projectiles at you, destroying some of your magara charges. They attack at half normal speed.",
 	MonsMadNixe:        "Nixes are magical humanoids. Usually, they specialize in illusion harmonic magic, but the so called mad nixes are a perverted variant who learned the oric arts to create a spell that can attract their foes to them, so that they can kill them without pursuing them.",
 	//MonsMindCelmist:     "Mind celmists are mages that use magical smitting mind attacks that bypass armour. They can occasionally confuse or slow you. They try to avoid melee.",
 	MonsVampire:      "Vampires are humanoids that drink blood to survive. Their nauseous spitting can cause confusion, impeding the use of magaras for a few turns.",
@@ -1534,11 +1534,21 @@ func (m *monster) ThrowAcid(g *game, ev event) bool {
 	g.ui.MonsterProjectileAnimation(g.Ray(m.Pos), '*', ColorGreen)
 	g.MakeNoise(noise, g.Player.Pos)
 	m.InflictDamage(g, dmg, dmg)
-	if g.PutStatus(StatusSlow, DurationSleepSlow) {
-		g.Print("The viscous substance slows you.")
-		g.StoryPrintf("Slowed by %s viscous substance", m.Kind)
+	count := 0
+	for i, _ := range g.Player.Magaras {
+		n := RandInt(2)
+		g.Player.Magaras[i].Charges -= n
+		if g.Player.Magaras[i].Charges < 0 {
+			g.Player.Magaras[i].Charges = 0
+		} else {
+			count += n
+		}
 	}
-	m.ExhaustTime(g, 40)
+	if count > 0 {
+		g.Printf("You lose %d magara charges by corrosion.", count)
+		g.StoryPrintf("Corroded by %s (lost %d charges)", m.Kind, count)
+	}
+	m.ExhaustTime(g, 20)
 	ev.Renew(g, m.Kind.AttackDelay())
 	return true
 }
