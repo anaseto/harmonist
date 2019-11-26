@@ -531,17 +531,17 @@ func (m *monster) SeesLight(g *game, pos position) bool {
 
 func (m *monster) Sees(g *game, pos position) bool {
 	var darkRange = 4
+	if m.Kind == MonsHazeCat {
+		darkRange = DefaultMonsterLOSRange
+	}
 	if g.Player.Inventory.Body == CloakShadows {
-		darkRange = 3
+		darkRange--
 	}
 	if g.Player.HasStatus(StatusShadows) {
 		darkRange = 1
 	}
-	if m.Kind == MonsHazeCat {
-		darkRange++
-	}
 	const tableRange = 1
-	if !(m.LOS[pos] && (m.Dir.InViewCone(m.Pos, pos) || m.Kind == MonsHazeCat)) {
+	if !(m.LOS[pos] && (m.Dir.InViewCone(m.Pos, pos) || m.Kind == MonsSpider)) {
 		return false
 	}
 	if m.State == Resting && m.Pos.Distance(pos) > 1 {

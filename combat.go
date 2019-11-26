@@ -142,9 +142,7 @@ func (g *game) HandleKill(mons *monster) {
 	if g.Dungeon.Cell(mons.Pos).T == DoorCell {
 		g.ComputeLOS()
 	}
-	if mons.Kind.Dangerousness() > 10 {
-		g.StoryPrintf("Death of %s", mons.Kind.Indefinite(false))
-	}
+	g.StoryPrintf("Death of %s", mons.Kind.Indefinite(false))
 }
 
 const (

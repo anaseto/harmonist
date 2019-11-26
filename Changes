@@ -10,7 +10,8 @@ v0.3-dev
 + New cloak of conversion, that generates MP from lost HP.
 + New terrain feature: fake stairs (harmonic illusions).
 + New unique monster: Crazy Imp that sings and plays guitar.
-+ New monster: haze cat, with very good vision (in all directions).
++ New monster: haze cat, with very good night vision.
++ New monster: spiders, with panoramic vision and confusing bite.
 + New magara of energy that replenishes HP and MP, but only has one charge.
 + Satowalga plants now may corrode your magara charges, instead of slowing you.
 + Display number of remaining turns for monsters statuses too.

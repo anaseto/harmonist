@@ -76,7 +76,7 @@ const (
 	MonsHighGuard
 	//MonsHydra
 	//MonsSkeletonWarrior
-	//MonsSpider
+	MonsSpider
 	MonsWingedMilfid
 	//MonsLich
 	MonsEarthDragon
@@ -277,22 +277,22 @@ var MonsData = []monsterData{
 	MonsHighGuard: {10, MonsMedium, 'G', "high guard", 5},
 	//MonsHydra:           {10, 1, 10, 4, 'H', "hydra", 10},
 	//MonsSkeletonWarrior: {10, 1, 10, 3, 'S', "skeleton warrior", 6},
-	//MonsSpider:          {10, 1, 10, 2, 's', "spider", 6},
+	MonsSpider:       {10, MonsSmall, 's', "spider", 15},
 	MonsWingedMilfid: {10, MonsMedium, 'W', "winged milfid", 6},
 	MonsBlinkingFrog: {10, MonsMedium, 'F', "blinking frog", 6},
 	//MonsLich:           {10, MonsMedium, 'L', "lich", 15},
-	MonsEarthDragon:    {10, MonsLarge, 'D', "earth dragon", 20},
+	MonsEarthDragon:    {10, MonsLarge, 'D', "earth dragon", 18},
 	MonsMirrorSpecter:  {10, MonsMedium, 'm', "mirror specter", 11},
 	MonsExplosiveNadre: {10, MonsMedium, 'n', "explosive nadre", 8},
 	MonsSatowalgaPlant: {10, MonsLarge, 'P', "satowalga plant", 7},
 	MonsMadNixe:        {10, MonsMedium, 'N', "mad nixe", 14},
 	//MonsMindCelmist:     {10, 1, 20, 2, 'c', "mind celmist", 12},
 	MonsVampire:      {10, MonsMedium, 'V', "vampire", 13},
-	MonsTreeMushroom: {10, MonsLarge, 'T', "tree mushroom", 16},
+	MonsTreeMushroom: {10, MonsLarge, 'T', "tree mushroom", 17},
 	//MonsMarevorHelith: {10, MonsMedium, 'M', "Marevor Helith", 18},
 	MonsButterfly: {10, MonsSmall, 'b', "kerejat", 2},
-	MonsCrazyImp:  {10, MonsSmall, 'i', "Crazy Imp", 11},
-	MonsHazeCat:   {10, MonsSmall, 'c', "Haze Cat", 11},
+	MonsCrazyImp:  {10, MonsSmall, 'i', "Crazy Imp", 19},
+	MonsHazeCat:   {10, MonsSmall, 'c', "Haze Cat", 16},
 }
 
 var MonsDesc = []string{
@@ -310,7 +310,7 @@ var MonsDesc = []string{
 	MonsHighGuard: "High guards watch over a particular location. They can throw javelins.",
 	//MonsHydra:           "Hydras are enormous creatures with four heads that can hit you each at once.",
 	//MonsSkeletonWarrior: "Skeleton warriors are good fighters, clad in chain mail.",
-	//MonsSpider:          "Spiders are fast moving fragile creatures, whose bite can confuse you.",
+	MonsSpider:       "Spiders are small creatures, with panoramic vision and whose bite can confuse you.",
 	MonsWingedMilfid: "Winged milfids are fast moving humanoids that can fly over you and make you swap positions. They tend to be very agressive creatures.",
 	MonsBlinkingFrog: "Blinking frogs are big frog-like creatures, whose bite can make you blink away. The science behind their attack is not clear, but many think it relies on some kind of oric deviation magic. They can jump to attack from below.",
 	//MonsLich:           "Liches are non-living mages wearing a leather armour. They can throw a bolt of torment at you, halving your HP.",
@@ -325,7 +325,7 @@ var MonsDesc = []string{
 	//MonsMarevorHelith: "Marevor Helith is an ancient undead nakrus very fond of teleporting people away. He is a well-known expert in the field of magaras - items that many people simply call magical objects. His current research focus is monolith creation. Marevor, a repentant necromancer, is now searching for his old disciple Jaixel in the Underground to help him overcome the past.",
 	MonsButterfly: "Underground's butterflies, called kerejats, wander peacefully around, illuminating their surroundings.",
 	MonsCrazyImp:  "Crazy Imp is a crazy creature that likes to sing with its small guitar. It seems to be fond of monkeys and quite capable at finding them by flair. While singing it may attract unwanted attention.",
-	MonsHazeCat:   "Haze cats are a special variety of cats found in the Underground. They have so good vision that people often say they have more than two eyes.",
+	MonsHazeCat:   "Haze cats are a special variety of cats found in the Underground. They have very good night vision and are always alert.",
 }
 
 type bandInfo struct {
@@ -358,6 +358,7 @@ const (
 	LoneHarpy
 	LoneHazeCat
 	LoneAcidMound
+	LoneSpider
 	PairGuard
 	PairYack
 	PairFrog
@@ -411,6 +412,7 @@ var MonsBands = []monsterBandData{
 	LoneHarpy:                  {Monster: MonsTinyHarpy},
 	LoneHazeCat:                {Monster: MonsHazeCat},
 	LoneAcidMound:              {Monster: MonsAcidMound},
+	LoneSpider:                 {Monster: MonsSpider},
 	PairGuard:                  {Band: true, Distribution: map[monsterKind]int{MonsGuard: 2}},
 	PairYack:                   {Band: true, Distribution: map[monsterKind]int{MonsYack: 2}},
 	PairFrog:                   {Band: true, Distribution: map[monsterKind]int{MonsBlinkingFrog: 2}},
@@ -876,7 +878,11 @@ func (m *monster) HandleMonsSpecifics(g *game) (done bool) {
 }
 
 func (m *monster) HandleWatching(g *game) {
-	if m.Watching+RandInt(2) < 4 {
+	turns := 4
+	if m.Kind == MonsHazeCat {
+		turns = 3
+	}
+	if m.Watching+RandInt(2) < turns {
 		m.Alternate()
 		m.Watching++
 		if m.Kind == MonsDog {
@@ -1071,7 +1077,7 @@ func (m *monster) HandleTurn(g *game, ev event) {
 	}
 	m.MakeAware(g)
 	if m.State == Resting {
-		if RandInt(3000) == 0 || m.Kind == MonsCrazyImp && RandInt(20) == 0 {
+		if RandInt(3000) == 0 || (m.Kind == MonsCrazyImp || m.Kind == MonsHazeCat) && RandInt(20) == 0 {
 			m.NaturalAwake(g)
 		}
 		ev.Renew(g, m.MoveDelay(g))
@@ -1242,6 +1248,8 @@ func (m *monster) HitSideEffects(g *game, ev event) {
 		m.PushPlayer(g, 5)
 	case MonsAcidMound:
 		m.Corrode(g)
+	case MonsSpider:
+		g.Confusion(g.Ev)
 	case MonsWingedMilfid:
 		if m.Status(MonsExhausted) || g.Player.HasStatus(StatusLignification) {
 			break
