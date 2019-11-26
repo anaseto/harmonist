@@ -4,6 +4,8 @@ v0.3-dev
   at least once. Exact behavior depends on the type of monster, but they all
   have a chance of exploring around the last place they saw you at, in addition
   to their normal duties.
++ Greatly improve tunnel generation used for all map generation algorithms,
+  resulting in more varied and interesting maps.
 + Magaras now have a maximum number of charges, to avoid spamming of a single
   magara.
 + New special map layouts more or less urbanised than the common ones.
