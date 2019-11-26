@@ -287,6 +287,9 @@ func (g *game) ComputeLOS() {
 			}
 			mons.Seen = true
 			g.Printf("You see %s (%v).", mons.Kind.Indefinite(false), mons.State)
+			if mons.Kind.Notable() {
+				g.StoryPrintf("Saw %s", mons.Kind)
+			}
 			g.StopAuto()
 		}
 	}

@@ -144,6 +144,15 @@ func (mk monsterKind) Peaceful() bool {
 	}
 }
 
+func (mk monsterKind) Notable() bool {
+	switch mk {
+	case MonsSingingImp, MonsEarthDragon, MonsHazeCat:
+		return true
+	default:
+		return false
+	}
+}
+
 func (mk monsterKind) CanOpenDoors() bool {
 	switch mk {
 	case MonsGuard, MonsHighGuard, MonsMadNixe, MonsOricCelmist, MonsHarmonicCelmist, MonsVampire, MonsWingedMilfid:
