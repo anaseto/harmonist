@@ -1162,7 +1162,9 @@ func (m *monster) HitPlayer(g *game, ev event) {
 	if g.Player.HP <= 0 {
 		return
 	}
-	m.HitSideEffects(g, ev)
+	if m.HitSideEffects(g, ev) {
+		return
+	}
 	const HeavyWoundHP = 2
 	if g.Player.HP >= HeavyWoundHP {
 		return
@@ -1222,7 +1224,9 @@ func (m *monster) EnterLignification(g *game, ev event) {
 	}
 }
 
-func (m *monster) HitSideEffects(g *game, ev event) {
+// HitSideEffects applies monster specific side effects and returns true if no
+// more processing should be done (currently, if you fall into the abyss).
+func (m *monster) HitSideEffects(g *game, ev event) bool {
 	switch m.Kind {
 	case MonsEarthDragon:
 		if m.Status(MonsConfused) {
@@ -1249,11 +1253,13 @@ func (m *monster) HitSideEffects(g *game, ev event) {
 		g.StoryPrintf("Position swap by %s", m.Kind)
 		m.ExhaustTime(g, 50+RandInt(50))
 		if g.Dungeon.Cell(g.Player.Pos).T == ChasmCell {
-			g.FallAbyss(DescendFall)
+			if g.FallAbyss(DescendFall) {
+				return true
+			}
 		}
 	case MonsTinyHarpy:
 		if m.Status(MonsSatiated) {
-			return
+			return false
 		}
 		g.Player.Bananas--
 		if g.Player.Bananas < 0 {
@@ -1267,6 +1273,7 @@ func (m *monster) HitSideEffects(g *game, ev event) {
 			m.MakeWander()
 		}
 	}
+	return false
 }
 
 func (m *monster) PushPlayer(g *game, dist int) {
