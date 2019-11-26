@@ -380,7 +380,7 @@ const (
 	SpecialLoneHarpy
 	SpecialLoneTreeMushroom
 	SpecialLoneMirrorSpecter
-	UniqueSingingImp
+	UniqueCrazyImp
 )
 
 type monsterBandData struct {
@@ -432,7 +432,7 @@ var MonsBands = []monsterBandData{
 	SpecialLoneHarpy:           {Monster: MonsTinyHarpy},
 	SpecialLoneTreeMushroom:    {Monster: MonsTreeMushroom},
 	SpecialLoneMirrorSpecter:   {Monster: MonsMirrorSpecter},
-	UniqueSingingImp:           {Monster: MonsCrazyImp},
+	UniqueCrazyImp:             {Monster: MonsCrazyImp},
 }
 
 type monster struct {
