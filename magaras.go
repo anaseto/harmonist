@@ -205,7 +205,7 @@ func (g *game) UseMagara(n int, ev event) (err error) {
 		if g.Stats.FireUse == 4 {
 			AchPyromancerInitiate.Get(g)
 		}
-		if g.Stats.FireUse == 8 {
+		if g.Stats.FireUse == 7 {
 			AchPyromancerMaster.Get(g)
 		}
 	}
