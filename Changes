@@ -12,8 +12,9 @@ v0.3-dev
 + New unique monster: Crazy Imp that sings and plays guitar.
 + New monster: haze cat, with very good night vision.
 + New monster: spiders, with panoramic vision and confusing bite.
-+ New magara of energy that replenishes HP and MP, but only has one charge.
++ New monster: acid mounds, with magara charge corroding byte.
 + Satowalga plants now may corrode your magara charges, instead of slowing you.
++ New magara of energy that replenishes HP and MP, but only has one charge.
 + Display number of remaining turns for monsters statuses too.
 + Fix rare bug when blinking to the same place.
 + Make “x” key work in key settings menu.
