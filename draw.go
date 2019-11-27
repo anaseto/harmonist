@@ -1708,11 +1708,7 @@ func (ui *gameui) ListItemBG(i int) uicolor {
 func (ui *gameui) MagaraItem(i, lnum int, c magara, fg uicolor) {
 	bg := ui.ListItemBG(i)
 	ui.ClearLineWithColor(lnum, bg)
-	if c.MPCost(ui.g) > 0 {
-		ui.DrawColoredTextOnBG(fmt.Sprintf("%c - %s (%d charges)", rune(i+97), c, c.Charges), 0, lnum, fg, bg)
-	} else {
-		ui.DrawColoredTextOnBG(fmt.Sprintf("%c - %s", rune(i+97), c), 0, lnum, fg, bg)
-	}
+	ui.DrawColoredTextOnBG(fmt.Sprintf("%c - %s (%d charges)", rune(i+97), c, c.Charges), 0, lnum, fg, bg)
 }
 
 func (ui *gameui) SelectMagara(ev event) error {
