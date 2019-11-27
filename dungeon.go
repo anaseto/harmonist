@@ -981,10 +981,15 @@ func (dg *dgen) AddSpecial(g *game, ml maplayout) {
 		} else if RandInt(10) == 0 {
 			ntables--
 		}
-	case RandomWalkTreeCave, RandomSmallWalkCaveUrbanised:
+	case RandomWalkTreeCave:
 		if RandInt(4) > 0 {
 			ntables++
 		}
+		if RandInt(4) > 0 {
+			ntables++
+		}
+	case RandomSmallWalkCaveUrbanised:
+		ntables += 2
 		if RandInt(4) > 0 {
 			ntables++
 		}
@@ -1027,9 +1032,18 @@ func (dg *dgen) AddSpecial(g *game, ml maplayout) {
 	for i := 0; i < ntrees; i++ {
 		dg.GenTree(g)
 	}
-	nhw := 1 + RandInt(2)
+	nhw := 1
+	if RandInt(3) > 0 {
+		nhw++
+	}
 	if g.Params.Holes[g.Depth] {
 		nhw += 3 + RandInt(2)
+	}
+	switch ml {
+	case RandomSmallWalkCaveUrbanised:
+		if RandInt(4) > 0 {
+			nhw++
+		}
 	}
 	dg.PutHoledWalls(g, nhw)
 	nwin := 1
@@ -1038,6 +1052,12 @@ func (dg *dgen) AddSpecial(g *game, ml maplayout) {
 	}
 	if g.Params.Windows[g.Depth] {
 		nwin += 4 + RandInt(3)
+	}
+	switch ml {
+	case RandomSmallWalkCaveUrbanised:
+		if RandInt(4) > 0 {
+			nhw++
+		}
 	}
 	dg.PutWindows(g, nwin)
 	if g.Params.Lore[g.Depth] {
@@ -1075,12 +1095,29 @@ func (dg *dgen) PutLore(g *game) {
 
 func (dg *dgen) GenLight(g *game) {
 	lights := []position{}
-	for i := 0; i < 2+RandInt(2); i++ {
+	no := 2
+	ni := 8
+	switch dg.layout {
+	case NaturalCave:
+		no += RandInt(2)
+		ni += RandInt(3)
+	case AutomataCave, RandomWalkCave:
+		ni += RandInt(4)
+	case RandomWalkTreeCave:
+		no--
+		ni += RandInt(4)
+	case RandomSmallWalkCaveUrbanised:
+		no--
+		no -= RandInt(2)
+		ni += 2
+		ni += RandInt(4)
+	}
+	for i := 0; i < no; i++ {
 		pos := dg.OutsideGroundCell(g)
 		g.Dungeon.SetCell(pos, LightCell)
 		lights = append(lights, pos)
 	}
-	for i := 0; i < 8+RandInt(4); i++ {
+	for i := 0; i < ni; i++ {
 		pos := dg.rooms[RandInt(len(dg.rooms))].RandomPlaces(PlaceSpecialOrStatic)
 		if pos != InvalidPos {
 			g.Dungeon.SetCell(pos, LightCell)
