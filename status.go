@@ -112,6 +112,8 @@ func (st status) Short() string {
 		return "Le"
 	case StatusShadows:
 		return "Sh"
+	case StatusIlluminated:
+		return "Il"
 	case StatusTransparent:
 		return "Tr"
 	default:
