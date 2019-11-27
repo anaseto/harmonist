@@ -45,6 +45,9 @@ type simpleAction int
 
 const (
 	PlayerTurn simpleAction = iota
+	ShaedraAnimation
+	ArtifactAnimation
+	AbyssFall
 	SlowEnd
 	ExhaustionEnd
 	HasteEnd
@@ -56,9 +59,7 @@ const (
 	LevitationEnd
 	ShadowsEnd
 	IlluminatedEnd
-	ShaedraAnimation
-	ArtifactAnimation
-	AbyssFall
+	TransparentEnd
 )
 
 func (g *game) PushEvent(ev event) {
@@ -108,6 +109,7 @@ var StatusEndMsgs = [...]string{
 	LevitationEnd:    "You no longer levitate.",
 	ShadowsEnd:       "You are no longer surrounded by shadows.",
 	IlluminatedEnd:   "You are no longer illuminated.",
+	TransparentEnd:   "You are no longer transparent.",
 }
 
 var EndStatuses = [...]status{
@@ -121,6 +123,7 @@ var EndStatuses = [...]status{
 	LevitationEnd:    StatusLevitation,
 	ShadowsEnd:       StatusShadows,
 	IlluminatedEnd:   StatusIlluminated,
+	TransparentEnd:   StatusTransparent,
 }
 
 var StatusEndActions = [...]simpleAction{
@@ -134,6 +137,7 @@ var StatusEndActions = [...]simpleAction{
 	StatusLevitation:    LevitationEnd,
 	StatusShadows:       ShadowsEnd,
 	StatusIlluminated:   IlluminatedEnd,
+	StatusTransparent:   TransparentEnd,
 }
 
 func (sev *simpleEvent) Action(g *game) {
@@ -163,7 +167,7 @@ func (sev *simpleEvent) Action(g *game) {
 		if g.Dungeon.Cell(g.Player.Pos).T == ChasmCell {
 			g.FallAbyss(DescendFall)
 		}
-	case SlowEnd, ExhaustionEnd, HasteEnd, LignificationEnd, ConfusionEnd, NauseaEnd, DigEnd, LevitationEnd, ShadowsEnd, IlluminatedEnd:
+	default:
 		g.Player.Statuses[EndStatuses[sev.EAction]] -= DurationStatusStep
 		if g.Player.Statuses[EndStatuses[sev.EAction]] <= 0 {
 			g.Player.Statuses[EndStatuses[sev.EAction]] = 0
@@ -426,4 +430,5 @@ const (
 	DurationExhaustionMonster      = 100
 	DurationSatiationMonster       = 400
 	DurationIlluminated            = 70
+	DurationTransparency           = 150
 )

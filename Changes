@@ -17,6 +17,8 @@ v0.3-dev
 + New monster: acid mounds, with magara charge corroding byte.
 + Satowalga plants now may corrode your magara charges, instead of slowing you.
 + New magara of energy that replenishes HP and MP, but only has one charge.
++ New magara of transparency that makes you transparent (visible only to
+  adjacent monsters) when standing of a lighted cell.
 + 4 new special rooms.
 + Display number of remaining turns for monsters statuses too.
 + Fix rare bug when blinking to the same place.

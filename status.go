@@ -17,6 +17,7 @@ const (
 	StatusLevitation
 	StatusShadows
 	StatusIlluminated
+	StatusTransparent
 )
 
 func (st status) Info() bool {
@@ -29,7 +30,7 @@ func (st status) Info() bool {
 
 func (st status) Good() bool {
 	switch st {
-	case StatusSwift, StatusDig, StatusHidden, StatusLevitation, StatusShadows:
+	case StatusSwift, StatusDig, StatusHidden, StatusLevitation, StatusShadows, StatusTransparent:
 		return true
 	default:
 		return false
@@ -75,6 +76,8 @@ func (st status) String() string {
 		return "Shadows"
 	case StatusIlluminated:
 		return "Illuminated"
+	case StatusTransparent:
+		return "Transparent"
 	default:
 		// should not happen
 		return "unknown"
@@ -109,6 +112,8 @@ func (st status) Short() string {
 		return "Le"
 	case StatusShadows:
 		return "Sh"
+	case StatusTransparent:
+		return "Tr"
 	default:
 		// should not happen
 		return "?"

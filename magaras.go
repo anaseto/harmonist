@@ -31,14 +31,15 @@ const (
 	ObstructionMagara
 	LignificationMagara
 	EnergyMagara
+	TransparencyMagara
 	//BarrierMagara
 )
 
-const NumMagaras = int(EnergyMagara)
+const NumMagaras = int(TransparencyMagara)
 
 func (mag magara) Harmonic() bool {
 	switch mag.Kind {
-	case FogMagara, ShadowsMagara, NoiseMagara, ConfusionMagara, SleepingMagara, SlowingMagara:
+	case FogMagara, ShadowsMagara, NoiseMagara, ConfusionMagara, SleepingMagara, SlowingMagara, TransparencyMagara:
 		return true
 	default:
 		return false
@@ -58,7 +59,7 @@ func (m magaraKind) DefaultCharges() int {
 	switch m {
 	case LevitationMagara, FogMagara, NoiseMagara, FireMagara:
 		return 7
-	case SlowingMagara, ObstructionMagara, SwiftnessMagara, BlinkMagara:
+	case SlowingMagara, ObstructionMagara, SwiftnessMagara, BlinkMagara, TransparencyMagara:
 		return 6
 	case EnergyMagara:
 		return 1
@@ -72,7 +73,7 @@ func (g *game) RandomStartingMagara() magara {
 		SwiftnessMagara, LevitationMagara, FireMagara, FogMagara,
 		ShadowsMagara, NoiseMagara, ConfusionMagara, SleepingMagara,
 		TeleportOtherMagara, SwappingMagara, SlowingMagara,
-		ObstructionMagara, LignificationMagara}
+		ObstructionMagara, LignificationMagara, TransparencyMagara}
 	var mag magaraKind
 loop:
 	for {
@@ -165,6 +166,8 @@ func (g *game) UseMagara(n int, ev event) (err error) {
 		err = g.EvokeLignification(ev)
 	case EnergyMagara:
 		err = g.EvokeEnergyMagara(ev)
+	case TransparencyMagara:
+		err = g.EvokeTransparencyMagara(ev)
 	}
 	if err != nil {
 		return err
@@ -258,6 +261,8 @@ func (mag magara) String() (desc string) {
 		desc = "magara of lignification"
 	case EnergyMagara:
 		desc = "magara of energy"
+	case TransparencyMagara:
+		desc = "magara of transparency"
 	}
 	return desc
 }
@@ -304,6 +309,8 @@ func (mag magara) Desc(g *game) (desc string) {
 		desc = "liberates magical spores that lignify up to 2 monsters in view, so that they cannot move. The monsters can still fight."
 	case EnergyMagara:
 		desc = "replenishes your MP and HP."
+	case TransparencyMagara:
+		desc = "feeds surrounding light to harmonic magic to make you transparent, only visible by adjacent monsters, when standing on a lighted cell."
 	}
 	duration := 0
 	switch mag.Kind {
@@ -323,6 +330,8 @@ func (mag magara) Desc(g *game) (desc string) {
 		duration = DurationSwiftness
 	case LevitationMagara:
 		duration = DurationLevitation
+	case TransparencyMagara:
+		duration = DurationTransparency
 	}
 	if duration > 0 {
 		desc += fmt.Sprintf(" Effect lasts for %d turns.", duration/10)
@@ -784,5 +793,13 @@ func (g *game) EvokeEnergyMagara(ev event) error {
 	g.ui.PlayerGoodEffectAnimation()
 	g.Player.MP = g.Player.MPMax()
 	g.Player.HP = g.Player.HPMax()
+	return nil
+}
+
+func (g *game) EvokeTransparencyMagara(ev event) error {
+	if !g.PutStatus(StatusTransparent, DurationTransparency) {
+		return errors.New("You are already transparent.")
+	}
+	g.Print("Light makes you diaphanous.")
 	return nil
 }

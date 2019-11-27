@@ -554,6 +554,9 @@ func (m *monster) Sees(g *game, pos position) bool {
 	if c.T == TableCell && m.Pos.Distance(pos) > tableRange {
 		return false
 	}
+	if g.Player.HasStatus(StatusTransparent) && g.Illuminated[pos.idx()] && m.Pos.Distance(pos) > 1 {
+		return false
+	}
 	return true
 }
 
