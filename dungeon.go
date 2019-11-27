@@ -1658,35 +1658,6 @@ func (dg *dgen) GenLake(t terrain) {
 	}
 }
 
-//func (dg *dgen) GenChasm() {
-//pos := position{20 + RandInt(DungeonWidth-21), 7 + RandInt(DungeonHeight-8)}
-//size := 100 + RandInt(100)
-//var queue [DungeonNCells]int
-//var visited [DungeonNCells]bool
-//var qstart, qend int
-//visited[pos.idx()] = true
-//queue[qend] = pos.idx()
-//qend++
-//nb := make([]position, 4)
-//for qstart < qend && size > 0 {
-//cidx := queue[qstart]
-//qstart++
-//cpos := idxtopos(cidx)
-//dg.d.SetCell(cpos, ChasmCell)
-//size--
-//for _, npos := range cpos.CardinalNeighbors(nb, func(p position) bool { return p.valid() }) {
-//nidx := npos.idx()
-//if !visited[nidx] {
-//if RandInt(3) > 0 || size > 50 || qend-qstart < 4 {
-//queue[qend] = nidx
-//qend++
-//}
-//visited[nidx] = true
-//}
-//}
-//}
-//}
-
 func (dg *dgen) Foliage(less bool) {
 	// use same structure as for the dungeon
 	// walls will become foliage
