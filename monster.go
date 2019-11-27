@@ -459,7 +459,8 @@ type monster struct {
 	Swapped       bool
 	Watching      int
 	Left          bool
-	Noticed       position
+	Search        position
+	Alerted       bool
 	Waiting       int
 }
 
@@ -468,7 +469,7 @@ func (m *monster) Init() {
 	m.Pos = InvalidPos
 	m.LOS = map[position]bool{}
 	m.LastKnownPos = InvalidPos
-	m.Noticed = InvalidPos
+	m.Search = InvalidPos
 	if RandInt(2) == 0 {
 		m.Left = true
 	}
@@ -762,8 +763,8 @@ func (m *monster) NextTarget(g *game) (pos position) {
 				break
 			}
 		}
-		if m.Noticed != InvalidPos && RandInt(2) == 0 {
-			pos = m.SearchAround(g, m.Noticed, 7)
+		if m.Search != InvalidPos && RandInt(2) == 0 {
+			pos = m.SearchAround(g, m.Search, 7)
 			if pos != InvalidPos {
 				break
 			}
@@ -775,8 +776,8 @@ func (m *monster) NextTarget(g *game) (pos position) {
 		pos = band.Path[0]
 	case BehExplore:
 		if m.Kind.CanOpenDoors() {
-			if m.Noticed != InvalidPos && RandInt(4) == 0 {
-				pos = m.SearchAround(g, m.Noticed, 7)
+			if m.Search != InvalidPos && RandInt(4) == 0 {
+				pos = m.SearchAround(g, m.Search, 7)
 			} else {
 				pos = m.SearchAround(g, pos, 5)
 			}
@@ -786,16 +787,16 @@ func (m *monster) NextTarget(g *game) (pos position) {
 		}
 		pos = band.Path[RandInt(len(band.Path))]
 	case BehGuard:
-		if m.Noticed != InvalidPos && m.Noticed.Distance(m.Pos) < 4 && RandInt(2) == 0 {
-			pos = m.SearchAround(g, m.Noticed, 3)
+		if m.Search != InvalidPos && m.Search.Distance(m.Pos) < 4 && RandInt(2) == 0 {
+			pos = m.SearchAround(g, m.Search, 3)
 			if pos != InvalidPos {
 				break
 			}
 		}
 		pos = band.Path[0]
 	case BehPatrol:
-		if m.Noticed != InvalidPos && RandInt(4) > 0 {
-			pos = m.SearchAround(g, m.Noticed, 7)
+		if m.Search != InvalidPos && RandInt(4) > 0 {
+			pos = m.SearchAround(g, m.Search, 7)
 			if pos != m.Pos && pos != InvalidPos {
 				break
 			}
@@ -942,9 +943,9 @@ func (m *monster) Peaceful(g *game) bool {
 }
 
 func (m *monster) HandleEndPath(g *game) {
-	if len(m.Path) == 0 && m.Noticed != InvalidPos && m.Noticed.Distance(m.Target) < 10 && m.Pos != m.Target {
+	if len(m.Path) == 0 && m.Search != InvalidPos && m.Search.Distance(m.Target) < 10 && m.Pos != m.Target {
 		// the cell where the player was last noticed may not be recheable for the monster
-		m.Noticed = InvalidPos
+		m.Search = InvalidPos
 	}
 	switch m.State {
 	case Wandering, Hunting:
@@ -1635,16 +1636,17 @@ func (m *monster) MakeHunt(g *game) (noticed bool) {
 		m.State = Hunting
 		g.Stats.NSpotted++
 		g.Stats.DSpotted[g.Depth]++
-		if m.Noticed == InvalidPos {
+		if !m.Alerted {
 			g.Stats.NUSpotted++
 			g.Stats.DUSpotted[g.Depth]++
 			if g.Stats.DUSpotted[g.Depth] >= 90*len(g.Monsters)/100 {
 				AchUnstealthy.Get(g)
 			}
 		}
+		m.Alerted = true
 		noticed = true
 	}
-	m.Noticed = g.Player.Pos
+	m.Search = g.Player.Pos
 	m.Target = g.Player.Pos
 	return noticed
 }

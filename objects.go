@@ -246,8 +246,8 @@ func (g *game) ActivateQueenStone() {
 	g.ui.LOSWavesAnimation(DefaultLOSRange, WaveMagicNoise, g.Player.Pos)
 	for _, m := range targets {
 		m.EnterConfusion(g, g.Ev)
-		if m.Noticed == InvalidPos {
-			m.Noticed = m.Pos
+		if m.Search == InvalidPos {
+			m.Search = m.Pos
 		}
 	}
 }
@@ -291,8 +291,8 @@ func (g *game) ActivateTreeStone() error {
 	g.ui.LOSWavesAnimation(DefaultLOSRange, WaveTree, g.Player.Pos)
 	for _, mons := range targets {
 		mons.EnterLignification(g, g.Ev)
-		if mons.Noticed == InvalidPos {
-			mons.Noticed = mons.Pos
+		if mons.Search == InvalidPos {
+			mons.Search = mons.Pos
 		}
 	}
 	return nil
@@ -311,8 +311,8 @@ func (g *game) ActivateTeleportStone() error {
 	}
 	g.Print("The stone releases oric teleport energies.")
 	for _, mons := range targets {
-		if mons.Noticed == InvalidPos && mons.Kind.CanOpenDoors() {
-			mons.Noticed = mons.Pos
+		if mons.Search == InvalidPos && mons.Kind.CanOpenDoors() {
+			mons.Search = mons.Pos
 		}
 		mons.TeleportAway(g)
 	}
