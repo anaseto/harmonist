@@ -19,6 +19,11 @@ v0.3-dev
 + New magara of energy that replenishes HP and MP, but only has one charge.
 + New magara of transparency that makes you transparent (visible only to
   adjacent monsters) when standing of a lighted cell.
++ Remove player and monster speed: a turn is now always 1, no half turns.
++ Replace magara of slowing with magara of paralysis, a stronger but shorter
+  variation on lignification (may change in the future).
++ Rework magara of swiftness to give several “free” moves, which is more
+  intuitive than previous behavior.
 + 4 new special rooms.
 + Display number of remaining turns for monsters statuses too.
 + Fix rare bug when blinking to the same place.
