@@ -67,6 +67,14 @@ func (g *game) PushEvent(ev event) {
 	heap.Push(g.Events, iev)
 }
 
+// PushEventRandomIndex pushes a new even to the heap, with randomised Index.
+// Used so that monster turn order is not predictable.
+func (g *game) PushEventRandomIndex(ev event) {
+	iev := iEvent{Event: ev, Index: RandInt(10)}
+	g.EventIndex++
+	heap.Push(g.Events, iev)
+}
+
 func (g *game) PushAgainEvent(ev event) {
 	iev := iEvent{Event: ev, Index: 0}
 	heap.Push(g.Events, iev)
