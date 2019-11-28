@@ -49,7 +49,7 @@ const (
 	ArtifactAnimation
 	AbyssFall
 	ExhaustionEnd
-	HasteEnd
+	SwiftEnd
 	EvasionEnd
 	LignificationEnd
 	ConfusionEnd
@@ -71,7 +71,6 @@ func (g *game) PushEvent(ev event) {
 // Used so that monster turn order is not predictable.
 func (g *game) PushEventRandomIndex(ev event) {
 	iev := iEvent{Event: ev, Index: RandInt(10)}
-	g.EventIndex++
 	heap.Push(g.Events, iev)
 }
 
@@ -105,7 +104,7 @@ func (sev *simpleEvent) Renew(g *game, delay int) {
 
 var StatusEndMsgs = [...]string{
 	ExhaustionEnd:    "You no longer feel exhausted.",
-	HasteEnd:         "You no longer feel speedy.",
+	SwiftEnd:         "You no longer feel speedy.",
 	LignificationEnd: "You no longer feel attached to the ground.",
 	ConfusionEnd:     "You no longer feel confused.",
 	NauseaEnd:        "You no longer feel sick.",
@@ -118,7 +117,6 @@ var StatusEndMsgs = [...]string{
 
 var EndStatuses = [...]status{
 	ExhaustionEnd:    StatusExhausted,
-	HasteEnd:         StatusSwift,
 	LignificationEnd: StatusLignification,
 	ConfusionEnd:     StatusConfusion,
 	NauseaEnd:        StatusNausea,
@@ -131,7 +129,6 @@ var EndStatuses = [...]status{
 
 var StatusEndActions = [...]simpleAction{
 	StatusExhausted:     ExhaustionEnd,
-	StatusSwift:         HasteEnd,
 	StatusLignification: LignificationEnd,
 	StatusConfusion:     ConfusionEnd,
 	StatusNausea:        NauseaEnd,
@@ -170,9 +167,10 @@ func (sev *simpleEvent) Action(g *game) {
 			g.FallAbyss(DescendFall)
 		}
 	default:
-		g.Player.Statuses[EndStatuses[sev.EAction]] -= DurationStatusStep
-		if g.Player.Statuses[EndStatuses[sev.EAction]] <= 0 {
-			g.Player.Statuses[EndStatuses[sev.EAction]] = 0
+		st := EndStatuses[sev.EAction]
+		g.Player.Statuses[st] -= DurationStatusStep
+		if g.Player.Statuses[st] <= 0 {
+			g.Player.Statuses[st] = 0
 			g.PrintStyled(StatusEndMsgs[sev.EAction], logStatusEnd)
 			g.ui.StatusEndAnimation()
 			switch sev.EAction {
@@ -187,7 +185,7 @@ func (sev *simpleEvent) Action(g *game) {
 				}
 			}
 		} else {
-			g.PushEvent(&simpleEvent{ERank: sev.Rank() + DurationStatusStep, EAction: sev.EAction})
+			sev.Renew(g, DurationStatusStep)
 		}
 	}
 }
@@ -373,7 +371,7 @@ func (g *game) MakeCreatureSleep(pos position, ev event) {
 	}
 	mons.State = Resting
 	mons.Dir = NoDir
-	mons.ExhaustTime(g, 40+RandInt(10))
+	mons.ExhaustTime(g, 4+RandInt(2))
 }
 
 func (g *game) Burn(pos position, ev event) {

@@ -234,8 +234,8 @@ func (g *game) InitPlayer() {
 	g.GeneratedMagaras = append(g.GeneratedMagaras, g.Player.Magaras[0].Kind)
 	g.Player.Inventory.Misc = MarevorMagara
 	// Testing
-	//g.Player.Magaras[2] = NoiseMagara
-	//g.Player.Magaras[2] = SlowingMagara
+	//g.Player.Magaras[1] = magara{Kind: ParalysisMagara, Charges: 10}
+	//g.Player.Magaras[2] = magara{Kind: SwiftnessMagara, Charges: 10}
 	//g.Player.Magaras[2] = ConfusionMagara
 }
 

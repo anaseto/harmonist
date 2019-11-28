@@ -271,7 +271,7 @@ func (g *game) ActivateNightStone() error {
 		g.Printf("%s falls asleep.", mons.Kind.Definite(true))
 		mons.State = Resting
 		mons.Dir = NoDir
-		mons.ExhaustTime(g, 40+RandInt(10))
+		mons.ExhaustTime(g, 4+RandInt(2))
 	}
 	return nil
 }

@@ -336,8 +336,11 @@ func (g *game) MovePlayer(pos position, ev event) error {
 		return err
 	}
 	if g.Player.HasStatus(StatusSwift) {
-		g.Player.Statuses[StatusSwift]--
 		ev.Renew(g, 0)
+		g.Player.Statuses[StatusSwift]--
+		if !g.Player.HasStatus(StatusSwift) {
+			g.Print("You no longer feel swift.")
+		}
 		return nil
 	}
 	ev.Renew(g, DurationTurn)

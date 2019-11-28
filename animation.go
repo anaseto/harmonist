@@ -367,7 +367,6 @@ func (ui *gameui) PlayerGoodEffectAnimation() {
 	if DisableAnimations {
 		return
 	}
-	ui.DrawDungeonView(NormalMode)
 	time.Sleep(AnimDurShortMedium)
 	r, fg, bg := ui.PositionDrawing(g.Player.Pos)
 	ui.DrawAtPosition(g.Player.Pos, false, r, ColorGreen, bg)

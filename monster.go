@@ -1243,7 +1243,7 @@ func (m *monster) HitSideEffects(g *game, ev event) {
 		g.PlacePlayerAt(ompos)
 		g.Print("The flying milfid makes you swap positions.")
 		g.StoryPrintf("Position swap by %s", m.Kind)
-		m.ExhaustTime(g, 50+RandInt(50))
+		m.ExhaustTime(g, 5+RandInt(5))
 		if g.Dungeon.Cell(g.Player.Pos).T == ChasmCell {
 			g.PushEvent(&simpleEvent{ERank: ev.Rank(), EAction: AbyssFall})
 		}

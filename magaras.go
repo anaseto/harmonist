@@ -334,7 +334,7 @@ func (mag magara) Desc(g *game) (desc string) {
 		duration = DurationTransparency
 	}
 	if duration > 0 {
-		desc += fmt.Sprintf(" Effect lasts for %d turns.", duration/10)
+		desc += fmt.Sprintf(" Effect lasts for %d turns.", duration)
 	}
 	desc += fmt.Sprintf("\n\nIt currently has %d charges.", mag.Charges)
 	return fmt.Sprintf("The %s %s", mag, desc)
@@ -489,10 +489,11 @@ func (g *game) EvokeRefillMagic(ev event) error {
 }
 
 func (g *game) EvokeSwiftness(ev event) error {
-	if !g.PutStatus(StatusSwift, DurationSwiftness) {
+	if g.Player.HasStatus(StatusSwift) {
 		return errors.New("You are already swift.")
 	}
-	g.Printf("You feel speedy.")
+	g.Player.Statuses[StatusSwift] += DurationSwiftness
+	g.Printf("You feel swift.")
 	g.ui.PlayerGoodEffectAnimation()
 	return nil
 }
@@ -618,7 +619,7 @@ func (g *game) EvokeSleeping(ev event) error {
 		}
 		mons.State = Resting
 		mons.Dir = NoDir
-		mons.ExhaustTime(g, 40+RandInt(10))
+		mons.ExhaustTime(g, 4+RandInt(2))
 		targets = append(targets, g.Ray(mons.Pos)...)
 	}
 	if max == 1 {

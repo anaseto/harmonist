@@ -19,6 +19,15 @@ const (
 	StatusTransparent
 )
 
+func (st status) Flag() bool {
+	switch st {
+	case StatusFlames, StatusHidden, StatusUnhidden, StatusLight:
+		return true
+	default:
+		return false
+	}
+}
+
 func (st status) Info() bool {
 	switch st {
 	case StatusFlames, StatusHidden, StatusUnhidden, StatusLight:

@@ -720,7 +720,7 @@ func (ui *gameui) MonsterInfo(m *monster) string {
 	infos = append(infos, state)
 	for st, i := range m.Statuses {
 		if i > 0 {
-			infos = append(infos, fmt.Sprintf("%s %d", monsterStatus(st), m.Statuses[monsterStatus(st)]/10))
+			infos = append(infos, fmt.Sprintf("%s %d", monsterStatus(st), m.Statuses[monsterStatus(st)]))
 		}
 	}
 	return strings.Join(infos, ", ")
@@ -1162,7 +1162,7 @@ func (ui *gameui) DrawStatusBar(line int) {
 		} else if st.Bad() {
 			fg = ColorFgStatusBad
 		}
-		if g.Player.Statuses[st] > 1 {
+		if !st.Flag() {
 			ui.DrawColoredText(fmt.Sprintf("%s(%d)", st, g.Player.Statuses[st]/DurationStatusStep), BarCol, line, fg)
 		} else {
 			ui.DrawColoredText(st.String(), BarCol, line, fg)
@@ -1284,7 +1284,7 @@ func (ui *gameui) DrawStatusLine() {
 			fg = ColorFgStatusBad
 		}
 		var sttext string
-		if g.Player.Statuses[st] > 1 {
+		if !st.Flag() {
 			sttext = fmt.Sprintf("%s(%d) ", st.Short(), g.Player.Statuses[st]/DurationStatusStep)
 		} else {
 			sttext = fmt.Sprintf("%s ", st.Short())

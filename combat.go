@@ -103,7 +103,7 @@ func (g *game) Jump(mons *monster, ev event) error {
 		return errors.New("You cannot jump while exhausted.")
 	}
 	if !g.Player.HasStatus(StatusSwift) && g.Player.Inventory.Body != CloakAcrobat {
-		g.PutStatus(StatusExhausted, 50)
+		g.PutStatus(StatusExhausted, 5)
 	}
 	if mons.Kind == MonsEarthDragon {
 		g.Confusion(ev)
