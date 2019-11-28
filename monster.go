@@ -1044,6 +1044,7 @@ func (m *monster) HandleMove(g *game) {
 
 func (m *monster) HandleTurn(g *game, ev event) {
 	if m.Status(MonsParalysed) {
+		ev.Renew(g, DurationTurn)
 		return
 	}
 	if m.Swapped {
