@@ -98,7 +98,7 @@ func (g *game) Dump() string {
 	if g.Stats.Killed > 0 {
 		fmt.Fprintf(buf, "%d monsters died.\n", g.Stats.Killed)
 	}
-	fmt.Fprintf(buf, "You spent %d turns in Hareka's Underground.\n", g.Turn/10)
+	fmt.Fprintf(buf, "You spent %d turns in Hareka's Underground.\n", g.Turn)
 	maxDepth := Max(g.Depth, g.ExploredLevels)
 	s := "s"
 	if maxDepth == 1 {
@@ -137,8 +137,8 @@ func (g *game) DetailedStatistics(w io.Writer) {
 	fmt.Fprintf(w, "You rested %d times.\n", g.Stats.Rest)
 	fmt.Fprintf(w, "You evoked %d times oric magaras.\n", g.Stats.OricMagUse)
 	fmt.Fprintf(w, "You evoked %d times harmonic magaras.\n", g.Stats.HarmonicMagUse)
-	fmt.Fprintf(w, "You got hit %d times, confused %d times, slowed %d times.\n",
-		g.Stats.ReceivedHits, g.Stats.Statuses[StatusConfusion], g.Stats.Statuses[StatusSlow])
+	fmt.Fprintf(w, "You got hit %d times, confused %d times.\n",
+		g.Stats.ReceivedHits, g.Stats.Statuses[StatusConfusion])
 	if g.Stats.Statuses[StatusIlluminated] > 0 {
 		fmt.Fprintf(w, "You were illuminated by an harmonic celmist %d times.\n", g.Stats.Statuses[StatusIlluminated])
 	}
@@ -275,7 +275,7 @@ func (g *game) DetailedStatistics(w io.Writer) {
 	}
 	sort.Strings(achvs)
 	for _, achv := range achvs {
-		fmt.Fprintf(w, "- %s (turn %d)\n", achv, g.Stats.Achievements[achievement(achv)]/10)
+		fmt.Fprintf(w, "- %s (turn %d)\n", achv, g.Stats.Achievements[achievement(achv)])
 	}
 }
 
@@ -362,7 +362,7 @@ func (g *game) SimplifedDump(err error) string {
 	} else {
 		fmt.Fprint(buf, "You did not recover the Gem Portal Artifact.\n")
 	}
-	fmt.Fprintf(buf, "You spent %d turns in Hareka's Underground.\n", g.Turn/10)
+	fmt.Fprintf(buf, "You spent %d turns in Hareka's Underground.\n", g.Turn)
 	maxDepth := Max(g.Depth, g.ExploredLevels)
 	s := "s"
 	if maxDepth == 1 {

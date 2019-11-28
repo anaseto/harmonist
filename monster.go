@@ -33,7 +33,7 @@ type monsterStatus int
 const (
 	MonsConfused monsterStatus = iota
 	MonsExhausted
-	MonsSlow
+	MonsParalysed
 	MonsSatiated
 	MonsLignified
 )
@@ -46,8 +46,8 @@ func (st monsterStatus) String() (text string) {
 		text = "confused"
 	case MonsExhausted:
 		text = "exhausted"
-	case MonsSlow:
-		text = "slowed"
+	case MonsParalysed:
+		text = "paralysed"
 	case MonsSatiated:
 		text = "satiated"
 	case MonsLignified:
@@ -95,16 +95,8 @@ func (mk monsterKind) String() string {
 	return MonsData[mk].name
 }
 
-func (mk monsterKind) MovementDelay() int {
-	return MonsData[mk].movementDelay
-}
-
 func (mk monsterKind) Letter() rune {
 	return MonsData[mk].letter
-}
-
-func (mk monsterKind) AttackDelay() int {
-	return 10
 }
 
 func (mk monsterKind) BaseAttack() int {
@@ -255,7 +247,6 @@ func (ms monsize) String() (text string) {
 }
 
 type monsterData struct {
-	movementDelay int
 	size          monsize
 	letter        rune
 	name          string
@@ -263,36 +254,36 @@ type monsterData struct {
 }
 
 var MonsData = []monsterData{
-	MonsGuard:     {10, MonsMedium, 'g', "guard", 3},
-	MonsTinyHarpy: {10, MonsSmall, 't', "tiny harpy", 3},
+	MonsGuard:     {MonsMedium, 'g', "guard", 3},
+	MonsTinyHarpy: {MonsSmall, 't', "tiny harpy", 3},
 	//MonsOgre:            {10, 2, 20, 3, 'O', "ogre", 7},
-	MonsOricCelmist:     {10, MonsMedium, 'o', "oric celmist", 9},
-	MonsHarmonicCelmist: {10, MonsMedium, 'h', "harmonic celmist", 9},
-	MonsWorm:            {10, MonsSmall, 'w', "farmer worm", 4},
+	MonsOricCelmist:     {MonsMedium, 'o', "oric celmist", 9},
+	MonsHarmonicCelmist: {MonsMedium, 'h', "harmonic celmist", 9},
+	MonsWorm:            {MonsSmall, 'w', "farmer worm", 4},
 	//MonsBrizzia:         {15, 1, 10, 3, 'z', "brizzia", 6},
-	MonsAcidMound: {10, MonsSmall, 'a', "acid mound", 4},
-	MonsDog:       {10, MonsMedium, 'd', "dog", 5},
-	MonsYack:      {10, MonsMedium, 'y', "yack", 5},
+	MonsAcidMound: {MonsSmall, 'a', "acid mound", 4},
+	MonsDog:       {MonsMedium, 'd', "dog", 5},
+	MonsYack:      {MonsMedium, 'y', "yack", 5},
 	//MonsGiantBee:        {5, 1, 10, 1, 'B', "giant bee", 6},
-	MonsHighGuard: {10, MonsMedium, 'G', "high guard", 5},
+	MonsHighGuard: {MonsMedium, 'G', "high guard", 5},
 	//MonsHydra:           {10, 1, 10, 4, 'H', "hydra", 10},
 	//MonsSkeletonWarrior: {10, 1, 10, 3, 'S', "skeleton warrior", 6},
-	MonsSpider:       {10, MonsSmall, 's', "spider", 15},
-	MonsWingedMilfid: {10, MonsMedium, 'W', "winged milfid", 6},
-	MonsBlinkingFrog: {10, MonsMedium, 'F', "blinking frog", 6},
+	MonsSpider:       {MonsSmall, 's', "spider", 15},
+	MonsWingedMilfid: {MonsMedium, 'W', "winged milfid", 6},
+	MonsBlinkingFrog: {MonsMedium, 'F', "blinking frog", 6},
 	//MonsLich:           {10, MonsMedium, 'L', "lich", 15},
-	MonsEarthDragon:    {10, MonsLarge, 'D', "earth dragon", 18},
-	MonsMirrorSpecter:  {10, MonsMedium, 'm', "mirror specter", 11},
-	MonsExplosiveNadre: {10, MonsMedium, 'n', "explosive nadre", 8},
-	MonsSatowalgaPlant: {10, MonsLarge, 'P', "satowalga plant", 7},
-	MonsMadNixe:        {10, MonsMedium, 'N', "mad nixe", 14},
+	MonsEarthDragon:    {MonsLarge, 'D', "earth dragon", 18},
+	MonsMirrorSpecter:  {MonsMedium, 'm', "mirror specter", 11},
+	MonsExplosiveNadre: {MonsMedium, 'n', "explosive nadre", 8},
+	MonsSatowalgaPlant: {MonsLarge, 'P', "satowalga plant", 7},
+	MonsMadNixe:        {MonsMedium, 'N', "mad nixe", 14},
 	//MonsMindCelmist:     {10, 1, 20, 2, 'c', "mind celmist", 12},
-	MonsVampire:      {10, MonsMedium, 'V', "vampire", 13},
-	MonsTreeMushroom: {10, MonsLarge, 'T', "tree mushroom", 17},
+	MonsVampire:      {MonsMedium, 'V', "vampire", 13},
+	MonsTreeMushroom: {MonsLarge, 'T', "tree mushroom", 17},
 	//MonsMarevorHelith: {10, MonsMedium, 'M', "Marevor Helith", 18},
-	MonsButterfly: {10, MonsSmall, 'b', "kerejat", 2},
-	MonsCrazyImp:  {10, MonsSmall, 'i', "Crazy Imp", 19},
-	MonsHazeCat:   {10, MonsSmall, 'c', "Haze Cat", 16},
+	MonsButterfly: {MonsSmall, 'b', "kerejat", 2},
+	MonsCrazyImp:  {MonsSmall, 'i', "Crazy Imp", 19},
+	MonsHazeCat:   {MonsSmall, 'c', "Haze Cat", 16},
 }
 
 var MonsDesc = []string{
@@ -629,11 +620,7 @@ func (m *monster) AttackAction(g *game, ev event) {
 	default:
 		m.HitPlayer(g, ev)
 	}
-	adelay := m.Kind.AttackDelay()
-	if m.Status(MonsSlow) {
-		adelay += 10
-	}
-	ev.Renew(g, adelay)
+	ev.Renew(g, DurationTurn)
 }
 
 func (m *monster) Explode(g *game, ev event) {
@@ -821,14 +808,6 @@ func (m *monster) NextTarget(g *game) (pos position) {
 	return pos
 }
 
-func (m *monster) MoveDelay(g *game) int {
-	movedelay := m.Kind.MovementDelay()
-	if m.Status(MonsSlow) {
-		movedelay += 3
-	}
-	return movedelay
-}
-
 func (m *monster) HandleMonsSpecifics(g *game) (done bool) {
 	switch m.Kind {
 	case MonsSatowalgaPlant:
@@ -846,7 +825,7 @@ func (m *monster) HandleMonsSpecifics(g *game) (done bool) {
 			}
 		}
 		// oklob plants are static ranged-only
-		g.Ev.Renew(g, m.MoveDelay(g))
+		g.Ev.Renew(g, DurationTurn)
 		return true
 	case MonsGuard, MonsHighGuard:
 		if m.State != Wandering && m.State != Watching {
@@ -856,7 +835,7 @@ func (m *monster) HandleMonsSpecifics(g *game) (done bool) {
 			if !on && pos == m.Pos {
 				g.Dungeon.SetCell(m.Pos, LightCell)
 				g.Objects.Lights[m.Pos] = true
-				g.Ev.Renew(g, m.MoveDelay(g))
+				g.Ev.Renew(g, DurationTurn)
 				if g.Player.Sees(m.Pos) {
 					g.Printf("%s makes a new fire.", m.Kind.Definite(true))
 				} else {
@@ -909,7 +888,7 @@ func (m *monster) HandleWatching(g *game) {
 			m.GatherBand(g)
 		}
 	}
-	g.Ev.Renew(g, m.MoveDelay(g))
+	g.Ev.Renew(g, DurationTurn)
 }
 
 func (m *monster) ComputePath(g *game) {
@@ -958,7 +937,7 @@ func (m *monster) HandleEndPath(g *game) {
 			m.Target = m.NextTarget(g)
 		}
 	}
-	g.Ev.Renew(g, m.MoveDelay(g))
+	g.Ev.Renew(g, DurationTurn)
 }
 
 func (m *monster) MakeWanderAt(target position) {
@@ -1060,13 +1039,16 @@ func (m *monster) HandleMove(g *game) {
 		m.Path = m.APath(g, m.Pos, m.Target)
 		m.Waiting++
 	}
-	g.Ev.Renew(g, m.MoveDelay(g))
+	g.Ev.Renew(g, DurationTurn)
 }
 
 func (m *monster) HandleTurn(g *game, ev event) {
+	if m.Status(MonsParalysed) {
+		return
+	}
 	if m.Swapped {
 		m.Swapped = false
-		ev.Renew(g, m.MoveDelay(g))
+		ev.Renew(g, DurationTurn)
 		return
 	}
 	ppos := g.Player.Pos
@@ -1081,7 +1063,7 @@ func (m *monster) HandleTurn(g *game, ev event) {
 		if RandInt(3000) == 0 || (m.Kind == MonsCrazyImp || m.Kind == MonsHazeCat) && RandInt(20) == 0 {
 			m.NaturalAwake(g)
 		}
-		ev.Renew(g, m.MoveDelay(g))
+		ev.Renew(g, DurationTurn)
 		return
 	}
 	if m.State == Hunting && m.RangedAttack(g, ev) {
@@ -1096,19 +1078,19 @@ func (m *monster) HandleTurn(g *game, ev event) {
 	if mpos.Distance(ppos) == 1 && g.Dungeon.Cell(ppos).T != BarrelCell && !m.Peaceful(g) {
 		if m.Status(MonsConfused) {
 			g.Printf("%s appears too confused to attack.", m.Kind.Definite(true))
-			ev.Renew(g, 10) // wait
+			ev.Renew(g, DurationTurn) // wait
 			return
 		}
 		if g.Dungeon.Cell(ppos).T == TreeCell && !m.Kind.CanAttackOnTree() {
 			g.Printf("%s watches you from below.", m.Kind.Definite(true))
-			ev.Renew(g, 10) // wait
+			ev.Renew(g, DurationTurn) // wait
 			return
 		}
 		m.AttackAction(g, ev)
 		return
 	}
 	if m.Status(MonsLignified) {
-		ev.Renew(g, 10) // wait
+		ev.Renew(g, DurationTurn) // wait
 		return
 	}
 	switch m.State {
@@ -1348,7 +1330,7 @@ func (m *monster) RangedAttack(g *game, ev event) bool {
 	if !m.FireReady {
 		m.FireReady = true
 		if m.Pos.Distance(g.Player.Pos) <= 3 {
-			ev.Renew(g, m.Kind.AttackDelay())
+			ev.Renew(g, DurationTurn)
 			return true
 		} else {
 			return false
@@ -1453,7 +1435,7 @@ func (m *monster) CreateBarrier(g *game, ev event) bool {
 	if !done {
 		return false
 	}
-	ev.Renew(g, m.Kind.AttackDelay())
+	ev.Renew(g, DurationTurn)
 	m.Exhaust(g)
 	return true
 }
@@ -1462,7 +1444,7 @@ func (m *monster) Illuminate(g *game, ev event) bool {
 	if g.PutStatus(StatusIlluminated, DurationIlluminated) {
 		g.Print("The harmonic celmist casts a magical light on you.")
 		g.StoryPrintf("Illuminated by %s", m.Kind)
-		ev.Renew(g, m.Kind.AttackDelay())
+		ev.Renew(g, DurationTurn)
 		m.Exhaust(g)
 		return true
 	}
@@ -1478,7 +1460,7 @@ func (m *monster) VampireSpit(g *game, ev event) bool {
 	g.Print("A vampire spitted at you.")
 	g.Confusion(ev)
 	m.Exhaust(g)
-	ev.Renew(g, m.Kind.AttackDelay())
+	ev.Renew(g, DurationTurn)
 	return true
 }
 
@@ -1491,7 +1473,7 @@ func (m *monster) ThrowSpores(g *game, ev event) bool {
 	g.StoryPrintf("Lignified by %s", m.Kind)
 	g.EnterLignification(ev)
 	m.Exhaust(g)
-	ev.Renew(g, m.Kind.AttackDelay())
+	ev.Renew(g, DurationTurn)
 	return true
 }
 
@@ -1512,8 +1494,8 @@ func (m *monster) ThrowJavelin(g *game, ev event) bool {
 	g.ui.MonsterJavelinAnimation(g.Ray(m.Pos), true)
 	g.MakeNoise(noise, g.Player.Pos)
 	m.InflictDamage(g, dmg, dmg)
-	m.ExhaustTime(g, 100+RandInt(50))
-	ev.Renew(g, m.Kind.AttackDelay())
+	m.ExhaustTime(g, 10+RandInt(5))
+	ev.Renew(g, DurationTurn)
 	return true
 }
 
@@ -1546,8 +1528,8 @@ func (m *monster) ThrowAcid(g *game, ev event) bool {
 	g.MakeNoise(noise, g.Player.Pos)
 	m.InflictDamage(g, dmg, dmg)
 	m.Corrode(g)
-	m.ExhaustTime(g, 20)
-	ev.Renew(g, m.Kind.AttackDelay())
+	m.ExhaustTime(g, 2)
+	ev.Renew(g, DurationTurn)
 	return true
 }
 
@@ -1567,7 +1549,7 @@ func (m *monster) NixeAttraction(g *game, ev event) bool {
 		g.PlacePlayerAt(ray[1])
 	}
 	m.Exhaust(g)
-	ev.Renew(g, m.Kind.AttackDelay())
+	ev.Renew(g, DurationTurn)
 	return true
 }
 
@@ -1586,7 +1568,7 @@ func (m *monster) SmitingAttack(g *game, ev event) bool {
 	if !m.FireReady {
 		m.FireReady = true
 		if m.Pos.Distance(g.Player.Pos) <= 3 {
-			ev.Renew(g, m.Kind.AttackDelay())
+			ev.Renew(g, DurationTurn)
 			return true
 		} else {
 			return false
@@ -1615,8 +1597,8 @@ func (m *monster) AbsorbMana(g *game, ev event) bool {
 	g.Player.MP -= 1
 	g.Printf("%s absorbs your mana.", m.Kind.Definite(true))
 	g.StoryPrintf("Mana absorbed by %s (MP: %d)", m.Kind, g.Player.MP)
-	m.ExhaustTime(g, 10+RandInt(10))
-	ev.Renew(g, m.Kind.AttackDelay())
+	m.ExhaustTime(g, 1+RandInt(2))
+	ev.Renew(g, DurationTurn)
 	return true
 }
 

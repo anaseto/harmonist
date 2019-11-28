@@ -48,7 +48,6 @@ const (
 	ShaedraAnimation
 	ArtifactAnimation
 	AbyssFall
-	SlowEnd
 	ExhaustionEnd
 	HasteEnd
 	EvasionEnd
@@ -96,10 +95,7 @@ func (sev *simpleEvent) Renew(g *game, delay int) {
 	}
 }
 
-const DurationStatusStep = 10
-
 var StatusEndMsgs = [...]string{
-	SlowEnd:          "You no longer feel slow.",
 	ExhaustionEnd:    "You no longer feel exhausted.",
 	HasteEnd:         "You no longer feel speedy.",
 	LignificationEnd: "You no longer feel attached to the ground.",
@@ -113,7 +109,6 @@ var StatusEndMsgs = [...]string{
 }
 
 var EndStatuses = [...]status{
-	SlowEnd:          StatusSlow,
 	ExhaustionEnd:    StatusExhausted,
 	HasteEnd:         StatusSwift,
 	LignificationEnd: StatusLignification,
@@ -127,7 +122,6 @@ var EndStatuses = [...]status{
 }
 
 var StatusEndActions = [...]simpleAction{
-	StatusSlow:          SlowEnd,
 	StatusExhausted:     ExhaustionEnd,
 	StatusSwift:         HasteEnd,
 	StatusLignification: LignificationEnd,
@@ -196,7 +190,7 @@ const (
 	MonsterTurn monsterAction = iota
 	MonsConfusionEnd
 	MonsExhaustionEnd
-	MonsSlowEnd
+	MonsParalysedEnd
 	MonsSatiatedEnd
 	MonsLignificationEnd
 )
@@ -214,7 +208,7 @@ func (mev *monsterEvent) Rank() int {
 var MonsStatusEndMsgs = [...]string{
 	MonsConfusionEnd:     "confused",
 	MonsLignificationEnd: "lignified",
-	MonsSlowEnd:          "slowed",
+	MonsParalysedEnd:     "slowed",
 	MonsExhaustionEnd:    "exhausted",
 	MonsSatiatedEnd:      "satiated",
 }
@@ -222,7 +216,7 @@ var MonsStatusEndMsgs = [...]string{
 var MonsEndStatuses = [...]monsterStatus{
 	MonsConfusionEnd:     MonsConfused,
 	MonsLignificationEnd: MonsLignified,
-	MonsSlowEnd:          MonsSlow,
+	MonsParalysedEnd:     MonsParalysed,
 	MonsExhaustionEnd:    MonsExhausted,
 	MonsSatiatedEnd:      MonsSatiated,
 }
@@ -230,7 +224,7 @@ var MonsEndStatuses = [...]monsterStatus{
 var MonsStatusEndActions = [...]monsterAction{
 	MonsConfused:  MonsConfusionEnd,
 	MonsLignified: MonsLignificationEnd,
-	MonsSlow:      MonsSlowEnd,
+	MonsParalysed: MonsParalysedEnd,
 	MonsExhausted: MonsExhaustionEnd,
 	MonsSatiated:  MonsSatiatedEnd,
 }
@@ -335,7 +329,7 @@ func (cev *cloudEvent) Action(g *game) {
 			g.ComputeLOS()
 			break
 		}
-		cev.Renew(g, 10)
+		cev.Renew(g, DurationTurn)
 	}
 }
 
@@ -356,8 +350,8 @@ func (g *game) NightFog(at position, radius int, ev event) {
 
 func (g *game) MakeCreatureSleep(pos position, ev event) {
 	if pos == g.Player.Pos {
-		if g.PutStatus(StatusSlow, DurationSleepSlow) {
-			g.Print("The clouds of night make you sleepy.")
+		if g.PutStatus(StatusConfusion, DurationConfusionPlayer) {
+			g.Print("The clouds of night confuse you.")
 		}
 		return
 	}
@@ -410,25 +404,26 @@ func (cev *cloudEvent) Renew(g *game, delay int) {
 }
 
 const (
-	DurationSwiftness              = 70
-	DurationShadows                = 150
-	DurationLevitation             = 180
-	DurationShortSwiftness         = 30
-	DurationDigging                = 80
-	DurationSlowMonster            = 170
-	DurationSleepSlow              = 40
-	DurationCloudProgression       = 10
-	DurationFog                    = 150
-	DurationExhaustion             = 60
-	DurationConfusionMonster       = 130
-	DurationConfusionPlayer        = 50
-	DurationLignificationMonster   = 150
-	DurationLignificationPlayer    = 40
-	DurationMagicalBarrier         = 150
-	DurationObstructionProgression = 150
-	DurationSmokingCloakFog        = 20
-	DurationExhaustionMonster      = 100
-	DurationSatiationMonster       = 400
-	DurationIlluminated            = 70
-	DurationTransparency           = 150
+	DurationSwiftness              = 4
+	DurationShadows                = 15
+	DurationLevitation             = 18
+	DurationShortSwiftness         = 3
+	DurationDigging                = 8
+	DurationParalysisMonster       = 6
+	DurationCloudProgression       = 1
+	DurationFog                    = 15
+	DurationExhaustion             = 6
+	DurationConfusionMonster       = 13
+	DurationConfusionPlayer        = 5
+	DurationLignificationMonster   = 15
+	DurationLignificationPlayer    = 4
+	DurationMagicalBarrier         = 15
+	DurationObstructionProgression = 15
+	DurationSmokingCloakFog        = 2
+	DurationExhaustionMonster      = 10
+	DurationSatiationMonster       = 40
+	DurationIlluminated            = 7
+	DurationTransparency           = 15
+	DurationTurn                   = 1
+	DurationStatusStep             = 1
 )

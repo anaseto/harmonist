@@ -438,12 +438,13 @@ func (g *game) InitLevel() {
 		g.CleanEvents()
 	}
 	for i := range g.Monsters {
-		g.PushEvent(&monsterEvent{ERank: g.Turn + RandInt(10), EAction: MonsterTurn, NMons: i})
+		g.PushEvent(&monsterEvent{ERank: g.Turn, EAction: MonsterTurn, NMons: i})
 	}
 	if g.Params.Unstable[g.Depth] {
 		g.PrintStyled("Uncontrolled oric magic fills the air on this level.", logSpecial)
 		for i := 0; i < 5; i++ {
-			g.PushEvent(&cloudEvent{ERank: g.Turn + 50 + RandInt(100), EAction: ObstructionProgression})
+			g.PushEvent(&cloudEvent{ERank: g.Turn + DurationObstructionProgression + RandInt(DurationObstructionProgression/2),
+				EAction: ObstructionProgression})
 		}
 	}
 

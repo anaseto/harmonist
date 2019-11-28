@@ -3,8 +3,7 @@ package main
 type status int
 
 const (
-	StatusSlow status = iota
-	StatusExhausted
+	StatusExhausted status = iota
 	StatusSwift
 	StatusLignification
 	StatusConfusion
@@ -39,7 +38,7 @@ func (st status) Good() bool {
 
 func (st status) Bad() bool {
 	switch st {
-	case StatusSlow, StatusConfusion, StatusNausea, StatusUnhidden, StatusIlluminated:
+	case StatusConfusion, StatusNausea, StatusUnhidden, StatusIlluminated:
 		return true
 	default:
 		return false
@@ -48,8 +47,6 @@ func (st status) Bad() bool {
 
 func (st status) String() string {
 	switch st {
-	case StatusSlow:
-		return "Slow"
 	case StatusExhausted:
 		return "Exhausted"
 	case StatusSwift:
@@ -86,8 +83,6 @@ func (st status) String() string {
 
 func (st status) Short() string {
 	switch st {
-	case StatusSlow:
-		return "Sl"
 	case StatusExhausted:
 		return "Ex"
 	case StatusSwift:

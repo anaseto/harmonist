@@ -115,11 +115,7 @@ func (g *game) MoveToTarget(ev event) bool {
 }
 
 func (g *game) WaitTurn(ev event) {
-	delay := 10
-	if g.Player.HasStatus(StatusSwift) {
-		delay = 5
-	}
-	ev.Renew(g, delay)
+	ev.Renew(g, DurationTurn)
 }
 
 func (g *game) MonsterCount() (count int) {
@@ -284,7 +280,6 @@ func (g *game) MovePlayer(pos position, ev event) error {
 	} else if c.T == BarrelCell && g.MonsterLOS[g.Player.Pos] {
 		return errors.New("You cannot enter a barrel while seen.")
 	}
-	delay := 10
 	mons := g.MonsterAt(pos)
 	if !mons.Exists() {
 		if g.Player.HasStatus(StatusLignification) {
@@ -341,18 +336,11 @@ func (g *game) MovePlayer(pos position, ev event) error {
 		return err
 	}
 	if g.Player.HasStatus(StatusSwift) {
-		// only fast for movement
-		delay /= 2
+		g.Player.Statuses[StatusSwift]--
+		ev.Renew(g, 0)
+		return nil
 	}
-	if g.Player.HasStatus(StatusSlow) {
-		delay *= 2
-	}
-	if delay < 5 {
-		delay = 5
-	} else if delay > 20 {
-		delay = 20
-	}
-	ev.Renew(g, delay)
+	ev.Renew(g, DurationTurn)
 	return nil
 }
 
@@ -416,7 +404,7 @@ func (g *game) ExtinguishFire() error {
 		AchExtinguisher.Get(g)
 	}
 	g.Print("You extinguish the fire.")
-	g.Ev.Renew(g, 5)
+	g.Ev.Renew(g, DurationTurn)
 	return nil
 }
 

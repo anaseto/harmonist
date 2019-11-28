@@ -214,7 +214,7 @@ func (ui *gameui) WaveAnimation(wave []int, ws wavestyle) {
 				ui.WaveDrawAt(pos, fg)
 			}
 		case WaveSlowing:
-			fg := ColorFgSlowedMonster
+			fg := ColorFgParalysedMonster
 			if ui.g.Player.Sees(pos) {
 				ui.WaveDrawAt(pos, fg)
 			}

@@ -27,7 +27,7 @@ const (
 	SleepingMagara
 	TeleportOtherMagara
 	SwappingMagara
-	SlowingMagara
+	ParalysisMagara
 	ObstructionMagara
 	LignificationMagara
 	EnergyMagara
@@ -39,7 +39,7 @@ const NumMagaras = int(TransparencyMagara)
 
 func (mag magara) Harmonic() bool {
 	switch mag.Kind {
-	case FogMagara, ShadowsMagara, NoiseMagara, ConfusionMagara, SleepingMagara, SlowingMagara, TransparencyMagara:
+	case FogMagara, ShadowsMagara, NoiseMagara, ConfusionMagara, SleepingMagara, ParalysisMagara, TransparencyMagara:
 		return true
 	default:
 		return false
@@ -59,7 +59,7 @@ func (m magaraKind) DefaultCharges() int {
 	switch m {
 	case LevitationMagara, FogMagara, NoiseMagara, FireMagara:
 		return 7
-	case SlowingMagara, ObstructionMagara, SwiftnessMagara, BlinkMagara, TransparencyMagara:
+	case ParalysisMagara, ShadowsMagara, ObstructionMagara, TransparencyMagara:
 		return 6
 	case EnergyMagara:
 		return 1
@@ -72,7 +72,7 @@ func (g *game) RandomStartingMagara() magara {
 	mags := []magaraKind{BlinkMagara, DigMagara, TeleportMagara,
 		SwiftnessMagara, LevitationMagara, FireMagara, FogMagara,
 		ShadowsMagara, NoiseMagara, ConfusionMagara, SleepingMagara,
-		TeleportOtherMagara, SwappingMagara, SlowingMagara,
+		TeleportOtherMagara, SwappingMagara, ParalysisMagara,
 		ObstructionMagara, LignificationMagara, TransparencyMagara}
 	var mag magaraKind
 loop:
@@ -110,7 +110,7 @@ func (g *game) EquipMagara(i int, ev event) (err error) {
 	g.Printf("You take the %s.", g.Player.Magaras[i])
 	g.Printf("You leave the %s.", omagara)
 	g.StoryPrintf("Took %s (%d), left %s (%d)", g.Player.Magaras[i], g.Player.Magaras[i].Charges, omagara, omagara.Charges)
-	ev.Renew(g, 5)
+	ev.Renew(g, DurationTurn)
 	return nil
 }
 
@@ -152,8 +152,8 @@ func (g *game) UseMagara(n int, ev event) (err error) {
 		err = g.EvokeNoise(ev)
 	case ConfusionMagara:
 		err = g.EvokeConfusion(ev)
-	case SlowingMagara:
-		err = g.EvokeSlowing(ev)
+	case ParalysisMagara:
+		err = g.EvokeParalysis(ev)
 	case SleepingMagara:
 		err = g.EvokeSleeping(ev)
 	case TeleportOtherMagara:
@@ -219,7 +219,7 @@ func (g *game) UseMagara(n int, ev event) (err error) {
 			AchTeleport.Get(g)
 		}
 	}
-	ev.Renew(g, 5)
+	ev.Renew(g, DurationTurn)
 	return nil
 }
 
@@ -253,7 +253,7 @@ func (mag magara) String() (desc string) {
 		desc = "magara of teleport other"
 	case SwappingMagara:
 		desc = "magara of swapping"
-	case SlowingMagara:
+	case ParalysisMagara:
 		desc = "magara of slowing"
 	case ObstructionMagara:
 		desc = "magara of obstruction"
@@ -282,7 +282,7 @@ func (mag magara) Desc(g *game) (desc string) {
 	case TeleportMagara:
 		desc = "creates an oric energy disturbance, making you teleport far away on the same level."
 	case SwiftnessMagara:
-		desc = "makes you move faster for a short time by giving a boost to your jaipu energies."
+		desc = "makes you able to move several times in a row."
 	case LevitationMagara:
 		desc = "makes you levitate with oric energies, allowing you to move over chasms, as well as through oric barriers."
 	case FireMagara:
@@ -295,8 +295,8 @@ func (mag magara) Desc(g *game) (desc string) {
 		desc = "tricks monsters in a 12-range area with harmonic magical sounds, making them go away from you for a few turns. It only works on monsters that are not already seeing you."
 	case ConfusionMagara:
 		desc = "confuses monsters in sight with harmonic light and sounds, leaving them unable to attack you."
-	case SlowingMagara:
-		desc = "induces slow movement and attack for monsters in sight by disturbing their senses with sound and light illusions."
+	case ParalysisMagara:
+		desc = "makes monsters in sight unable to act by disturbing their senses with sound and light illusions."
 	case SleepingMagara:
 		desc = "induces deep sleeping and exhaustion for up to three random monsters you see in cardinal directions using hypnotic illusions."
 	case TeleportOtherMagara:
@@ -316,8 +316,8 @@ func (mag magara) Desc(g *game) (desc string) {
 	switch mag.Kind {
 	case ConfusionMagara:
 		duration = DurationConfusionMonster
-	case SlowingMagara:
-		duration = DurationSlowMonster
+	case ParalysisMagara:
+		duration = DurationParalysisMonster
 	case ObstructionMagara:
 		duration = DurationMagicalBarrier
 	case LignificationMagara:
@@ -584,12 +584,12 @@ func (g *game) EvokeShadows(ev event) error {
 	return nil
 }
 
-func (g *game) EvokeSlowing(ev event) error {
+func (g *game) EvokeParalysis(ev event) error {
 	for _, mons := range g.Monsters {
 		if !mons.Exists() || !g.Player.Sees(mons.Pos) {
 			continue
 		}
-		mons.PutStatus(g, MonsSlow, DurationSlowMonster)
+		mons.PutStatus(g, MonsParalysed, DurationParalysisMonster)
 		if mons.Search == InvalidPos {
 			mons.Search = mons.Pos
 		}

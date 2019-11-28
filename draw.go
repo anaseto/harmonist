@@ -163,7 +163,7 @@ var (
 	ColorFgTree,
 	ColorFgConfusedMonster,
 	ColorFgLignifiedMonster,
-	ColorFgSlowedMonster,
+	ColorFgParalysedMonster,
 	ColorFgDark,
 	ColorFgExcluded,
 	ColorFgExplosionEnd,
@@ -204,7 +204,7 @@ func LinkColors() {
 	ColorFgTree = ColorGreen
 	ColorFgConfusedMonster = ColorGreen
 	ColorFgLignifiedMonster = ColorYellow
-	ColorFgSlowedMonster = ColorCyan
+	ColorFgParalysedMonster = ColorCyan
 	ColorFgExcluded = ColorRed
 	ColorFgExplosionEnd = ColorOrange
 	ColorFgExplosionStart = ColorYellow
@@ -1027,8 +1027,8 @@ func (ui *gameui) PositionDrawing(pos position) (r rune, fgColor, bgColor uicolo
 					fgColor = ColorFgLignifiedMonster
 				} else if m.Status(MonsConfused) {
 					fgColor = ColorFgConfusedMonster
-				} else if m.Status(MonsSlow) {
-					fgColor = ColorFgSlowedMonster
+				} else if m.Status(MonsParalysed) {
+					fgColor = ColorFgParalysedMonster
 				} else if m.State == Resting {
 					fgColor = ColorFgSleepingMonster
 				} else if m.State == Hunting {
@@ -1148,16 +1148,13 @@ func (ui *gameui) DrawStatusBar(line int) {
 		ui.DrawText(fmt.Sprintf("Depth: %d/%d", g.Depth, MaxDepth), BarCol, line)
 	}
 	line++
-	ui.DrawText(fmt.Sprintf("Turns: %.1f", float64(g.Turn)/10), BarCol, line)
+	ui.DrawText(fmt.Sprintf("Turns: %d", g.Turn), BarCol, line)
 	line++
 	for _, st := range sts {
 		fg := ColorFgStatusOther
 		if st.Good() {
 			fg = ColorFgStatusGood
-			t := 13
-			if g.Player.Statuses[StatusSlow] > 0 {
-				t += 3
-			}
+			t := DurationTurn
 			exp, ok := g.Player.Expire[st]
 			if ok && exp >= g.Ev.Rank() && exp-g.Ev.Rank() <= t {
 				fg = ColorFgStatusExpire
@@ -1215,7 +1212,7 @@ func (ui *gameui) DrawStatusLine() {
 	}
 	ui.DrawText(depth, col, line)
 	col += utf8.RuneCountInString(depth)
-	turns := fmt.Sprintf("T:%.1f ", float64(g.Turn)/10)
+	turns := fmt.Sprintf("T:%d ", g.Turn)
 	ui.DrawText(turns, col, line)
 	col += utf8.RuneCountInString(turns)
 
@@ -1279,10 +1276,7 @@ func (ui *gameui) DrawStatusLine() {
 		fg := ColorFgStatusOther
 		if st.Good() {
 			fg = ColorFgStatusGood
-			t := 13
-			if g.Player.Statuses[StatusSlow] > 0 {
-				t += 3
-			}
+			t := DurationTurn
 			if g.Player.Expire[st] >= g.Ev.Rank() && g.Player.Expire[st]-g.Ev.Rank() <= t {
 				fg = ColorFgStatusExpire
 			}
@@ -1572,16 +1566,6 @@ func (ui *gameui) DrawMonsterDescription(mons *monster) {
 	}
 	if mons.Kind.CanSwim() {
 		info += " " + fmt.Sprint("They can swim.")
-	}
-	md := mons.Kind.MovementDelay()
-	switch { // XXX this is no more useful: all monsters move now at the same speed
-	case md == 10:
-	case md >= 20:
-		info += " " + fmt.Sprint("They move very slowly.")
-	case md > 10:
-		info += " " + fmt.Sprint("They move slowly.")
-	case md < 10:
-		info += " " + fmt.Sprint("They move fast.")
 	}
 	if info != "" {
 		s += "\n\n" + info

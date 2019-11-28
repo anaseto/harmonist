@@ -99,9 +99,6 @@ func (g *game) Jump(mons *monster, ev event) error {
 	if !pos.valid() || !g.Dungeon.Cell(pos).T.IsPlayerPassable() {
 		return errors.New("You cannot jump in that direction.")
 	}
-	if g.Player.HasStatus(StatusSlow) {
-		return errors.New("You cannot jump while slowed.")
-	}
 	if g.Player.HasStatus(StatusExhausted) {
 		return errors.New("You cannot jump while exhausted.")
 	}
