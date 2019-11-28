@@ -139,7 +139,7 @@ func (g *game) LOSCost(from, pos, to position, rs raystyle) int {
 	if c.T == DoorCell {
 		if pos != from {
 			mons := g.MonsterAt(pos)
-			if !mons.Exists() {
+			if !mons.Exists() && pos != g.Player.Pos {
 				return wallcost
 			}
 		}
