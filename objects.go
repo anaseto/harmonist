@@ -164,11 +164,16 @@ func (stn stone) ShortDesc(g *game) string {
 
 func (stn stone) Style(g *game) (r rune, fg uicolor) {
 	r = '_'
-	if stn == InertStone {
+	switch stn {
+	case InertStone:
 		fg = ColorFgPlace
-	} else if stn == SealStone {
+	case SealStone:
 		fg = ColorFgPlayer
-	} else {
+	case MappingStone, SensingStone:
+		fg = ColorViolet
+	case BarrelStone:
+		fg = ColorFgObject
+	default:
 		fg = ColorFgMagicPlace
 	}
 	return r, fg
