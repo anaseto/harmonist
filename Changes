@@ -25,6 +25,9 @@ v0.3-dev
 + Rework magara of swiftness to give several “free” moves, which is more
   intuitive than previous behavior.
 + 4 new special rooms.
++ New potion items: they have an on-drink effect when you move onto them. You
+  cannot carry them.
++ Various balance adjustments.
 + Display number of remaining turns for monsters statuses too.
 + Fix rare bug when blinking to the same place.
 + Make “x” key work in key settings menu.
