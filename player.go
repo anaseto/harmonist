@@ -328,7 +328,7 @@ func (g *game) MovePlayer(pos position, ev event) error {
 			_, ok := g.Clouds[g.Player.Pos]
 			if !ok && g.Dungeon.Cell(g.Player.Pos).AllowsFog() {
 				g.Clouds[g.Player.Pos] = CloudFog
-				g.PushEvent(&cloudEvent{ERank: ev.Rank() + DurationSmokingCloakFog, EAction: CloudEnd, Pos: g.Player.Pos})
+				g.PushEvent(&posEvent{ERank: ev.Rank() + DurationSmokingCloakFog, EAction: CloudEnd, Pos: g.Player.Pos})
 			}
 		}
 		//}
@@ -357,7 +357,7 @@ func (g *game) SwiftFog(ev event) {
 		_, ok := g.Clouds[pos]
 		if !ok && g.Dungeon.Cell(pos).AllowsFog() {
 			g.Clouds[pos] = CloudFog
-			g.PushEvent(&cloudEvent{ERank: ev.Rank() + DurationFog + RandInt(DurationFog/2), EAction: CloudEnd, Pos: pos})
+			g.PushEvent(&posEvent{ERank: ev.Rank() + DurationFog + RandInt(DurationFog/2), EAction: CloudEnd, Pos: pos})
 		}
 	})
 	g.PutStatus(StatusSwift, DurationShortSwiftness)

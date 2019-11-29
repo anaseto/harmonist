@@ -9,7 +9,7 @@ import (
 func init() {
 	gob.Register(&simpleEvent{})
 	gob.Register(&monsterEvent{})
-	gob.Register(&cloudEvent{})
+	gob.Register(&posEvent{})
 }
 
 func (g *game) GameSave() ([]byte, error) {

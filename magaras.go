@@ -568,7 +568,7 @@ func (g *game) Fog(at position, radius int, ev event) {
 		_, ok := g.Clouds[pos]
 		if !ok && g.Dungeon.Cell(pos).AllowsFog() {
 			g.Clouds[pos] = CloudFog
-			g.PushEvent(&cloudEvent{ERank: ev.Rank() + DurationFog + RandInt(DurationFog/2), EAction: CloudEnd, Pos: pos})
+			g.PushEvent(&posEvent{ERank: ev.Rank() + DurationFog + RandInt(DurationFog/2), EAction: CloudEnd, Pos: pos})
 		}
 	})
 	g.ComputeLOS()
@@ -783,7 +783,7 @@ func (g *game) CreateMagicalBarrierAt(pos position, ev event) {
 	g.Dungeon.SetCell(pos, BarrierCell)
 	delete(g.Clouds, pos)
 	g.MagicalBarriers[pos] = t
-	g.PushEvent(&cloudEvent{ERank: ev.Rank() + DurationMagicalBarrier + RandInt(DurationMagicalBarrier/2), Pos: pos, EAction: ObstructionEnd})
+	g.PushEvent(&posEvent{ERank: ev.Rank() + DurationMagicalBarrier + RandInt(DurationMagicalBarrier/2), Pos: pos, EAction: ObstructionEnd})
 }
 
 func (g *game) EvokeEnergyMagara(ev event) error {

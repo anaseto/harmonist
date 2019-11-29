@@ -265,27 +265,27 @@ func (mev *monsterEvent) Renew(g *game, delay int) {
 	g.PushEvent(mev)
 }
 
-type cloudAction int
+type posAction int
 
 const (
-	CloudEnd cloudAction = iota
+	CloudEnd posAction = iota
 	ObstructionEnd
 	ObstructionProgression
 	FireProgression
 	NightProgression
 )
 
-type cloudEvent struct {
+type posEvent struct {
 	ERank   int
 	Pos     position
-	EAction cloudAction
+	EAction posAction
 }
 
-func (cev *cloudEvent) Rank() int {
+func (cev *posEvent) Rank() int {
 	return cev.ERank
 }
 
-func (cev *cloudEvent) Action(g *game) {
+func (cev *posEvent) Action(g *game) {
 	switch cev.EAction {
 	case CloudEnd:
 		delete(g.Clouds, cev.Pos)
@@ -310,7 +310,7 @@ func (cev *cloudEvent) Action(g *game) {
 			g.Printf("You see an oric barrier appear out of thin air.")
 			g.StopAuto()
 		}
-		g.PushEvent(&cloudEvent{ERank: cev.Rank() + DurationObstructionProgression + RandInt(DurationObstructionProgression/4),
+		g.PushEvent(&posEvent{ERank: cev.Rank() + DurationObstructionProgression + RandInt(DurationObstructionProgression/4),
 			EAction: ObstructionProgression})
 	case FireProgression:
 		if _, ok := g.Clouds[cev.Pos]; !ok {
@@ -347,7 +347,7 @@ func (g *game) NightFog(at position, radius int, ev event) {
 		_, ok := g.Clouds[pos]
 		if !ok {
 			g.Clouds[pos] = CloudNight
-			g.PushEvent(&cloudEvent{ERank: ev.Rank() + DurationCloudProgression, EAction: NightProgression, Pos: pos})
+			g.PushEvent(&posEvent{ERank: ev.Rank() + DurationCloudProgression, EAction: NightProgression, Pos: pos})
 			g.MakeCreatureSleep(pos, ev)
 		}
 	})
@@ -402,10 +402,10 @@ func (g *game) Burn(pos position, ev event) {
 	} else {
 		g.ComputeLOS()
 	}
-	g.PushEvent(&cloudEvent{ERank: ev.Rank() + DurationCloudProgression, EAction: FireProgression, Pos: pos})
+	g.PushEvent(&posEvent{ERank: ev.Rank() + DurationCloudProgression, EAction: FireProgression, Pos: pos})
 }
 
-func (cev *cloudEvent) Renew(g *game, delay int) {
+func (cev *posEvent) Renew(g *game, delay int) {
 	cev.ERank += delay
 	g.PushEvent(cev)
 }

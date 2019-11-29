@@ -461,7 +461,7 @@ func (g *game) InitLevel() {
 	if g.Params.Unstable[g.Depth] {
 		g.PrintStyled("Uncontrolled oric magic fills the air on this level.", logSpecial)
 		for i := 0; i < 5; i++ {
-			g.PushEvent(&cloudEvent{ERank: g.Turn + DurationObstructionProgression + RandInt(DurationObstructionProgression/2),
+			g.PushEvent(&posEvent{ERank: g.Turn + DurationObstructionProgression + RandInt(DurationObstructionProgression/2),
 				EAction: ObstructionProgression})
 		}
 	}
@@ -485,7 +485,7 @@ func (g *game) CleanEvents() {
 		iev := g.PopIEvent()
 		switch iev.Event.(type) {
 		case *monsterEvent:
-		case *cloudEvent:
+		case *posEvent:
 		default:
 			heap.Push(evq, iev)
 		}
