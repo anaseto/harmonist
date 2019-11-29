@@ -947,23 +947,13 @@ func (dg *dgen) ClearUnconnected(g *game) {
 }
 
 func (dg *dgen) AddSpecial(g *game, ml maplayout) {
-	// Equipment
-	//switch g.GenPlan[g.Depth] {
-	//case GenRod:
-	////g.GenerateRod()
-	//case GenExtraCollectables:
-	////for i := 0; i < 2; i++ {
-	////dg.GenCollectable(g)
-	////g.CollectableScore-- // these are extra
-	////}
-	//}
 	g.Objects.Stones = map[position]stone{}
 	if g.Params.Blocked[g.Depth] || g.Depth == MaxDepth {
 		dg.GenBarrierStone(g)
 	}
-	bananas := 2
-	if g.Depth%2 == 0 {
-		bananas--
+	bananas := 1
+	if g.Params.ExtraBanana[g.Depth] {
+		bananas++
 	}
 	for i := 0; i < bananas; i++ {
 		dg.GenBanana(g)
@@ -972,6 +962,10 @@ func (dg *dgen) AddSpecial(g *game, ml maplayout) {
 		dg.GenMagara(g)
 	}
 	dg.GenItem(g)
+	dg.GenPotion(g, MagicPotion)
+	if g.Params.HealthPotion[g.Depth] {
+		dg.GenPotion(g, HealthPotion)
+	}
 	dg.GenStones(g)
 	ntables := 4
 	switch ml {
@@ -1233,6 +1227,20 @@ func (dg *dgen) GenBanana(g *game) {
 			break
 		}
 	}
+}
+
+func (dg *dgen) GenPotion(g *game, p potion) {
+	count := 0
+	pos := InvalidPos
+	for pos == InvalidPos {
+		count++
+		if count > 1000 {
+			return
+		}
+		pos = dg.rooms[RandInt(len(dg.rooms))].RandomPlace(PlaceItem)
+	}
+	dg.d.SetCell(pos, PotionCell)
+	g.Objects.Potions[pos] = p
 }
 
 func (dg *dgen) OutsideGroundCell(g *game) position {

@@ -17,6 +17,7 @@ type objects struct {
 	Lore       map[position]int // TODO simplify? (there's never more than one)
 	Items      map[position]item
 	FakeStairs map[position]bool
+	Potions    map[position]potion
 }
 
 type stair int
@@ -709,4 +710,72 @@ loop:
 		break
 	}
 	return it
+}
+
+type potion int
+
+const (
+	HealthPotion potion = iota
+	MagicPotion
+)
+
+func (p potion) String() (desc string) {
+	switch p {
+	case HealthPotion:
+		desc = "health potion"
+	case MagicPotion:
+		desc = "magic potion"
+	}
+	return desc
+}
+
+func (p potion) ShortDesc(g *game) (desc string) {
+	return Indefinite(p.String(), false)
+}
+
+func (p potion) Desc(g *game) (desc string) {
+	switch p {
+	case HealthPotion:
+		desc = "Drinking a health potion will cure 1 HP."
+	case MagicPotion:
+		desc = "Drinking a magic potion will replenish 1 MP."
+	}
+	desc += "\n\nYou cannot carry around potions, you drink them when you move onto them."
+	return desc
+}
+
+func (p potion) Style(g *game) (r rune, fg uicolor) {
+	r = '!'
+	switch p {
+	case HealthPotion:
+		fg = ColorFgHPok
+	case MagicPotion:
+		fg = ColorFgMPok
+	}
+	return r, fg
+}
+
+func (g *game) DrinkPotion(pos position) {
+	p, ok := g.Objects.Potions[pos]
+	if !ok {
+		// should not happen
+		g.Dungeon.SetCell(pos, GroundCell)
+		g.PrintStyled("Unexpected potion.", logError)
+		return
+	}
+	switch p {
+	case HealthPotion:
+		if g.Player.HP >= g.Player.HPMax() {
+			return
+		}
+		g.Player.HP++
+	case MagicPotion:
+		if g.Player.MP >= g.Player.MPMax() {
+			return
+		}
+		g.Player.MP++
+	}
+	g.Printf("You drink %s.", p.ShortDesc(g))
+	g.Dungeon.SetCell(pos, GroundCell)
+	delete(g.Objects.Potions, pos)
 }

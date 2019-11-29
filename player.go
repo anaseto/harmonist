@@ -28,7 +28,7 @@ type inventory struct {
 	Misc item
 }
 
-const DefaultHealth = 4
+const DefaultHealth = 5
 
 func (p *player) HPMax() int {
 	hpmax := DefaultHealth
@@ -41,7 +41,7 @@ func (p *player) HPMax() int {
 	return hpmax
 }
 
-const DefaultMPmax = 5
+const DefaultMPmax = 6
 
 func (p *player) MPMax() int {
 	mpmax := DefaultMPmax
@@ -237,6 +237,8 @@ func (g *game) CollectGround() {
 			g.Print("Harmonic illusions!")
 			g.StoryPrint("Found harmonic fake stairs!")
 			g.ui.FoundFakeStairsAnimation()
+		case PotionCell:
+			g.DrinkPotion(pos)
 		default:
 			g.Printf("You are standing over %s.", c.ShortDesc(g, pos))
 		}

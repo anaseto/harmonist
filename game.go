@@ -66,18 +66,20 @@ type game struct {
 }
 
 type startParams struct {
-	Lore      map[int]bool
-	Blocked   map[int]bool
-	Special   []specialRoom
-	Unstable  map[int]bool
-	Windows   map[int]bool
-	Trees     map[int]bool
-	Holes     map[int]bool
-	Stones    map[int]bool
-	Tables    map[int]bool
-	NoMagara  map[int]bool
-	FakeStair map[int]bool
-	CrazyImp  int
+	Lore         map[int]bool
+	Blocked      map[int]bool
+	Special      []specialRoom
+	Unstable     map[int]bool
+	Windows      map[int]bool
+	Trees        map[int]bool
+	Holes        map[int]bool
+	Stones       map[int]bool
+	Tables       map[int]bool
+	NoMagara     map[int]bool
+	FakeStair    map[int]bool
+	ExtraBanana  map[int]bool
+	HealthPotion map[int]bool
+	CrazyImp     int
 }
 
 type places struct {
@@ -285,6 +287,16 @@ func (g *game) InitFirstLevel() {
 			i--
 		}
 	}
+	g.Params.HealthPotion = map[int]bool{}
+	const nhpotions = 5
+	for i := 0; i < nhpotions; i++ {
+		j := RandInt(MaxDepth)
+		if !g.Params.HealthPotion[j] {
+			g.Params.HealthPotion[j] = true
+		} else {
+			i--
+		}
+	}
 	g.Params.Blocked = map[int]bool{}
 	if RandInt(10) > 0 {
 		g.Params.Blocked[2+RandInt(WinDepth-2)] = true
@@ -333,6 +345,11 @@ func (g *game) InitFirstLevel() {
 			}
 		}
 	}
+	g.Params.ExtraBanana = map[int]bool{}
+	for i := 0; i < 2; i++ {
+		g.Params.ExtraBanana[1+5*i+RandInt(5)] = true
+	}
+
 	g.Params.Windows = map[int]bool{}
 	if RandInt(MaxDepth) > MaxDepth/2 {
 		g.Params.Windows[2+RandInt(MaxDepth-1)] = true
@@ -407,6 +424,7 @@ func (g *game) InitLevelStructures() {
 	g.Objects.Barrels = map[position]bool{}
 	g.Objects.Lights = map[position]bool{}
 	g.Objects.FakeStairs = map[position]bool{}
+	g.Objects.Potions = map[position]potion{}
 	g.NoiseIllusion = map[position]bool{}
 	g.Clouds = map[position]cloud{}
 	g.MonsterLOS = map[position]bool{}

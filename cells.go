@@ -34,6 +34,7 @@ const (
 	RubbleCell
 	CavernCell
 	FakeStairCell
+	PotionCell
 )
 
 func (c cell) IsPassable() bool {
@@ -172,7 +173,7 @@ func (c cell) Flammable() bool {
 
 func (c cell) IsGround() bool {
 	switch c.T {
-	case GroundCell, CavernCell:
+	case GroundCell, CavernCell, BananaCell, PotionCell:
 		return true
 	default:
 		return false
@@ -181,7 +182,8 @@ func (c cell) IsGround() bool {
 
 func (c cell) IsNotable() bool {
 	switch c.T {
-	case StairCell, StoneCell, BarrelCell, MagaraCell, BananaCell, ScrollCell, ItemCell, FakeStairCell:
+	case StairCell, StoneCell, BarrelCell, MagaraCell, BananaCell,
+		ScrollCell, ItemCell, FakeStairCell, PotionCell:
 		return true
 	default:
 		return false
@@ -238,6 +240,8 @@ func (c cell) ShortDesc(g *game, pos position) (desc string) {
 		desc = "cave ground"
 	case FakeStairCell:
 		desc = NormalStairShortDesc
+	case PotionCell:
+		desc = g.Objects.Potions[pos].ShortDesc(g)
 	}
 	return desc
 }
@@ -292,6 +296,8 @@ func (c cell) Desc(g *game, pos position) (desc string) {
 		desc = "This is natural cave ground."
 	case FakeStairCell:
 		desc = NormalStairDesc
+	case PotionCell:
+		desc = g.Objects.Potions[pos].Desc(g)
 	}
 	var autodesc string
 	if !c.T.IsPlayerPassable() {
@@ -372,6 +378,8 @@ func (c cell) Style(g *game, pos position) (r rune, fg uicolor) {
 		r, fg = ',', ColorFgLOS
 	case FakeStairCell:
 		r, fg = '>', ColorFgPlace
+	case PotionCell:
+		r, fg = g.Objects.Potions[pos].Style(g)
 	}
 	return r, fg
 }
