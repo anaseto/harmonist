@@ -366,6 +366,7 @@ func (g *game) MakeCreatureSleep(pos position, ev event) {
 		// do not always make already exhausted monsters sleep (they were probably awaken)
 		return
 	}
+	mons.EnterConfusion(g, ev)
 	if mons.State != Resting && g.Player.Sees(mons.Pos) {
 		g.Printf("%s falls asleep.", mons.Kind.Definite(true))
 	}
