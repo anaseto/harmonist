@@ -1152,6 +1152,9 @@ func (ui *gameui) NextObject(pos position, data *examineData) {
 		for p := range g.Objects.Scrolls {
 			data.objects = append(data.objects, p)
 		}
+		for p := range g.Objects.Potions {
+			data.objects = append(data.objects, p)
+		}
 		data.objects = g.SortedNearestTo(data.objects, g.Player.Pos)
 	}
 	for i := 0; i < len(data.objects); i++ {
