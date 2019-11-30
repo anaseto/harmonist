@@ -65,11 +65,22 @@ type game struct {
 	LiberatedArtifact bool
 }
 
+type specialEvent int
+
+const (
+	NormalLevel specialEvent = iota
+	UnstableLevel
+	EarthquakeLevel
+	MistLevel
+)
+
+const spEvMax = int(MistLevel)
+
 type startParams struct {
 	Lore         map[int]bool
 	Blocked      map[int]bool
 	Special      []specialRoom
-	Unstable     map[int]bool
+	Event        map[int]specialEvent
 	Windows      map[int]bool
 	Trees        map[int]bool
 	Holes        map[int]bool
@@ -328,13 +339,11 @@ func (g *game) InitFirstLevel() {
 	if RandInt(4) == 0 {
 		g.Params.Special[3], g.Params.Special[4] = g.Params.Special[4], g.Params.Special[3]
 	}
-	g.Params.Unstable = map[int]bool{}
-	if RandInt(MaxDepth) > MaxDepth/2 {
-		g.Params.Unstable[2+RandInt(MaxDepth-1)] = true
-		if RandInt(MaxDepth) == 0 {
-			g.Params.Unstable[2+RandInt(MaxDepth-1)] = true
-		}
+	g.Params.Event = map[int]specialEvent{}
+	for i := 0; i < 2; i++ {
+		g.Params.Event[2+5*i+RandInt(5)] = specialEvent(1 + RandInt(spEvMax))
 	}
+	g.Params.Event[2+RandInt(MaxDepth-1)] = NormalLevel
 	g.Params.FakeStair = map[int]bool{}
 	if RandInt(MaxDepth) > 0 {
 		g.Params.FakeStair[2+RandInt(MaxDepth-2)] = true
@@ -461,12 +470,24 @@ func (g *game) InitLevel() {
 	for i := range g.Monsters {
 		g.PushEventRandomIndex(&monsterEvent{ERank: g.Turn, EAction: MonsterTurn, NMons: i})
 	}
-	if g.Params.Unstable[g.Depth] {
+	switch g.Params.Event[g.Depth] {
+	case UnstableLevel:
 		g.PrintStyled("Uncontrolled oric magic fills the air on this level.", logSpecial)
-		for i := 0; i < 5; i++ {
+		for i := 0; i < 7; i++ {
 			g.PushEvent(&posEvent{ERank: g.Turn + DurationObstructionProgression + RandInt(DurationObstructionProgression/2),
 				EAction: ObstructionProgression})
 		}
+	case MistLevel:
+		for i := 0; i < 20; i++ {
+			g.PushEvent(&posEvent{ERank: g.Turn + DurationMistProgression + RandInt(DurationMistProgression/2),
+				EAction: MistProgression})
+		}
+	case EarthquakeLevel:
+		g.PushEvent(&posEvent{
+			ERank:   g.Turn + 10 + RandInt(50),
+			EAction: Earthquake,
+			Pos:     position{DungeonWidth/2 - 15 + RandInt(30), DungeonHeight/2 - 5 + RandInt(10)},
+		})
 	}
 
 	// initialize LOS

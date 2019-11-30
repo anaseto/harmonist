@@ -273,6 +273,8 @@ const (
 	ObstructionProgression
 	FireProgression
 	NightProgression
+	MistProgression
+	Earthquake
 )
 
 type posEvent struct {
@@ -336,6 +338,27 @@ func (cev *posEvent) Action(g *game) {
 			break
 		}
 		cev.Renew(g, DurationTurn)
+	case MistProgression:
+		pos := g.FreePassableCell()
+		g.Fog(pos, 1, cev)
+		g.PushEvent(&posEvent{ERank: cev.Rank() + DurationMistProgression + RandInt(DurationMistProgression/4),
+			EAction: MistProgression})
+	case Earthquake:
+		g.PrintStyled("The earth suddenly shakes with force!", logSpecial)
+		g.PrintStyled("Craack!", logSpecial)
+		g.MakeNoise(EarthquakeNoise, cev.Pos)
+		g.NoiseIllusion[cev.Pos] = true
+		for i, c := range g.Dungeon.Cells {
+			pos := idxtopos(i)
+			if !c.T.IsDiggable() || !g.Dungeon.HasFreeNeighbor(pos) {
+				continue
+			}
+			if cev.Pos.Distance(pos) > RandInt(35) || RandInt(2) == 0 {
+				continue
+			}
+			g.Dungeon.SetCell(pos, RubbleCell)
+			g.Fog(pos, 1, cev)
+		}
 	}
 }
 
@@ -426,6 +449,7 @@ const (
 	DurationLignificationPlayer    = 4
 	DurationMagicalBarrier         = 15
 	DurationObstructionProgression = 15
+	DurationMistProgression        = 12
 	DurationSmokingCloakFog        = 2
 	DurationExhaustionMonster      = 10
 	DurationSatiationMonster       = 40

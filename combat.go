@@ -153,6 +153,7 @@ const (
 	BaseHitNoise        = 2
 	QueenStoneNoise     = 9
 	SingingNoise        = 11
+	EarthquakeNoise     = 35
 )
 
 func (g *game) ClangMsg() (sclang string) {
