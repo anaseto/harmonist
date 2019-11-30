@@ -821,7 +821,7 @@ func (g *game) GenRoomTunnels(ml maplayout) {
 	case AutomataCave:
 		dg.GenCellularAutomataCaveMap()
 	case RandomWalkCave:
-		dg.GenCaveMap(21 * 42)
+		dg.GenCaveMap(21 * 40)
 	case RandomWalkTreeCave:
 		dg.GenTreeCaveMap()
 	case RandomSmallWalkCaveUrbanised:
