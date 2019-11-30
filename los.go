@@ -474,7 +474,8 @@ func (g *game) ComputeNoise() {
 			return
 		}
 		mons := g.MonsterAt(pos)
-		if mons.Exists() && mons.State != Resting && mons.State != Watching && RandInt(rmax) > 0 {
+		if mons.Exists() && mons.State != Resting && mons.State != Watching &&
+			(RandInt(rmax) > 0 || g.Dungeon.Cell(mons.Pos).T == QueenRockCell) {
 			switch mons.Kind {
 			case MonsMirrorSpecter, MonsSatowalgaPlant, MonsButterfly:
 				if mons.Kind == MonsMirrorSpecter && g.Player.Inventory.Body == CloakHear {
