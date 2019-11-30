@@ -254,7 +254,7 @@ func (mag magara) String() (desc string) {
 	case SwappingMagara:
 		desc = "magara of swapping"
 	case ParalysisMagara:
-		desc = "magara of slowing"
+		desc = "magara of paralysis"
 	case ObstructionMagara:
 		desc = "magara of obstruction"
 	case LignificationMagara:
