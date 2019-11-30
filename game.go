@@ -473,12 +473,14 @@ func (g *game) InitLevel() {
 	switch g.Params.Event[g.Depth] {
 	case UnstableLevel:
 		g.PrintStyled("Uncontrolled oric magic fills the air on this level.", logSpecial)
+		g.StoryPrint("Special event: magically unstable level")
 		for i := 0; i < 7; i++ {
 			g.PushEvent(&posEvent{ERank: g.Turn + DurationObstructionProgression + RandInt(DurationObstructionProgression/2),
 				EAction: ObstructionProgression})
 		}
 	case MistLevel:
 		g.PrintStyled("The air seems dense on this level.", logSpecial)
+		g.StoryPrint("Special event: mist level")
 		for i := 0; i < 20; i++ {
 			g.PushEvent(&posEvent{ERank: g.Turn + DurationMistProgression + RandInt(DurationMistProgression/2),
 				EAction: MistProgression})

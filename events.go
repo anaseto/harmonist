@@ -346,6 +346,7 @@ func (cev *posEvent) Action(g *game) {
 	case Earthquake:
 		g.PrintStyled("The earth suddenly shakes with force!", logSpecial)
 		g.PrintStyled("Craack!", logSpecial)
+		g.StoryPrint("Special event: earthquake!")
 		g.MakeNoise(EarthquakeNoise, cev.Pos)
 		g.NoiseIllusion[cev.Pos] = true
 		for i, c := range g.Dungeon.Cells {
