@@ -357,6 +357,7 @@ func (cev *posEvent) Action(g *game) {
 				continue
 			}
 			g.Dungeon.SetCell(pos, RubbleCell)
+			g.UpdateKnowledge(pos, c.T)
 			g.Fog(pos, 1, cev)
 		}
 	}
