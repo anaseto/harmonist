@@ -781,6 +781,7 @@ func (g *game) DrinkPotion(pos position) {
 		g.Player.MP++
 	}
 	g.Printf("You drink %s.", p.ShortDesc(g))
+	g.StoryPrintf("Drank %s.", p)
 	g.Dungeon.SetCell(pos, GroundCell)
 	delete(g.Objects.Potions, pos)
 }
