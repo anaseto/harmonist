@@ -952,9 +952,7 @@ func (dg *dgen) AddSpecial(g *game, ml maplayout) {
 		dg.GenBarrierStone(g)
 	}
 	bananas := 1
-	if g.Params.ExtraBanana[g.Depth] {
-		bananas++
-	}
+	bananas += g.Params.ExtraBanana[g.Depth]
 	for i := 0; i < bananas; i++ {
 		dg.GenBanana(g)
 	}

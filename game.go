@@ -77,7 +77,7 @@ type startParams struct {
 	Tables       map[int]bool
 	NoMagara     map[int]bool
 	FakeStair    map[int]bool
-	ExtraBanana  map[int]bool
+	ExtraBanana  map[int]int
 	HealthPotion map[int]bool
 	CrazyImp     int
 }
@@ -345,9 +345,12 @@ func (g *game) InitFirstLevel() {
 			}
 		}
 	}
-	g.Params.ExtraBanana = map[int]bool{}
+	g.Params.ExtraBanana = map[int]int{}
 	for i := 0; i < 2; i++ {
-		g.Params.ExtraBanana[1+5*i+RandInt(5)] = true
+		g.Params.ExtraBanana[1+5*i+RandInt(5)] = 1
+	}
+	for i := 0; i < 2; i++ {
+		g.Params.ExtraBanana[1+5*i+RandInt(5)] = -1
 	}
 
 	g.Params.Windows = map[int]bool{}
