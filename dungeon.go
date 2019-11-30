@@ -1681,7 +1681,7 @@ func (dg *dgen) GenQueenRock() {
 	for i := 0; i < 1+RandInt(2); i++ {
 		pos := cavern[RandInt(len(cavern))]
 		conn, _ := dg.d.Connected(pos, func(npos position) bool {
-			return npos.valid() && dg.d.Cell(npos).T == CavernCell
+			return npos.valid() && dg.d.Cell(npos).T == CavernCell && npos.Distance(pos) < 15+RandInt(5)
 		})
 		for pos := range conn {
 			dg.d.SetCell(pos, QueenRockCell)
