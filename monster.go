@@ -291,7 +291,7 @@ var MonsDesc = []string{
 	MonsTinyHarpy: "Tiny harpies are little humanoid flying creatures. They are aggressive when hungry, but peaceful when satiated. This Underground harpy species eats fruits (including bananas) and other vegetables.",
 	//MonsOgre:            "Ogres are big clunky humanoids that can hit really hard.",
 	MonsOricCelmist:     "Oric celmists are mages that can create magical barriers in cells adjacent to you, complicating your escape.\n\nDayoriah Clan's oric celmists are famous for their knowledge of oric magic force manipulations. They are the ones who instigated the steal of Marevor's Gem Portal Artifact. According to Marevor, they plan on doing some dangerous oric experiments with the Artifact, though that's all you can say about it, because his boring explanations were a bit over your head.",
-	MonsHarmonicCelmist: "Harmonic celmists are mages specialized in manipulation of sound and light. They can illuminate you with harmonic light, making it more difficult to hide from them.\n\nHarmonies are usually mainly used for sneaking around in the shadows, but they can also be used to reveal ennemies, sadly for you. Although harmonies are often considered as less prestigious magic energies than oric energies, the Dayoriah Clan knows how to make good use of them, as they clearly showed when they stole Marevor's Gem Portal Artifact.",
+	MonsHarmonicCelmist: "Harmonic celmists are mages specialized in manipulation of sound and light. They can illuminate you with harmonic light, making it more difficult to hide from them. They also use alert harmonic sounds around you.\n\nHarmonies are usually mainly used for sneaking around in the shadows, but they can also be used to reveal ennemies, sadly for you. Although harmonies are often considered as less prestigious magic energies than oric energies, the Dayoriah Clan knows how to make good use of them, as they clearly showed when they stole Marevor's Gem Portal Artifact.",
 	MonsWorm:            "Farmer worms are ugly slow moving creatures. They furrow as they move, helping new foliage to grow.",
 	//MonsBrizzia:         "Brizzias are big slow moving biped creatures. They are quite hardy, and when hurt they can cause nausea, impeding the use of potions.",
 	MonsAcidMound: "Acid mounds are acidic creatures. They can corrode your magaras, reducing their number of charges.",
@@ -1443,8 +1443,9 @@ func (m *monster) CreateBarrier(g *game, ev event) bool {
 
 func (m *monster) Illuminate(g *game, ev event) bool {
 	if g.PutStatus(StatusIlluminated, DurationIlluminated) {
-		g.Print("The harmonic celmist casts a magical light on you.")
+		g.Print("The harmonic celmist casts magical harmonies on you.")
 		g.StoryPrintf("Illuminated by %s", m.Kind)
+		g.MakeNoise(HarmonicNoise, g.Player.Pos)
 		ev.Renew(g, DurationTurn)
 		m.Exhaust(g)
 		return true

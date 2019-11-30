@@ -150,6 +150,7 @@ const (
 	BarkNoise              = 9
 	MagicExplosionNoise    = 12
 	MagicCastNoise         = 5
+	HarmonicNoise          = 7
 	BaseHitNoise           = 2
 	QueenStoneNoise        = 9
 	SingingNoise           = 11
