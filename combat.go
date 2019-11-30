@@ -143,17 +143,18 @@ func (g *game) HandleKill(mons *monster) {
 }
 
 const (
-	WallNoise           = 9
-	TemporalWallNoise   = 5
-	ExplosionNoise      = 12
-	MagicHitNoise       = 5
-	BarkNoise           = 9
-	MagicExplosionNoise = 12
-	MagicCastNoise      = 5
-	BaseHitNoise        = 2
-	QueenStoneNoise     = 9
-	SingingNoise        = 11
-	EarthquakeNoise     = 35
+	WallNoise              = 9
+	TemporalWallNoise      = 5
+	ExplosionNoise         = 12
+	MagicHitNoise          = 5
+	BarkNoise              = 9
+	MagicExplosionNoise    = 12
+	MagicCastNoise         = 5
+	BaseHitNoise           = 2
+	QueenStoneNoise        = 9
+	SingingNoise           = 11
+	EarthquakeNoise        = 35
+	QueenRockFootstepNoise = 7
 )
 
 func (g *game) ClangMsg() (sclang string) {

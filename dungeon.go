@@ -921,7 +921,9 @@ func (g *game) GenRoomTunnels(ml maplayout) {
 	})
 	dg.GenMonsters(g)
 	dg.PutCavernCells(g)
-
+	if RandInt(2) == 0 {
+		dg.GenQueenRock()
+	}
 }
 
 func (dg *dgen) PutCavernCells(g *game) {
@@ -1662,6 +1664,30 @@ func (dg *dgen) GenLake(t terrain) {
 	for pos := range conn {
 		d.SetCell(pos, t)
 	}
+}
+
+func (dg *dgen) GenQueenRock() {
+	cavern := []position{}
+	for i := 0; i < DungeonNCells; i++ {
+		pos := idxtopos(i)
+		c := dg.d.Cell(pos)
+		if c.T == CavernCell {
+			cavern = append(cavern, pos)
+		}
+	}
+	if len(cavern) == 0 {
+		return
+	}
+	for i := 0; i < 1+RandInt(2); i++ {
+		pos := cavern[RandInt(len(cavern))]
+		conn, _ := dg.d.Connected(pos, func(npos position) bool {
+			return npos.valid() && dg.d.Cell(npos).T == CavernCell
+		})
+		for pos := range conn {
+			dg.d.SetCell(pos, QueenRockCell)
+		}
+	}
+
 }
 
 func (dg *dgen) Foliage(less bool) {

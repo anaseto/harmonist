@@ -35,6 +35,7 @@ const (
 	CavernCell
 	FakeStairCell
 	PotionCell
+	QueenRockCell
 )
 
 func (c cell) IsPassable() bool {
@@ -173,7 +174,7 @@ func (c cell) Flammable() bool {
 
 func (c cell) IsGround() bool {
 	switch c.T {
-	case GroundCell, CavernCell, BananaCell, PotionCell:
+	case GroundCell, CavernCell, BananaCell, PotionCell, QueenRockCell:
 		return true
 	default:
 		return false
@@ -242,6 +243,8 @@ func (c cell) ShortDesc(g *game, pos position) (desc string) {
 		desc = NormalStairShortDesc
 	case PotionCell:
 		desc = g.Objects.Potions[pos].ShortDesc(g)
+	case QueenRockCell:
+		desc = "queen rock"
 	}
 	return desc
 }
@@ -298,6 +301,8 @@ func (c cell) Desc(g *game, pos position) (desc string) {
 		desc = NormalStairDesc
 	case PotionCell:
 		desc = g.Objects.Potions[pos].Desc(g)
+	case QueenRockCell:
+		desc = "Queen rock amplifies sounds. Even though you are usually very silent, monsters may hear your footsteps when walking on those rocks."
 	}
 	var autodesc string
 	if !c.T.IsPlayerPassable() {
@@ -380,6 +385,8 @@ func (c cell) Style(g *game, pos position) (r rune, fg uicolor) {
 		r, fg = '>', ColorFgPlace
 	case PotionCell:
 		r, fg = g.Objects.Potions[pos].Style(g)
+	case QueenRockCell:
+		r, fg = '‗', ColorFgLOS
 	}
 	return r, fg
 }

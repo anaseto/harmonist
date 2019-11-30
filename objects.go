@@ -141,7 +141,7 @@ func (stn stone) Desc(g *game) (text string) {
 	case FogStone:
 		text = "Activating this magical stone will produce fog in a 4-radius area using harmonic energies."
 	case QueenStone:
-		text = "Activating this magical stone will produce an harmonic sound confusing enemies in a quite large area. This can also attract monsters."
+		text = "This magical stone is made from queen rock. Activating it will produce an amplified harmonic sound confusing enemies in a quite large area. This can also attract monsters."
 	case NightStone:
 		text = "Activating this magical stone will produce hypnotic harmonic sounds and illusions inducing sleep in all the monsters in sight."
 	case TreeStone:

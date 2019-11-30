@@ -387,6 +387,10 @@ func (g *game) PlacePlayerAt(pos position) {
 		g.Player.Dir = S
 	}
 	g.Player.Pos = pos
+	if g.Dungeon.Cell(pos).T == QueenRockCell {
+		g.MakeNoise(QueenRockFootstepNoise, pos)
+		g.Print("Tap-tap.")
+	}
 	g.CollectGround()
 	g.ComputeLOS()
 	g.MakeMonstersAware()
