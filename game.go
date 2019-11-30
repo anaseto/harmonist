@@ -478,6 +478,7 @@ func (g *game) InitLevel() {
 				EAction: ObstructionProgression})
 		}
 	case MistLevel:
+		g.PrintStyled("The air seems dense on this level.", logSpecial)
 		for i := 0; i < 20; i++ {
 			g.PushEvent(&posEvent{ERank: g.Turn + DurationMistProgression + RandInt(DurationMistProgression/2),
 				EAction: MistProgression})
