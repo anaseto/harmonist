@@ -449,11 +449,23 @@ func (r *room) Dig(dg *dgen) {
 			case 0, 6:
 				t = TreeCell
 			case 1:
-				t = QueenRockCell
+				if RandInt(2) == 0 {
+					t = QueenRockCell
+				} else {
+					t = LightCell
+				}
 			case 2:
-				t = ChasmCell
+				if RandInt(2) == 0 {
+					t = ChasmCell
+				} else {
+					t = TableCell
+				}
 			case 3:
-				t = WaterCell
+				if RandInt(2) == 0 {
+					t = WaterCell
+				} else {
+					t = TableCell
+				}
 			case 4, 5:
 				t = GroundCell
 			}
