@@ -24,7 +24,7 @@ v0.3-dev
   variation on lignification (may change in the future).
 + Rework magara of swiftness to give several “free” moves, which is more
   intuitive than previous behavior.
-+ 4 new special rooms.
++ Many new special rooms.
 + New potion items: they have an on-drink effect when you move onto them. You
   cannot carry them.
 + Various balance adjustments.
