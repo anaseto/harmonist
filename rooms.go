@@ -605,6 +605,18 @@ const (
 #.G.#..#.G.#.#G.#
 #...............#
 #################`
+	RoomSpecialMirrorSpecters2 = `
+######--#####
+-P...W.P...P-
+#.#####B.##.#
+#.W>.G...!W.#
+#.###..#.##G#
+#.....#..q..#
+#W#.B#>.!##W#
+#>#!.....#.>#
+#..#..B.#..#?
+?#G..#!.G.#??
+??###?####???`
 )
 
 type specialRoom int
@@ -637,7 +649,7 @@ func (sr specialRoom) Templates() (tpl []string) {
 	case roomTreeMushrooms:
 		tpl = append(tpl, RoomSpecialTreeMushrooms, RoomSpecialTreeMushrooms2)
 	case roomMirrorSpecters:
-		tpl = append(tpl, RoomSpecialMirrorSpecters)
+		tpl = append(tpl, RoomSpecialMirrorSpecters, RoomSpecialMirrorSpecters2)
 	case roomShaedra:
 		tpl = roomCellTemplates
 	case roomArtifact:
