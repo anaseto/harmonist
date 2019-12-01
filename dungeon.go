@@ -461,11 +461,7 @@ func (r *room) Dig(dg *dgen) {
 					t = TableCell
 				}
 			case 3:
-				if RandInt(2) == 0 {
-					t = WaterCell
-				} else {
-					t = TableCell
-				}
+				t = TableCell
 			case 4, 5:
 				t = GroundCell
 			}
