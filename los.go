@@ -616,7 +616,7 @@ func (g *game) ComputeLights() {
 		}
 	}
 	for _, mons := range g.Monsters {
-		if !mons.Exists() || mons.Kind != MonsButterfly || mons.Status(MonsConfused) {
+		if !mons.Exists() || mons.Kind != MonsButterfly || mons.Status(MonsConfused) || mons.Status(MonsParalysed) {
 			continue
 		}
 		if mons.Pos.Distance(g.Player.Pos) > DefaultLOSRange+LightRange && g.Dungeon.Cell(g.Player.Pos).T != TreeCell {
