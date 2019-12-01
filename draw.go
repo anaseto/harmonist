@@ -1087,13 +1087,7 @@ func (ui *gameui) DrawStatusBar(line int) {
 		}
 	}
 	sort.Sort(sts)
-	hpColor := ColorFgHPok
-	switch g.Player.HP + g.Player.HPbonus {
-	case 1, 2:
-		hpColor = ColorFgHPcritical
-	case 3, 4:
-		hpColor = ColorFgHPwounded
-	}
+	hpColor := ui.HPColor()
 	nWounds := g.Player.HPMax() - g.Player.HP - g.Player.HPbonus
 	if nWounds <= 0 {
 		nWounds = 0
@@ -1117,13 +1111,7 @@ func (ui *gameui) DrawStatusBar(line int) {
 	}
 
 	line++
-	mpColor := ColorFgMPok
-	switch g.Player.MP {
-	case 1, 2:
-		mpColor = ColorFgMPcritical
-	case 3, 4:
-		mpColor = ColorFgMPpartial
-	}
+	mpColor := ui.MPColor()
 	ui.DrawColoredText("MP: ", BarCol, line, mpColor)
 
 	MPspent := g.Player.MPMax() - g.Player.MP
@@ -1171,6 +1159,30 @@ func (ui *gameui) DrawStatusBar(line int) {
 	}
 }
 
+func (ui *gameui) HPColor() uicolor {
+	g := ui.g
+	hpColor := ColorFgHPok
+	switch g.Player.HP + g.Player.HPbonus {
+	case 1, 2:
+		hpColor = ColorFgHPcritical
+	case 3, 4:
+		hpColor = ColorFgHPwounded
+	}
+	return hpColor
+}
+
+func (ui *gameui) MPColor() uicolor {
+	g := ui.g
+	mpColor := ColorFgMPok
+	switch g.Player.MP {
+	case 1, 2:
+		mpColor = ColorFgMPcritical
+	case 3, 4:
+		mpColor = ColorFgMPpartial
+	}
+	return mpColor
+}
+
 func (ui *gameui) DrawStatusLine() {
 	g := ui.g
 	sts := statusSlice{}
@@ -1186,20 +1198,6 @@ func (ui *gameui) DrawStatusLine() {
 		}
 	}
 	sort.Sort(sts)
-	hpColor := ColorFgHPok
-	switch g.Player.HP + g.Player.HPbonus {
-	case 1, 2:
-		hpColor = ColorFgHPcritical
-	case 3, 4:
-		hpColor = ColorFgHPwounded
-	}
-	mpColor := ColorFgMPok
-	switch g.Player.MP {
-	case 1, 2:
-		mpColor = ColorFgMPcritical
-	case 3, 4:
-		mpColor = ColorFgMPpartial
-	}
 	line := ui.MapHeight()
 	col := 2
 	ui.DrawText(" ", col, line)
@@ -1220,6 +1218,7 @@ func (ui *gameui) DrawStatusLine() {
 	if nWounds <= 0 {
 		nWounds = 0
 	}
+	hpColor := ui.HPColor()
 	ui.DrawColoredText("HP:", col, line, hpColor)
 	col += 3
 	hp := g.Player.HP
@@ -1247,6 +1246,7 @@ func (ui *gameui) DrawStatusLine() {
 	if MPspent <= 0 {
 		MPspent = 0
 	}
+	mpColor := ui.MPColor()
 	ui.DrawColoredText(" MP:", col, line, mpColor)
 	if !GameConfig.ShowNumbers {
 		col += 4
