@@ -1089,9 +1089,9 @@ func (ui *gameui) DrawStatusBar(line int) {
 	sort.Sort(sts)
 	hpColor := ColorFgHPok
 	switch g.Player.HP + g.Player.HPbonus {
-	case 1:
+	case 1, 2:
 		hpColor = ColorFgHPcritical
-	case 2, 3:
+	case 3, 4:
 		hpColor = ColorFgHPwounded
 	}
 	nWounds := g.Player.HPMax() - g.Player.HP - g.Player.HPbonus
@@ -1119,9 +1119,9 @@ func (ui *gameui) DrawStatusBar(line int) {
 	line++
 	mpColor := ColorFgMPok
 	switch g.Player.MP {
-	case 1:
+	case 1, 2:
 		mpColor = ColorFgMPcritical
-	case 2:
+	case 3, 4:
 		mpColor = ColorFgMPpartial
 	}
 	ui.DrawColoredText("MP: ", BarCol, line, mpColor)
@@ -1188,16 +1188,16 @@ func (ui *gameui) DrawStatusLine() {
 	sort.Sort(sts)
 	hpColor := ColorFgHPok
 	switch g.Player.HP + g.Player.HPbonus {
-	case 1:
+	case 1, 2:
 		hpColor = ColorFgHPcritical
-	case 2, 3:
+	case 3, 4:
 		hpColor = ColorFgHPwounded
 	}
 	mpColor := ColorFgMPok
 	switch g.Player.MP {
-	case 1:
+	case 1, 2:
 		mpColor = ColorFgMPcritical
-	case 2:
+	case 3, 4:
 		mpColor = ColorFgMPpartial
 	}
 	line := ui.MapHeight()
