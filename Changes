@@ -4,18 +4,25 @@ v0.3-dev
   at least once. Exact behavior depends on the type of monster, but they all
   have a chance of exploring around the last place they saw you at, in addition
   to their normal duties.
-+ Greatly improve tunnel generation used for all map generation algorithms,
-  resulting in more varied and interesting maps.
 + Magaras now have a maximum number of charges, to avoid spamming of a single
   magara.
++ Greatly improve tunnel generation used for all map generation algorithms,
+  resulting in more varied and interesting maps.
++ New special events: mist level and earthquake.
 + New special map layouts more or less urbanised than the common ones.
-+ New cloak of conversion, that generates MP from lost HP.
++ Many new special rooms.
 + New terrain feature: fake stairs (harmonic illusions).
-+ New unique monster: Crazy Imp that sings and plays guitar.
++ New terrain feature: queen rock, special terrain that amplifies sound, so
+  that even so you're usually very silent, your footsteps on such rocks will be
+  heard.
++ New unique monster: Crazy Imp that sings and plays guitar, attracting
+  unwanted attention.
 + New monster: haze cat, with very good night vision.
 + New monster: spiders, with panoramic vision and confusing bite.
-+ New monster: acid mounds, with magara charge corroding byte.
-+ Satowalga plants now may corrode your magara charges, instead of slowing you.
++ New monster: acid mounds, whose bite corrodes magara charges.
++ Satowalga plants acidic projectiles may now corrode your magara charges,
+  instead of slowing you.
++ New cloak of conversion, that generates MP from lost HP.
 + New magara of energy that replenishes HP and MP, but only has one charge.
 + New magara of transparency that makes you transparent (visible only to
   adjacent monsters) when standing of a lighted cell.
@@ -24,11 +31,11 @@ v0.3-dev
   variation on lignification (may change in the future).
 + Rework magara of swiftness to give several “free” moves, which is more
   intuitive than previous behavior.
-+ Many new special rooms.
 + New potion items: they have an on-drink effect when you move onto them. You
   cannot carry them.
-+ Various balance adjustments.
 + Display number of remaining turns for monsters statuses too.
++ Various balance adjustments, like 1 more HP and MP, but less bananas,
+  encouraging better strategic play.
 + Fix rare bug when blinking to the same place.
 + Make “x” key work in key settings menu.
 + Fix bug which could lead to negative number of bananas when jumping into
