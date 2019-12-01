@@ -442,6 +442,24 @@ func (r *room) Dig(dg *dgen) {
 			if pos.valid() {
 				dg.d.SetCell(pos, GroundCell)
 			}
+		case 'B':
+			// obstacle
+			t := WallCell
+			switch RandInt(9) {
+			case 0, 6:
+				t = TreeCell
+			case 1:
+				t = QueenRockCell
+			case 2:
+				t = ChasmCell
+			case 3:
+				t = WaterCell
+			case 4, 5:
+				t = GroundCell
+			}
+			if pos.valid() {
+				dg.d.SetCell(pos, t)
+			}
 		case '#', '+':
 			if pos.valid() {
 				dg.d.SetCell(pos, WallCell)
