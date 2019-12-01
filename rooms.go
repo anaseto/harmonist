@@ -409,6 +409,7 @@ var roomBigTemplates = []string{RoomBigColumns, RoomBigGarden, RoomColumns,
 
 const (
 	CellShaedra = `
+?#?#?#?#?
 #########
 #SMΔ#_!_#
 ##|###|##
@@ -416,12 +417,48 @@ const (
 ##|###|##
 #_!_#_!_#
 #########
+?#?#?#?#?
+`
+	CellShaedra2 = `
+ccccccc-?
+c#####c..
+c#SMΔ#ccP
+c##|####.
+cWG..G.|-
+c##|##.##
+c#_!_#!π#
+c#####|#?
+cccccc-P?
+`
+	CellShaedra3 = `
+ccccccc-?
+c#####c..
+c#_!_#ccP
+c##|####.
+cWG..G.|-
+c##|##.##
+c#SMΔ#!π#
+c#####|#?
+cccccc-P?
+`
+	CellShaedra4 = `
+?????c?????
+????ccc????
+??ccccccc??
+?cc##W##cc?
+cc##!G!##cc
+c#_#...#S#c
+c#!|...|M#c
+c#_#.G.#Δ#c
+c###_._###c
+-.###|###.-
+?.P..-..P.?
 `
 )
 
 // TODO: add indestructible walls?
 
-var roomCellTemplates = []string{CellShaedra}
+var roomCellTemplates = []string{CellShaedra, CellShaedra2, CellShaedra3, CellShaedra4}
 
 const (
 	RoomArtifact = `
