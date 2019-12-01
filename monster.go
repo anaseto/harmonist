@@ -283,7 +283,7 @@ var MonsData = []monsterData{
 	//MonsMarevorHelith: {10, MonsMedium, 'M', "Marevor Helith", 18},
 	MonsButterfly: {MonsSmall, 'b', "kerejat", 2},
 	MonsCrazyImp:  {MonsSmall, 'i', "Crazy Imp", 19},
-	MonsHazeCat:   {MonsSmall, 'c', "Haze Cat", 16},
+	MonsHazeCat:   {MonsSmall, 'c', "haze cat", 16},
 }
 
 var MonsDesc = []string{
