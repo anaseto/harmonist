@@ -440,26 +440,37 @@ var roomArtifactTemplates = []string{RoomArtifact}
 
 const (
 	RoomSpecialNixes = `
-???#########???
-?##>.......>##?
-#!...G.#.G...!#
-#..#...>...#..#
-#.....#!#.....#
-#..#.G...G.#..#
-+.P.........P.+
-##_#.......#_##
-??#!...P...!#??
-???####+####???`
+?#########???
+##.#~>~##>##?
+#>.G~.~G...!#
+##.......#..#
+#!.#qqq#..._#
+##.G...G.#..#
+#...._....P.+
++P.......#!##
+#....P...!#??
+?####+####???`
 	RoomSpecialVampires = `
 ?#####+#####?
 #>.G.#.#...>#
 ?#.......G.#?
 ??#!_.P._.#!#
 ???##....#>G#
-??#!_#P._!#|#
+??#~_#P._!#|#
 ?#...|......#
 #>.G.#.#..._#
 ?#####+#####?`
+	RoomSpecialVampires2 = `
+?~~~~~~~~~~-.
+~~##W##W##~~.
+~#>._#.π.##~P
+~W.G.|...|.~-
+~|q.!#.G.|.G-
+~####>...|.~-
+~#>G|....##~P
+~~###.π.!#~~.
+?~~~##W###~~.
+???~~~~~~~~-.`
 	RoomSpecialMilfids = `
 ?????????-???
 ???......P.??
@@ -579,7 +590,7 @@ func (sr specialRoom) Templates() (tpl []string) {
 	case roomMilfids:
 		tpl = append(tpl, RoomSpecialMilfids, RoomSpecialMilfids2)
 	case roomVampires:
-		tpl = append(tpl, RoomSpecialVampires)
+		tpl = append(tpl, RoomSpecialVampires, RoomSpecialVampires2)
 	case roomCelmists:
 		tpl = append(tpl, RoomSpecialCelmists, RoomSpecialCelmists2, RoomSpecialCelmists3)
 	case roomNixes:
