@@ -502,6 +502,10 @@ func (r *room) Dig(dg *dgen) {
 			if pos.valid() {
 				dg.d.SetCell(pos, ChasmCell)
 			}
+		case 'q':
+			if pos.valid() {
+				dg.d.SetCell(pos, QueenRockCell)
+			}
 		case 'S':
 			r.places = append(r.places, place{pos: pos, kind: PlaceStory})
 			dg.spl.Shaedra = pos
