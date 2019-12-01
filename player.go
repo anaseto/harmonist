@@ -233,8 +233,8 @@ func (g *game) CollectGround() {
 			g.Printf("You stand over %s.", Indefinite(g.Objects.Magaras[pos].String(), false))
 		case FakeStairCell:
 			g.Dungeon.SetCell(pos, GroundCell)
-			g.Print("You stand over fake stairs.")
-			g.Print("Harmonic illusions!")
+			g.PrintStyled("You stand over fake stairs.", logSpecial)
+			g.PrintStyled("Harmonic illusions!", logSpecial)
 			g.StoryPrint("Found harmonic fake stairs!")
 			g.ui.FoundFakeStairsAnimation()
 		case PotionCell:
