@@ -265,6 +265,10 @@ func (g *game) FallAbyss(style descendstyle) {
 	if g.Player.Bananas > 0 {
 		g.Player.Bananas--
 	}
+	if style == DescendFall && g.Depth == MaxDepth || g.Depth == WinDepth {
+		g.Player.HP = 0
+		return
+	}
 	g.Descend(style)
 }
 
@@ -288,6 +292,9 @@ func (g *game) MovePlayer(pos position, ev event) error {
 			return errors.New("You cannot move while lignified.")
 		}
 		if c.T == ChasmCell && !g.Player.HasStatus(StatusLevitation) {
+			if g.Depth == WinDepth || g.Depth == MaxDepth {
+				return errors.New("You cannot jump into deep chasm.")
+			}
 			g.Print("Do you really want to jump into the abyss? (DANGEROUS) [y/N]")
 			g.ui.DrawDungeonView(NoFlushMode)
 			g.ui.Flush()

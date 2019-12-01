@@ -232,7 +232,11 @@ func (c cell) ShortDesc(g *game, pos position) (desc string) {
 	case WindowCell:
 		desc = "a window"
 	case ChasmCell:
-		desc = "a chasm"
+		if g.Depth == MaxDepth || g.Depth == WinDepth {
+			desc = "a deep chasm"
+		} else {
+			desc = "a chasm"
+		}
 	case WaterCell:
 		desc = "shallow water"
 	case RubbleCell:
@@ -240,7 +244,11 @@ func (c cell) ShortDesc(g *game, pos position) (desc string) {
 	case CavernCell:
 		desc = "cave ground"
 	case FakeStairCell:
-		desc = NormalStairShortDesc
+		if g.Depth == WinDepth {
+			desc = DeepStairShortDesc
+		} else {
+			desc = NormalStairShortDesc
+		}
 	case PotionCell:
 		desc = g.Objects.Potions[pos].ShortDesc(g)
 	case QueenRockCell:
@@ -290,7 +298,11 @@ func (c cell) Desc(g *game, pos position) (desc string) {
 	case WindowCell:
 		desc = "A transparent window in the wall."
 	case ChasmCell:
-		desc = "A chasm. If you jump into it, you'll be seriously injured."
+		if g.Depth == MaxDepth || g.Depth == WinDepth {
+			desc = "A deep chasm. If you jump into it, you'll be dead."
+		} else {
+			desc = "A chasm. If you jump into it, you'll be seriously injured."
+		}
 	case WaterCell:
 		desc = "Shallow water."
 	case RubbleCell:
@@ -298,7 +310,11 @@ func (c cell) Desc(g *game, pos position) (desc string) {
 	case CavernCell:
 		desc = "This is natural cave ground."
 	case FakeStairCell:
-		desc = NormalStairDesc
+		if g.Depth == WinDepth {
+			desc = DeepStairDesc
+		} else {
+			desc = NormalStairDesc
+		}
 	case PotionCell:
 		desc = g.Objects.Potions[pos].Desc(g)
 	case QueenRockCell:
@@ -375,6 +391,9 @@ func (c cell) Style(g *game, pos position) (r rune, fg uicolor) {
 		r, fg = 'Θ', ColorViolet
 	case ChasmCell:
 		r, fg = '◊', ColorFgLOS
+		if g.Depth == MaxDepth || g.Depth == WinDepth {
+			fg = ColorViolet
+		}
 	case WaterCell:
 		r, fg = '≈', ColorFgLOS
 	case RubbleCell:
@@ -383,6 +402,9 @@ func (c cell) Style(g *game, pos position) (r rune, fg uicolor) {
 		r, fg = ',', ColorFgLOS
 	case FakeStairCell:
 		r, fg = '>', ColorFgPlace
+		if g.Depth == WinDepth {
+			fg = ColorViolet
+		}
 	case PotionCell:
 		r, fg = g.Objects.Potions[pos].Style(g)
 	case QueenRockCell:

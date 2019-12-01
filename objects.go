@@ -41,11 +41,16 @@ func (st stair) String() (desc string) {
 }
 
 const NormalStairShortDesc = "stairs downwards"
+const DeepStairShortDesc = "deep stairs downwards"
 
 func (st stair) ShortDesc(g *game) (desc string) {
 	switch st {
 	case NormalStair:
-		desc = NormalStairShortDesc
+		if g.Depth == WinDepth {
+			desc = DeepStairShortDesc
+		} else {
+			desc = NormalStairShortDesc
+		}
 	case WinStair:
 		desc = "a monolith portal"
 	case BlockedStair:
@@ -55,6 +60,7 @@ func (st stair) ShortDesc(g *game) (desc string) {
 }
 
 const NormalStairDesc = "Stairs lead to the next level of Dayoriah Clan's domain in Hareka's Underground. You will not be able to come back, because an oric barrier seals the stairs when they are traversed by intruders. The upside of this is that ennemies cannot follow you either."
+const DeepStairDesc = "Those very deep stairs lead to the next level of Dayoriah Clan's domain in Hareka's Underground. You will not be able to come back, because an oric barrier seals the stairs when they are traversed by intruders. The upside of this is that ennemies cannot follow you either."
 
 func (st stair) Desc(g *game) (desc string) {
 	switch st {
@@ -66,6 +72,7 @@ func (st stair) Desc(g *game) (desc string) {
 	case NormalStair:
 		desc = NormalStairDesc
 		if g.Depth == WinDepth {
+			desc = DeepStairDesc
 			desc += " You may want to take those after freeing Shaedra from her cell."
 		}
 	case BlockedStair:
@@ -82,6 +89,9 @@ func (st stair) Style(g *game) (r rune, fg uicolor) {
 		r = 'Δ'
 	case NormalStair:
 		fg = ColorFgPlace
+		if g.Depth == WinDepth {
+			fg = ColorViolet
+		}
 	case BlockedStair:
 		fg = ColorFgMagicPlace
 	}
