@@ -291,7 +291,7 @@ func (g *game) LoadConfig() (bool, error) {
 		return true, err
 	}
 	if c.Version != GameConfig.Version {
-		return true, errors.New("Version mismatch.")
+		return true, errors.New("Version mismatch")
 	}
 	GameConfig = *c
 	return true, nil
