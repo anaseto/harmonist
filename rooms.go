@@ -152,6 +152,16 @@ const (
 #..####|####..#
 #!.....P....._#
 ?######+######?`
+	RoomHome6 = `
+?###+#???
+#>.#q##??
+#.P|P_##?
+#.!#.#>.#
+#_##.##|#
+##!.....#
++.PBPB..#
+#......_#
+?###+###?`
 	RoomCaban = `
 ???????-??????
 ?????""""?????
@@ -401,7 +411,7 @@ const (
 
 var roomBigTemplates = []string{RoomBigColumns, RoomBigGarden, RoomColumns,
 	RoomRoundColumns, RoomRoundGarden, RoomLongHall, RoomGardenHall,
-	RoomTriangles, RoomHome1, RoomHome2, RoomHome3, RoomHome4, RoomHome5,
+	RoomTriangles, RoomHome1, RoomHome2, RoomHome3, RoomHome4, RoomHome5, RoomHome6,
 	RoomTriangle, RoomSpiraling, RoomSpiralingCircle, RoomAltar,
 	RoomCircleDouble, RoomGardenHome, RoomBigRooms, RoomCaban, RoomDolmen,
 	RoomSmallTemple, RoomTemple, RoomSchool, RoomTavern, RoomShop,
