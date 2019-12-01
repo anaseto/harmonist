@@ -373,8 +373,13 @@ const (
 	SpecialLoneHarpy
 	SpecialLoneTreeMushroom
 	SpecialLoneMirrorSpecter
+	SpecialLoneAcidMound
 	SpecialLoneHazeCat
 	SpecialLoneSpider
+	SpecialLoneBlinkingFrog
+	SpecialLoneExplosiveNadre
+	SpecialLoneYack
+	SpecialLoneDog
 	UniqueCrazyImp
 )
 
@@ -429,8 +434,13 @@ var MonsBands = []monsterBandData{
 	SpecialLoneHarpy:           {Monster: MonsTinyHarpy},
 	SpecialLoneTreeMushroom:    {Monster: MonsTreeMushroom},
 	SpecialLoneMirrorSpecter:   {Monster: MonsMirrorSpecter},
+	SpecialLoneAcidMound:       {Monster: MonsAcidMound},
 	SpecialLoneHazeCat:         {Monster: MonsHazeCat},
 	SpecialLoneSpider:          {Monster: MonsSpider},
+	SpecialLoneBlinkingFrog:    {Monster: MonsBlinkingFrog},
+	SpecialLoneDog:             {Monster: MonsDog},
+	SpecialLoneExplosiveNadre:  {Monster: MonsExplosiveNadre},
+	SpecialLoneYack:            {Monster: MonsYack},
 	UniqueCrazyImp:             {Monster: MonsCrazyImp},
 }
 

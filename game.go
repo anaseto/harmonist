@@ -330,6 +330,23 @@ func (g *game) InitFirstLevel() {
 		roomMirrorSpecters,
 		roomArtifact,
 	}
+	if RandInt(2) == 0 {
+		g.Params.Special[5] = roomNixes
+	}
+	if RandInt(4) == 0 {
+		if g.Params.Special[5] == roomNixes {
+			g.Params.Special[9] = roomVampires
+		} else {
+			g.Params.Special[9] = roomNixes
+		}
+	}
+	if RandInt(4) == 0 {
+		if RandInt(2) == 0 {
+			g.Params.Special[3] = roomFrogs
+		} else {
+			g.Params.Special[7] = roomFrogs
+		}
+	}
 	if RandInt(4) == 0 {
 		g.Params.Special[10], g.Params.Special[5] = g.Params.Special[5], g.Params.Special[10]
 	}

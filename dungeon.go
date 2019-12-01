@@ -2078,7 +2078,7 @@ func (dg *dgen) PutMonsterBand(g *game, band monsterBand) bool {
 	case LoneSatowalgaPlant:
 		bdinf = dg.BandInfoSatowalga(g, band)
 	case SpecialLoneVampire, SpecialLoneNixe, SpecialLoneMilfid, SpecialLoneOricCelmist, SpecialLoneHarmonicCelmist, SpecialLoneHighGuard,
-		SpecialLoneHarpy, SpecialLoneTreeMushroom, SpecialLoneMirrorSpecter, SpecialLoneHazeCat, SpecialLoneSpider:
+		SpecialLoneHarpy, SpecialLoneTreeMushroom, SpecialLoneMirrorSpecter, SpecialLoneHazeCat, SpecialLoneSpider, SpecialLoneAcidMound, SpecialLoneDog, SpecialLoneExplosiveNadre, SpecialLoneYack, SpecialLoneBlinkingFrog:
 		if RandInt(5) > 0 {
 			bdinf = dg.BandInfoPatrolSpecial(g, band)
 		} else {
@@ -2165,8 +2165,17 @@ func (dg *dgen) GenMonsters(g *game) {
 			dg.PutRandomBandN(g, []monsterBand{SpecialLoneVampire}, 2)
 		case roomNixes:
 			dg.PutRandomBandN(g, []monsterBand{SpecialLoneNixe}, 2)
+		case roomFrogs:
+			dg.PutRandomBandN(g, []monsterBand{SpecialLoneBlinkingFrog}, 2)
 		case roomMilfids:
-			dg.PutRandomBandN(g, []monsterBand{SpecialLoneMilfid}, 2)
+			switch RandInt(6) {
+			case 0:
+				dg.PutRandomBandN(g, []monsterBand{SpecialLoneYack}, 2)
+			case 1:
+				dg.PutRandomBandN(g, []monsterBand{SpecialLoneDog}, 2)
+			default:
+				dg.PutRandomBandN(g, []monsterBand{SpecialLoneMilfid}, 2)
+			}
 		case roomCelmists:
 			switch RandInt(3) {
 			case 0:
@@ -2194,7 +2203,14 @@ func (dg *dgen) GenMonsters(g *game) {
 				dg.PutRandomBandN(g, []monsterBand{SpecialLoneHazeCat}, 2)
 			}
 		case roomMirrorSpecters:
-			dg.PutRandomBandN(g, []monsterBand{SpecialLoneMirrorSpecter}, 2)
+			switch RandInt(6) {
+			case 0:
+				dg.PutRandomBandN(g, []monsterBand{SpecialLoneAcidMound}, 2)
+			case 1:
+				dg.PutRandomBandN(g, []monsterBand{SpecialLoneExplosiveNadre}, 2)
+			default:
+				dg.PutRandomBandN(g, []monsterBand{SpecialLoneMirrorSpecter}, 2)
+			}
 		case roomShaedra:
 			if RandInt(3) > 0 {
 				dg.PutRandomBand(g, []monsterBand{SpecialLoneHighGuard})
