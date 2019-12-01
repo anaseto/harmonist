@@ -42,6 +42,10 @@ func newGame(ui *gameui) {
 	load, err := g.LoadConfig()
 	if load && err != nil {
 		log.Printf("Error loading config: %v\n", err)
+		err = g.SaveConfig()
+		if err != nil {
+			log.Printf("Error resetting config: %v\n", err)
+		}
 	} else if load {
 		CustomKeys = true
 	}
@@ -287,7 +291,7 @@ func (g *game) LoadConfig() (bool, error) {
 		return true, err
 	}
 	if c.Version != GameConfig.Version {
-		return true, errors.New("Version mismatch, could not load old custom configuration.")
+		return true, errors.New("Version mismatch.")
 	}
 	GameConfig = *c
 	return true, nil

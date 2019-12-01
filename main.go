@@ -67,8 +67,13 @@ func main() {
 
 	load, err := g.LoadConfig()
 	var cfgerrstr string
+	var cfgreseterr string
 	if load && err != nil {
-		cfgerrstr = err.Error()
+		cfgerrstr = fmt.Sprintf("Error loading config: %s", err.Error())
+		err = g.SaveConfig()
+		if err != nil {
+			cfgreseterr = fmt.Sprintf("Error resetting config: %s", err.Error())
+		}
 	} else if load {
 		CustomKeys = true
 	}
@@ -87,6 +92,9 @@ func main() {
 	}
 	if cfgerrstr != "" {
 		g.PrintStyled(cfgerrstr, logError)
+	}
+	if cfgreseterr != "" {
+		g.PrintStyled(cfgreseterr, logError)
 	}
 	g.ui = ui
 	g.EventLoop()
