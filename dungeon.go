@@ -498,6 +498,10 @@ func (r *room) Dig(dg *dgen) {
 			if pos.valid() {
 				dg.d.SetCell(pos, WaterCell)
 			}
+		case 'c':
+			if pos.valid() {
+				dg.d.SetCell(pos, ChasmCell)
+			}
 		case 'S':
 			r.places = append(r.places, place{pos: pos, kind: PlaceStory})
 			dg.spl.Shaedra = pos
@@ -2052,7 +2056,7 @@ func (dg *dgen) PutMonsterBand(g *game, band monsterBand) bool {
 	case LoneSatowalgaPlant:
 		bdinf = dg.BandInfoSatowalga(g, band)
 	case SpecialLoneVampire, SpecialLoneNixe, SpecialLoneMilfid, SpecialLoneOricCelmist, SpecialLoneHarmonicCelmist, SpecialLoneHighGuard,
-		SpecialLoneHarpy, SpecialLoneTreeMushroom, SpecialLoneMirrorSpecter:
+		SpecialLoneHarpy, SpecialLoneTreeMushroom, SpecialLoneMirrorSpecter, SpecialLoneHazeCat, SpecialLoneSpider:
 		if RandInt(5) > 0 {
 			bdinf = dg.BandInfoPatrolSpecial(g, band)
 		} else {
@@ -2156,9 +2160,17 @@ func (dg *dgen) GenMonsters(g *game) {
 				dg.PutRandomBandN(g, bandOricCelmists, 1)
 			}
 		case roomHarpies:
-			dg.PutRandomBandN(g, []monsterBand{SpecialLoneHarpy}, 2)
+			if RandInt(3) > 0 {
+				dg.PutRandomBandN(g, []monsterBand{SpecialLoneHarpy}, 2)
+			} else {
+				dg.PutRandomBandN(g, []monsterBand{SpecialLoneSpider}, 2)
+			}
 		case roomTreeMushrooms:
-			dg.PutRandomBandN(g, []monsterBand{SpecialLoneTreeMushroom}, 2)
+			if RandInt(3) > 0 {
+				dg.PutRandomBandN(g, []monsterBand{SpecialLoneTreeMushroom}, 2)
+			} else {
+				dg.PutRandomBandN(g, []monsterBand{SpecialLoneHazeCat}, 2)
+			}
 		case roomMirrorSpecters:
 			dg.PutRandomBandN(g, []monsterBand{SpecialLoneMirrorSpecter}, 2)
 		case roomShaedra:

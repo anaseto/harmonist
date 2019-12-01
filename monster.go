@@ -373,6 +373,8 @@ const (
 	SpecialLoneHarpy
 	SpecialLoneTreeMushroom
 	SpecialLoneMirrorSpecter
+	SpecialLoneHazeCat
+	SpecialLoneSpider
 	UniqueCrazyImp
 )
 
@@ -427,6 +429,8 @@ var MonsBands = []monsterBandData{
 	SpecialLoneHarpy:           {Monster: MonsTinyHarpy},
 	SpecialLoneTreeMushroom:    {Monster: MonsTreeMushroom},
 	SpecialLoneMirrorSpecter:   {Monster: MonsMirrorSpecter},
+	SpecialLoneHazeCat:         {Monster: MonsHazeCat},
+	SpecialLoneSpider:          {Monster: MonsSpider},
 	UniqueCrazyImp:             {Monster: MonsCrazyImp},
 }
 
