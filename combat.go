@@ -79,6 +79,12 @@ func (g *game) MakeNoise(noise int, at position) {
 func (g *game) Jump(mons *monster, ev event) error {
 	if mons.Peaceful(g) && mons.Kind != MonsEarthDragon {
 		ompos := mons.Pos
+		if g.Dungeon.Cell(ompos).T == ChasmCell && !g.Player.HasStatus(StatusLevitation) {
+			err := g.AbyssJump()
+			if err != nil {
+				return err
+			}
+		}
 		mons.MoveTo(g, g.Player.Pos)
 		mons.Swapped = true
 		g.PlacePlayerAt(ompos)

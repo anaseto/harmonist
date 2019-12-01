@@ -272,6 +272,20 @@ func (g *game) FallAbyss(style descendstyle) {
 	g.Descend(style)
 }
 
+func (g *game) AbyssJump() error {
+	if g.Depth == WinDepth || g.Depth == MaxDepth {
+		return errors.New("You cannot jump into deep chasm.")
+	}
+	g.Print("Do you really want to jump into the abyss? (DANGEROUS) [y/N]")
+	g.ui.DrawDungeonView(NoFlushMode)
+	g.ui.Flush()
+	jump := g.ui.PromptConfirmation()
+	if jump {
+		g.FallAbyss(DescendJump)
+		return nil
+	}
+	return errors.New(DoNothing)
+}
 func (g *game) MovePlayer(pos position, ev event) error {
 	if !pos.valid() {
 		return errors.New("You cannot move there.")
@@ -292,18 +306,7 @@ func (g *game) MovePlayer(pos position, ev event) error {
 			return errors.New("You cannot move while lignified.")
 		}
 		if c.T == ChasmCell && !g.Player.HasStatus(StatusLevitation) {
-			if g.Depth == WinDepth || g.Depth == MaxDepth {
-				return errors.New("You cannot jump into deep chasm.")
-			}
-			g.Print("Do you really want to jump into the abyss? (DANGEROUS) [y/N]")
-			g.ui.DrawDungeonView(NoFlushMode)
-			g.ui.Flush()
-			jump := g.ui.PromptConfirmation()
-			if jump {
-				g.FallAbyss(DescendJump)
-				return nil
-			}
-			return errors.New(DoNothing)
+			return g.AbyssJump()
 		}
 		if c.T == BarrelCell {
 			g.Print("You hide yourself inside the barrel.")

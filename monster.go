@@ -1252,6 +1252,10 @@ func (m *monster) HitSideEffects(g *game, ev event) {
 		if m.Status(MonsExhausted) || g.Player.HasStatus(StatusLignification) {
 			break
 		}
+		c := g.Dungeon.Cell(g.Player.Pos)
+		if !(c.IsPassable() || c.IsSwimPassable() || c.IsDoorPassable() || c.IsLevitatePassable()) {
+			break
+		}
 		ompos := m.Pos
 		m.MoveTo(g, g.Player.Pos)
 		g.PlacePlayerAt(ompos)
