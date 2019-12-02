@@ -489,6 +489,30 @@ func (m *monster) Init() {
 	}
 }
 
+func (m *monster) CanPass(g *game, pos position) bool {
+	if !pos.valid() {
+		return false
+	}
+	c := g.Dungeon.Cell(pos)
+	return c.IsPassable() ||
+		c.IsDoorPassable() && m.Kind.CanOpenDoors() ||
+		c.IsLevitatePassable() && m.Kind.CanFly() ||
+		c.IsSwimPassable() && (m.Kind.CanSwim() || m.Kind.CanFly()) ||
+		c.T == HoledWallCell && m.Kind.Size() == MonsSmall
+}
+
+func (m *monster) CanPassDestruct(g *game, pos position) bool {
+	if !pos.valid() {
+		return false
+	}
+	c := g.Dungeon.Cell(pos)
+	destruct := false
+	if m.Kind == MonsEarthDragon {
+		destruct = true
+	}
+	return m.CanPass(g, pos) || c.IsDestructible() && destruct
+}
+
 func (m *monster) StartWatching() {
 	m.State = Watching
 	m.Watching = 0
@@ -690,17 +714,6 @@ func (m *monster) NaturalAwake(g *game) {
 	m.GatherBand(g)
 }
 
-func (m *monster) CanPass(g *game, pos position) bool {
-	if !pos.valid() {
-		return false
-	}
-	c := g.Dungeon.Cell(pos)
-	return c.IsPassable() || c.IsDoorPassable() && m.Kind.CanOpenDoors() ||
-		c.IsLevitatePassable() && m.Kind.CanFly() ||
-		c.IsSwimPassable() && (m.Kind.CanSwim() || m.Kind.CanFly()) ||
-		c.T == HoledWallCell && m.Kind.Size() == MonsSmall
-}
-
 func (m *monster) RandomFreeNeighbor(g *game) position {
 	pos := m.Pos
 	neighbors := [4]position{pos.E(), pos.W(), pos.N(), pos.S()}
@@ -791,7 +804,7 @@ func (m *monster) NextTarget(g *game) (pos position) {
 		}
 		pos = band.Path[RandInt(len(band.Path))]
 	case BehGuard:
-		if m.Search != InvalidPos && m.Search.Distance(m.Pos) < 4 && RandInt(2) == 0 {
+		if m.Search != InvalidPos && m.Search.Distance(m.Pos) < 5 && RandInt(2) == 0 {
 			pos = m.SearchAround(g, m.Search, 3)
 			if pos != InvalidPos {
 				break
@@ -809,10 +822,16 @@ func (m *monster) NextTarget(g *game) (pos position) {
 			pos = band.Path[1]
 		} else if band.Path[1] == m.Target {
 			pos = band.Path[0]
-		} else if band.Path[0].Distance(m.Pos) < band.Path[1].Distance(m.Pos) && RandInt(4) > 0 {
+		} else if band.Path[0].Distance(m.Pos) < band.Path[1].Distance(m.Pos) {
 			pos = band.Path[0]
+			if RandInt(4) == 0 {
+				pos = band.Path[1]
+			}
 		} else {
 			pos = band.Path[1]
+			if RandInt(4) == 0 {
+				pos = band.Path[0]
+			}
 		}
 	case BehCrazyImp:
 		path := m.APath(g, m.Pos, g.Player.Pos)

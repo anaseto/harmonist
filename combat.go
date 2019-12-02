@@ -78,6 +78,9 @@ func (g *game) MakeNoise(noise int, at position) {
 
 func (g *game) Jump(mons *monster, ev event) error {
 	if mons.Peaceful(g) && mons.Kind != MonsEarthDragon {
+		if !mons.CanPass(g, g.Player.Pos) {
+			return errors.New("You cannot exchange positions from there.")
+		}
 		ompos := mons.Pos
 		if g.Dungeon.Cell(ompos).T == ChasmCell && !g.Player.HasStatus(StatusLevitation) {
 			err := g.AbyssJump()

@@ -191,23 +191,13 @@ func (ap *autoexplorePath) Cost(from, to position) int {
 type monPath struct {
 	game      *game
 	monster   *monster
-	destruct  bool
 	neighbors [8]position
 }
 
 func (mp *monPath) Neighbors(pos position) []position {
 	nb := mp.neighbors[:0]
-	d := mp.game.Dungeon
 	keep := func(npos position) bool {
-		if !npos.valid() {
-			return false
-		}
-		c := d.Cell(npos)
-		return c.IsPassable() || c.IsDestructible() && mp.destruct ||
-			c.T == DoorCell && (mp.monster.Kind.CanOpenDoors() || mp.destruct) ||
-			c.IsLevitatePassable() && mp.monster.Kind.CanFly() ||
-			c.IsSwimPassable() && (mp.monster.Kind.CanSwim() || mp.monster.Kind.CanFly()) ||
-			c.T == HoledWallCell && mp.monster.Kind.Size() == MonsSmall
+		return mp.monster.CanPassDestruct(mp.game, npos)
 	}
 	ret := pos.CardinalNeighbors(nb, keep)
 	// shuffle so that monster movement is not unnaturally predictable
@@ -223,7 +213,7 @@ func (mp *monPath) Cost(from, to position) int {
 	mons := g.MonsterAt(to)
 	if !mons.Exists() {
 		c := g.Dungeon.Cell(to)
-		if mp.destruct && c.IsDestructible() {
+		if mp.monster.Kind == MonsEarthDragon && c.IsDestructible() {
 			return 5
 		}
 		if to == g.Player.Pos && mp.monster.Kind.Peaceful() {
@@ -251,9 +241,6 @@ func (mp *monPath) Estimation(from, to position) int {
 
 func (m *monster) APath(g *game, from, to position) []position {
 	mp := &monPath{game: g, monster: m}
-	if m.Kind == MonsEarthDragon {
-		mp.destruct = true
-	}
 	path, _, found := AstarPath(mp, from, to)
 	if !found {
 		return nil
