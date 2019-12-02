@@ -520,7 +520,7 @@ const DoNothing = "Do nothing, then."
 func (ui *gameui) EnterWizard() {
 	g := ui.g
 	if ui.Wizard() {
-		g.WizardMode()
+		g.EnterWizardMode()
 		ui.DrawDungeonView(NoFlushMode)
 	} else {
 		g.Print(DoNothing)
@@ -1543,22 +1543,22 @@ type wizardAction int
 
 const (
 	WizardInfoAction wizardAction = iota
-	WizardToggleMap
+	WizardToggleMode
 )
 
 func (a wizardAction) String() (text string) {
 	switch a {
 	case WizardInfoAction:
 		text = "Info"
-	case WizardToggleMap:
-		text = "toggle see/hide monsters"
+	case WizardToggleMode:
+		text = "toggle normal/map/all wizard mode"
 	}
 	return text
 }
 
 var WizardActions = []wizardAction{
 	WizardInfoAction,
-	WizardToggleMap,
+	WizardToggleMode,
 }
 
 func (ui *gameui) HandleWizardAction() error {
@@ -1570,8 +1570,15 @@ func (ui *gameui) HandleWizardAction() error {
 	switch s {
 	case WizardInfoAction:
 		ui.WizardInfo()
-	case WizardToggleMap:
-		g.WizardMap = !g.WizardMap
+	case WizardToggleMode:
+		switch g.WizardMode {
+		case WizardNormal:
+			g.WizardMode = WizardMap
+		case WizardMap:
+			g.WizardMode = WizardSeeAll
+		case WizardSeeAll:
+			g.WizardMode = WizardNormal
+		}
 		ui.DrawDungeonView(NoFlushMode)
 	}
 	return nil

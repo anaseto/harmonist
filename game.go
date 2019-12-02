@@ -55,7 +55,7 @@ type game struct {
 	Boredom            int
 	Quit               bool
 	Wizard             bool
-	WizardMap          bool
+	WizardMode         wizardMode
 	Version            string
 	Places             places
 	Params             startParams
@@ -99,6 +99,14 @@ type places struct {
 	Marevor  position
 	Artifact position
 }
+
+type wizardMode int
+
+const (
+	WizardNormal wizardMode = iota
+	WizardMap
+	WizardSeeAll
+)
 
 func (g *game) FreePassableCell() position {
 	d := g.Dungeon
@@ -635,7 +643,7 @@ func (g *game) Descend(style descendstyle) bool {
 	return false
 }
 
-func (g *game) WizardMode() {
+func (g *game) EnterWizardMode() {
 	g.Wizard = true
 	g.PrintStyled("You are now in wizard mode and cannot obtain winner status.", logSpecial)
 }
@@ -725,6 +733,8 @@ loop:
 		if g.Player.HP <= 0 {
 			if g.Wizard {
 				g.Player.HP = g.Player.HPMax()
+				g.PrintStyled("You died.", logSpecial)
+				g.StoryPrint("You died (wizard mode)")
 			} else {
 				g.LevelStats()
 				err := g.RemoveSaveFile()

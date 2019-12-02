@@ -936,7 +936,7 @@ func (ui *gameui) PositionDrawing(pos position) (r rune, fgColor, bgColor uicolo
 	c := m.Cell(pos)
 	fgColor = ColorFg
 	bgColor = ColorBg
-	if !c.Explored && !g.Wizard {
+	if !c.Explored && (!g.Wizard || g.WizardMode == WizardNormal) {
 		r = ' '
 		bgColor = ColorBgDark
 		if g.HasNonWallExploredNeighbor(pos) {
@@ -956,8 +956,8 @@ func (ui *gameui) PositionDrawing(pos position) (r rune, fgColor, bgColor uicolo
 		}
 		return
 	}
-	if g.Wizard {
-		if !c.Explored && g.HasNonWallExploredNeighbor(pos) && !g.WizardMap {
+	if g.Wizard && g.WizardMode != WizardNormal {
+		if !c.Explored && g.HasNonWallExploredNeighbor(pos) && g.WizardMode == WizardSeeAll {
 			r = '¤'
 			fgColor = ColorFgDark
 			bgColor = ColorBgDark
@@ -970,7 +970,7 @@ func (ui *gameui) PositionDrawing(pos position) (r rune, fgColor, bgColor uicolo
 			}
 		}
 	}
-	if g.Player.Sees(pos) && !g.WizardMap {
+	if g.Player.Sees(pos) && !(g.Wizard && g.WizardMode == WizardMap) {
 		fgColor = ColorFgLOS
 		bgColor = ColorBgLOS
 	} else {
@@ -980,7 +980,7 @@ func (ui *gameui) PositionDrawing(pos position) (r rune, fgColor, bgColor uicolo
 	if g.ExclusionsMap[pos] && c.T.IsPlayerPassable() {
 		fgColor = ColorFgExcluded
 	}
-	if trkn, okTrkn := g.TerrainKnowledge[pos]; okTrkn && !g.Wizard {
+	if trkn, okTrkn := g.TerrainKnowledge[pos]; okTrkn && (!g.Wizard || g.WizardMode == WizardNormal) {
 		c.T = trkn
 	}
 	var fgTerrain uicolor
@@ -995,7 +995,7 @@ func (ui *gameui) PositionDrawing(pos position) (r rune, fgColor, bgColor uicolo
 		if _, ok := g.MagicalBarriers[pos]; ok {
 			fgColor = ColorFgMagicPlace
 		}
-	case pos == g.Player.Pos && !g.WizardMap:
+	case pos == g.Player.Pos && !(g.Wizard && g.WizardMode == WizardMap):
 		r = '@'
 		fgColor = ColorFgPlayer
 	default:
@@ -1019,7 +1019,7 @@ func (ui *gameui) PositionDrawing(pos position) (r rune, fgColor, bgColor uicolo
 				fgColor = ColorFgSleepingMonster
 			}
 		}
-		if (g.Player.Sees(pos) || g.Wizard) && !g.WizardMap {
+		if g.Player.Sees(pos) || (g.Wizard && g.WizardMode == WizardSeeAll) {
 			m := g.MonsterAt(pos)
 			if m.Exists() {
 				r = m.Kind.Letter()
@@ -1039,7 +1039,7 @@ func (ui *gameui) PositionDrawing(pos position) (r rune, fgColor, bgColor uicolo
 					fgColor = ColorFgWanderingMonster
 				}
 			}
-		} else if mons, ok := g.LastMonsterKnownAt[pos]; !g.Wizard && ok {
+		} else if mons, ok := g.LastMonsterKnownAt[pos]; (!g.Wizard || g.WizardMode == WizardNormal) && ok {
 			if !mons.Seen {
 				// potion of dreams
 				r = '☻'
@@ -1058,7 +1058,7 @@ func (ui *gameui) PositionDrawing(pos position) (r rune, fgColor, bgColor uicolo
 					fgColor = ColorFgWanderingMonster
 				}
 			}
-		} else if !g.Wizard && g.Noise[pos] {
+		} else if (!g.Wizard || g.WizardMode == WizardNormal) && g.Noise[pos] {
 			r = '♫'
 			fgColor = ColorFgWanderingMonster
 		} else if g.NoiseIllusion[pos] {
