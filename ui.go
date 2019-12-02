@@ -1026,6 +1026,7 @@ func (ui *gameui) HandleKey(rka runeKeyAction) (again bool, quit bool, err error
 		}
 	case ActionWizardDescend:
 		if g.Wizard && g.Depth < MaxDepth && g.Depth != WinDepth {
+			g.StoryPrint("Descended wizardly")
 			if g.Descend(DescendNormal) {
 				ui.Win()
 				quit = true
@@ -1579,6 +1580,7 @@ func (ui *gameui) HandleWizardAction() error {
 		case WizardSeeAll:
 			g.WizardMode = WizardNormal
 		}
+		g.StoryPrint("Toggle wizard mode.")
 		ui.DrawDungeonView(NoFlushMode)
 	}
 	return nil

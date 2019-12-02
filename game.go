@@ -646,6 +646,7 @@ func (g *game) Descend(style descendstyle) bool {
 func (g *game) EnterWizardMode() {
 	g.Wizard = true
 	g.PrintStyled("You are now in wizard mode and cannot obtain winner status.", logSpecial)
+	g.StoryPrint("Entered wizard mode.")
 }
 
 func (g *game) ApplyRest() {
