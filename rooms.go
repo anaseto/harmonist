@@ -473,17 +473,37 @@ var roomCellTemplates = []string{CellShaedra, CellShaedra2, CellShaedra3, CellSh
 const (
 	RoomArtifact = `
 ????#????
-???#A#???
-??#.MΔ#??
-?###|###?
+???#c#???
+??#cAc#??
+?##.MΔ##?
+####|####
 #!_#.#_!#
 +P.G.G.P+
 #>..P..>#
-?###+###?
-`
+?###+###?`
+	RoomArtifact2 = `
+??cccc??
+?cc#####
+cc#cc!P+
+c##M#G.#
+c#ΔA|..#
+c##.#G.#
+c###π.!#
+-|q..P>#
+P######?`
+	RoomArtifact3 = `
+?#####+#?
+#B..Gcq.#
+#.Gc.cP.#
+#.ccMccq#
+#.c.AΔcP#
+#.>ccc!.#
+#...P...#
+#!.#q_.B#
+?###+###?`
 )
 
-var roomArtifactTemplates = []string{RoomArtifact}
+var roomArtifactTemplates = []string{RoomArtifact, RoomArtifact2, RoomArtifact3}
 
 const (
 	RoomSpecialNixes = `
