@@ -428,7 +428,6 @@ var MonsBands = []monsterBandData{
 	PairNixe:                   {Band: true, Distribution: map[monsterKind]int{MonsMadNixe: 2}},
 	PairExplosiveNadre:         {Band: true, Distribution: map[monsterKind]int{MonsExplosiveNadre: 2}},
 	PairWingedMilfid:           {Band: true, Distribution: map[monsterKind]int{MonsWingedMilfid: 2}},
-	SpecialArtifactBand:        {Band: true, Distribution: map[monsterKind]int{MonsOricCelmist: 1, MonsHighGuard: 1}},
 	SpecialLoneVampire:         {Monster: MonsVampire},
 	SpecialLoneNixe:            {Monster: MonsMadNixe},
 	SpecialLoneMilfid:          {Monster: MonsWingedMilfid},

@@ -2234,7 +2234,14 @@ func (dg *dgen) GenMonsters(g *game) {
 				dg.PutRandomBand(g, []monsterBand{SpecialLoneOricCelmist})
 			}
 		case roomArtifact:
-			dg.PutRandomBand(g, []monsterBand{SpecialArtifactBand})
+			switch RandInt(3) {
+			case 0:
+				dg.PutRandomBand(g, []monsterBand{SpecialLoneHarmonicCelmist})
+			case 1:
+				dg.PutRandomBand(g, []monsterBand{SpecialLoneOricCelmist})
+			default:
+				dg.PutRandomBand(g, []monsterBand{SpecialLoneHighGuard})
+			}
 		default:
 			// XXX not used now
 			bandOricCelmists := []monsterBand{SpecialLoneOricCelmist}
@@ -2544,7 +2551,7 @@ func (dg *dgen) GenMonsters(g *game) {
 			dg.PutRandomBandN(g, bandsRare, 1)
 		}
 	case 11:
-		// 25-26
+		// 26
 		dg.PutRandomBandN(g, bandsHighGuard, 5)
 		if RandInt(2) == 0 {
 			// 21
@@ -2571,12 +2578,12 @@ func (dg *dgen) GenMonsters(g *game) {
 			}
 			dg.PutRandomBandN(g, bandsAnimals, 2)
 		} else {
-			// 20
+			// 21
 			dg.PutRandomBandN(g, bandsGuard, 5)
 			dg.PutRandomBandN(g, bandOricCelmistPair, 1)
 			dg.PutRandomBandN(g, []monsterBand{PairGuard}, 1)
 			dg.PutRandomBandN(g, bandsRare, 1)
-			dg.PutRandomBandN(g, bandsBipeds, 6)
+			dg.PutRandomBandN(g, bandsBipeds, 7)
 			if RandInt(2) == 0 {
 				dg.PutRandomBandN(g, bandHarmonicCelmistPair, 1)
 			} else {
