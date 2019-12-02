@@ -901,7 +901,7 @@ func (g *game) GenRoomTunnels(ml maplayout) {
 	}
 	switch ml {
 	case RandomWalkCave:
-		dg.GenRooms(roomBigTemplates, nspecial, PlacementRandom)
+		dg.GenRooms(roomBigTemplates, nspecial-1, PlacementRandom)
 		dg.GenRooms(roomNormalTemplates, 5, PlacementRandom)
 	case RandomWalkTreeCave:
 		dg.GenRooms(roomBigTemplates, nspecial+1, PlacementRandom)
@@ -909,9 +909,9 @@ func (g *game) GenRoomTunnels(ml maplayout) {
 	case RandomSmallWalkCaveUrbanised:
 		nspecial += 3
 		dg.GenRooms(roomBigTemplates, nspecial, PlacementRandom)
-		dg.GenRooms(roomNormalTemplates, 12, PlacementRandom)
+		dg.GenRooms(roomNormalTemplates, 10, PlacementRandom)
 	case NaturalCave:
-		nspecial += 2
+		nspecial += 1
 		dg.GenRooms(roomBigTemplates, nspecial, PlacementRandom)
 		dg.GenRooms(roomNormalTemplates, 2, PlacementRandom)
 	default:
