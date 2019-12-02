@@ -200,11 +200,8 @@ func (g *game) GenDungeon() {
 	switch g.Depth {
 	case 2, 6, 7:
 		ml = RandomWalkCave
-		if RandInt(4) == 0 {
+		if RandInt(3) == 0 {
 			ml = NaturalCave
-		}
-		if RandInt(20) == 0 {
-			ml = RandomSmallWalkCaveUrbanised
 		}
 	case 4, 10, 11:
 		ml = RandomWalkTreeCave
@@ -213,8 +210,12 @@ func (g *game) GenDungeon() {
 		} else if g.Depth == 11 && RandInt(2) == 0 {
 			ml = RandomSmallWalkCaveUrbanised
 		}
-		if RandInt(20) == 0 {
+	case 9:
+		switch RandInt(4) {
+		case 0:
 			ml = NaturalCave
+		case 1:
+			ml = RandomWalkCave
 		}
 	default:
 		if RandInt(10) == 0 {

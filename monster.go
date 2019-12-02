@@ -355,6 +355,8 @@ const (
 	PairFrog
 	PairDog
 	PairTreeMushroom
+	PairSpider
+	PairHazeCat
 	PairSatowalga
 	PairWorm
 	PairOricCelmist
@@ -416,6 +418,8 @@ var MonsBands = []monsterBandData{
 	PairFrog:                   {Band: true, Distribution: map[monsterKind]int{MonsBlinkingFrog: 2}},
 	PairDog:                    {Band: true, Distribution: map[monsterKind]int{MonsDog: 2}},
 	PairTreeMushroom:           {Band: true, Distribution: map[monsterKind]int{MonsTreeMushroom: 2}},
+	PairSpider:                 {Band: true, Distribution: map[monsterKind]int{MonsSpider: 2}},
+	PairHazeCat:                {Band: true, Distribution: map[monsterKind]int{MonsHazeCat: 2}},
 	PairSatowalga:              {Band: true, Distribution: map[monsterKind]int{MonsSatowalgaPlant: 2}},
 	PairWorm:                   {Band: true, Distribution: map[monsterKind]int{MonsWorm: 2}},
 	PairVampire:                {Band: true, Distribution: map[monsterKind]int{MonsVampire: 2}},
