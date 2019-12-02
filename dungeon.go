@@ -1784,31 +1784,36 @@ func (dg *dgen) GenCaveMap(size int) {
 		pos := idxtopos(i)
 		d.SetCell(pos, WallCell)
 	}
-	pos := position{40, 10}
 	max := size
-	d.SetCell(pos, GroundCell)
-	cells := 1
-	notValid := 0
-	lastValid := pos
+	cells := 0
 	for cells < max {
-		npos := pos.RandomNeighbor(false)
-		if !pos.valid() && npos.valid() && d.Cell(npos).T == WallCell {
-			pos = lastValid
-			continue
-		}
-		pos = npos
-		if pos.valid() {
-			if d.Cell(pos).T != GroundCell {
-				d.SetCell(pos, GroundCell)
-				cells++
+		pos := d.WallCell()
+		d.SetCell(pos, GroundCell)
+		cells++
+		curcells := 1
+		notValid := 0
+		lastValid := pos
+		for cells < max && curcells < 150 {
+			npos := pos.RandomNeighbor(false)
+			if !pos.valid() && npos.valid() && d.Cell(npos).T == WallCell {
+				pos = lastValid
+				continue
 			}
-			lastValid = pos
-		} else {
-			notValid++
-		}
-		if notValid > 200 {
-			notValid = 0
-			pos = lastValid
+			pos = npos
+			if pos.valid() {
+				if d.Cell(pos).T != GroundCell {
+					d.SetCell(pos, GroundCell)
+					cells++
+					curcells++
+				}
+				lastValid = pos
+			} else {
+				notValid++
+			}
+			if notValid > 200 {
+				notValid = 0
+				pos = lastValid
+			}
 		}
 	}
 	dg.Foliage(false)
