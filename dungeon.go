@@ -911,7 +911,10 @@ func (g *game) GenRoomTunnels(ml maplayout) {
 		dg.GenRooms(roomBigTemplates, nspecial, PlacementRandom)
 		dg.GenRooms(roomNormalTemplates, 10, PlacementRandom)
 	case NaturalCave:
-		nspecial += 1
+		nspecial++
+		if g.Depth == WinDepth {
+			nspecial += 2
+		}
 		dg.GenRooms(roomBigTemplates, nspecial, PlacementRandom)
 		dg.GenRooms(roomNormalTemplates, 2, PlacementRandom)
 	default:
