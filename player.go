@@ -397,7 +397,7 @@ func (g *game) PlacePlayerAt(pos position) {
 		g.Player.Dir = S
 	}
 	g.Player.Pos = pos
-	if g.Dungeon.Cell(pos).T == QueenRockCell {
+	if g.Dungeon.Cell(pos).T == QueenRockCell && !g.Player.HasStatus(StatusLevitation) {
 		g.MakeNoise(QueenRockFootstepNoise, pos)
 		g.Print("Tap-tap.")
 	}
