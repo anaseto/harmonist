@@ -445,7 +445,7 @@ const (
 	DurationCloudProgression       = 1
 	DurationFog                    = 15
 	DurationExhaustion             = 6
-	DurationConfusionMonster       = 13
+	DurationConfusionMonster       = 12
 	DurationConfusionPlayer        = 5
 	DurationLignificationMonster   = 15
 	DurationLignificationPlayer    = 4

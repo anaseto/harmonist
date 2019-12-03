@@ -586,18 +586,21 @@ func (g *game) EvokeShadows(ev event) error {
 }
 
 func (g *game) EvokeParalysis(ev event) error {
-	for _, mons := range g.Monsters {
-		if !mons.Exists() || !g.Player.Sees(mons.Pos) {
-			continue
+	ms := g.MonstersInLOS()
+	count := 0
+	for _, mons := range ms {
+		if mons.PutStatus(g, MonsParalysed, DurationParalysisMonster) {
+			count++
+			if mons.Search == InvalidPos {
+				mons.Search = mons.Pos
+			}
 		}
-		mons.PutStatus(g, MonsParalysed, DurationParalysisMonster)
-		if mons.Search == InvalidPos {
-			mons.Search = mons.Pos
-		}
+	}
+	if count == 0 {
+		return errors.New("No suitable targets in view.")
 	}
 	g.Print("Whoosh! A slowing luminous wave emerges.")
 	g.ui.LOSWavesAnimation(DefaultLOSRange, WaveSlowing, g.Player.Pos)
-
 	return nil
 }
 
@@ -616,11 +619,16 @@ func (g *game) EvokeSleeping(ev event) error {
 		mons := ms[i]
 		if mons.State != Resting {
 			g.Printf("%s falls asleep.", mons.Kind.Definite(true))
+		} else {
+			continue
 		}
 		mons.State = Resting
 		mons.Dir = NoDir
 		mons.ExhaustTime(g, 4+RandInt(2))
 		targets = append(targets, g.Ray(mons.Pos)...)
+	}
+	if len(targets) == 0 {
+		return errors.New("There are no suitable targets.")
 	}
 	if max == 1 {
 		g.Print("A beam of sleeping emerges.")
@@ -652,6 +660,9 @@ func (g *game) EvokeLignification(ev event) error {
 			mons.Search = mons.Pos
 		}
 		targets = append(targets, g.Ray(mons.Pos)...)
+	}
+	if len(targets) == 0 {
+		return errors.New("There are no suitable targets.")
 	}
 	if max == 1 {
 		g.Print("A beam of lignification emerges.")
@@ -711,16 +722,20 @@ func (g *game) EvokeNoise(ev event) error {
 }
 
 func (g *game) EvokeConfusion(ev event) error {
-	g.Print("Whoosh! A confusing luminous wave emerges.")
-	for _, mons := range g.Monsters {
-		if !mons.Exists() || !g.Player.Sees(mons.Pos) {
-			continue
-		}
-		mons.EnterConfusion(g, ev)
-		if mons.Search == InvalidPos {
-			mons.Search = mons.Pos
+	ms := g.MonstersInLOS()
+	count := 0
+	for _, mons := range ms {
+		if mons.EnterConfusion(g, ev) {
+			count++
+			if mons.Search == InvalidPos {
+				mons.Search = mons.Pos
+			}
 		}
 	}
+	if count == 0 {
+		return errors.New("No suitable targets in view.")
+	}
+	g.Print("Whoosh! A confusing luminous wave emerges.")
 	g.ui.LOSWavesAnimation(DefaultLOSRange, WaveConfusion, g.Player.Pos)
 	return nil
 }

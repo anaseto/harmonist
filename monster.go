@@ -1232,13 +1232,15 @@ func (m *monster) PutStatus(g *game, st monsterStatus, duration int) bool {
 	return true
 }
 
-func (m *monster) EnterConfusion(g *game, ev event) {
+func (m *monster) EnterConfusion(g *game, ev event) bool {
 	if m.PutStatus(g, MonsConfused, DurationConfusionMonster) {
 		m.Path = m.Path[:0]
 		if g.Player.Sees(m.Pos) {
 			g.Printf("%s looks confused.", m.Kind.Definite(true))
 		}
+		return true
 	}
+	return false
 }
 
 func (m *monster) EnterLignification(g *game, ev event) {
