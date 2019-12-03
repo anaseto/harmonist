@@ -173,7 +173,7 @@ func (stn stone) ShortDesc(g *game) string {
 }
 
 func (stn stone) Style(g *game) (r rune, fg uicolor) {
-	r = '_'
+	r = '∩'
 	switch stn {
 	case InertStone:
 		fg = ColorFgPlace
