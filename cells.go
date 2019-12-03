@@ -47,6 +47,15 @@ func (c cell) IsPassable() bool {
 	}
 }
 
+func (c cell) IsJumpPassable() bool {
+	switch c.T {
+	case TableCell, ChasmCell, WaterCell, StoryCell:
+		return true
+	default:
+		return c.IsPassable()
+	}
+}
+
 func (c cell) IsNormalPatrolWay() bool {
 	switch c.T {
 	case GroundCell, ScrollCell, DoorCell, StairCell, LightCell, ItemCell, ExtinguishedLightCell, StoneCell, MagaraCell, FakeStairCell:
@@ -86,6 +95,15 @@ func (c cell) IsSwimPassable() bool {
 func (c cell) IsJumpPropulsion() bool {
 	switch c.T {
 	case WallCell, WindowCell:
+		return true
+	default:
+		return false
+	}
+}
+
+func (c cell) IsEnclosing() bool {
+	switch c.T {
+	case BarrelCell, TableCell, HoledWallCell:
 		return true
 	default:
 		return false

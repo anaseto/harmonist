@@ -2,7 +2,10 @@
 
 package main
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
 func (g *game) DamagePlayer(damage int) {
 	g.Stats.Damage += damage
@@ -190,32 +193,46 @@ func (g *game) Jump(mons *monster, ev event) error {
 }
 
 func (g *game) WallJump(pos position) error {
+	c := g.Dungeon.Cell(g.Player.Pos)
+	if c.IsEnclosing() {
+		return fmt.Errorf("You cannot jump from %s.", c.ShortDesc(g, g.Player.Pos))
+	}
 	if g.Player.HasStatus(StatusExhausted) {
 		return errors.New("You cannot jump while exhausted.")
 	}
 	dir := g.Player.Pos.Dir(pos)
 	pos = g.Player.Pos
+	tpos := pos
 	count := 0
-	path := []position{pos}
+	path := []position{tpos}
 	for count < 4 {
 		pos = pos.To(dir)
-		path = append(path, pos)
-		count++
-		if !g.PlayerCanPass(pos) {
+		if !g.PlayerCanJumpPass(pos) {
 			break
 		}
+		count++
+		tpos = pos
+		path = append(path, tpos)
 		m := g.MonsterAt(pos)
 		if !m.Exists() && count == 3 {
 			break
 		}
 	}
-	if !g.PlayerCanPass(pos) || count != 3 {
+	m := g.MonsterAt(tpos)
+	if m.Exists() {
+		return errors.New("There's not enough room to jump.")
+	}
+	if count == 3 && !g.PlayerCanPass(tpos) {
+		tpos = path[len(path)-2]
+		path = path[:len(path)-1]
+	}
+	if !g.PlayerCanPass(tpos) || (count != 3 && count != 2) {
 		return errors.New("There's not enough room to jump.")
 	}
 	if !g.Player.HasStatus(StatusSwift) && g.Player.Inventory.Body != CloakAcrobat {
 		g.PutStatus(StatusExhausted, 5)
 	}
-	g.PlacePlayerAt(pos)
+	g.PlacePlayerAt(tpos)
 	g.Stats.WallJumps++
 	g.Print("You jump by propulsing yourself against the wall.")
 	g.ui.PushAnimation(path)

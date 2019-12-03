@@ -473,3 +473,12 @@ func (g *game) PlayerCanPass(pos position) bool {
 		g.Player.HasStatus(StatusLevitation) && (c.T == BarrierCell || c.IsLevitatePassable()) ||
 		g.Player.HasStatus(StatusDig) && c.T.IsDiggable()
 }
+
+func (g *game) PlayerCanJumpPass(pos position) bool {
+	if !pos.valid() {
+		return false
+	}
+	c := g.Dungeon.Cell(pos)
+	return c.IsJumpPassable() ||
+		g.Player.HasStatus(StatusLevitation) && c.T == BarrierCell
+}
