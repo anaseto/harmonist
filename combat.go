@@ -224,6 +224,10 @@ func (g *game) WallJump(pos position) error {
 	}
 	if count == 3 && !g.PlayerCanPass(tpos) {
 		tpos = path[len(path)-2]
+		m := g.MonsterAt(tpos)
+		if m.Exists() {
+			return errors.New("There's not enough room to jump.")
+		}
 		path = path[:len(path)-1]
 	}
 	if !g.PlayerCanPass(tpos) || (count != 3 && count != 2) {
