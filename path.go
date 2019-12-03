@@ -142,6 +142,29 @@ func (pp *playerPath) Estimation(from, to position) int {
 	return from.Distance(to)
 }
 
+type jumpPath struct {
+	game      *game
+	neighbors [8]position
+}
+
+func (jp *jumpPath) Neighbors(pos position) []position {
+	nb := jp.neighbors[:0]
+	keep := func(npos position) bool {
+		return jp.game.PlayerCanPass(npos)
+	}
+	nb = pos.CardinalNeighbors(nb, keep)
+	nb = ShufflePos(nb)
+	return nb
+}
+
+func (jp *jumpPath) Cost(from, to position) int {
+	return 1
+}
+
+func (jp *jumpPath) Estimation(from, to position) int {
+	return from.Distance(to)
+}
+
 type noisePath struct {
 	game      *game
 	neighbors [8]position
@@ -194,6 +217,14 @@ type monPath struct {
 	neighbors [8]position
 }
 
+func ShufflePos(ps []position) []position {
+	for i := 0; i < len(ps); i++ {
+		j := i + RandInt(len(ps)-i)
+		ps[i], ps[j] = ps[j], ps[i]
+	}
+	return ps
+}
+
 func (mp *monPath) Neighbors(pos position) []position {
 	nb := mp.neighbors[:0]
 	keep := func(npos position) bool {
@@ -201,10 +232,7 @@ func (mp *monPath) Neighbors(pos position) []position {
 	}
 	ret := pos.CardinalNeighbors(nb, keep)
 	// shuffle so that monster movement is not unnaturally predictable
-	for i := 0; i < len(ret); i++ {
-		j := i + RandInt(len(ret)-i)
-		ret[i], ret[j] = ret[j], ret[i]
-	}
+	ret = ShufflePos(ret)
 	return ret
 }
 

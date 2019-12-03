@@ -1412,7 +1412,7 @@ func (m *monster) RangeBlocked(g *game) bool {
 			return true
 		}
 		mons := g.MonsterAt(pos)
-		if mons != nil {
+		if mons.Exists() {
 			return true
 		}
 	}

@@ -76,11 +76,58 @@ func (g *game) MakeNoise(noise int, at position) {
 	}
 }
 
+func (m *monster) LeaveRoomForPlayer(g *game) position {
+	dij := &monPath{game: g, monster: m}
+	nm := Dijkstra(dij, []position{m.Pos}, 10)
+	free := InvalidPos
+	dist := unreachable
+	nm.iter(m.Pos, func(n *node) {
+		if !m.CanPass(g, n.Pos) {
+			return
+		}
+		if n.Pos == g.Player.Pos || n.Pos == m.Pos {
+			return
+		}
+		mons := g.MonsterAt(n.Pos)
+		if mons.Exists() {
+			return
+		}
+		if n.Pos.Distance(m.Pos) < dist {
+			free = n.Pos
+			dist = n.Pos.Distance(m.Pos)
+		}
+	})
+	// free should be valid except in really rare cases
+	return free
+}
+
+func (g *game) FindJumpTarget(m *monster) position {
+	dij := &jumpPath{game: g}
+	nm := Dijkstra(dij, []position{m.Pos}, 10)
+	free := InvalidPos
+	dist := unreachable
+	nm.iter(m.Pos, func(n *node) {
+		if !g.PlayerCanPass(n.Pos) {
+			return
+		}
+		if n.Pos == g.Player.Pos || n.Pos == m.Pos {
+			return
+		}
+		mons := g.MonsterAt(n.Pos)
+		if mons.Exists() {
+			return
+		}
+		if n.Pos.Distance(m.Pos) < dist {
+			free = n.Pos
+			dist = n.Pos.Distance(m.Pos)
+		}
+	})
+	// free should be valid except in really rare cases
+	return free
+}
+
 func (g *game) Jump(mons *monster, ev event) error {
 	if mons.Peaceful(g) && mons.Kind != MonsEarthDragon {
-		if !mons.CanPass(g, g.Player.Pos) {
-			return errors.New("You cannot exchange positions from there.")
-		}
 		ompos := mons.Pos
 		if g.Dungeon.Cell(ompos).T == ChasmCell && !g.Player.HasStatus(StatusLevitation) {
 			err := g.AbyssJump()
@@ -88,16 +135,29 @@ func (g *game) Jump(mons *monster, ev event) error {
 				return err
 			}
 		}
+		if !mons.CanPass(g, g.Player.Pos) {
+			pos := mons.LeaveRoomForPlayer(g)
+			if pos != InvalidPos {
+				mons.MoveTo(g, pos)
+				mons.Swapped = true
+				g.PlacePlayerAt(ompos)
+				return nil
+			}
+			// otherwise (which should not happen in practice), swap anyways
+		}
 		mons.MoveTo(g, g.Player.Pos)
 		mons.Swapped = true
 		g.PlacePlayerAt(ompos)
 		return nil
 	}
+	if g.Player.HasStatus(StatusExhausted) {
+		return errors.New("You cannot jump while exhausted.")
+	}
 	dir := mons.Pos.Dir(g.Player.Pos)
 	pos := g.Player.Pos
 	for {
 		pos = pos.To(dir)
-		if !pos.valid() || !g.Dungeon.Cell(pos).T.IsPlayerPassable() {
+		if !g.PlayerCanPass(pos) {
 			break
 		}
 		m := g.MonsterAt(pos)
@@ -105,11 +165,13 @@ func (g *game) Jump(mons *monster, ev event) error {
 			break
 		}
 	}
-	if !pos.valid() || !g.Dungeon.Cell(pos).T.IsPlayerPassable() {
-		return errors.New("You cannot jump in that direction.")
-	}
-	if g.Player.HasStatus(StatusExhausted) {
-		return errors.New("You cannot jump while exhausted.")
+	if !g.PlayerCanPass(pos) {
+		pos = g.FindJumpTarget(mons)
+		if !g.PlayerCanPass(pos) {
+			// should not happen in practice, but better safe than sorry
+			g.Teleportation(ev)
+			return nil
+		}
 	}
 	if !g.Player.HasStatus(StatusSwift) && g.Player.Inventory.Body != CloakAcrobat {
 		g.PutStatus(StatusExhausted, 5)
@@ -119,6 +181,7 @@ func (g *game) Jump(mons *monster, ev event) error {
 	}
 	g.PlacePlayerAt(pos)
 	g.Stats.Jumps++
+	g.Printf("You jump over %s", mons.Kind.Definite(false))
 	g.StoryPrintf("Jumped over %s", mons.Kind)
 	if g.Stats.Jumps == 10 {
 		AchAcrobat.Get(g)
