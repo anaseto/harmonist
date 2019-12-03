@@ -967,7 +967,7 @@ func (ui *gameui) HandleKey(rka runeKeyAction) (again bool, quit bool, err error
 			if g.Objects.Story[g.Player.Pos] == StoryArtifact && !g.LiberatedArtifact {
 				g.PushEvent(&simpleEvent{ERank: g.Ev.Rank(), EAction: ArtifactAnimation})
 				g.LiberatedArtifact = true
-				g.WaitTurn(g.Ev)
+				g.Ev.Renew(g, DurationTurn)
 			} else if g.Objects.Story[g.Player.Pos] == StoryArtifactSealed {
 				err = errors.New("The artifact is protected by a magical stone barrier.")
 			} else {

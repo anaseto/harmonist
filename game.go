@@ -666,7 +666,7 @@ func (g *game) AutoPlayer(ev event) bool {
 	if g.Resting {
 		const enoughRestTurns = 25
 		if g.RestingTurns < enoughRestTurns {
-			g.WaitTurn(ev)
+			ev.Renew(g, DurationTurn)
 			g.RestingTurns++
 			return true
 		}

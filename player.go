@@ -152,7 +152,7 @@ func (g *game) Rest(ev event) error {
 		return errors.New("You cannot sleep without eating for dinner a banana first.")
 	}
 	g.ui.DrawMessage("Resting...")
-	g.WaitTurn(ev)
+	ev.Renew(g, DurationTurn)
 	g.Resting = true
 	g.RestingTurns = RandInt(5) // you do not wake up when you want
 	g.Player.Bananas--
