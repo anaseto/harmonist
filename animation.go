@@ -370,10 +370,10 @@ func (ui *gameui) PlayerGoodEffectAnimation() {
 	r, fg, bg := ui.PositionDrawing(g.Player.Pos)
 	ui.DrawAtPosition(g.Player.Pos, false, r, ColorGreen, bg)
 	ui.Flush()
-	Sleep(AnimDurMedium)
+	Sleep(AnimDurShortMedium)
 	ui.DrawAtPosition(g.Player.Pos, false, r, ColorYellow, bg)
 	ui.Flush()
-	Sleep(AnimDurMedium)
+	Sleep(AnimDurShortMedium)
 	ui.DrawAtPosition(g.Player.Pos, false, r, fg, bg)
 	ui.Flush()
 }
@@ -383,12 +383,10 @@ func (ui *gameui) StatusEndAnimation() {
 	if DisableAnimations {
 		return
 	}
-	r, fg, bg := ui.PositionDrawing(g.Player.Pos)
+	r, _, bg := ui.PositionDrawing(g.Player.Pos)
 	ui.DrawAtPosition(g.Player.Pos, false, r, ColorViolet, bg)
 	ui.Flush()
-	Sleep(AnimDurMedium)
-	ui.DrawAtPosition(g.Player.Pos, false, r, fg, bg)
-	ui.Flush()
+	Sleep(AnimDurShortMedium)
 }
 
 func (ui *gameui) FoundFakeStairsAnimation() {
