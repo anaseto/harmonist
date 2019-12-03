@@ -57,9 +57,15 @@ func (p *player) HasStatus(st status) bool {
 
 func (g *game) AutoToDir(ev event) bool {
 	if g.MonsterInLOS() == nil {
-		err := g.MovePlayer(g.Player.Pos.To(g.AutoDir), ev)
-		if err != nil {
-			g.Print(err.Error())
+		pos := g.Player.Pos.To(g.AutoDir)
+		if g.PlayerCanPass(pos) {
+			err := g.PlayerBump(g.Player.Pos.To(g.AutoDir), ev)
+			if err != nil {
+				g.Print(err.Error())
+				g.AutoDir = NoDir
+				return false
+			}
+		} else {
 			g.AutoDir = NoDir
 			return false
 		}
@@ -74,7 +80,11 @@ func (g *game) GoToDir(dir direction, ev event) error {
 		g.AutoDir = NoDir
 		return errors.New("You cannot travel while there are monsters in view.")
 	}
-	err := g.MovePlayer(g.Player.Pos.To(dir), ev)
+	pos := g.Player.Pos.To(dir)
+	if !g.PlayerCanPass(pos) {
+		return errors.New("You cannot move in that direction.")
+	}
+	err := g.PlayerBump(pos, ev)
 	if err != nil {
 		return err
 	}
@@ -96,7 +106,7 @@ func (g *game) MoveToTarget(ev event) bool {
 	}
 	var err error
 	if len(path) > 1 {
-		err = g.MovePlayer(path[len(path)-2], ev)
+		err = g.PlayerBump(path[len(path)-2], ev)
 		if g.ExclusionsMap[path[len(path)-2]] {
 			g.AutoTarget = InvalidPos
 		}
@@ -286,22 +296,26 @@ func (g *game) AbyssJump() error {
 	}
 	return errors.New(DoNothing)
 }
-func (g *game) MovePlayer(pos position, ev event) error {
+func (g *game) PlayerBump(pos position, ev event) error {
 	if !pos.valid() {
 		return errors.New("You cannot move there.")
 	}
 	c := g.Dungeon.Cell(pos)
-	if c.T == WallCell && !g.Player.HasStatus(StatusDig) {
-		return errors.New("You cannot move into a wall.")
-	} else if c.T == BarrierCell && !g.Player.HasStatus(StatusLevitation) {
+	switch {
+	case c.T == BarrierCell && !g.Player.HasStatus(StatusLevitation):
 		return errors.New("You cannot move into a magical barrier.")
-	} else if c.T == WindowCell && !g.Player.HasStatus(StatusDig) {
+	case c.T == WindowCell && !g.Player.HasStatus(StatusDig):
 		return errors.New("You cannot pass through the closed window.")
-	} else if c.T == BarrelCell && g.MonsterLOS[g.Player.Pos] {
+	case c.T == BarrelCell && g.MonsterLOS[g.Player.Pos]:
 		return errors.New("You cannot enter a barrel while seen.")
 	}
 	mons := g.MonsterAt(pos)
-	if !mons.Exists() {
+	if c.IsJumpPropulsion() && !g.Player.HasStatus(StatusDig) {
+		err := g.WallJump(pos)
+		if err != nil {
+			return err
+		}
+	} else if !mons.Exists() {
 		if g.Player.HasStatus(StatusLignification) {
 			return errors.New("You cannot move while lignified.")
 		}

@@ -703,7 +703,7 @@ func (g *game) AutoPlayer(ev event) bool {
 				g.Print("You could not safely reach some places.")
 			}
 			if n != nil {
-				err := g.MovePlayer(*n, ev)
+				err := g.PlayerBump(*n, ev)
 				if err != nil {
 					g.Print(err.Error())
 					break

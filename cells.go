@@ -83,6 +83,15 @@ func (c cell) IsSwimPassable() bool {
 	}
 }
 
+func (c cell) IsJumpPropulsion() bool {
+	switch c.T {
+	case WallCell, WindowCell:
+		return true
+	default:
+		return false
+	}
+}
+
 func (c cell) AllowsFog() bool {
 	switch c.T {
 	case WallCell, HoledWallCell, WindowCell, StoryCell:
@@ -228,9 +237,9 @@ func (c cell) ShortDesc(g *game, pos position) (desc string) {
 	case ItemCell:
 		desc = g.Objects.Items[pos].ShortDesc(g)
 	case BarrierCell:
-		desc = "a temporal magical barrier"
+		desc = "a magical barrier"
 	case WindowCell:
-		desc = "a window"
+		desc = "a closed window"
 	case ChasmCell:
 		if g.Depth == MaxDepth || g.Depth == WinDepth {
 			desc = "a deep chasm"
@@ -341,6 +350,9 @@ func (c cell) Desc(g *game, pos position) (desc string) {
 	}
 	if c.Hides() {
 		autodesc += " You can hide just behind it."
+	}
+	if c.IsJumpPropulsion() {
+		autodesc += " You can use it to propulse yourself with a jump."
 	}
 	if autodesc != "" {
 		desc += "\n\n" + strings.TrimSpace(autodesc)

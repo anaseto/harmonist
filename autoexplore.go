@@ -25,7 +25,7 @@ func (g *game) Autoexplore(ev event) error {
 	}
 	g.Autoexploring = true
 	g.AutoHalt = false
-	return g.MovePlayer(*n, ev)
+	return g.PlayerBump(*n, ev)
 }
 
 func (g *game) AllExplored() bool {

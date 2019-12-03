@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"log"
 	"runtime"
-	"time"
 	"unicode/utf8"
 
 	"syscall/js"
@@ -88,7 +87,7 @@ func (ui *gameui) HandleStartMenu() (again bool) {
 			if err != nil {
 				ui.ColorLine(l+1, ColorRed)
 				ui.Flush()
-				time.Sleep(25 * time.Millisecond)
+				ui.Sleep(AnimDurShort)
 				log.Printf("Load replay: %v", err)
 				return true
 			}

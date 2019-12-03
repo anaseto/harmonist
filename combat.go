@@ -189,6 +189,42 @@ func (g *game) Jump(mons *monster, ev event) error {
 	return nil
 }
 
+func (g *game) WallJump(pos position) error {
+	if g.Player.HasStatus(StatusExhausted) {
+		return errors.New("You cannot jump while exhausted.")
+	}
+	dir := g.Player.Pos.Dir(pos)
+	pos = g.Player.Pos
+	count := 0
+	path := []position{pos}
+	for count < 4 {
+		pos = pos.To(dir)
+		path = append(path, pos)
+		count++
+		if !g.PlayerCanPass(pos) {
+			break
+		}
+		m := g.MonsterAt(pos)
+		if !m.Exists() && count == 3 {
+			break
+		}
+	}
+	if !g.PlayerCanPass(pos) || count != 3 {
+		return errors.New("There's not enough room to jump.")
+	}
+	if !g.Player.HasStatus(StatusSwift) && g.Player.Inventory.Body != CloakAcrobat {
+		g.PutStatus(StatusExhausted, 5)
+	}
+	g.PlacePlayerAt(pos)
+	g.Stats.WallJumps++
+	g.Print("You jump by propulsing yourself against the wall.")
+	g.ui.PushAnimation(path)
+	if g.Stats.Jumps+g.Stats.WallJumps == 10 {
+		AchAcrobat.Get(g)
+	}
+	return nil
+}
+
 func (g *game) HitNoise(clang bool) int {
 	noise := BaseHitNoise
 	if clang {

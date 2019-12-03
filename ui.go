@@ -103,12 +103,12 @@ func (ui *gameui) StartMenu(l int) startAction {
 		case "P", "p":
 			ui.ColorLine(l, ColorYellow)
 			ui.Flush()
-			time.Sleep(10 * time.Millisecond)
+			ui.Sleep(AnimDurShort)
 			return StartPlay
 		case "W", "w":
 			ui.ColorLine(l+1, ColorYellow)
 			ui.Flush()
-			time.Sleep(10 * time.Millisecond)
+			ui.Sleep(AnimDurShort)
 			return StartWatchReplay
 		}
 		if in.key != "" && !in.mouse {
@@ -894,7 +894,7 @@ func (ui *gameui) HandleKey(rka runeKeyAction) (again bool, quit bool, err error
 	g := ui.g
 	switch rka.k {
 	case ActionW, ActionS, ActionN, ActionE:
-		err = g.MovePlayer(g.Player.Pos.To(KeyToDir(rka.k)), g.Ev)
+		err = g.PlayerBump(g.Player.Pos.To(KeyToDir(rka.k)), g.Ev)
 	case ActionRunW, ActionRunS, ActionRunN, ActionRunE:
 		err = g.GoToDir(KeyToDir(rka.k), g.Ev)
 	case ActionWaitTurn:
@@ -1683,7 +1683,7 @@ func (ui *gameui) ExploreStep() bool {
 	next := make(chan bool)
 	var stop bool
 	go func() {
-		time.Sleep(10 * time.Millisecond)
+		ui.Sleep(10)
 		ui.Interrupt()
 	}()
 	go func() {
@@ -1728,4 +1728,8 @@ func (ui *gameui) ColorLine(y int, fg uicolor) {
 		c := ui.g.DrawBuffer[i]
 		ui.SetCell(x, y, c.R, fg, c.Bg)
 	}
+}
+
+func (ui *gameui) Sleep(d time.Duration) {
+	time.Sleep(d * time.Millisecond)
 }
