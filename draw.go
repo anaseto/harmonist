@@ -901,7 +901,7 @@ func (ui *gameui) DrawMessage(s string) {
 	}
 	ui.DrawColoredText(s, ui.MapWidth()+2, line+1, ColorCyan)
 	ui.Flush()
-	ui.Sleep(AnimDurShort)
+	Sleep(AnimDurShort)
 }
 
 func (ui *gameui) DrawSelectDescBasics() {
@@ -1728,7 +1728,7 @@ func (ui *gameui) SelectMagara(ev event) error {
 		if err == nil {
 			ui.MagaraItem(index, index+1, magaras[index], ColorYellow)
 			ui.Flush()
-			ui.Sleep(AnimDurMedium)
+			Sleep(AnimDurMedium)
 			if desc {
 				ui.DrawDescription(magaras[index].Desc(g), "Magara Description")
 				continue
@@ -1772,7 +1772,7 @@ func (ui *gameui) EquipMagara(ev event) error {
 		if err == nil {
 			ui.MagaraItem(index, index+1, magaras[index], ColorYellow)
 			ui.Flush()
-			ui.Sleep(AnimDurMedium)
+			Sleep(AnimDurMedium)
 			if desc {
 				ui.DrawDescription(magaras[index].Desc(g), "Magara Description")
 				continue
@@ -1815,7 +1815,7 @@ func (ui *gameui) SelectItem(ev event) error {
 		if err == nil {
 			ui.InventoryItem(index, index+1, items[index], ColorYellow, parts[index])
 			ui.Flush()
-			ui.Sleep(AnimDurMedium)
+			Sleep(AnimDurMedium)
 			ui.DrawDescription(items[index].Desc(g), "Item Description")
 			continue
 		}
@@ -1893,7 +1893,7 @@ func (ui *gameui) SelectAction(actions []action, ev event) (action, error) {
 		}
 		ui.ActionItem(index, index+1, actions[index], ColorYellow)
 		ui.Flush()
-		ui.Sleep(AnimDurMedium)
+		Sleep(AnimDurMedium)
 		ui.DrawDungeonView(NoFlushMode)
 		return actions[index], nil
 	}
@@ -1963,7 +1963,7 @@ func (ui *gameui) SelectConfigure(actions []setting) (setting, error) {
 		}
 		ui.ConfItem(index, index+1, actions[index], ColorYellow)
 		ui.Flush()
-		ui.Sleep(AnimDurMedium)
+		Sleep(AnimDurMedium)
 		ui.DrawDungeonView(NoFlushMode)
 		return actions[index], nil
 	}
@@ -2041,7 +2041,7 @@ func (ui *gameui) SelectWizardMagic(actions []wizardAction) (wizardAction, error
 		}
 		ui.WizardItem(index, index+1, actions[index], ColorYellow)
 		ui.Flush()
-		ui.Sleep(AnimDurMedium)
+		Sleep(AnimDurMedium)
 		ui.DrawDungeonView(NoFlushMode)
 		return actions[index], nil
 	}

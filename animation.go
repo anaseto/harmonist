@@ -19,17 +19,17 @@ func (ui *gameui) SwappingAnimation(mpos, ppos position) {
 		return
 	}
 	ui.DrawDungeonView(NormalMode)
-	ui.Sleep(AnimDurShort)
+	Sleep(AnimDurShort)
 	_, fgm, bgColorm := ui.PositionDrawing(mpos)
 	_, _, bgColorp := ui.PositionDrawing(ppos)
 	ui.DrawAtPosition(mpos, true, 'Φ', fgm, bgColorp)
 	ui.DrawAtPosition(ppos, true, 'Φ', ColorFgPlayer, bgColorm)
 	ui.Flush()
-	ui.Sleep(AnimDurMedium)
+	Sleep(AnimDurMedium)
 	ui.DrawAtPosition(mpos, true, 'Φ', ColorFgPlayer, bgColorp)
 	ui.DrawAtPosition(ppos, true, 'Φ', fgm, bgColorm)
 	ui.Flush()
-	ui.Sleep(AnimDurMedium)
+	Sleep(AnimDurMedium)
 }
 
 func (ui *gameui) TeleportAnimation(from, to position, showto bool) {
@@ -40,12 +40,12 @@ func (ui *gameui) TeleportAnimation(from, to position, showto bool) {
 	_, _, bgColort := ui.PositionDrawing(to)
 	ui.DrawAtPosition(from, true, 'Φ', ColorCyan, bgColorf)
 	ui.Flush()
-	ui.Sleep(AnimDurMediumLong)
+	Sleep(AnimDurMediumLong)
 	if showto {
 		ui.DrawAtPosition(from, true, 'Φ', ColorBlue, bgColorf)
 		ui.DrawAtPosition(to, true, 'Φ', ColorCyan, bgColort)
 		ui.Flush()
-		ui.Sleep(AnimDurMedium)
+		Sleep(AnimDurMedium)
 	}
 }
 
@@ -62,13 +62,13 @@ func (ui *gameui) MonsterProjectileAnimation(ray []position, r rune, fg uicolor)
 		return
 	}
 	ui.DrawDungeonView(NormalMode)
-	ui.Sleep(AnimDurShort)
+	Sleep(AnimDurShort)
 	for i := 0; i < len(ray); i++ {
 		pos := ray[i]
 		or, fgColor, bgColor := ui.PositionDrawing(pos)
 		ui.DrawAtPosition(pos, true, r, fg, bgColor)
 		ui.Flush()
-		ui.Sleep(AnimDurShort)
+		Sleep(AnimDurShort)
 		ui.DrawAtPosition(pos, true, or, fgColor, bgColor)
 	}
 }
@@ -118,7 +118,7 @@ func (ui *gameui) NoiseAnimation(noises []position) {
 		_, _, bgColor := ui.PositionDrawing(ui.g.Player.Pos)
 		ui.DrawAtPosition(ui.g.Player.Pos, false, '@', bgColor, colors[i])
 		ui.Flush()
-		ui.Sleep(AnimDurShortMedium)
+		Sleep(AnimDurShortMedium)
 	}
 
 }
@@ -129,7 +129,7 @@ func (ui *gameui) ExplosionAnimation(es explosionStyle, pos position) {
 		return
 	}
 	ui.DrawDungeonView(NormalMode)
-	ui.Sleep(AnimDurShort)
+	Sleep(AnimDurShort)
 	colors := [2]uicolor{ColorFgExplosionStart, ColorFgExplosionEnd}
 	if es == WallExplosion || es == AroundWallExplosion {
 		colors[0] = ColorFgExplosionWallStart
@@ -148,7 +148,7 @@ func (ui *gameui) ExplosionAnimation(es explosionStyle, pos position) {
 			ui.ExplosionDrawAt(npos, fg)
 		}
 		ui.Flush()
-		ui.Sleep(AnimDurMediumLong)
+		Sleep(AnimDurMediumLong)
 	}
 }
 
@@ -234,7 +234,7 @@ func (ui *gameui) WaveAnimation(wave []int, ws wavestyle) {
 		}
 	}
 	ui.Flush()
-	ui.Sleep(AnimDurShort)
+	Sleep(AnimDurShort)
 }
 
 func (ui *gameui) WallExplosionAnimation(pos position) {
@@ -247,7 +247,7 @@ func (ui *gameui) WallExplosionAnimation(pos position) {
 		//ui.DrawAtPosition(pos, true, '☼', fg, bgColor)
 		ui.DrawAtPosition(pos, true, '%', bgColor, fg)
 		ui.Flush()
-		ui.Sleep(AnimDurShort)
+		Sleep(AnimDurShort)
 	}
 }
 
@@ -264,7 +264,7 @@ func (ui *gameui) BeamsAnimation(ray []position, bs beamstyle) {
 		return
 	}
 	ui.DrawDungeonView(NormalMode)
-	ui.Sleep(AnimDurShort)
+	Sleep(AnimDurShort)
 	// change colors depending on effect
 	var fg uicolor
 	switch bs {
@@ -286,7 +286,7 @@ func (ui *gameui) BeamsAnimation(ray []position, bs beamstyle) {
 			ui.DrawAtPosition(pos, true, r, bgColor, fg)
 		}
 		ui.Flush()
-		ui.Sleep(AnimDurShortMedium)
+		Sleep(AnimDurShortMedium)
 	}
 }
 
@@ -295,7 +295,7 @@ func (ui *gameui) SlowingMagaraAnimation(ray []position) {
 		return
 	}
 	ui.DrawDungeonView(NormalMode)
-	ui.Sleep(AnimDurShort)
+	Sleep(AnimDurShort)
 	colors := [2]uicolor{ColorFgConfusedMonster, ColorFgMagicPlace}
 	for j := 0; j < 3; j++ {
 		for i := len(ray) - 1; i >= 0; i-- {
@@ -309,7 +309,7 @@ func (ui *gameui) SlowingMagaraAnimation(ray []position) {
 			ui.DrawAtPosition(pos, true, r, bgColor, fg)
 		}
 		ui.Flush()
-		ui.Sleep(AnimDurShortMedium)
+		Sleep(AnimDurShortMedium)
 	}
 }
 
@@ -333,16 +333,16 @@ func (ui *gameui) MonsterJavelinAnimation(ray []position, hit bool) {
 		return
 	}
 	ui.DrawDungeonView(NormalMode)
-	ui.Sleep(AnimDurShort)
+	Sleep(AnimDurShort)
 	for i := 0; i < len(ray); i++ {
 		pos := ray[i]
 		r, fgColor, bgColor := ui.PositionDrawing(pos)
 		ui.DrawAtPosition(pos, true, ui.ProjectileSymbol(pos.Dir(g.Player.Pos)), ColorFgMonster, bgColor)
 		ui.Flush()
-		ui.Sleep(AnimDurShort)
+		Sleep(AnimDurShort)
 		ui.DrawAtPosition(pos, true, r, fgColor, bgColor)
 	}
-	ui.Sleep(AnimDurShort)
+	Sleep(AnimDurShort)
 }
 
 func (ui *gameui) WoundedAnimation() {
@@ -353,11 +353,11 @@ func (ui *gameui) WoundedAnimation() {
 	r, _, bg := ui.PositionDrawing(g.Player.Pos)
 	ui.DrawAtPosition(g.Player.Pos, false, r, ColorFgHPwounded, bg)
 	ui.Flush()
-	ui.Sleep(AnimDurShortMedium)
+	Sleep(AnimDurShortMedium)
 	if g.Player.HP <= 15 {
 		ui.DrawAtPosition(g.Player.Pos, false, r, ColorFgHPcritical, bg)
 		ui.Flush()
-		ui.Sleep(AnimDurShortMedium)
+		Sleep(AnimDurShortMedium)
 	}
 }
 
@@ -366,14 +366,14 @@ func (ui *gameui) PlayerGoodEffectAnimation() {
 	if DisableAnimations {
 		return
 	}
-	ui.Sleep(AnimDurShortMedium)
+	Sleep(AnimDurShortMedium)
 	r, fg, bg := ui.PositionDrawing(g.Player.Pos)
 	ui.DrawAtPosition(g.Player.Pos, false, r, ColorGreen, bg)
 	ui.Flush()
-	ui.Sleep(AnimDurMedium)
+	Sleep(AnimDurMedium)
 	ui.DrawAtPosition(g.Player.Pos, false, r, ColorYellow, bg)
 	ui.Flush()
-	ui.Sleep(AnimDurMedium)
+	Sleep(AnimDurMedium)
 	ui.DrawAtPosition(g.Player.Pos, false, r, fg, bg)
 	ui.Flush()
 }
@@ -386,7 +386,7 @@ func (ui *gameui) StatusEndAnimation() {
 	r, fg, bg := ui.PositionDrawing(g.Player.Pos)
 	ui.DrawAtPosition(g.Player.Pos, false, r, ColorViolet, bg)
 	ui.Flush()
-	ui.Sleep(AnimDurMedium)
+	Sleep(AnimDurMedium)
 	ui.DrawAtPosition(g.Player.Pos, false, r, fg, bg)
 	ui.Flush()
 }
@@ -399,7 +399,7 @@ func (ui *gameui) FoundFakeStairsAnimation() {
 	r, fg, bg := ui.PositionDrawing(g.Player.Pos)
 	ui.DrawAtPosition(g.Player.Pos, false, r, ColorMagenta, bg)
 	ui.Flush()
-	ui.Sleep(AnimDurMediumLong)
+	Sleep(AnimDurMediumLong)
 	ui.DrawAtPosition(g.Player.Pos, false, r, fg, bg)
 	ui.Flush()
 }
@@ -431,7 +431,7 @@ func (ui *gameui) PushAnimation(path []position) {
 	}
 	ui.DrawAtPosition(path[len(path)-1], false, '@', ColorFgPlayer, bg)
 	ui.Flush()
-	ui.Sleep(AnimDurMediumLong)
+	Sleep(AnimDurMediumLong)
 }
 
 func (ui *gameui) MenuSelectedAnimation(m menu, ok bool) {
@@ -458,7 +458,7 @@ func (ui *gameui) MenuSelectedAnimation(m menu, ok bool) {
 		if !ok {
 			t += 25
 		}
-		ui.Sleep(t * time.Millisecond)
+		Sleep(t)
 		ui.DrawColoredText(message, MenuCols[m][0], DungeonHeight, ColorViolet)
 	}
 }
@@ -490,16 +490,16 @@ func (ui *gameui) FreeingShaedraAnimation() {
 	_, _, bg := ui.PositionDrawing(g.Places.Monolith)
 	ui.DrawAtPosition(g.Places.Monolith, false, 'Φ', ColorFgMagicPlace, bg)
 	ui.Flush()
-	ui.Sleep(AnimDurMediumLong)
+	Sleep(AnimDurMediumLong)
 	g.Objects.Stairs[g.Places.Monolith] = WinStair
 	g.Dungeon.SetCell(g.Places.Monolith, StairCell)
 	ui.DrawDungeonView(NoFlushMode)
 	ui.Flush()
-	ui.Sleep(AnimDurLong)
+	Sleep(AnimDurLong)
 	_, _, bg = ui.PositionDrawing(g.Places.Marevor)
 	ui.DrawAtPosition(g.Places.Marevor, false, 'Φ', ColorFgMagicPlace, bg)
 	ui.Flush()
-	ui.Sleep(AnimDurMediumLong)
+	Sleep(AnimDurMediumLong)
 	g.Objects.Story[g.Places.Marevor] = StoryMarevor
 	g.PrintStyled("Marevor: “And what about the mission?”", logSpecial)
 	g.PrintStyled("Shaedra: “Pff, don't be reckless!”", logSpecial)
@@ -511,7 +511,7 @@ func (ui *gameui) FreeingShaedraAnimation() {
 	ui.DrawAtPosition(g.Places.Marevor, false, 'Φ', ColorFgMagicPlace, bg)
 	ui.DrawAtPosition(g.Places.Shaedra, false, 'Φ', ColorFgMagicPlace, bg)
 	ui.Flush()
-	ui.Sleep(AnimDurMediumLong)
+	Sleep(AnimDurMediumLong)
 	g.Dungeon.SetCell(g.Places.Shaedra, GroundCell)
 	g.Dungeon.SetCell(g.Places.Marevor, ScrollCell)
 	g.Objects.Scrolls[g.Places.Marevor] = ScrollExtended
@@ -534,16 +534,16 @@ func (ui *gameui) TakingArtifactAnimation() {
 	_, _, bg := ui.PositionDrawing(g.Places.Monolith)
 	ui.DrawAtPosition(g.Places.Monolith, false, 'Φ', ColorFgMagicPlace, bg)
 	ui.Flush()
-	ui.Sleep(AnimDurMediumLong)
+	Sleep(AnimDurMediumLong)
 	g.Objects.Stairs[g.Places.Monolith] = WinStair
 	g.Dungeon.SetCell(g.Places.Monolith, StairCell)
 	ui.DrawDungeonView(NoFlushMode)
 	ui.Flush()
-	ui.Sleep(AnimDurLong)
+	Sleep(AnimDurLong)
 	_, _, bg = ui.PositionDrawing(g.Places.Marevor)
 	ui.DrawAtPosition(g.Places.Marevor, false, 'Φ', ColorFgMagicPlace, bg)
 	ui.Flush()
-	ui.Sleep(AnimDurMediumLong)
+	Sleep(AnimDurMediumLong)
 	g.Objects.Story[g.Places.Marevor] = StoryMarevor
 	g.PrintStyled("Marevor: “Great! Let's escape and find some bones to celebrate!”", logSpecial)
 	g.PrintStyled("Syu: “Sorry, but I prefer bananas!”", logSpecial)
@@ -554,7 +554,7 @@ func (ui *gameui) TakingArtifactAnimation() {
 	ui.DrawDungeonView(NoFlushMode)
 	ui.DrawAtPosition(g.Places.Marevor, false, 'Φ', ColorFgMagicPlace, bg)
 	ui.Flush()
-	ui.Sleep(AnimDurMediumLong)
+	Sleep(AnimDurMediumLong)
 	g.Dungeon.SetCell(g.Places.Marevor, GroundCell)
 	ui.DrawDungeonView(NoFlushMode)
 	ui.Flush()

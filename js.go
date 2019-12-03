@@ -87,7 +87,7 @@ func (ui *gameui) HandleStartMenu() (again bool) {
 			if err != nil {
 				ui.ColorLine(l+1, ColorRed)
 				ui.Flush()
-				ui.Sleep(AnimDurShort)
+				Sleep(AnimDurShort)
 				log.Printf("Load replay: %v", err)
 				return true
 			}

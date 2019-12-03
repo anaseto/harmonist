@@ -103,12 +103,12 @@ func (ui *gameui) StartMenu(l int) startAction {
 		case "P", "p":
 			ui.ColorLine(l, ColorYellow)
 			ui.Flush()
-			ui.Sleep(AnimDurShort)
+			Sleep(AnimDurShort)
 			return StartPlay
 		case "W", "w":
 			ui.ColorLine(l+1, ColorYellow)
 			ui.Flush()
-			ui.Sleep(AnimDurShort)
+			Sleep(AnimDurShort)
 			return StartWatchReplay
 		}
 		if in.key != "" && !in.mouse {
@@ -1683,7 +1683,7 @@ func (ui *gameui) ExploreStep() bool {
 	next := make(chan bool)
 	var stop bool
 	go func() {
-		ui.Sleep(10)
+		Sleep(10)
 		ui.Interrupt()
 	}()
 	go func() {
@@ -1730,6 +1730,6 @@ func (ui *gameui) ColorLine(y int, fg uicolor) {
 	}
 }
 
-func (ui *gameui) Sleep(d time.Duration) {
+func Sleep(d time.Duration) {
 	time.Sleep(d * time.Millisecond)
 }
