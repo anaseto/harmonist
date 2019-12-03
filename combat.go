@@ -67,7 +67,7 @@ func (g *game) MakeNoise(noise int, at position) {
 			continue
 		}
 		d := n.Cost
-		if m.State == Resting && d > noise/2 || m.Status(MonsExhausted) && m.State == Resting && d > noise/3 {
+		if m.State == Resting && 3*d > 2*noise || m.Status(MonsExhausted) && m.State == Resting && 3*d > noise {
 			continue
 		}
 		if m.SeesPlayer(g) {
@@ -271,17 +271,16 @@ func (g *game) HandleKill(mons *monster) {
 }
 
 const (
-	WallNoise              = 9
+	WallNoise              = 10
 	TemporalWallNoise      = 5
-	ExplosionNoise         = 12
+	ExplosionNoise         = 14
 	MagicHitNoise          = 5
-	BarkNoise              = 9
-	MagicExplosionNoise    = 12
+	BarkNoise              = 10
 	MagicCastNoise         = 5
 	HarmonicNoise          = 7
 	BaseHitNoise           = 2
-	QueenStoneNoise        = 9
-	SingingNoise           = 11
+	QueenStoneNoise        = 10
+	SingingNoise           = 12
 	EarthquakeNoise        = 35
 	QueenRockFootstepNoise = 7
 )
