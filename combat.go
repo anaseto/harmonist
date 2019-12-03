@@ -252,7 +252,6 @@ func (g *game) HitNoise(clang bool) int {
 
 const (
 	DmgNormal = 1
-	DmgExtra  = 2
 )
 
 func (g *game) HandleKill(mons *monster) {
