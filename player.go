@@ -125,6 +125,7 @@ func (g *game) MoveToTarget(ev event) bool {
 }
 
 func (g *game) WaitTurn(ev event) {
+	g.Stats.Waits++
 	ev.Renew(g, DurationTurn)
 }
 

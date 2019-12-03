@@ -5,6 +5,7 @@ type stats struct {
 	Killed            int
 	KilledMons        map[monsterKind]int
 	Moves             int
+	Waits             int
 	Jumps             int
 	WallJumps         int
 	ReceivedHits      int

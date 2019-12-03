@@ -132,13 +132,15 @@ func (g *game) Dump() string {
 func (g *game) DetailedStatistics(w io.Writer) {
 	fmt.Fprintf(w, "\n")
 	fmt.Fprintf(w, "Statistics:\n")
-	fmt.Fprintf(w, "You evoked magaras %d times, jumped %d times, and moved %d times.\n",
-		g.Stats.MagarasUsed, g.Stats.Jumps, g.Stats.Moves)
+	fmt.Fprintf(w, "You evoked magaras %d times (%d oric magaras, %d harmonic, %d others).\n",
+		g.Stats.MagarasUsed, g.Stats.OricMagUse,
+		g.Stats.HarmonicMagUse, g.Stats.MagarasUsed-g.Stats.OricMagUse-g.Stats.HarmonicMagUse)
+	fmt.Fprintf(w, "You activated %d magical stones.\n", g.Stats.UsedStones)
 	fmt.Fprintf(w, "You rested %d times.\n", g.Stats.Rest)
-	fmt.Fprintf(w, "You evoked %d times oric magaras.\n", g.Stats.OricMagUse)
-	fmt.Fprintf(w, "You evoked %d times harmonic magaras.\n", g.Stats.HarmonicMagUse)
-	fmt.Fprintf(w, "You got hit %d times, confused %d times.\n",
-		g.Stats.ReceivedHits, g.Stats.Statuses[StatusConfusion])
+	fmt.Fprintf(w, "You were spotted by %d monsters, %d times.\n", g.Stats.NUSpotted, g.Stats.NSpotted)
+	fmt.Fprintf(w, "You got hit %d times.\n", g.Stats.ReceivedHits)
+	fmt.Fprintf(w, "You endured %d damage.\n", g.Stats.Damage)
+	fmt.Fprintf(w, "You were confused %d times.\n", g.Stats.Statuses[StatusConfusion])
 	if g.Stats.Statuses[StatusIlluminated] > 0 {
 		fmt.Fprintf(w, "You were illuminated by an harmonic celmist %d times.\n", g.Stats.Statuses[StatusIlluminated])
 	}
@@ -146,26 +148,27 @@ func (g *game) DetailedStatistics(w io.Writer) {
 		fmt.Fprintf(w, "You were blocked by an oric celmist barrier %d times.\n", g.Stats.TimesBlocked)
 	}
 	if g.Stats.TimesPushed > 0 {
-		fmt.Fprintf(w, "You were pushed %d times.\n", g.Stats.TimesPushed)
+		fmt.Fprintf(w, "You were pushed %d times by monsters.\n", g.Stats.TimesPushed)
 	}
 	if g.Stats.TimesBlinked > 0 {
-		fmt.Fprintf(w, "Blinking frogs made you blink %d times.\n", g.Stats.TimesBlinked)
+		fmt.Fprintf(w, "You were blinked %d times by blinking frogs.\n", g.Stats.TimesBlinked)
 	}
 	if g.Stats.StolenBananas > 0 {
-		fmt.Fprintf(w, "Tiny harpies stole %d bananas from you.\n", g.Stats.StolenBananas)
+		fmt.Fprintf(w, "You were stolen %d bananas by harpies.\n", g.Stats.StolenBananas)
 	}
-	fmt.Fprintf(w, "You were spotted by %d monsters, %d times.\n", g.Stats.NUSpotted, g.Stats.NSpotted)
-	fmt.Fprintf(w, "You endured %d damage.\n", g.Stats.Damage)
-	fmt.Fprintf(w, "You activated %d magical stones.\n", g.Stats.UsedStones)
-	fmt.Fprintf(w, "You read %d lore messages out of %d.\n", len(g.Stats.Lore), len(g.Params.Lore))
-	fmt.Fprintf(w, "You climbed %d trees.\n", g.Stats.ClimbedTree)
+	fmt.Fprintf(w, "You jumped %d times over monsters.\n", g.Stats.Jumps)
+	fmt.Fprintf(w, "You jumped %d times by propulsing yourself against walls.\n", g.Stats.WallJumps)
+	fmt.Fprintf(w, "You hid in %d barrels.\n", g.Stats.BarrelHides)
 	fmt.Fprintf(w, "You crawled through %d holed walls.\n", g.Stats.HoledWallsCrawled)
+	fmt.Fprintf(w, "You climbed %d trees.\n", g.Stats.ClimbedTree)
 	fmt.Fprintf(w, "You hid under %d tables.\n", g.Stats.TableHides)
 	fmt.Fprintf(w, "You opened %d doors.\n", g.Stats.DoorsOpened)
-	fmt.Fprintf(w, "You hid in %d barrels.\n", g.Stats.BarrelHides)
+	fmt.Fprintf(w, "You moved %d times.\n", g.Stats.Moves)
+	fmt.Fprintf(w, "You waited %d times.\n", g.Stats.Waits)
 	if g.Stats.Extinguishments > 0 {
 		fmt.Fprintf(w, "You extinguished %d campfires.\n", g.Stats.Extinguishments)
 	}
+	fmt.Fprintf(w, "You read %d lore messages out of %d.\n", len(g.Stats.Lore), len(g.Params.Lore))
 	if g.Stats.Burns > 0 {
 		fmt.Fprintf(w, "There were %d fires.\n", g.Stats.Burns)
 	}
