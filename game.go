@@ -380,10 +380,10 @@ func (g *game) InitFirstLevel() {
 	}
 	g.Params.ExtraBanana = map[int]int{}
 	for i := 0; i < 2; i++ {
-		g.Params.ExtraBanana[1+5*i+RandInt(5)] = 1
+		g.Params.ExtraBanana[1+5*i+RandInt(5)]++
 	}
 	for i := 0; i < 2; i++ {
-		g.Params.ExtraBanana[1+5*i+RandInt(5)] = -1
+		g.Params.ExtraBanana[1+5*i+RandInt(5)]--
 	}
 
 	g.Params.Windows = map[int]bool{}
