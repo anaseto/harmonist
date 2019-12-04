@@ -1571,10 +1571,45 @@ func (dg *dgen) CaveGroundCell(g *game) position {
 		y := RandInt(DungeonHeight)
 		pos := position{x, y}
 		c := dg.d.Cell(pos)
-		if c.T == GroundCell && !dg.room[pos] {
+		if (c.T == GroundCell || c.T == CavernCell || c.T == QueenRockCell) && !dg.room[pos] {
 			return pos
 		}
 	}
+}
+
+func (dg *dgen) RandomInStone(g *game) stone {
+	if g.Params.MappingStone[g.Depth] {
+		g.Params.MappingStone[g.Depth] = false
+		return MappingStone
+	}
+	instones := []stone{
+		BarrelStone,
+		QueenStone,
+		TreeStone,
+		TeleportStone,
+		SensingStone,
+	}
+	if RandInt(2) == 0 {
+		// fog stone less often inside
+		instones = append(instones, FogStone)
+	}
+	return instones[RandInt(len(instones))]
+}
+
+func (dg *dgen) RandomOutStone(g *game) stone {
+	instones := []stone{
+		BarrelStone,
+		FogStone,
+		QueenStone,
+		NightStone,
+		TreeStone,
+		TeleportStone,
+	}
+	if RandInt(2) == 0 {
+		// sensing stone less often outside
+		instones = append(instones, SensingStone)
+	}
+	return instones[RandInt(len(instones))]
 }
 
 func (dg *dgen) GenStones(g *game) {
@@ -1592,8 +1627,12 @@ func (dg *dgen) GenStones(g *game) {
 		nstones += 4 + RandInt(3)
 		inroom += 2
 	}
+	if dg.layout == RandomSmallWalkCaveUrbanised {
+		inroom++
+	}
 	for i := 0; i < nstones; i++ {
 		pos := InvalidPos
+		var st stone
 		if i < inroom {
 			count := 0
 			for pos == InvalidPos {
@@ -1603,10 +1642,11 @@ func (dg *dgen) GenStones(g *game) {
 				}
 				pos = dg.rooms[RandInt(len(dg.rooms))].RandomPlace(PlaceStatic)
 			}
+			st = dg.RandomInStone(g)
 		} else {
 			pos = dg.CaveGroundCell(g)
+			st = dg.RandomOutStone(g)
 		}
-		st := stone(1 + RandInt(NumStones-1))
 		g.Objects.Stones[pos] = st
 		g.Dungeon.SetCell(pos, StoneCell)
 	}

@@ -90,6 +90,7 @@ type startParams struct {
 	FakeStair    map[int]bool
 	ExtraBanana  map[int]int
 	HealthPotion map[int]bool
+	MappingStone map[int]bool
 	CrazyImp     int
 }
 
@@ -270,6 +271,17 @@ const (
 	GenCloak
 )
 
+func PutRandomLevels(m map[int]bool, n int) {
+	for i := 0; i < n; i++ {
+		j := 1 + RandInt(MaxDepth)
+		if !m[j] {
+			m[j] = true
+		} else {
+			i--
+		}
+	}
+}
+
 func (g *game) InitFirstLevel() {
 	g.Version = Version
 	g.Depth++ // start at 1
@@ -298,25 +310,11 @@ func (g *game) InitFirstLevel() {
 		11: GenNothing,
 	}
 	g.Params.Lore = map[int]bool{}
-	const nlore = 8
-	for i := 0; i < nlore; i++ {
-		j := RandInt(MaxDepth)
-		if !g.Params.Lore[j] {
-			g.Params.Lore[j] = true
-		} else {
-			i--
-		}
-	}
+	PutRandomLevels(g.Params.Lore, 8)
 	g.Params.HealthPotion = map[int]bool{}
-	const nhpotions = 5
-	for i := 0; i < nhpotions; i++ {
-		j := RandInt(MaxDepth)
-		if !g.Params.HealthPotion[j] {
-			g.Params.HealthPotion[j] = true
-		} else {
-			i--
-		}
-	}
+	PutRandomLevels(g.Params.HealthPotion, 5)
+	g.Params.MappingStone = map[int]bool{}
+	PutRandomLevels(g.Params.MappingStone, 3)
 	g.Params.Blocked = map[int]bool{}
 	if RandInt(10) > 0 {
 		g.Params.Blocked[2+RandInt(WinDepth-2)] = true

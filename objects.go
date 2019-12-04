@@ -114,8 +114,6 @@ const (
 	SealStone
 )
 
-const NumStones = int(SensingStone) + 1
-
 func (stn stone) String() (text string) {
 	switch stn {
 	case InertStone:
