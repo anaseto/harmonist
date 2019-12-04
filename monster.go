@@ -1248,7 +1248,7 @@ func (m *monster) HitPlayer(g *game, ev event) {
 		m.TeleportAway(g)
 		if m.Kind.ReflectsTeleport() {
 			g.Printf("The %s reflected back some energies.", m.Kind)
-			g.Teleportation(ev)
+			g.Teleportation()
 		}
 	case AmuletLignification:
 		g.Print("Your amulet glows.")

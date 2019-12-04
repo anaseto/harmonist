@@ -175,8 +175,7 @@ func (g *game) NeedsRegenRest() bool {
 	return g.Player.HP < g.Player.HPMax() || g.Player.MP < g.Player.MPMax()
 }
 
-func (g *game) Teleportation(ev event) {
-	// XXX ev is not used
+func (g *game) Teleportation() {
 	var pos position
 	i := 0
 	count := 0

@@ -325,7 +325,7 @@ func (g *game) ActivateTeleportStone() error {
 		mons.TeleportAway(g)
 		if mons.Kind.ReflectsTeleport() {
 			g.Printf("The %s reflected back some energies.", mons.Kind)
-			g.Teleportation(g.Ev)
+			g.Teleportation()
 			break
 		}
 	}

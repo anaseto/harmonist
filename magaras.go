@@ -411,7 +411,7 @@ func (g *game) EvokeTeleport(ev event) error {
 	if g.Player.HasStatus(StatusLignification) {
 		return errors.New("You cannot teleport while lignified.")
 	}
-	g.Teleportation(ev)
+	g.Teleportation()
 	return nil
 }
 
@@ -470,7 +470,7 @@ func (g *game) EvokeTeleportOther(ev event) error {
 		ms[i].TeleportAway(g)
 		if ms[i].Kind.ReflectsTeleport() {
 			g.Printf("The %s reflected back some energies.", ms[i].Kind)
-			g.Teleportation(ev)
+			g.Teleportation()
 			break
 		}
 	}

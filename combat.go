@@ -172,7 +172,7 @@ func (g *game) Jump(mons *monster, ev event) error {
 		pos = g.FindJumpTarget(mons)
 		if !g.PlayerCanPass(pos) {
 			// should not happen in practice, but better safe than sorry
-			g.Teleportation(ev)
+			g.Teleportation()
 			return nil
 		}
 	}
