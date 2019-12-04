@@ -208,7 +208,7 @@ func (g *game) ActivateStone() (err error) {
 		g.TeleportToBarrel()
 	case FogStone:
 		g.Print("The stone releases fog.")
-		g.Fog(g.Player.Pos, FogStoneDistance, g.Ev)
+		g.Fog(g.Player.Pos, FogStoneDistance)
 	case QueenStone:
 		g.ActivateQueenStone()
 	case NightStone:
@@ -218,11 +218,11 @@ func (g *game) ActivateStone() (err error) {
 	case TeleportStone:
 		err = g.ActivateTeleportStone()
 	case MappingStone:
-		err = g.MagicMapping(g.Ev, MappingDistance)
+		err = g.MagicMapping(MappingDistance)
 	case SensingStone:
-		err = g.Sensing(g.Ev)
+		err = g.Sensing()
 	case SealStone:
-		err = g.BarrierStone(g.Ev)
+		err = g.BarrierStone()
 	}
 	if err != nil {
 		return err
@@ -259,7 +259,7 @@ func (g *game) ActivateQueenStone() {
 	g.Print("The stone releases confusing sounds.")
 	g.ui.LOSWavesAnimation(DefaultLOSRange, WaveMagicNoise, g.Player.Pos)
 	for _, m := range targets {
-		m.EnterConfusion(g, g.Ev)
+		m.EnterConfusion(g)
 		if m.Search == InvalidPos {
 			m.Search = m.Pos
 		}
@@ -304,7 +304,7 @@ func (g *game) ActivateTreeStone() error {
 	g.Print("The stone releases magical spores.")
 	g.ui.LOSWavesAnimation(DefaultLOSRange, WaveTree, g.Player.Pos)
 	for _, mons := range targets {
-		mons.EnterLignification(g, g.Ev)
+		mons.EnterLignification(g)
 		if mons.Search == InvalidPos {
 			mons.Search = mons.Pos
 		}
@@ -344,7 +344,7 @@ func (g *game) TeleportToBarrel() {
 	g.PlacePlayerAt(pos)
 }
 
-func (g *game) MagicMapping(ev event, maxdist int) error {
+func (g *game) MagicMapping(maxdist int) error {
 	dp := &mappingPath{game: g}
 	nm := Dijkstra(dp, []position{g.Player.Pos}, maxdist)
 	cdists := make(map[int][]int)
@@ -380,7 +380,7 @@ func (g *game) MagicMapping(ev event, maxdist int) error {
 	return nil
 }
 
-func (g *game) Sensing(ev event) error {
+func (g *game) Sensing() error {
 	for _, mons := range g.Monsters {
 		if mons.Exists() && !g.Player.Sees(mons.Pos) && mons.Pos.Distance(g.Player.Pos) <= MappingDistance {
 			mons.UpdateKnowledge(g, mons.Pos)
@@ -390,7 +390,7 @@ func (g *game) Sensing(ev event) error {
 	return nil
 }
 
-func (g *game) BarrierStone(ev event) error {
+func (g *game) BarrierStone() error {
 	if g.Depth == MaxDepth {
 		g.Objects.Story[g.Places.Artifact] = StoryArtifact
 		g.Print("You feel oric energies dissipating.")

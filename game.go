@@ -664,7 +664,7 @@ func (g *game) AutoPlayer(ev event) bool {
 	if g.Resting {
 		const enoughRestTurns = 25
 		if g.RestingTurns < enoughRestTurns {
-			ev.Renew(g, DurationTurn)
+			g.RenewEvent(DurationTurn)
 			g.RestingTurns++
 			return true
 		}
@@ -701,7 +701,7 @@ func (g *game) AutoPlayer(ev event) bool {
 				g.Print("You could not safely reach some places.")
 			}
 			if n != nil {
-				err := g.PlayerBump(*n, ev)
+				err := g.PlayerBump(*n)
 				if err != nil {
 					g.Print(err.Error())
 					break
@@ -711,13 +711,13 @@ func (g *game) AutoPlayer(ev event) bool {
 		}
 		g.Autoexploring = false
 	} else if g.AutoTarget.valid() {
-		if !g.ui.ExploreStep() && g.MoveToTarget(ev) {
+		if !g.ui.ExploreStep() && g.MoveToTarget() {
 			return true
 		} else {
 			g.AutoTarget = InvalidPos
 		}
 	} else if g.AutoDir != NoDir {
-		if !g.ui.ExploreStep() && g.AutoToDir(ev) {
+		if !g.ui.ExploreStep() && g.AutoToDir() {
 			return true
 		} else {
 			g.AutoDir = NoDir

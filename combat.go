@@ -129,7 +129,7 @@ func (g *game) FindJumpTarget(m *monster) position {
 	return free
 }
 
-func (g *game) Jump(mons *monster, ev event) error {
+func (g *game) Jump(mons *monster) error {
 	if mons.Peaceful(g) && mons.Kind != MonsEarthDragon {
 		ompos := mons.Pos
 		if g.Dungeon.Cell(ompos).T == ChasmCell && !g.Player.HasStatus(StatusLevitation) {
@@ -180,7 +180,7 @@ func (g *game) Jump(mons *monster, ev event) error {
 		g.PutStatus(StatusExhausted, 5)
 	}
 	if mons.Kind == MonsEarthDragon {
-		g.Confusion(ev)
+		g.Confusion()
 	}
 	g.PlacePlayerAt(pos)
 	g.Stats.Jumps++

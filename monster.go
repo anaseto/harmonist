@@ -677,21 +677,21 @@ func (m *monster) CorrectDir() {
 	}
 }
 
-func (m *monster) AttackAction(g *game, ev event) {
+func (m *monster) AttackAction(g *game) {
 	m.Dir = g.Player.Pos.Dir(m.Pos)
 	m.CorrectDir()
 	switch m.Kind {
 	case MonsExplosiveNadre:
 		g.StoryPrint("Nadre explosion")
-		m.Explode(g, ev)
+		m.Explode(g)
 		return
 	default:
-		m.HitPlayer(g, ev)
+		m.HitPlayer(g)
 	}
-	ev.Renew(g, DurationTurn)
+	g.RenewEvent(DurationTurn)
 }
 
-func (m *monster) Explode(g *game, ev event) {
+func (m *monster) Explode(g *game) {
 	m.Dead = true
 	neighbors := m.Pos.ValidCardinalNeighbors()
 	g.Printf("%s %s explodes with a loud boom.", g.ExplosionSound(), m.Kind.Definite(true))
@@ -700,11 +700,11 @@ func (m *monster) Explode(g *game, ev event) {
 	for _, pos := range append(neighbors, m.Pos) {
 		c := g.Dungeon.Cell(pos)
 		if c.Flammable() {
-			g.Burn(pos, ev)
+			g.Burn(pos)
 		}
 		mons := g.MonsterAt(pos)
 		if mons.Exists() && !mons.Status(MonsConfused) {
-			mons.EnterConfusion(g, ev)
+			mons.EnterConfusion(g)
 			if mons.State != Hunting && mons.State != Watching {
 				mons.StartWatching()
 			}
@@ -725,7 +725,7 @@ func (m *monster) Explode(g *game, ev event) {
 				g.ui.WallExplosionAnimation(pos)
 			}
 			g.MakeNoise(WallNoise, pos)
-			g.Fog(pos, 1, ev)
+			g.Fog(pos, 1)
 		}
 	}
 }
@@ -1032,7 +1032,7 @@ func (m *monster) HandleMove(g *game) {
 	case m.Peaceful(g) && target == g.Player.Pos:
 		switch m.Kind {
 		case MonsEarthDragon:
-			m.AttackAction(g, g.Ev)
+			m.AttackAction(g)
 			return
 		default:
 			m.Path = m.APath(g, m.Pos, m.Target)
@@ -1046,7 +1046,7 @@ func (m *monster) HandleMove(g *game) {
 			g.Stats.Digs++
 			g.UpdateKnowledge(target, c.T)
 			g.MakeNoise(WallNoise, m.Pos)
-			g.Fog(m.Pos, 1, g.Ev)
+			g.Fog(m.Pos, 1)
 			if g.Player.Pos.Distance(target) < 12 {
 				// XXX use dijkstra distance ?
 				if c.IsWall() {
@@ -1107,12 +1107,12 @@ func (m *monster) HandleMove(g *game) {
 
 func (m *monster) HandleTurn(g *game, ev event) {
 	if m.Status(MonsParalysed) {
-		ev.Renew(g, DurationTurn)
+		g.RenewEvent(DurationTurn)
 		return
 	}
 	if m.Swapped {
 		m.Swapped = false
-		ev.Renew(g, DurationTurn)
+		g.RenewEvent(DurationTurn)
 		return
 	}
 	ppos := g.Player.Pos
@@ -1127,13 +1127,13 @@ func (m *monster) HandleTurn(g *game, ev event) {
 		if RandInt(3000) == 0 || m.Kind.ShallowSleep() && RandInt(10) == 0 {
 			m.NaturalAwake(g)
 		}
-		ev.Renew(g, DurationTurn)
+		g.RenewEvent(DurationTurn)
 		return
 	}
-	if m.State == Hunting && m.RangedAttack(g, ev) {
+	if m.State == Hunting && m.RangedAttack(g) {
 		return
 	}
-	if m.State == Hunting && m.SmitingAttack(g, ev) {
+	if m.State == Hunting && m.SmitingAttack(g) {
 		return
 	}
 	if m.HandleMonsSpecifics(g) {
@@ -1142,19 +1142,19 @@ func (m *monster) HandleTurn(g *game, ev event) {
 	if mpos.Distance(ppos) == 1 && g.Dungeon.Cell(ppos).T != BarrelCell && !m.Peaceful(g) {
 		if m.Status(MonsConfused) {
 			g.Printf("%s appears too confused to attack.", m.Kind.Definite(true))
-			ev.Renew(g, DurationTurn) // wait
+			g.RenewEvent(DurationTurn) // wait
 			return
 		}
 		if g.Dungeon.Cell(ppos).T == TreeCell && !m.Kind.CanAttackOnTree() {
 			g.Printf("%s watches you from below.", m.Kind.Definite(true))
-			ev.Renew(g, DurationTurn) // wait
+			g.RenewEvent(DurationTurn) // wait
 			return
 		}
-		m.AttackAction(g, ev)
+		m.AttackAction(g)
 		return
 	}
 	if m.Status(MonsLignified) {
-		ev.Renew(g, DurationTurn) // wait
+		g.RenewEvent(DurationTurn) // wait
 		return
 	}
 	switch m.State {
@@ -1200,7 +1200,7 @@ func (m *monster) ExhaustTime(g *game, t int) {
 	m.PutStatus(g, MonsExhausted, t)
 }
 
-func (m *monster) HitPlayer(g *game, ev event) {
+func (m *monster) HitPlayer(g *game) {
 	if g.Player.HP <= 0 || g.Player.Pos.Distance(m.Pos) > 1 {
 		return
 	}
@@ -1217,19 +1217,19 @@ func (m *monster) HitPlayer(g *game, ev event) {
 	if g.Player.HP <= 0 {
 		return
 	}
-	m.HitSideEffects(g, ev)
+	m.HitSideEffects(g)
 	const HeavyWoundHP = 2
 	if g.Player.HP >= HeavyWoundHP {
 		return
 	}
 	switch g.Player.Inventory.Neck {
 	case AmuletConfusion:
-		m.EnterConfusion(g, ev)
+		m.EnterConfusion(g)
 		// TODO: maybe affect all monsters in sight?
 		g.Printf("Your amulet releases confusing harmonies.")
 	case AmuletFog:
 		g.Print("Your amulet feels warm.")
-		g.SwiftFog(ev)
+		g.SwiftFog()
 	case AmuletObstruction:
 		opos := m.Pos
 		pos := m.LeaveRoomForPlayer(g)
@@ -1239,7 +1239,7 @@ func (m *monster) HitPlayer(g *game, ev event) {
 			m.MoveTo(g, pos)
 		}
 		if opos != m.Pos {
-			g.MagicalBarrierAt(opos, ev)
+			g.MagicalBarrierAt(opos)
 			g.Print("The amulet releases an oric wind.")
 			m.Exhaust(g)
 		}
@@ -1253,7 +1253,7 @@ func (m *monster) HitPlayer(g *game, ev event) {
 	case AmuletLignification:
 		g.Print("Your amulet glows.")
 		if !m.Kind.ResistsLignification() {
-			m.EnterLignification(g, ev)
+			m.EnterLignification(g)
 		}
 	}
 }
@@ -1270,7 +1270,7 @@ func (m *monster) PutStatus(g *game, st monsterStatus, duration int) bool {
 	return true
 }
 
-func (m *monster) EnterConfusion(g *game, ev event) bool {
+func (m *monster) EnterConfusion(g *game) bool {
 	if m.PutStatus(g, MonsConfused, DurationConfusionMonster) {
 		m.Path = m.Path[:0]
 		if g.Player.Sees(m.Pos) {
@@ -1281,7 +1281,7 @@ func (m *monster) EnterConfusion(g *game, ev event) bool {
 	return false
 }
 
-func (m *monster) EnterLignification(g *game, ev event) {
+func (m *monster) EnterLignification(g *game) {
 	if m.PutStatus(g, MonsLignified, DurationLignificationMonster) {
 		m.Path = m.Path[:0]
 		if g.Player.Sees(m.Pos) {
@@ -1290,7 +1290,7 @@ func (m *monster) EnterLignification(g *game, ev event) {
 	}
 }
 
-func (m *monster) HitSideEffects(g *game, ev event) {
+func (m *monster) HitSideEffects(g *game) {
 	switch m.Kind {
 	case MonsEarthDragon:
 		if m.Status(MonsConfused) {
@@ -1298,9 +1298,9 @@ func (m *monster) HitSideEffects(g *game, ev event) {
 		} else {
 			m.PushPlayer(g, 6)
 		}
-		g.Confusion(ev)
+		g.Confusion()
 	case MonsBlinkingFrog:
-		if g.Blink(ev) {
+		if g.Blink() {
 			g.StoryPrintf("Blinked away by %s", m.Kind)
 			g.Stats.TimesBlinked++
 		}
@@ -1309,7 +1309,7 @@ func (m *monster) HitSideEffects(g *game, ev event) {
 	case MonsAcidMound:
 		m.Corrode(g)
 	case MonsSpider:
-		g.Confusion(g.Ev)
+		g.Confusion()
 	case MonsWingedMilfid:
 		if m.Status(MonsExhausted) || g.Player.HasStatus(StatusLignification) {
 			break
@@ -1325,7 +1325,7 @@ func (m *monster) HitSideEffects(g *game, ev event) {
 		g.StoryPrintf("Position swap by %s", m.Kind)
 		m.ExhaustTime(g, 5+RandInt(5))
 		if g.Dungeon.Cell(g.Player.Pos).T == ChasmCell {
-			g.PushAgainEvent(&simpleEvent{ERank: ev.Rank(), EAction: AbyssFall})
+			g.PushAgainEvent(&simpleEvent{ERank: g.Ev.Rank(), EAction: AbyssFall})
 		}
 	case MonsTinyHarpy:
 		if m.Status(MonsSatiated) {
@@ -1393,7 +1393,7 @@ func (m *monster) PushPlayer(g *game, dist int) {
 	}
 }
 
-func (m *monster) RangedAttack(g *game, ev event) bool {
+func (m *monster) RangedAttack(g *game) bool {
 	if !m.Kind.Ranged() {
 		return false
 	}
@@ -1411,7 +1411,7 @@ func (m *monster) RangedAttack(g *game, ev event) bool {
 	if !m.FireReady {
 		m.FireReady = true
 		if m.Pos.Distance(g.Player.Pos) <= 3 {
-			ev.Renew(g, DurationTurn)
+			g.RenewEvent(DurationTurn)
 			return true
 		} else {
 			return false
@@ -1424,15 +1424,15 @@ func (m *monster) RangedAttack(g *game, ev event) bool {
 	//case MonsLich:
 	//return m.TormentBolt(g, ev)
 	case MonsHighGuard:
-		return m.ThrowJavelin(g, ev)
+		return m.ThrowJavelin(g)
 	case MonsSatowalgaPlant:
-		return m.ThrowAcid(g, ev)
+		return m.ThrowAcid(g)
 	case MonsMadNixe:
-		return m.NixeAttraction(g, ev)
+		return m.NixeAttraction(g)
 	case MonsVampire:
-		return m.VampireSpit(g, ev)
+		return m.VampireSpit(g)
 	case MonsTreeMushroom:
-		return m.ThrowSpores(g, ev)
+		return m.ThrowSpores(g)
 	}
 	return false
 }
@@ -1495,7 +1495,7 @@ func (g *game) BarrierCandidates(pos position, todir direction) []position {
 	return candidates
 }
 
-func (m *monster) CreateBarrier(g *game, ev event) bool {
+func (m *monster) CreateBarrier(g *game) bool {
 	// TODO: add noise?
 	dir := g.Player.Pos.Dir(m.Pos)
 	candidates := g.BarrierCandidates(g.Player.Pos, dir)
@@ -1506,7 +1506,7 @@ func (m *monster) CreateBarrier(g *game, ev event) bool {
 		if mons.Exists() || c.IsWall() {
 			continue
 		}
-		g.MagicalBarrierAt(pos, ev)
+		g.MagicalBarrierAt(pos)
 		done = true
 		g.Print("The oric celmist creates a magical barrier.")
 		g.StoryPrintf("Blocked by %s barrier", m.Kind)
@@ -1516,50 +1516,50 @@ func (m *monster) CreateBarrier(g *game, ev event) bool {
 	if !done {
 		return false
 	}
-	ev.Renew(g, DurationTurn)
+	g.RenewEvent(DurationTurn)
 	m.Exhaust(g)
 	return true
 }
 
-func (m *monster) Illuminate(g *game, ev event) bool {
+func (m *monster) Illuminate(g *game) bool {
 	if g.PutStatus(StatusIlluminated, DurationIlluminated) {
 		g.Print("The harmonic celmist casts magical harmonies on you.")
 		g.StoryPrintf("Illuminated by %s", m.Kind)
 		g.MakeNoise(HarmonicNoise, g.Player.Pos)
-		ev.Renew(g, DurationTurn)
+		g.RenewEvent(DurationTurn)
 		m.Exhaust(g)
 		return true
 	}
 	return false
 }
 
-func (m *monster) VampireSpit(g *game, ev event) bool {
+func (m *monster) VampireSpit(g *game) bool {
 	blocked := m.RangeBlocked(g)
 	if blocked || g.Player.HasStatus(StatusConfusion) {
 		return false
 	}
 	g.Print("The vampire spits at you.")
 	g.Print("A vampire spitted at you.")
-	g.Confusion(ev)
+	g.Confusion()
 	m.Exhaust(g)
-	ev.Renew(g, DurationTurn)
+	g.RenewEvent(DurationTurn)
 	return true
 }
 
-func (m *monster) ThrowSpores(g *game, ev event) bool {
+func (m *monster) ThrowSpores(g *game) bool {
 	blocked := m.RangeBlocked(g)
 	if blocked || g.Player.HasStatus(StatusLignification) {
 		return false
 	}
 	g.Print("The tree mushroom releases spores.")
 	g.StoryPrintf("Lignified by %s", m.Kind)
-	g.EnterLignification(ev)
+	g.EnterLignification()
 	m.Exhaust(g)
-	ev.Renew(g, DurationTurn)
+	g.RenewEvent(DurationTurn)
 	return true
 }
 
-func (m *monster) ThrowJavelin(g *game, ev event) bool {
+func (m *monster) ThrowJavelin(g *game) bool {
 	blocked := m.RangeBlocked(g)
 	if blocked {
 		return false
@@ -1577,7 +1577,7 @@ func (m *monster) ThrowJavelin(g *game, ev event) bool {
 	g.MakeNoise(noise, g.Player.Pos)
 	m.InflictDamage(g, dmg, dmg)
 	m.ExhaustTime(g, 10+RandInt(5))
-	ev.Renew(g, DurationTurn)
+	g.RenewEvent(DurationTurn)
 	return true
 }
 
@@ -1598,7 +1598,7 @@ func (m *monster) Corrode(g *game) {
 	}
 }
 
-func (m *monster) ThrowAcid(g *game, ev event) bool {
+func (m *monster) ThrowAcid(g *game) bool {
 	blocked := m.RangeBlocked(g)
 	if blocked {
 		return false
@@ -1611,11 +1611,11 @@ func (m *monster) ThrowAcid(g *game, ev event) bool {
 	m.InflictDamage(g, dmg, dmg)
 	m.Corrode(g)
 	m.ExhaustTime(g, 2)
-	ev.Renew(g, DurationTurn)
+	g.RenewEvent(DurationTurn)
 	return true
 }
 
-func (m *monster) NixeAttraction(g *game, ev event) bool {
+func (m *monster) NixeAttraction(g *game) bool {
 	blocked := m.RangeBlocked(g)
 	if blocked {
 		return false
@@ -1631,11 +1631,11 @@ func (m *monster) NixeAttraction(g *game, ev event) bool {
 		g.PlacePlayerAt(ray[1])
 	}
 	m.Exhaust(g)
-	ev.Renew(g, DurationTurn)
+	g.RenewEvent(DurationTurn)
 	return true
 }
 
-func (m *monster) SmitingAttack(g *game, ev event) bool {
+func (m *monster) SmitingAttack(g *game) bool {
 	if !m.Kind.Smiting() {
 		return false
 	}
@@ -1650,7 +1650,7 @@ func (m *monster) SmitingAttack(g *game, ev event) bool {
 	if !m.FireReady {
 		m.FireReady = true
 		if m.Pos.Distance(g.Player.Pos) <= 3 {
-			ev.Renew(g, DurationTurn)
+			g.RenewEvent(DurationTurn)
 			return true
 		} else {
 			return false
@@ -1661,18 +1661,18 @@ func (m *monster) SmitingAttack(g *game, ev event) bool {
 	}
 	switch m.Kind {
 	case MonsMirrorSpecter:
-		return m.AbsorbMana(g, ev)
+		return m.AbsorbMana(g)
 	case MonsOricCelmist:
-		return m.CreateBarrier(g, ev)
+		return m.CreateBarrier(g)
 		//case MonsMindCelmist:
 		//return m.MindAttack(g, ev)
 	case MonsHarmonicCelmist:
-		return m.Illuminate(g, ev)
+		return m.Illuminate(g)
 	}
 	return false
 }
 
-func (m *monster) AbsorbMana(g *game, ev event) bool {
+func (m *monster) AbsorbMana(g *game) bool {
 	if g.Player.MP == 0 {
 		return false
 	}
@@ -1680,7 +1680,7 @@ func (m *monster) AbsorbMana(g *game, ev event) bool {
 	g.Printf("%s absorbs your mana.", m.Kind.Definite(true))
 	g.StoryPrintf("Mana absorbed by %s (MP: %d)", m.Kind, g.Player.MP)
 	m.ExhaustTime(g, 1+RandInt(2))
-	ev.Renew(g, DurationTurn)
+	g.RenewEvent(DurationTurn)
 	return true
 }
 

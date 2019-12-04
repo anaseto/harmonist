@@ -151,7 +151,7 @@ func (sev *simpleEvent) Action(g *game) {
 			g.TurnStats()
 			return
 		}
-		g.Quit = g.ui.HandlePlayerTurn(sev)
+		g.Quit = g.ui.HandlePlayerTurn()
 		if g.Quit {
 			return
 		}
@@ -307,7 +307,7 @@ func (cev *posEvent) Action(g *game) {
 		g.Dungeon.SetCell(cev.Pos, t)
 	case ObstructionProgression:
 		pos := g.FreePassableCell()
-		g.MagicalBarrierAt(pos, cev)
+		g.MagicalBarrierAt(pos)
 		if g.Player.Sees(pos) {
 			g.Printf("You see an oric barrier appear out of thin air.")
 			g.StopAuto()
@@ -322,7 +322,7 @@ func (cev *posEvent) Action(g *game) {
 			if RandInt(4) == 0 {
 				continue
 			}
-			g.Burn(pos, cev)
+			g.Burn(pos)
 		}
 		delete(g.Clouds, cev.Pos)
 		g.NightFog(cev.Pos, 1, &simpleEvent{ERank: cev.Rank()})
@@ -331,7 +331,7 @@ func (cev *posEvent) Action(g *game) {
 		if _, ok := g.Clouds[cev.Pos]; !ok {
 			break
 		}
-		g.MakeCreatureSleep(cev.Pos, cev)
+		g.MakeCreatureSleep(cev.Pos)
 		if RandInt(20) == 0 {
 			delete(g.Clouds, cev.Pos)
 			g.ComputeLOS()
@@ -340,7 +340,7 @@ func (cev *posEvent) Action(g *game) {
 		cev.Renew(g, DurationTurn)
 	case MistProgression:
 		pos := g.FreePassableCell()
-		g.Fog(pos, 1, cev)
+		g.Fog(pos, 1)
 		g.PushEvent(&posEvent{ERank: cev.Rank() + DurationMistProgression + RandInt(DurationMistProgression/4),
 			EAction: MistProgression})
 	case Earthquake:
@@ -359,7 +359,7 @@ func (cev *posEvent) Action(g *game) {
 			}
 			g.Dungeon.SetCell(pos, RubbleCell)
 			g.UpdateKnowledge(pos, c.T)
-			g.Fog(pos, 1, cev)
+			g.Fog(pos, 1)
 		}
 	}
 }
@@ -373,13 +373,13 @@ func (g *game) NightFog(at position, radius int, ev event) {
 		if !ok {
 			g.Clouds[pos] = CloudNight
 			g.PushEvent(&posEvent{ERank: ev.Rank() + DurationCloudProgression, EAction: NightProgression, Pos: pos})
-			g.MakeCreatureSleep(pos, ev)
+			g.MakeCreatureSleep(pos)
 		}
 	})
 	g.ComputeLOS()
 }
 
-func (g *game) MakeCreatureSleep(pos position, ev event) {
+func (g *game) MakeCreatureSleep(pos position) {
 	if pos == g.Player.Pos {
 		if g.PutStatus(StatusConfusion, DurationConfusionPlayer) {
 			g.Print("The clouds of night confuse you.")
@@ -391,7 +391,7 @@ func (g *game) MakeCreatureSleep(pos position, ev event) {
 		// do not always make already exhausted monsters sleep (they were probably awaken)
 		return
 	}
-	mons.EnterConfusion(g, ev)
+	mons.EnterConfusion(g)
 	if mons.State != Resting && g.Player.Sees(mons.Pos) {
 		g.Printf("%s falls asleep.", mons.Kind.Definite(true))
 	}
@@ -400,7 +400,7 @@ func (g *game) MakeCreatureSleep(pos position, ev event) {
 	mons.ExhaustTime(g, 4+RandInt(2))
 }
 
-func (g *game) Burn(pos position, ev event) {
+func (g *game) Burn(pos position) {
 	if _, ok := g.Clouds[pos]; ok {
 		return
 	}
@@ -427,7 +427,7 @@ func (g *game) Burn(pos position, ev event) {
 	} else {
 		g.ComputeLOS()
 	}
-	g.PushEvent(&posEvent{ERank: ev.Rank() + DurationCloudProgression, EAction: FireProgression, Pos: pos})
+	g.PushEvent(&posEvent{ERank: g.Ev.Rank() + DurationCloudProgression, EAction: FireProgression, Pos: pos})
 }
 
 func (cev *posEvent) Renew(g *game, delay int) {
@@ -460,3 +460,7 @@ const (
 	DurationTurn                   = 1
 	DurationStatusStep             = 1
 )
+
+func (g *game) RenewEvent(delay int) {
+	g.Ev.Renew(g, delay)
+}

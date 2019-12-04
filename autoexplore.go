@@ -4,7 +4,7 @@ import "errors"
 
 var DijkstraMapCache [DungeonNCells]int
 
-func (g *game) Autoexplore(ev event) error {
+func (g *game) Autoexplore() error {
 	if mons := g.MonsterInLOS(); mons.Exists() {
 		return errors.New("You cannot auto-explore while there are monsters in view.")
 	}
@@ -25,7 +25,7 @@ func (g *game) Autoexplore(ev event) error {
 	}
 	g.Autoexploring = true
 	g.AutoHalt = false
-	return g.PlayerBump(*n, ev)
+	return g.PlayerBump(*n)
 }
 
 func (g *game) AllExplored() bool {

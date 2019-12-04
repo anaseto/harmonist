@@ -1704,7 +1704,7 @@ func (ui *gameui) MagaraItem(i, lnum int, c magara, fg uicolor) {
 	ui.DrawColoredTextOnBG(fmt.Sprintf("%c - %s (%d charges)", rune(i+97), c, c.Charges), 0, lnum, fg, bg)
 }
 
-func (ui *gameui) SelectMagara(ev event) error {
+func (ui *gameui) SelectMagara() error {
 	g := ui.g
 	desc := false
 	ui.DrawDungeonView(NoFlushMode)
@@ -1742,13 +1742,13 @@ func (ui *gameui) SelectMagara(ev event) error {
 				ui.DrawDescription(magaras[index].Desc(g), "Magara Description")
 				continue
 			}
-			err = g.UseMagara(index, ev)
+			err = g.UseMagara(index)
 		}
 		return err
 	}
 }
 
-func (ui *gameui) EquipMagara(ev event) error {
+func (ui *gameui) EquipMagara() error {
 	g := ui.g
 	desc := false
 	ui.DrawDungeonView(NoFlushMode)
@@ -1786,7 +1786,7 @@ func (ui *gameui) EquipMagara(ev event) error {
 				ui.DrawDescription(magaras[index].Desc(g), "Magara Description")
 				continue
 			}
-			err = g.EquipMagara(index, ev)
+			err = g.EquipMagara(index)
 		}
 		return err
 	}
@@ -1798,7 +1798,7 @@ func (ui *gameui) InventoryItem(i, lnum int, it item, fg uicolor, part string) {
 	ui.DrawColoredTextOnBG(fmt.Sprintf("%c - %s (%s)", rune(i+97), it.ShortDesc(ui.g), part), 0, lnum, fg, bg)
 }
 
-func (ui *gameui) SelectItem(ev event) error {
+func (ui *gameui) SelectItem() error {
 	g := ui.g
 	ui.DrawDungeonView(NoFlushMode)
 	items := []item{g.Player.Inventory.Body, g.Player.Inventory.Neck, g.Player.Inventory.Misc}
@@ -1876,7 +1876,7 @@ var menuActions = []action{
 	ActionQuit,
 }
 
-func (ui *gameui) SelectAction(actions []action, ev event) (action, error) {
+func (ui *gameui) SelectAction(actions []action) (action, error) {
 	ui.DrawDungeonView(NoFlushMode)
 	for {
 		ui.ClearLine(0)

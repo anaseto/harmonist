@@ -103,18 +103,18 @@ loop:
 	return magara{Kind: mag, Charges: mag.DefaultCharges()}
 }
 
-func (g *game) EquipMagara(i int, ev event) (err error) {
+func (g *game) EquipMagara(i int) (err error) {
 	omagara := g.Player.Magaras[i]
 	g.Player.Magaras[i] = g.Objects.Magaras[g.Player.Pos]
 	g.Objects.Magaras[g.Player.Pos] = omagara
 	g.Printf("You take the %s.", g.Player.Magaras[i])
 	g.Printf("You leave the %s.", omagara)
 	g.StoryPrintf("Took %s (%d), left %s (%d)", g.Player.Magaras[i], g.Player.Magaras[i].Charges, omagara, omagara.Charges)
-	ev.Renew(g, DurationTurn)
+	g.RenewEvent(DurationTurn)
 	return nil
 }
 
-func (g *game) UseMagara(n int, ev event) (err error) {
+func (g *game) UseMagara(n int) (err error) {
 	if g.Player.HasStatus(StatusNausea) {
 		return errors.New("You cannot use magaras while sick.")
 	}
@@ -133,41 +133,41 @@ func (g *game) UseMagara(n int, ev event) (err error) {
 	}
 	switch mag.Kind {
 	case BlinkMagara:
-		err = g.EvokeBlink(ev)
+		err = g.EvokeBlink()
 	case DigMagara:
-		err = g.EvokeDig(ev)
+		err = g.EvokeDig()
 	case TeleportMagara:
-		err = g.EvokeTeleport(ev)
+		err = g.EvokeTeleport()
 	case SwiftnessMagara:
-		err = g.EvokeSwiftness(ev)
+		err = g.EvokeSwiftness()
 	case LevitationMagara:
-		err = g.EvokeLevitation(ev)
+		err = g.EvokeLevitation()
 	case FireMagara:
-		err = g.EvokeFire(ev)
+		err = g.EvokeFire()
 	case FogMagara:
-		err = g.EvokeFog(ev)
+		err = g.EvokeFog()
 	case ShadowsMagara:
-		err = g.EvokeShadows(ev)
+		err = g.EvokeShadows()
 	case NoiseMagara:
-		err = g.EvokeNoise(ev)
+		err = g.EvokeNoise()
 	case ConfusionMagara:
-		err = g.EvokeConfusion(ev)
+		err = g.EvokeConfusion()
 	case ParalysisMagara:
-		err = g.EvokeParalysis(ev)
+		err = g.EvokeParalysis()
 	case SleepingMagara:
-		err = g.EvokeSleeping(ev)
+		err = g.EvokeSleeping()
 	case TeleportOtherMagara:
-		err = g.EvokeTeleportOther(ev)
+		err = g.EvokeTeleportOther()
 	case SwappingMagara:
-		err = g.EvokeSwapping(ev)
+		err = g.EvokeSwapping()
 	case ObstructionMagara:
-		err = g.EvokeObstruction(ev)
+		err = g.EvokeObstruction()
 	case LignificationMagara:
-		err = g.EvokeLignification(ev)
+		err = g.EvokeLignification()
 	case EnergyMagara:
-		err = g.EvokeEnergyMagara(ev)
+		err = g.EvokeEnergyMagara()
 	case TransparencyMagara:
-		err = g.EvokeTransparencyMagara(ev)
+		err = g.EvokeTransparencyMagara()
 	}
 	if err != nil {
 		return err
@@ -219,7 +219,7 @@ func (g *game) UseMagara(n int, ev event) (err error) {
 			AchTeleport.Get(g)
 		}
 	}
-	ev.Renew(g, DurationTurn)
+	g.RenewEvent(DurationTurn)
 	return nil
 }
 
@@ -348,15 +348,15 @@ func (mag magara) MPCost(g *game) int {
 	return cost
 }
 
-func (g *game) EvokeBlink(ev event) error {
+func (g *game) EvokeBlink() error {
 	if g.Player.HasStatus(StatusLignification) {
 		return errors.New("You cannot blink while lignified.")
 	}
-	g.Blink(ev)
+	g.Blink()
 	return nil
 }
 
-func (g *game) Blink(ev event) bool {
+func (g *game) Blink() bool {
 	if g.Player.HasStatus(StatusLignification) {
 		return false
 	}
@@ -407,7 +407,7 @@ func (g *game) BlinkPos(mpassable bool) position {
 	return npos
 }
 
-func (g *game) EvokeTeleport(ev event) error {
+func (g *game) EvokeTeleport() error {
 	if g.Player.HasStatus(StatusLignification) {
 		return errors.New("You cannot teleport while lignified.")
 	}
@@ -415,7 +415,7 @@ func (g *game) EvokeTeleport(ev event) error {
 	return nil
 }
 
-func (g *game) EvokeDig(ev event) error {
+func (g *game) EvokeDig() error {
 	if !g.PutStatus(StatusDig, DurationDigging) {
 		return errors.New("You are already digging.")
 	}
@@ -454,7 +454,7 @@ func (g *game) MonstersInCardinalLOS() []*monster {
 	return ms
 }
 
-func (g *game) EvokeTeleportOther(ev event) error {
+func (g *game) EvokeTeleportOther() error {
 	ms := g.MonstersInCardinalLOS()
 	if len(ms) == 0 {
 		return errors.New("There are no targetable monsters.")
@@ -478,21 +478,21 @@ func (g *game) EvokeTeleportOther(ev event) error {
 	return nil
 }
 
-func (g *game) EvokeHealWounds(ev event) error {
+func (g *game) EvokeHealWounds() error {
 	g.Player.HP = g.Player.HPMax()
 	g.Print("Your feel healthy again.")
 	g.ui.PlayerGoodEffectAnimation()
 	return nil
 }
 
-func (g *game) EvokeRefillMagic(ev event) error {
+func (g *game) EvokeRefillMagic() error {
 	g.Player.MP = g.Player.MPMax()
 	g.Print("Your magic forces return.")
 	g.ui.PlayerGoodEffectAnimation()
 	return nil
 }
 
-func (g *game) EvokeSwiftness(ev event) error {
+func (g *game) EvokeSwiftness() error {
 	if g.Player.HasStatus(StatusSwift) {
 		return errors.New("You are already swift.")
 	}
@@ -502,7 +502,7 @@ func (g *game) EvokeSwiftness(ev event) error {
 	return nil
 }
 
-func (g *game) EvokeLevitation(ev event) error {
+func (g *game) EvokeLevitation() error {
 	if !g.PutStatus(StatusLevitation, DurationLevitation) {
 		return errors.New("You are already levitating.")
 	}
@@ -511,7 +511,7 @@ func (g *game) EvokeLevitation(ev event) error {
 	return nil
 }
 
-func (g *game) EvokeSwapping(ev event) error {
+func (g *game) EvokeSwapping() error {
 	if g.Player.HasStatus(StatusLignification) {
 		return errors.New("You cannot use this magara while lignified.")
 	}
@@ -558,13 +558,13 @@ const (
 	CloudNight
 )
 
-func (g *game) EvokeFog(ev event) error {
-	g.Fog(g.Player.Pos, 3, ev)
+func (g *game) EvokeFog() error {
+	g.Fog(g.Player.Pos, 3)
 	g.Print("You are surrounded by a dense fog.")
 	return nil
 }
 
-func (g *game) Fog(at position, radius int, ev event) {
+func (g *game) Fog(at position, radius int) {
 	dij := &noisePath{game: g}
 	nm := Dijkstra(dij, []position{at}, radius)
 	nm.iter(at, func(n *node) {
@@ -572,13 +572,13 @@ func (g *game) Fog(at position, radius int, ev event) {
 		_, ok := g.Clouds[pos]
 		if !ok && g.Dungeon.Cell(pos).AllowsFog() {
 			g.Clouds[pos] = CloudFog
-			g.PushEvent(&posEvent{ERank: ev.Rank() + DurationFog + RandInt(DurationFog/2), EAction: CloudEnd, Pos: pos})
+			g.PushEvent(&posEvent{ERank: g.Ev.Rank() + DurationFog + RandInt(DurationFog/2), EAction: CloudEnd, Pos: pos})
 		}
 	})
 	g.ComputeLOS()
 }
 
-func (g *game) EvokeShadows(ev event) error {
+func (g *game) EvokeShadows() error {
 	if g.Player.HasStatus(StatusIlluminated) {
 		return errors.New("You cannot surround yourself by shadows while illuminated.")
 	}
@@ -589,7 +589,7 @@ func (g *game) EvokeShadows(ev event) error {
 	return nil
 }
 
-func (g *game) EvokeParalysis(ev event) error {
+func (g *game) EvokeParalysis() error {
 	ms := g.MonstersInLOS()
 	count := 0
 	for _, mons := range ms {
@@ -608,7 +608,7 @@ func (g *game) EvokeParalysis(ev event) error {
 	return nil
 }
 
-func (g *game) EvokeSleeping(ev event) error {
+func (g *game) EvokeSleeping() error {
 	ms := g.MonstersInCardinalLOS()
 	if len(ms) == 0 {
 		return errors.New("There are no targetable monsters.")
@@ -644,7 +644,7 @@ func (g *game) EvokeSleeping(ev event) error {
 	return nil
 }
 
-func (g *game) EvokeLignification(ev event) error {
+func (g *game) EvokeLignification() error {
 	ms := g.MonstersInLOS()
 	if len(ms) == 0 {
 		return errors.New("There are no monsters in view.")
@@ -659,7 +659,7 @@ func (g *game) EvokeLignification(ev event) error {
 		if mons.Status(MonsLignified) || mons.Kind.ResistsLignification() {
 			continue
 		}
-		mons.EnterLignification(g, ev)
+		mons.EnterLignification(g)
 		if mons.Search == InvalidPos {
 			mons.Search = mons.Pos
 		}
@@ -677,7 +677,7 @@ func (g *game) EvokeLignification(ev event) error {
 	return nil
 }
 
-func (g *game) EvokeNoise(ev event) error {
+func (g *game) EvokeNoise() error {
 	dij := &noisePath{game: g}
 	nm := Dijkstra(dij, []position{g.Player.Pos}, 23)
 	noises := []position{}
@@ -727,11 +727,11 @@ func (g *game) EvokeNoise(ev event) error {
 	return nil
 }
 
-func (g *game) EvokeConfusion(ev event) error {
+func (g *game) EvokeConfusion() error {
 	ms := g.MonstersInLOS()
 	count := 0
 	for _, mons := range ms {
-		if mons.EnterConfusion(g, ev) {
+		if mons.EnterConfusion(g) {
 			count++
 			if mons.Search == InvalidPos {
 				mons.Search = mons.Pos
@@ -746,19 +746,19 @@ func (g *game) EvokeConfusion(ev event) error {
 	return nil
 }
 
-func (g *game) EvokeFire(ev event) error {
+func (g *game) EvokeFire() error {
 	burnpos := g.Dungeon.CardinalFlammableNeighbors(g.Player.Pos)
 	if len(burnpos) == 0 {
 		return errors.New("You are not surrounded by any flammable terrain.")
 	}
 	g.Print("Sparks emanate from the magara.")
 	for _, pos := range burnpos {
-		g.Burn(pos, ev)
+		g.Burn(pos)
 	}
 	return nil
 }
 
-func (g *game) EvokeObstruction(ev event) error {
+func (g *game) EvokeObstruction() error {
 	targets := []position{}
 	for _, mons := range g.Monsters {
 		if !mons.Exists() || !g.Player.Sees(mons.Pos) {
@@ -773,7 +773,7 @@ func (g *game) EvokeObstruction(ev event) error {
 			if mons.Exists() {
 				continue
 			}
-			g.MagicalBarrierAt(pos, ev)
+			g.MagicalBarrierAt(pos)
 			if len(ray) == 0 {
 				break
 			}
@@ -790,24 +790,24 @@ func (g *game) EvokeObstruction(ev event) error {
 	return nil
 }
 
-func (g *game) MagicalBarrierAt(pos position, ev event) {
+func (g *game) MagicalBarrierAt(pos position) {
 	if g.Dungeon.Cell(pos).T == WallCell || g.Dungeon.Cell(pos).T == BarrierCell {
 		return
 	}
 	g.UpdateKnowledge(pos, g.Dungeon.Cell(pos).T)
-	g.CreateMagicalBarrierAt(pos, ev)
+	g.CreateMagicalBarrierAt(pos)
 	g.ComputeLOS()
 }
 
-func (g *game) CreateMagicalBarrierAt(pos position, ev event) {
+func (g *game) CreateMagicalBarrierAt(pos position) {
 	t := g.Dungeon.Cell(pos).T
 	g.Dungeon.SetCell(pos, BarrierCell)
 	delete(g.Clouds, pos)
 	g.MagicalBarriers[pos] = t
-	g.PushEvent(&posEvent{ERank: ev.Rank() + DurationMagicalBarrier + RandInt(DurationMagicalBarrier/2), Pos: pos, EAction: ObstructionEnd})
+	g.PushEvent(&posEvent{ERank: g.Ev.Rank() + DurationMagicalBarrier + RandInt(DurationMagicalBarrier/2), Pos: pos, EAction: ObstructionEnd})
 }
 
-func (g *game) EvokeEnergyMagara(ev event) error {
+func (g *game) EvokeEnergyMagara() error {
 	if g.Player.MP == g.Player.MPMax() && g.Player.HP == g.Player.HPMax() {
 		return errors.New("You are already full of energy.")
 	}
@@ -818,7 +818,7 @@ func (g *game) EvokeEnergyMagara(ev event) error {
 	return nil
 }
 
-func (g *game) EvokeTransparencyMagara(ev event) error {
+func (g *game) EvokeTransparencyMagara() error {
 	if !g.PutStatus(StatusTransparent, DurationTransparency) {
 		return errors.New("You are already transparent.")
 	}

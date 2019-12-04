@@ -55,11 +55,11 @@ func (p *player) HasStatus(st status) bool {
 	return p.Statuses[st] > 0
 }
 
-func (g *game) AutoToDir(ev event) bool {
+func (g *game) AutoToDir() bool {
 	if g.MonsterInLOS() == nil {
 		pos := g.Player.Pos.To(g.AutoDir)
 		if g.PlayerCanPass(pos) {
-			err := g.PlayerBump(g.Player.Pos.To(g.AutoDir), ev)
+			err := g.PlayerBump(g.Player.Pos.To(g.AutoDir))
 			if err != nil {
 				g.Print(err.Error())
 				g.AutoDir = NoDir
@@ -75,7 +75,7 @@ func (g *game) AutoToDir(ev event) bool {
 	return false
 }
 
-func (g *game) GoToDir(dir direction, ev event) error {
+func (g *game) GoToDir(dir direction) error {
 	if g.MonsterInLOS() != nil {
 		g.AutoDir = NoDir
 		return errors.New("You cannot travel while there are monsters in view.")
@@ -84,7 +84,7 @@ func (g *game) GoToDir(dir direction, ev event) error {
 	if !g.PlayerCanPass(pos) {
 		return errors.New("You cannot move in that direction.")
 	}
-	err := g.PlayerBump(pos, ev)
+	err := g.PlayerBump(pos)
 	if err != nil {
 		return err
 	}
@@ -92,7 +92,7 @@ func (g *game) GoToDir(dir direction, ev event) error {
 	return nil
 }
 
-func (g *game) MoveToTarget(ev event) bool {
+func (g *game) MoveToTarget() bool {
 	if !g.AutoTarget.valid() {
 		return false
 	}
@@ -106,12 +106,12 @@ func (g *game) MoveToTarget(ev event) bool {
 	}
 	var err error
 	if len(path) > 1 {
-		err = g.PlayerBump(path[len(path)-2], ev)
+		err = g.PlayerBump(path[len(path)-2])
 		if g.ExclusionsMap[path[len(path)-2]] {
 			g.AutoTarget = InvalidPos
 		}
 	} else {
-		g.WaitTurn(ev)
+		g.WaitTurn()
 	}
 	if err != nil {
 		g.Print(err.Error())
@@ -124,9 +124,9 @@ func (g *game) MoveToTarget(ev event) bool {
 	return true
 }
 
-func (g *game) WaitTurn(ev event) {
+func (g *game) WaitTurn() {
 	g.Stats.Waits++
-	ev.Renew(g, DurationTurn)
+	g.RenewEvent(DurationTurn)
 }
 
 func (g *game) MonsterCount() (count int) {
@@ -138,7 +138,7 @@ func (g *game) MonsterCount() (count int) {
 	return count
 }
 
-func (g *game) Rest(ev event) error {
+func (g *game) Rest() error {
 	if g.Dungeon.Cell(g.Player.Pos).T != BarrelCell {
 		return fmt.Errorf("This place is not safe for sleeping.")
 	}
@@ -152,7 +152,7 @@ func (g *game) Rest(ev event) error {
 		return errors.New("You cannot sleep without eating for dinner a banana first.")
 	}
 	g.ui.DrawMessage("Resting...")
-	ev.Renew(g, DurationTurn)
+	g.RenewEvent(DurationTurn)
 	g.Resting = true
 	g.RestingTurns = RandInt(5) // you do not wake up when you want
 	g.Player.Bananas--
@@ -296,7 +296,7 @@ func (g *game) AbyssJump() error {
 	}
 	return errors.New(DoNothing)
 }
-func (g *game) PlayerBump(pos position, ev event) error {
+func (g *game) PlayerBump(pos position) error {
 	if !pos.valid() {
 		return errors.New("You cannot move there.")
 	}
@@ -335,7 +335,7 @@ func (g *game) PlayerBump(pos position, ev event) error {
 			g.Dungeon.SetCell(pos, RubbleCell)
 			g.MakeNoise(WallNoise, pos)
 			g.Print(g.CrackSound())
-			g.Fog(pos, 1, ev)
+			g.Fog(pos, 1)
 			g.Stats.Digs++
 			g.Stats.DestructionUse++
 			if g.Stats.DestructionUse == 20 {
@@ -352,28 +352,28 @@ func (g *game) PlayerBump(pos position, ev event) error {
 			_, ok := g.Clouds[g.Player.Pos]
 			if !ok && g.Dungeon.Cell(g.Player.Pos).AllowsFog() {
 				g.Clouds[g.Player.Pos] = CloudFog
-				g.PushEvent(&posEvent{ERank: ev.Rank() + DurationSmokingCloakFog, EAction: CloudEnd, Pos: g.Player.Pos})
+				g.PushEvent(&posEvent{ERank: g.Ev.Rank() + DurationSmokingCloakFog, EAction: CloudEnd, Pos: g.Player.Pos})
 			}
 		}
 		//}
 		g.Stats.Moves++
 		g.PlacePlayerAt(pos)
-	} else if err := g.Jump(mons, ev); err != nil {
+	} else if err := g.Jump(mons); err != nil {
 		return err
 	}
 	if g.Player.HasStatus(StatusSwift) {
-		ev.Renew(g, 0)
+		g.RenewEvent(0)
 		g.Player.Statuses[StatusSwift]--
 		if !g.Player.HasStatus(StatusSwift) {
 			g.Print("You no longer feel swift.")
 		}
 		return nil
 	}
-	ev.Renew(g, DurationTurn)
+	g.RenewEvent(DurationTurn)
 	return nil
 }
 
-func (g *game) SwiftFog(ev event) {
+func (g *game) SwiftFog() {
 	dij := &noisePath{game: g}
 	nm := Dijkstra(dij, []position{g.Player.Pos}, 2)
 	nm.iter(g.Player.Pos, func(n *node) {
@@ -381,7 +381,7 @@ func (g *game) SwiftFog(ev event) {
 		_, ok := g.Clouds[pos]
 		if !ok && g.Dungeon.Cell(pos).AllowsFog() {
 			g.Clouds[pos] = CloudFog
-			g.PushEvent(&posEvent{ERank: ev.Rank() + DurationFog + RandInt(DurationFog/2), EAction: CloudEnd, Pos: pos})
+			g.PushEvent(&posEvent{ERank: g.Ev.Rank() + DurationFog + RandInt(DurationFog/2), EAction: CloudEnd, Pos: pos})
 		}
 	})
 	g.PutStatus(StatusSwift, DurationShortSwiftness)
@@ -389,7 +389,7 @@ func (g *game) SwiftFog(ev event) {
 	g.Print("You feel an energy burst and smoke comes out from you.")
 }
 
-func (g *game) Confusion(ev event) {
+func (g *game) Confusion() {
 	if g.PutStatus(StatusConfusion, DurationConfusionPlayer) {
 		g.Print("You feel confused.")
 	}
@@ -422,7 +422,7 @@ func (g *game) PlacePlayerAt(pos position) {
 
 const LignificationHPbonus = 4
 
-func (g *game) EnterLignification(ev event) {
+func (g *game) EnterLignification() {
 	if g.PutStatus(StatusLignification, DurationLignificationPlayer) {
 		g.Print("You feel rooted to the ground.")
 		g.Player.HPbonus += LignificationHPbonus

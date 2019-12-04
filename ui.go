@@ -856,7 +856,6 @@ type runeKeyAction struct {
 }
 
 func (ui *gameui) HandleKeyAction(rka runeKeyAction) (again bool, quit bool, err error) {
-	g := ui.g
 	if rka.r != 0 {
 		var ok bool
 		rka.k, ok = GameConfig.RuneNormalModeKeys[rka.r]
@@ -873,7 +872,7 @@ func (ui *gameui) HandleKeyAction(rka runeKeyAction) (again bool, quit bool, err
 		}
 	}
 	if rka.k == ActionMenu {
-		rka.k, err = ui.SelectAction(menuActions, g.Ev)
+		rka.k, err = ui.SelectAction(menuActions)
 		if err != nil {
 			err = ui.CleanError(err)
 			return again, quit, err
@@ -895,11 +894,11 @@ func (ui *gameui) HandleKey(rka runeKeyAction) (again bool, quit bool, err error
 	g := ui.g
 	switch rka.k {
 	case ActionW, ActionS, ActionN, ActionE:
-		err = g.PlayerBump(g.Player.Pos.To(KeyToDir(rka.k)), g.Ev)
+		err = g.PlayerBump(g.Player.Pos.To(KeyToDir(rka.k)))
 	case ActionRunW, ActionRunS, ActionRunN, ActionRunE:
-		err = g.GoToDir(KeyToDir(rka.k), g.Ev)
+		err = g.GoToDir(KeyToDir(rka.k))
 	case ActionWaitTurn:
-		g.WaitTurn(g.Ev)
+		g.WaitTurn()
 	case ActionGoToStairs:
 		stairs := g.StairsSlice()
 		sortedStairs := g.SortedNearestTo(stairs, g.Player.Pos)
@@ -911,7 +910,7 @@ func (ui *gameui) HandleKey(rka runeKeyAction) (again bool, quit bool, err error
 			}
 			ex := &examiner{stairs: true}
 			err = ex.Action(g, stair)
-			if err == nil && !g.MoveToTarget(g.Ev) {
+			if err == nil && !g.MoveToTarget() {
 				err = errors.New("You could not move toward stairs.")
 			}
 			if ex.Done() {
@@ -944,12 +943,12 @@ func (ui *gameui) HandleKey(rka runeKeyAction) (again bool, quit bool, err error
 			}
 		case BarrelCell:
 			ui.MenuSelectedAnimation(MenuInteract, true)
-			err = g.Rest(g.Ev)
+			err = g.Rest()
 			if err != nil {
 				ui.MenuSelectedAnimation(MenuInteract, false)
 			}
 		case MagaraCell:
-			err = ui.EquipMagara(g.Ev)
+			err = ui.EquipMagara()
 			err = ui.CleanError(err)
 		case StoneCell:
 			ui.MenuSelectedAnimation(MenuInteract, true)
@@ -978,13 +977,13 @@ func (ui *gameui) HandleKey(rka runeKeyAction) (again bool, quit bool, err error
 			err = errors.New("You cannot interact with anything here.")
 		}
 	case ActionEvoke:
-		err = ui.SelectMagara(g.Ev)
+		err = ui.SelectMagara()
 		err = ui.CleanError(err)
 	case ActionInventory:
-		err = ui.SelectItem(g.Ev)
+		err = ui.SelectItem()
 		err = ui.CleanError(err)
 	case ActionExplore:
-		err = g.Autoexplore(g.Ev)
+		err = g.Autoexplore()
 	case ActionExamine:
 		again, quit, err = ui.Examine(nil)
 	case ActionHelp, ActionMenuCommandHelp:
@@ -1192,7 +1191,7 @@ func (ui *gameui) CursorMouseLeft(targ Targeter, pos position, data *examineData
 		if err != nil {
 			g.Print(err.Error())
 		} else {
-			if g.MoveToTarget(g.Ev) {
+			if g.MoveToTarget() {
 				again = false
 			}
 			if targ.Done() {
@@ -1218,7 +1217,7 @@ func (ui *gameui) CursorKeyAction(targ Targeter, rka runeKeyAction, data *examin
 		}
 	}
 	if rka.k == ActionMenu {
-		rka.k, err = ui.SelectAction(menuActions, g.Ev)
+		rka.k, err = ui.SelectAction(menuActions)
 		if err != nil {
 			err = ui.CleanError(err)
 			return again, quit, notarg, err
@@ -1276,7 +1275,7 @@ func (ui *gameui) CursorKeyAction(targ Targeter, rka runeKeyAction, data *examin
 			break
 		}
 		g.Targeting = InvalidPos
-		if g.MoveToTarget(g.Ev) {
+		if g.MoveToTarget() {
 			again = false
 		}
 		if targ.Done() {
@@ -1658,17 +1657,17 @@ func (ui *gameui) Wizard() bool {
 	return ui.PromptConfirmation()
 }
 
-func (ui *gameui) HandlePlayerTurn(ev event) bool {
+func (ui *gameui) HandlePlayerTurn() bool {
 	g := ui.g
 getKey:
 	for {
 		var err error
 		var again, quit bool
 		if g.Targeting.valid() {
-			again, quit, err = ui.ExaminePos(ev, g.Targeting)
+			again, quit, err = ui.ExaminePos(g.Ev, g.Targeting)
 		} else {
 			ui.DrawDungeonView(NormalMode)
-			again, quit, err = ui.PlayerTurnEvent(ev)
+			again, quit, err = ui.PlayerTurnEvent(g.Ev)
 		}
 		if err != nil && err.Error() != "" {
 			g.Print(err.Error())
