@@ -933,9 +933,6 @@ func (g *game) GenRoomTunnels(ml maplayout) {
 		} else {
 			t = WaterCell
 		}
-		if g.Depth == WinDepth || g.Depth == MaxDepth {
-			t = WaterCell
-		}
 		dg.GenLake(t)
 		if RandInt(5) == 0 {
 			dg.GenLake(t)
