@@ -690,7 +690,7 @@ func (g *game) EvokeNoise(ev event) error {
 		if !ok || n.Cost > DefaultLOSRange {
 			continue
 		}
-		if mons.SeesPlayer(g) || mons.Kind == MonsSatowalgaPlant {
+		if mons.SeesPlayer(g) {
 			continue
 		}
 		mp := &monPath{game: g, monster: mons}
@@ -713,7 +713,9 @@ func (g *game) EvokeNoise(ev event) error {
 				break
 			}
 		}
-		if mons.State != Hunting {
+		if mons.Kind == MonsSatowalgaPlant {
+			mons.State = Hunting
+		} else if mons.State != Hunting {
 			mons.State = Wandering
 		}
 		mons.Target = target
