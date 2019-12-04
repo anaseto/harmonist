@@ -849,11 +849,11 @@ func (m *monster) HandleMonsSpecifics(g *game) (done bool) {
 	case MonsSatowalgaPlant:
 		switch m.State {
 		case Hunting:
+			if m.Target != InvalidPos && m.Target != m.Pos {
+				m.Dir = m.Target.Dir(m.Pos)
+			}
 			if !m.SeesPlayer(g) {
-				m.Alternate()
-				if RandInt(5) == 0 {
-					m.StartWatching()
-				}
+				m.StartWatching()
 			}
 		default:
 			if RandInt(4) > 0 {
