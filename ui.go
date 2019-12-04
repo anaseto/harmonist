@@ -1506,6 +1506,9 @@ func (ui *gameui) UpdateInteractButton() string {
 	switch g.Dungeon.Cell(g.Player.Pos).T {
 	case StairCell:
 		interactMenu = "[descend]"
+		if g.Objects.Stairs[g.Player.Pos] == WinStair {
+			interactMenu = "[escape]"
+		}
 		show = true
 	case BarrelCell:
 		interactMenu = "[rest]"
