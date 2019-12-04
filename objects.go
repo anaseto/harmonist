@@ -293,7 +293,7 @@ func (g *game) ActivateNightStone() error {
 func (g *game) ActivateTreeStone() error {
 	targets := []*monster{}
 	for _, mons := range g.Monsters {
-		if !mons.Exists() || !g.Player.Sees(mons.Pos) {
+		if !mons.Exists() || !g.Player.Sees(mons.Pos) || mons.Kind.ResistsLignification() {
 			continue
 		}
 		targets = append(targets, mons)
@@ -313,13 +313,7 @@ func (g *game) ActivateTreeStone() error {
 }
 
 func (g *game) ActivateTeleportStone() error {
-	targets := []*monster{}
-	for _, mons := range g.Monsters {
-		if !mons.Exists() || !g.Player.Sees(mons.Pos) {
-			continue
-		}
-		targets = append(targets, mons)
-	}
+	targets := g.MonstersInLOS()
 	if len(targets) == 0 {
 		return errors.New("There are no suitable monsters in sight.")
 	}
@@ -329,6 +323,11 @@ func (g *game) ActivateTeleportStone() error {
 			mons.Search = mons.Pos
 		}
 		mons.TeleportAway(g)
+		if mons.Kind.ReflectsTeleport() {
+			g.Printf("The %s reflected back some energies.", mons.Kind)
+			g.Teleportation(g.Ev)
+			break
+		}
 	}
 	return nil
 }

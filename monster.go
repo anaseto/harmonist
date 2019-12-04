@@ -194,6 +194,33 @@ func (mk monsterKind) CanAttackOnTree() bool {
 	}
 }
 
+func (mk monsterKind) ShallowSleep() bool {
+	switch mk {
+	case MonsCrazyImp, MonsHazeCat:
+		return true
+	default:
+		return false
+	}
+}
+
+func (mk monsterKind) ResistsLignification() bool {
+	switch mk {
+	case MonsSatowalgaPlant, MonsTreeMushroom:
+		return true
+	default:
+		return false
+	}
+}
+
+func (mk monsterKind) ReflectsTeleport() bool {
+	switch mk {
+	case MonsBlinkingFrog:
+		return true
+	default:
+		return false
+	}
+}
+
 func (mk monsterKind) Desc() string {
 	return MonsDesc[mk]
 }
@@ -1097,7 +1124,7 @@ func (m *monster) HandleTurn(g *game, ev event) {
 	}
 	m.MakeAware(g)
 	if m.State == Resting {
-		if RandInt(3000) == 0 || (m.Kind == MonsCrazyImp || m.Kind == MonsHazeCat) && RandInt(20) == 0 {
+		if RandInt(3000) == 0 || m.Kind.ShallowSleep() && RandInt(10) == 0 {
 			m.NaturalAwake(g)
 		}
 		ev.Renew(g, DurationTurn)
@@ -1205,7 +1232,12 @@ func (m *monster) HitPlayer(g *game, ev event) {
 		g.SwiftFog(ev)
 	case AmuletObstruction:
 		opos := m.Pos
-		m.Blink(g)
+		pos := m.LeaveRoomForPlayer(g)
+		if pos == InvalidPos {
+			m.Blink(g)
+		} else {
+			m.MoveTo(g, pos)
+		}
 		if opos != m.Pos {
 			g.MagicalBarrierAt(opos, ev)
 			g.Print("The amulet releases an oric wind.")
@@ -1214,9 +1246,15 @@ func (m *monster) HitPlayer(g *game, ev event) {
 	case AmuletTeleport:
 		g.Print("Your amulet shines.")
 		m.TeleportAway(g)
+		if m.Kind.ReflectsTeleport() {
+			g.Printf("The %s reflected back some energies.", m.Kind)
+			g.Teleportation(ev)
+		}
 	case AmuletLignification:
 		g.Print("Your amulet glows.")
-		m.EnterLignification(g, ev)
+		if !m.Kind.ResistsLignification() {
+			m.EnterLignification(g, ev)
+		}
 	}
 }
 

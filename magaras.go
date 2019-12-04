@@ -412,7 +412,6 @@ func (g *game) EvokeTeleport(ev event) error {
 		return errors.New("You cannot teleport while lignified.")
 	}
 	g.Teleportation(ev)
-	g.Print("You teleported away.")
 	return nil
 }
 
@@ -469,6 +468,11 @@ func (g *game) EvokeTeleportOther(ev event) error {
 			ms[i].Search = ms[i].Pos
 		}
 		ms[i].TeleportAway(g)
+		if ms[i].Kind.ReflectsTeleport() {
+			g.Printf("The %s reflected back some energies.", ms[i].Kind)
+			g.Teleportation(ev)
+			break
+		}
 	}
 
 	return nil
@@ -652,7 +656,7 @@ func (g *game) EvokeLignification(ev event) error {
 	targets := []position{}
 	for i := 0; i < max; i++ {
 		mons := ms[i]
-		if mons.Status(MonsLignified) {
+		if mons.Status(MonsLignified) || mons.Kind.ResistsLignification() {
 			continue
 		}
 		mons.EnterLignification(g, ev)

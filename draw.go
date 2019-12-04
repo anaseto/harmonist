@@ -1567,6 +1567,15 @@ func (ui *gameui) DrawMonsterDescription(mons *monster) {
 	if mons.Kind.CanSwim() {
 		info += " " + fmt.Sprint("They can swim.")
 	}
+	if mons.Kind.ShallowSleep() {
+		info += " " + fmt.Sprint("They have very shallow sleep.")
+	}
+	if mons.Kind.ResistsLignification() {
+		info += " " + fmt.Sprint("They are unaffected by lignification.")
+	}
+	if mons.Kind.ReflectsTeleport() {
+		info += " " + fmt.Sprint("They partially reflect back oric teleport magic.")
+	}
 	if info != "" {
 		s += "\n\n" + info
 	}
