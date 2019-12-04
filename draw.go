@@ -848,7 +848,7 @@ func (ui *gameui) DrawDungeonView(m uiMode) {
 		ui.DrawLog(4)
 		ui.DrawKeysBasics(m)
 	}
-	if m != TargetingMode && m != NoFlushMode {
+	if m == NormalMode {
 		ui.Flush()
 	}
 }
@@ -870,7 +870,7 @@ func (ui *gameui) DrawKeysBasics(m uiMode) {
 		ui.DrawText("view info", ui.MapWidth()+margin, line+3)
 		ui.DrawText("close mode", ui.MapWidth()+margin, line+4)
 		ui.DrawText("examine help", ui.MapWidth()+margin, line+5)
-	} else if m == NormalMode {
+	} else if m == NormalMode || m == AnimationMode {
 		ui.SetCell(ui.MapWidth()+3, line, '↑', ColorFgPlayer, ColorBg)
 		ui.DrawColoredText("←.→", ui.MapWidth()+2, line+1, ColorFgPlayer)
 		ui.DrawColoredText(" ↓ ", ui.MapWidth()+2, line+2, ColorFgPlayer)

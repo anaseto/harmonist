@@ -383,6 +383,7 @@ func (ui *gameui) StatusEndAnimation() {
 	if DisableAnimations {
 		return
 	}
+	ui.DrawDungeonView(AnimationMode)
 	r, _, bg := ui.PositionDrawing(g.Player.Pos)
 	ui.DrawAtPosition(g.Player.Pos, false, r, ColorViolet, bg)
 	ui.Flush()

@@ -513,6 +513,7 @@ const (
 	NormalMode uiMode = iota
 	TargetingMode
 	NoFlushMode
+	AnimationMode
 )
 
 const DoNothing = "Do nothing, then."
