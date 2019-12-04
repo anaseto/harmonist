@@ -240,7 +240,7 @@ func (mev *monsterEvent) Action(g *game) {
 	case MonsterTurn:
 		mons := g.Monsters[mev.NMons]
 		if mons.Exists() {
-			mons.HandleTurn(g, mev)
+			mons.HandleTurn(g)
 		}
 	default:
 		mons := g.Monsters[mev.NMons]

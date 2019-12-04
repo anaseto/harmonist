@@ -1105,7 +1105,7 @@ func (m *monster) HandleMove(g *game) {
 	g.Ev.Renew(g, DurationTurn)
 }
 
-func (m *monster) HandleTurn(g *game, ev event) {
+func (m *monster) HandleTurn(g *game) {
 	if m.Status(MonsParalysed) {
 		g.RenewEvent(DurationTurn)
 		return

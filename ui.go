@@ -151,7 +151,7 @@ func (ui *gameui) StartMenu(l int) startAction {
 	}
 }
 
-func (ui *gameui) PlayerTurnEvent(ev event) (again, quit bool, err error) {
+func (ui *gameui) PlayerTurnEvent() (again, quit bool, err error) {
 	g := ui.g
 	again = true
 	in := ui.PollEvent()
@@ -201,7 +201,7 @@ func (ui *gameui) PlayerTurnEvent(ev event) (again, quit bool, err error) {
 				} else if in.mouseX >= ui.MapWidth() || in.mouseY >= ui.MapHeight() {
 					again = true
 				} else {
-					again, quit, err = ui.ExaminePos(ev, mpos)
+					again, quit, err = ui.ExaminePos(mpos)
 				}
 			case 2:
 				again, quit, err = ui.HandleKeyAction(runeKeyAction{k: ActionMenu})
@@ -1060,7 +1060,7 @@ func (ui *gameui) HandleKey(rka runeKeyAction) (again bool, quit bool, err error
 	return again, quit, err
 }
 
-func (ui *gameui) ExaminePos(ev event, pos position) (again, quit bool, err error) {
+func (ui *gameui) ExaminePos(pos position) (again, quit bool, err error) {
 	var start *position
 	if pos.valid() {
 		start = &pos
@@ -1664,10 +1664,10 @@ getKey:
 		var err error
 		var again, quit bool
 		if g.Targeting.valid() {
-			again, quit, err = ui.ExaminePos(g.Ev, g.Targeting)
+			again, quit, err = ui.ExaminePos(g.Targeting)
 		} else {
 			ui.DrawDungeonView(NormalMode)
-			again, quit, err = ui.PlayerTurnEvent(g.Ev)
+			again, quit, err = ui.PlayerTurnEvent()
 		}
 		if err != nil && err.Error() != "" {
 			g.Print(err.Error())
