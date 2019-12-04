@@ -350,6 +350,7 @@ func (ui *gameui) WoundedAnimation() {
 	if DisableAnimations {
 		return
 	}
+	ui.DrawDungeonView(AnimationMode)
 	r, _, bg := ui.PositionDrawing(g.Player.Pos)
 	ui.DrawAtPosition(g.Player.Pos, false, r, ColorFgHPwounded, bg)
 	ui.Flush()
@@ -366,7 +367,8 @@ func (ui *gameui) PlayerGoodEffectAnimation() {
 	if DisableAnimations {
 		return
 	}
-	Sleep(AnimDurShortMedium)
+	ui.DrawDungeonView(AnimationMode)
+	Sleep(AnimDurShort)
 	r, fg, bg := ui.PositionDrawing(g.Player.Pos)
 	ui.DrawAtPosition(g.Player.Pos, false, r, ColorGreen, bg)
 	ui.Flush()
@@ -424,6 +426,7 @@ func (ui *gameui) PushAnimation(path []position) {
 		// should not happen
 		return
 	}
+	ui.DrawDungeonView(AnimationMode)
 	_, _, bg := ui.PositionDrawing(path[0])
 	for _, pos := range path[:len(path)-1] {
 		ui.DrawAtPosition(pos, false, '×', ColorFgPlayer, bg)
