@@ -1576,6 +1576,9 @@ func (ui *gameui) DrawMonsterDescription(mons *monster) {
 	if mons.Kind.ReflectsTeleport() {
 		info += " " + fmt.Sprint("They partially reflect back oric teleport magic.")
 	}
+	if mons.Kind.GoodFlair() {
+		info += " " + fmt.Sprint("They have good flair.")
+	}
 	if info != "" {
 		s += "\n\n" + info
 	}

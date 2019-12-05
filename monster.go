@@ -328,27 +328,27 @@ var MonsDesc = []string{
 	//MonsOgre:            "Ogres are big clunky humanoids that can hit really hard.",
 	MonsOricCelmist:     "Oric celmists are mages that can create magical barriers in cells adjacent to you, complicating your escape.\n\nDayoriah Clan's oric celmists are famous for their knowledge of oric magic force manipulations. They are the ones who instigated the steal of Marevor's Gem Portal Artifact. According to Marevor, they plan on doing some dangerous oric experiments with the Artifact, though that's all you can say about it, because his boring explanations were a bit over your head.",
 	MonsHarmonicCelmist: "Harmonic celmists are mages specialized in manipulation of sound and light. They can illuminate you with harmonic light, making it more difficult to hide from them. They also use alert harmonic sounds around you.\n\nHarmonies are usually mainly used for sneaking around in the shadows, but they can also be used to reveal ennemies, sadly for you. Although harmonies are often considered as less prestigious magic energies than oric energies, the Dayoriah Clan knows how to make good use of them, as they clearly showed when they stole Marevor's Gem Portal Artifact.",
-	MonsWorm:            "Farmer worms are ugly slow moving creatures. They furrow as they move, helping new foliage to grow.",
+	MonsWorm:            "Farmer worms are ugly creeping creatures. They furrow as they move, helping new foliage to grow.",
 	//MonsBrizzia:         "Brizzias are big slow moving biped creatures. They are quite hardy, and when hurt they can cause nausea, impeding the use of potions.",
 	MonsAcidMound: "Acid mounds are acidic creatures. They can corrode your magaras, reducing their number of charges.",
-	MonsDog:       "Dogs are fast moving carnivore quadrupeds. They can bark, and smell you.",
+	MonsDog:       "Dogs are carnivore quadrupeds. They can bark, and smell you from up to 5 tiles away when hunting or watching for you.",
 	MonsYack:      "Yacks are quite large herbivorous quadrupeds. They tend to eat grass peacefully, but upon seing you they may attack, pushing you up to 5 cells away.",
 	//MonsGiantBee:        "Giant bees are fragile but extremely fast moving creatures. Their bite can sometimes enrage you.",
 	MonsHighGuard: "High guards watch over a particular location. They can throw javelins.",
 	//MonsHydra:           "Hydras are enormous creatures with four heads that can hit you each at once.",
 	//MonsSkeletonWarrior: "Skeleton warriors are good fighters, clad in chain mail.",
 	MonsSpider:       "Spiders are small creatures, with panoramic vision and whose bite can confuse you.",
-	MonsWingedMilfid: "Winged milfids are fast moving humanoids that can fly over you and make you swap positions. They tend to be very agressive creatures.",
+	MonsWingedMilfid: "Winged milfids are  humanoids that can fly over you and make you swap positions. They tend to be very agressive creatures.",
 	MonsBlinkingFrog: "Blinking frogs are big frog-like creatures, whose bite can make you blink away. The science behind their attack is not clear, but many think it relies on some kind of oric deviation magic. They can jump to attack from below.",
 	//MonsLich:           "Liches are non-living mages wearing a leather armour. They can throw a bolt of torment at you, halving your HP.",
 	MonsEarthDragon:    "Earth dragons are big creatures from a dragon species that wander in the Underground. They are peaceful creatures, but they may hurt you inadvertently, pushing you up to 6 tiles away (3 if confused). They naturally emit powerful oric energies, allowing them to eat rocks and dig tunnels. Their oric energies can confuse you if you're close enough, for example if they hurt you or you jump over them.",
 	MonsMirrorSpecter:  "Mirror specters are very insubstantial creatures, which can absorb your mana.",
 	MonsExplosiveNadre: "Nadres are dragon-like biped creatures that are famous for exploding upon dying. Explosive nadres are a tiny nadre race that explodes upon attacking. The explosion confuses any adjacent creatures and occasionally destroys walls.",
-	MonsSatowalgaPlant: "Satowalga Plants are immobile bushes that throw slowing viscous acidic projectiles at you, destroying some of your magara charges. They attack at half normal speed.",
+	MonsSatowalgaPlant: "Satowalga Plants are immobile bushes that throw viscous acidic projectiles at you, destroying some of your magara charges. They attack at half normal speed.",
 	MonsMadNixe:        "Nixes are magical humanoids. Usually, they specialize in illusion harmonic magic, but the so called mad nixes are a perverted variant who learned the oric arts to create a spell that can attract their foes to them, so that they can kill them without pursuing them.",
 	//MonsMindCelmist:     "Mind celmists are mages that use magical smitting mind attacks that bypass armour. They can occasionally confuse or slow you. They try to avoid melee.",
 	MonsVampire:      "Vampires are humanoids that drink blood to survive. Their nauseous spitting can cause confusion, impeding the use of magaras for a few turns.",
-	MonsTreeMushroom: "Tree mushrooms are big clunky slow-moving creatures. They can throw lignifying spores at you, leaving you unable to move for a few turns, though the spores will also provide some protection against harm.",
+	MonsTreeMushroom: "Tree mushrooms are big clunky creatures. They can throw lignifying spores at you, leaving you unable to move for a few turns, though the spores will also provide some protection against harm.",
 	//MonsMarevorHelith: "Marevor Helith is an ancient undead nakrus very fond of teleporting people away. He is a well-known expert in the field of magaras - items that many people simply call magical objects. His current research focus is monolith creation. Marevor, a repentant necromancer, is now searching for his old disciple Jaixel in the Underground to help him overcome the past.",
 	MonsButterfly: "Underground's butterflies, called kerejats, wander peacefully around, illuminating their surroundings.",
 	MonsCrazyImp:  "Crazy Imp is a crazy creature that likes to sing with its small guitar. It seems to be fond of monkeys and quite capable at finding them by flair. While singing it may attract unwanted attention.",
@@ -929,6 +929,9 @@ func (m *monster) HandleMonsSpecifics(g *game) (done bool) {
 	return false
 }
 
+const DogFlairDist = 5
+const DisguiseFlairDist = 3
+
 func (m *monster) HandleWatching(g *game) {
 	turns := 4
 	if m.Kind == MonsHazeCat {
@@ -939,7 +942,7 @@ func (m *monster) HandleWatching(g *game) {
 		m.Watching++
 		if m.Kind == MonsDog {
 			dij := &monPath{game: g, monster: m}
-			nm := Dijkstra(dij, []position{m.Pos}, 5)
+			nm := Dijkstra(dij, []position{m.Pos}, DogFlairDist)
 			if _, ok := nm.at(g.Player.Pos); ok {
 				m.Target = g.Player.Pos
 				m.MakeWander()
@@ -984,7 +987,7 @@ func (m *monster) Peaceful(g *game) bool {
 	if m.Kind.Peaceful() {
 		return true
 	}
-	if m.State != Hunting && g.Player.HasStatus(StatusDisguised) && !m.Kind.GoodFlair() {
+	if m.State != Hunting && g.Player.HasStatus(StatusDisguised) && (!m.Kind.GoodFlair() || m.Pos.Distance(g.Player.Pos) > DisguiseFlairDist) {
 		return true
 	}
 	switch m.Kind {
