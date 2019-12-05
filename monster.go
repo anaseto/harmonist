@@ -136,6 +136,15 @@ func (mk monsterKind) Peaceful() bool {
 	}
 }
 
+func (mk monsterKind) GoodFlair() bool {
+	switch mk {
+	case MonsDog, MonsHazeCat, MonsVampire, MonsExplosiveNadre:
+		return true
+	default:
+		return false
+	}
+}
+
 func (mk monsterKind) Notable() bool {
 	switch mk {
 	case MonsCrazyImp, MonsEarthDragon, MonsHazeCat:
@@ -973,6 +982,9 @@ func (m *monster) ComputePath(g *game) {
 
 func (m *monster) Peaceful(g *game) bool {
 	if m.Kind.Peaceful() {
+		return true
+	}
+	if m.State != Hunting && g.Player.HasStatus(StatusDisguised) && !m.Kind.GoodFlair() {
 		return true
 	}
 	switch m.Kind {

@@ -257,8 +257,8 @@ func (g *game) InitPlayer() {
 	g.GeneratedMagaras = append(g.GeneratedMagaras, g.Player.Magaras[0].Kind)
 	g.Player.Inventory.Misc = MarevorMagara
 	// Testing
-	//g.Player.Magaras[1] = magara{Kind: ParalysisMagara, Charges: 10}
-	//g.Player.Magaras[2] = magara{Kind: SwiftnessMagara, Charges: 10}
+	//g.Player.Magaras[1] = magara{Kind: DisguiseMagara, Charges: 10}
+	//g.Player.Magaras[2] = magara{Kind: DelayedNoiseMagara, Charges: 10}
 	//g.Player.Magaras[2] = ConfusionMagara
 }
 
@@ -490,6 +490,11 @@ func (g *game) InitLevel() {
 		g.PushEvent(&simpleEvent{ERank: 0, EAction: PlayerTurn})
 	} else {
 		g.CleanEvents()
+		for st := range g.Player.Statuses {
+			if st.Clean() {
+				g.Player.Statuses[st] = 0
+			}
+		}
 	}
 	for i := range g.Monsters {
 		g.PushEventRandomIndex(&monsterEvent{ERank: g.Turn, EAction: MonsterTurn, NMons: i})

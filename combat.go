@@ -283,6 +283,7 @@ const (
 	SingingNoise           = 12
 	EarthquakeNoise        = 35
 	QueenRockFootstepNoise = 7
+	DelayedHarmonicNoise   = 25
 )
 
 func (g *game) ClangMsg() (sclang string) {

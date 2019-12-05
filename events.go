@@ -59,6 +59,7 @@ const (
 	ShadowsEnd
 	IlluminatedEnd
 	TransparentEnd
+	DisguisedEnd
 )
 
 func (g *game) PushEvent(ev event) {
@@ -113,6 +114,7 @@ var StatusEndMsgs = [...]string{
 	ShadowsEnd:       "You are no longer surrounded by shadows.",
 	IlluminatedEnd:   "You are no longer illuminated.",
 	TransparentEnd:   "You are no longer transparent.",
+	DisguisedEnd:     "You are no longer disguised.",
 }
 
 var EndStatuses = [...]status{
@@ -125,6 +127,7 @@ var EndStatuses = [...]status{
 	ShadowsEnd:       StatusShadows,
 	IlluminatedEnd:   StatusIlluminated,
 	TransparentEnd:   StatusTransparent,
+	DisguisedEnd:     StatusDisguised,
 }
 
 var StatusEndActions = [...]simpleAction{
@@ -137,6 +140,7 @@ var StatusEndActions = [...]simpleAction{
 	StatusShadows:       ShadowsEnd,
 	StatusIlluminated:   IlluminatedEnd,
 	StatusTransparent:   TransparentEnd,
+	StatusDisguised:     DisguisedEnd,
 }
 
 func (sev *simpleEvent) Action(g *game) {
@@ -275,12 +279,14 @@ const (
 	NightProgression
 	MistProgression
 	Earthquake
+	DelayedHarmonicNoiseEvent
 )
 
 type posEvent struct {
 	ERank   int
 	Pos     position
 	EAction posAction
+	Timer   int
 }
 
 func (cev *posEvent) Rank() int {
@@ -360,6 +366,17 @@ func (cev *posEvent) Action(g *game) {
 			g.Dungeon.SetCell(pos, RubbleCell)
 			g.UpdateKnowledge(pos, c.T)
 			g.Fog(pos, 1)
+		}
+	case DelayedHarmonicNoiseEvent:
+		if cev.Timer <= 1 {
+			g.Player.Statuses[StatusDelay] = 0
+			g.Print("Pop!")
+			g.NoiseIllusion[cev.Pos] = true
+			g.MakeNoise(DelayedHarmonicNoise, cev.Pos)
+		} else {
+			cev.Timer--
+			g.Player.Statuses[StatusDelay] = cev.Timer
+			cev.Renew(g, DurationTurn)
 		}
 	}
 }
@@ -457,6 +474,8 @@ const (
 	DurationSatiationMonster       = 40
 	DurationIlluminated            = 7
 	DurationTransparency           = 15
+	DurationDisguise               = 9
+	DurationHarmonicNoiseDelay     = 13
 	DurationTurn                   = 1
 	DurationStatusStep             = 1
 )

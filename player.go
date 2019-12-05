@@ -454,6 +454,18 @@ func (g *game) PutStatus(st status, duration int) bool {
 	return true
 }
 
+func (g *game) PutFakeStatus(st status, duration int) bool {
+	if g.Player.Statuses[st] != 0 {
+		return false
+	}
+	g.Player.Statuses[st] += duration
+	g.Stats.Statuses[st]++
+	if st.Good() {
+		g.Player.Expire[st] = g.Ev.Rank() + duration
+	}
+	return true
+}
+
 func (g *game) UpdateKnowledge(pos position, t terrain) {
 	if g.Player.Sees(pos) {
 		return
