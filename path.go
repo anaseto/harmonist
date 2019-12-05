@@ -241,7 +241,7 @@ func (mp *monPath) Cost(from, to position) int {
 	mons := g.MonsterAt(to)
 	if !mons.Exists() {
 		c := g.Dungeon.Cell(to)
-		if mp.monster.Kind == MonsEarthDragon && c.IsDestructible() {
+		if mp.monster.Kind == MonsEarthDragon && c.IsDestructible() && !mp.monster.Status(MonsConfused) {
 			return 5
 		}
 		if to == g.Player.Pos && mp.monster.Kind.Peaceful() {
