@@ -695,7 +695,11 @@ func (m *monster) AttackAction(g *game) {
 		m.Explode(g)
 		return
 	default:
-		m.HitPlayer(g)
+		if g.Player.HasStatus(StatusDispersal) {
+			m.Blink(g)
+		} else {
+			m.HitPlayer(g)
+		}
 	}
 	g.RenewEvent(DurationTurn)
 }

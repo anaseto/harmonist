@@ -19,6 +19,7 @@ const (
 	StatusTransparent
 	StatusDisguised
 	StatusDelay
+	StatusDispersal
 )
 
 func (st status) Flag() bool {
@@ -49,7 +50,7 @@ func (st status) Info() bool {
 
 func (st status) Good() bool {
 	switch st {
-	case StatusSwift, StatusDig, StatusHidden, StatusLevitation, StatusShadows, StatusTransparent, StatusDisguised:
+	case StatusSwift, StatusDig, StatusHidden, StatusLevitation, StatusShadows, StatusTransparent, StatusDisguised, StatusDispersal:
 		return true
 	default:
 		return false
@@ -99,6 +100,8 @@ func (st status) String() string {
 		return "Disguised"
 	case StatusDelay:
 		return "Delay"
+	case StatusDispersal:
+		return "Dispersal"
 	default:
 		// should not happen
 		return "unknown"
@@ -124,7 +127,7 @@ func (st status) Short() string {
 	case StatusUnhidden:
 		return "H-"
 	case StatusDig:
-		return "Dg"
+		return "Di"
 	case StatusLight:
 		return "Li"
 	case StatusLevitation:
@@ -136,9 +139,11 @@ func (st status) Short() string {
 	case StatusTransparent:
 		return "Tr"
 	case StatusDisguised:
-		return "Ds"
+		return "Dg"
 	case StatusDelay:
 		return "De"
+	case StatusDispersal:
+		return "Dp"
 	default:
 		// should not happen
 		return "?"

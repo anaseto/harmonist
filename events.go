@@ -475,6 +475,7 @@ const (
 	DurationIlluminated            = 7
 	DurationTransparency           = 15
 	DurationDisguise               = 9
+	DurationDispersal              = 12
 	DurationHarmonicNoiseDelay     = 13
 	DurationTurn                   = 1
 	DurationStatusStep             = 1

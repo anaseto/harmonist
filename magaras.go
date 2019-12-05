@@ -34,11 +34,10 @@ const (
 	TransparencyMagara
 	DisguiseMagara
 	DelayedNoiseMagara
-	DelayedExplosionMagara
+	DispersalMagara
+	//DelayedExplosionMagara
 	//BarrierMagara
 )
-
-const NumMagaras = int(DelayedNoiseMagara)
 
 func (mag magara) Harmonic() bool {
 	switch mag.Kind {
@@ -52,7 +51,7 @@ func (mag magara) Harmonic() bool {
 
 func (mag magara) Oric() bool {
 	switch mag.Kind {
-	case BlinkMagara, DigMagara, TeleportMagara, LevitationMagara, TeleportOtherMagara, SwappingMagara, ObstructionMagara:
+	case BlinkMagara, DigMagara, TeleportMagara, LevitationMagara, TeleportOtherMagara, SwappingMagara, ObstructionMagara, DispersalMagara:
 		return true
 	default:
 		return false
@@ -63,7 +62,7 @@ func (m magaraKind) DefaultCharges() int {
 	switch m {
 	case LevitationMagara, FogMagara, NoiseMagara, FireMagara, DelayedNoiseMagara:
 		return 6
-	case ParalysisMagara, ShadowsMagara, ObstructionMagara, TransparencyMagara:
+	case ParalysisMagara, ShadowsMagara, ObstructionMagara, TransparencyMagara, DispersalMagara:
 		return 5
 	case EnergyMagara:
 		return 1
@@ -94,10 +93,16 @@ loop:
 }
 
 func (g *game) RandomMagara() magara {
+	mags := []magaraKind{BlinkMagara, DigMagara, TeleportMagara,
+		SwiftnessMagara, LevitationMagara, FireMagara, FogMagara,
+		ShadowsMagara, NoiseMagara, ConfusionMagara, SleepingMagara,
+		TeleportOtherMagara, SwappingMagara, ParalysisMagara,
+		ObstructionMagara, LignificationMagara, TransparencyMagara,
+		DelayedNoiseMagara, DisguiseMagara, EnergyMagara}
 	var mag magaraKind
 loop:
 	for {
-		mag = magaraKind(1 + RandInt(NumMagaras))
+		mag = mags[RandInt(len(mags))]
 		for _, m := range g.GeneratedMagaras {
 			if m == mag {
 				continue loop
@@ -177,6 +182,8 @@ func (g *game) UseMagara(n int) (err error) {
 		err = g.EvokeDisguiseMagara()
 	case DelayedNoiseMagara:
 		err = g.EvokeDelayedNoiseMagara()
+	case DispersalMagara:
+		err = g.EvokeDispersalMagara()
 	}
 	if err != nil {
 		return err
@@ -276,6 +283,8 @@ func (mag magara) String() (desc string) {
 		desc = "magara of disguise"
 	case DelayedNoiseMagara:
 		desc = "magara of delayed noise"
+	case DispersalMagara:
+		desc = "magara of dispersal"
 	}
 	return desc
 }
@@ -328,6 +337,8 @@ func (mag magara) Desc(g *game) (desc string) {
 		desc = "surrounds you with harmonic illusions that may you look like a guard, making most monsters ignore you. Monsters with good flair may see through the illusions at less than 3 tiles away. Monsters that are already hunting you will continue doing so."
 	case DelayedNoiseMagara:
 		desc = "will produce a thunderous harmonic noise in your current position after a delay."
+	case DispersalMagara:
+		desc = "will make monsters that attempt to hit you blink away."
 	}
 	duration := 0
 	switch mag.Kind {
@@ -863,5 +874,13 @@ func (g *game) EvokeDelayedNoiseMagara() error {
 		Pos: g.Player.Pos, EAction: DelayedHarmonicNoiseEvent,
 		Timer: DurationHarmonicNoiseDelay})
 	g.Print("Timer activated.")
+	return nil
+}
+
+func (g *game) EvokeDispersalMagara() error {
+	if !g.PutStatus(StatusDispersal, DurationDispersal) {
+		return errors.New("You are already dispersing.")
+	}
+	g.Print("You feel unstable.")
 	return nil
 }

@@ -503,7 +503,7 @@ func (ui *gameui) FreeingShaedraAnimation() {
 	ui.Flush()
 	Sleep(AnimDurMediumLong)
 	g.Objects.Story[g.Places.Marevor] = StoryMarevor
-	g.PrintStyled("Marevor: “And what about the mission?”", logSpecial)
+	g.PrintStyled("Marevor: “And what about the mission? Take that magara!”", logSpecial)
 	g.PrintStyled("Shaedra: “Pff, don't be reckless!”", logSpecial)
 	g.Print("[(x) to continue]")
 	ui.DrawDungeonView(NoFlushMode)
@@ -521,7 +521,8 @@ func (ui *gameui) FreeingShaedraAnimation() {
 	ui.Flush()
 	g.Player.Magaras = append(g.Player.Magaras, magara{})
 	g.Player.Inventory.Misc = NoItem
-	g.PrintStyled("You have a new empty slot for a magara.", logSpecial)
+	g.PrintStyled("You equip the new magara in the artifact's old place.", logSpecial)
+	g.Player.Magaras[len(g.Player.Magaras)-1] = magara{Kind: DispersalMagara, Charges: DispersalMagara.DefaultCharges()}
 	AchRescuedShaedra.Get(g)
 }
 

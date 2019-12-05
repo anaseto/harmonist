@@ -415,14 +415,7 @@ func (g *game) InitFirstLevel() {
 		}
 	}
 	g.Params.NoMagara = map[int]bool{}
-	switch RandInt(3) {
-	case 0:
-		g.Params.NoMagara[4] = true
-	case 1:
-		g.Params.NoMagara[6] = true
-	case 2:
-		g.Params.NoMagara[8] = true
-	}
+	g.Params.NoMagara[WinDepth] = true
 	g.Params.Stones = map[int]bool{}
 	if RandInt(MaxDepth) > MaxDepth/2 {
 		g.Params.Stones[2+RandInt(MaxDepth-1)] = true
