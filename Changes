@@ -28,6 +28,11 @@ v0.3-dev
 + New magara of energy that replenishes HP and MP, but only has one charge.
 + New magara of transparency that makes you transparent (visible only to
   adjacent monsters) when standing of a lighted cell.
++ New magara of delayed noise: it will produce harmonic noise in your current
+  position after a certain number of turns.
++ New magara of disguise: it will disguise you with illusions into a guard, so
+  that most monsters that are not already chasing you will be friendly (except
+  some monsters with good flair).
 + Remove player and monster speed: a turn is now always 1, no half turns.
 + Replace magara of slowing with magara of paralysis, a stronger but shorter
   variation on lignification (may change in the future).
