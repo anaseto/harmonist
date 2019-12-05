@@ -33,6 +33,7 @@ v0.3-dev
 + New magara of disguise: it will disguise you with illusions into a guard, so
   that most monsters that are not already chasing you will be friendly (except
   some monsters with good flair).
++ New special magara of dispersal that makes monster hitting you blink away.
 + Remove player and monster speed: a turn is now always 1, no half turns.
 + Replace magara of slowing with magara of paralysis, a stronger but shorter
   variation on lignification (may change in the future).
