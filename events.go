@@ -325,7 +325,7 @@ func (cev *posEvent) Action(g *game) {
 			break
 		}
 		for _, pos := range g.Dungeon.FreeNeighbors(cev.Pos) {
-			if RandInt(4) == 0 {
+			if RandInt(10) == 0 {
 				continue
 			}
 			g.Burn(pos)
@@ -337,12 +337,13 @@ func (cev *posEvent) Action(g *game) {
 		if _, ok := g.Clouds[cev.Pos]; !ok {
 			break
 		}
-		g.MakeCreatureSleep(cev.Pos)
-		if RandInt(20) == 0 {
+		if cev.Timer <= 0 {
 			delete(g.Clouds, cev.Pos)
 			g.ComputeLOS()
 			break
 		}
+		g.MakeCreatureSleep(cev.Pos)
+		cev.Timer--
 		cev.Renew(g, DurationTurn)
 	case MistProgression:
 		pos := g.FreePassableCell()
@@ -389,7 +390,8 @@ func (g *game) NightFog(at position, radius int, ev event) {
 		_, ok := g.Clouds[pos]
 		if !ok {
 			g.Clouds[pos] = CloudNight
-			g.PushEvent(&posEvent{ERank: ev.Rank() + DurationCloudProgression, EAction: NightProgression, Pos: pos})
+			g.PushEvent(&posEvent{ERank: ev.Rank() + DurationCloudProgression, EAction: NightProgression,
+				Pos: pos, Timer: DurationNightFog})
 			g.MakeCreatureSleep(pos)
 		}
 	})
@@ -479,6 +481,7 @@ const (
 	DurationHarmonicNoiseDelay     = 13
 	DurationTurn                   = 1
 	DurationStatusStep             = 1
+	DurationNightFog               = 15
 )
 
 func (g *game) RenewEvent(delay int) {
