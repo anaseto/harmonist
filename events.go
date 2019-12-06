@@ -60,6 +60,7 @@ const (
 	IlluminatedEnd
 	TransparentEnd
 	DisguisedEnd
+	DispersalEnd
 )
 
 func (g *game) PushEvent(ev event) {
@@ -115,6 +116,7 @@ var StatusEndMsgs = [...]string{
 	IlluminatedEnd:   "You are no longer illuminated.",
 	TransparentEnd:   "You are no longer transparent.",
 	DisguisedEnd:     "You are no longer disguised.",
+	DispersalEnd:     "You are no longer unstable.",
 }
 
 var EndStatuses = [...]status{
@@ -128,6 +130,7 @@ var EndStatuses = [...]status{
 	IlluminatedEnd:   StatusIlluminated,
 	TransparentEnd:   StatusTransparent,
 	DisguisedEnd:     StatusDisguised,
+	DispersalEnd:     StatusDispersal,
 }
 
 var StatusEndActions = [...]simpleAction{
@@ -141,6 +144,7 @@ var StatusEndActions = [...]simpleAction{
 	StatusIlluminated:   IlluminatedEnd,
 	StatusTransparent:   TransparentEnd,
 	StatusDisguised:     DisguisedEnd,
+	StatusDispersal:     DispersalEnd,
 }
 
 func (sev *simpleEvent) Action(g *game) {
@@ -385,7 +389,8 @@ func (cev *posEvent) Action(g *game) {
 			g.Player.Statuses[StatusDelay] = 0
 			g.Print(g.CrackSound())
 			g.NoiseIllusion[cev.Pos] = true
-			dij := &dungeonPath{dungeon: g.Dungeon, wcost: 1}
+			dij := &gridPath{dungeon: g.Dungeon}
+			g.MakeNoise(OricExplosionNoise, cev.Pos)
 			nm := Dijkstra(dij, []position{cev.Pos}, 8)
 			nm.iter(cev.Pos, func(n *node) {
 				c := g.Dungeon.Cell(n.Pos)
@@ -393,7 +398,6 @@ func (cev *posEvent) Action(g *game) {
 					return
 				}
 				g.Dungeon.SetCell(n.Pos, RubbleCell)
-				g.MakeNoise(WallNoise, n.Pos)
 				g.Stats.Digs++
 				g.UpdateKnowledge(n.Pos, c.T)
 				if g.Player.Sees(n.Pos) {
