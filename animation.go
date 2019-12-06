@@ -519,6 +519,10 @@ func (ui *gameui) FreeingShaedraAnimation() {
 	g.Objects.Scrolls[g.Places.Marevor] = ScrollExtended
 	ui.DrawDungeonView(NoFlushMode)
 	ui.Flush()
+	g.RescuedShaedra()
+}
+
+func (g *game) RescuedShaedra() {
 	g.Player.Magaras = append(g.Player.Magaras, magara{})
 	g.Player.Inventory.Misc = NoItem
 	g.PrintStyled("You equip the new magara in the artifact's old place.", logSpecial)

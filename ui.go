@@ -1025,7 +1025,10 @@ func (ui *gameui) HandleKey(rka runeKeyAction) (again bool, quit bool, err error
 			err = errors.New("Unknown key. Type ? for help.")
 		}
 	case ActionWizardDescend:
-		if g.Wizard && g.Depth < MaxDepth && g.Depth != WinDepth {
+		if g.Wizard && g.Depth == WinDepth {
+			g.RescuedShaedra()
+		}
+		if g.Wizard && g.Depth < MaxDepth {
 			g.StoryPrint("Descended wizardly")
 			if g.Descend(DescendNormal) {
 				ui.Win()
