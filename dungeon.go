@@ -872,7 +872,7 @@ func (g *game) GenRoomTunnels(ml maplayout) {
 	if sr := g.Params.Special[g.Depth]; sr != noSpecialRoom {
 		nspecial--
 		pl := PlacementEdge
-		if RandInt(2) == 0 {
+		if RandInt(3) == 0 {
 			pl = PlacementCenter
 		}
 		dg.special = sr
