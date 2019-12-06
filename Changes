@@ -34,6 +34,8 @@ v0.3-dev
   that most monsters that are not already chasing you will be friendly (except
   some monsters with good flair).
 + New special magara of dispersal that makes monster hitting you blink away.
++ New special magara of delayed oric explosion that generates a big oric
+  explosion that destroys walls in a wide area.
 + Remove player and monster speed: a turn is now always 1, no half turns.
 + Replace magara of slowing with magara of paralysis, a stronger but shorter
   variation on lignification (may change in the future).

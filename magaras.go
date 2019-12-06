@@ -347,7 +347,7 @@ func (mag magara) Desc(g *game) (desc string) {
 	case DispersalMagara:
 		desc = "will make monsters that attempt to hit you blink away."
 	case DelayedOricExplosionMagara:
-		desc = "will produce a big explosion at your current position after a delay."
+		desc = "will produce a big rock-destroying oric explosion at your current position after a delay. It destroys only walls."
 	}
 	duration := 0
 	switch mag.Kind {
