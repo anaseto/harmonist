@@ -522,7 +522,11 @@ func (ui *gameui) FreeingShaedraAnimation() {
 	g.Player.Magaras = append(g.Player.Magaras, magara{})
 	g.Player.Inventory.Misc = NoItem
 	g.PrintStyled("You equip the new magara in the artifact's old place.", logSpecial)
-	g.Player.Magaras[len(g.Player.Magaras)-1] = magara{Kind: DispersalMagara, Charges: DispersalMagara.DefaultCharges()}
+	if RandInt(2) == 0 {
+		g.Player.Magaras[len(g.Player.Magaras)-1] = magara{Kind: DispersalMagara, Charges: DispersalMagara.DefaultCharges()}
+	} else {
+		g.Player.Magaras[len(g.Player.Magaras)-1] = magara{Kind: DelayedOricExplosionMagara, Charges: DelayedOricExplosionMagara.DefaultCharges()}
+	}
 	AchRescuedShaedra.Get(g)
 }
 

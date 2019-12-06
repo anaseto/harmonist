@@ -280,6 +280,7 @@ const (
 	MistProgression
 	Earthquake
 	DelayedHarmonicNoiseEvent
+	DelayedOricExplosionEvent
 )
 
 type posEvent struct {
@@ -374,6 +375,32 @@ func (cev *posEvent) Action(g *game) {
 			g.Print("Pop!")
 			g.NoiseIllusion[cev.Pos] = true
 			g.MakeNoise(DelayedHarmonicNoise, cev.Pos)
+		} else {
+			cev.Timer--
+			g.Player.Statuses[StatusDelay] = cev.Timer
+			cev.Renew(g, DurationTurn)
+		}
+	case DelayedOricExplosionEvent:
+		if cev.Timer <= 1 {
+			g.Player.Statuses[StatusDelay] = 0
+			g.Print(g.CrackSound())
+			g.NoiseIllusion[cev.Pos] = true
+			dij := &dungeonPath{dungeon: g.Dungeon, wcost: 1}
+			nm := Dijkstra(dij, []position{cev.Pos}, 8)
+			nm.iter(cev.Pos, func(n *node) {
+				c := g.Dungeon.Cell(n.Pos)
+				if !c.T.IsDiggable() {
+					return
+				}
+				g.Dungeon.SetCell(n.Pos, RubbleCell)
+				g.MakeNoise(WallNoise, n.Pos)
+				g.Stats.Digs++
+				g.UpdateKnowledge(n.Pos, c.T)
+				if g.Player.Sees(n.Pos) {
+					g.ui.WallExplosionAnimation(n.Pos)
+				}
+				g.Fog(n.Pos, 1)
+			})
 		} else {
 			cev.Timer--
 			g.Player.Statuses[StatusDelay] = cev.Timer
@@ -479,6 +506,7 @@ const (
 	DurationDisguise               = 9
 	DurationDispersal              = 12
 	DurationHarmonicNoiseDelay     = 13
+	DurationOricExplosionDelay     = 8
 	DurationTurn                   = 1
 	DurationStatusStep             = 1
 	DurationNightFog               = 15
