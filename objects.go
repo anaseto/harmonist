@@ -6,7 +6,7 @@ import (
 )
 
 type objects struct {
-	Stairs     map[position]stair // TODO simplify? (there's never more than one)
+	Stairs     map[position]stair
 	Stones     map[position]stone
 	Magaras    map[position]magara // TODO simplify? (there's never more than one)
 	Barrels    map[position]bool
