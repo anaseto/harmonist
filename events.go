@@ -392,6 +392,7 @@ func (cev *posEvent) Action(g *game) {
 			dij := &gridPath{dungeon: g.Dungeon}
 			g.MakeNoise(OricExplosionNoise, cev.Pos)
 			nm := Dijkstra(dij, []position{cev.Pos}, 8)
+			fogs := []position{}
 			nm.iter(cev.Pos, func(n *node) {
 				c := g.Dungeon.Cell(n.Pos)
 				if !c.T.IsDiggable() {
@@ -403,8 +404,11 @@ func (cev *posEvent) Action(g *game) {
 				if g.Player.Sees(n.Pos) {
 					g.ui.WallExplosionAnimation(n.Pos)
 				}
-				g.Fog(n.Pos, 1)
+				fogs = append(fogs, n.Pos)
 			})
+			for _, pos := range fogs {
+				g.Fog(pos, 1)
+			}
 		} else {
 			cev.Timer--
 			g.Player.Statuses[StatusDelay] = cev.Timer
