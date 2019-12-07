@@ -63,6 +63,7 @@ type game struct {
 	ui                *gameui
 	LiberatedShaedra  bool
 	LiberatedArtifact bool
+	PlayerAgain       bool
 }
 
 type specialEvent int

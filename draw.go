@@ -677,13 +677,13 @@ func (ui *gameui) DescribePosition(pos position, targ Targeter) {
 	desc += c.ShortDesc(g, pos)
 	if g.MonsterLOS[pos] {
 		desc += " (unhidden)"
-	} else if g.Illuminated[pos.idx()] && c.IsIlluminable() {
+	} else if g.Illuminated[pos.idx()] && c.IsIlluminable() && g.Player.Sees(pos) {
 		desc += " (lighted)"
 	}
-	g.InfoEntry = desc + "."
 	if g.Noise[pos] || g.NoiseIllusion[pos] {
-		desc = " Noise."
+		desc += ". Noise"
 	}
+	g.InfoEntry = desc + "."
 }
 
 func (ui *gameui) ViewPositionDescription(pos position) {
@@ -1039,15 +1039,16 @@ func (ui *gameui) PositionDrawing(pos position) (r rune, fgColor, bgColor uicolo
 					fgColor = ColorFgWanderingMonster
 				}
 			}
+		} else if (!g.Wizard || g.WizardMode == WizardNormal) && g.Noise[pos] {
+			r = '♫'
+			fgColor = ColorFgWanderingMonster
+		} else if g.NoiseIllusion[pos] {
+			r = '♪'
+			fgColor = ColorFgMagicPlace
 		} else if mons, ok := g.LastMonsterKnownAt[pos]; (!g.Wizard || g.WizardMode == WizardNormal) && ok {
 			if !mons.Seen {
-				// potion of dreams
 				r = '☻'
-				if mons.LastSeenState != Resting {
-					fgColor = ColorFgWanderingMonster
-				} else {
-					fgColor = ColorFgSleepingMonster
-				}
+				fgColor = ColorFgWanderingMonster
 			} else {
 				r = mons.Kind.Letter()
 				if mons.LastSeenState == Resting {
@@ -1058,12 +1059,6 @@ func (ui *gameui) PositionDrawing(pos position) (r rune, fgColor, bgColor uicolo
 					fgColor = ColorFgWanderingMonster
 				}
 			}
-		} else if (!g.Wizard || g.WizardMode == WizardNormal) && g.Noise[pos] {
-			r = '♫'
-			fgColor = ColorFgWanderingMonster
-		} else if g.NoiseIllusion[pos] {
-			r = '♪'
-			fgColor = ColorFgMagicPlace
 		}
 		if fgColor == ColorFgLOS && g.Illuminated[pos.idx()] && c.IsIlluminable() {
 			fgColor = ColorFgLOSLight

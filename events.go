@@ -99,6 +99,9 @@ func (sev *simpleEvent) Renew(g *game, delay int) {
 	sev.ERank += delay
 	if delay == 0 {
 		g.PushAgainEvent(sev)
+		if sev.EAction == PlayerTurn {
+			g.PlayerAgain = true
+		}
 	} else {
 		g.PushEvent(sev)
 	}
@@ -150,9 +153,12 @@ var StatusEndActions = [...]simpleAction{
 func (sev *simpleEvent) Action(g *game) {
 	switch sev.EAction {
 	case PlayerTurn:
-		g.ComputeNoise()
-		g.ComputeLOS() // TODO: optimize? most of the time almost redundant (unless on a tree)
-		g.ComputeMonsterLOS()
+		if !g.PlayerAgain {
+			g.ComputeNoise()
+			g.ComputeLOS() // TODO: optimize? most of the time almost redundant (unless on a tree)
+			g.ComputeMonsterLOS()
+		}
+		g.PlayerAgain = false
 		g.LogNextTick = g.LogIndex
 		g.AutoNext = g.AutoPlayer(sev)
 		if g.AutoNext {

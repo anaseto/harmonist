@@ -491,15 +491,15 @@ func (g *game) ComputeNoise() {
 				g.Noise[pos] = true
 				g.Print("You hear the flapping of wings.")
 				count++
-			case MonsOricCelmist, MonsEarthDragon, MonsTreeMushroom:
+			case MonsEarthDragon, MonsTreeMushroom:
 				g.Noise[pos] = true
 				g.Print("You hear heavy footsteps.")
 				count++
-			case MonsWorm:
+			case MonsWorm, MonsAcidMound:
 				g.Noise[pos] = true
 				g.Print("You hear a creep noise.")
 				count++
-			case MonsDog, MonsBlinkingFrog:
+			case MonsDog, MonsBlinkingFrog, MonsHazeCat, MonsCrazyImp:
 				g.Noise[pos] = true
 				g.Print("You hear light footsteps.")
 				count++
