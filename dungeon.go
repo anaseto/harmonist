@@ -911,27 +911,32 @@ func (g *game) GenRoomTunnels(ml maplayout) {
 		dg.GenArtifactPlace(g)
 		nspecial--
 	}
+	normal := 5
+	if g.Depth < 3 {
+		nspecial--
+		normal--
+	}
 	switch ml {
 	case RandomWalkCave:
 		dg.GenRooms(roomBigTemplates, nspecial-1, PlacementRandom)
-		dg.GenRooms(roomNormalTemplates, 5, PlacementRandom)
+		dg.GenRooms(roomNormalTemplates, normal, PlacementRandom)
 	case RandomWalkTreeCave:
 		dg.GenRooms(roomBigTemplates, nspecial+1, PlacementRandom)
-		dg.GenRooms(roomNormalTemplates, 7, PlacementRandom)
+		dg.GenRooms(roomNormalTemplates, normal+2, PlacementRandom)
 	case RandomSmallWalkCaveUrbanised:
 		nspecial += 3
 		dg.GenRooms(roomBigTemplates, nspecial, PlacementRandom)
-		dg.GenRooms(roomNormalTemplates, 10, PlacementRandom)
+		dg.GenRooms(roomNormalTemplates, normal+5, PlacementRandom)
 	case NaturalCave:
 		nspecial++
 		if g.Depth == WinDepth {
 			nspecial += 2
 		}
 		dg.GenRooms(roomBigTemplates, nspecial, PlacementRandom)
-		dg.GenRooms(roomNormalTemplates, 2, PlacementRandom)
+		dg.GenRooms(roomNormalTemplates, normal-3, PlacementRandom)
 	default:
 		dg.GenRooms(roomBigTemplates, nspecial, PlacementRandom)
-		dg.GenRooms(roomNormalTemplates, 7, PlacementRandom)
+		dg.GenRooms(roomNormalTemplates, normal+2, PlacementRandom)
 	}
 	dg.ConnectRooms()
 	g.Dungeon = d
@@ -2306,7 +2311,7 @@ func (dg *dgen) GenMonsters(g *game) {
 	}
 	switch g.Depth {
 	case 1:
-		// 8
+		// 8-9
 		if RandInt(2) == 0 {
 			if RandInt(2) == 0 {
 				dg.PutRandomBandN(g, bandsGuard, 5)
@@ -2318,7 +2323,7 @@ func (dg *dgen) GenMonsters(g *game) {
 		} else {
 			dg.PutRandomBandN(g, bandsGuard, 4)
 			if RandInt(5) > 0 {
-				dg.PutRandomBandN(g, bandsAnimals, 4)
+				dg.PutRandomBandN(g, bandsAnimals, 5)
 			} else {
 				dg.PutRandomBandN(g, bandsAnimals, 3)
 				dg.PutRandomBandN(g, bandsRare, 1)
@@ -2349,7 +2354,7 @@ func (dg *dgen) GenMonsters(g *game) {
 			}
 		}
 	case 3:
-		// 10-12
+		// 11-12
 		dg.PutRandomBandN(g, bandsHighGuard, 2)
 		dg.PutRandomBandN(g, bandsGuard, 4)
 		switch RandInt(5) {
@@ -2362,8 +2367,8 @@ func (dg *dgen) GenMonsters(g *game) {
 			}
 			dg.PutRandomBandN(g, bandsPlants, 2)
 		case 2, 3:
-			// 4
-			dg.PutRandomBandN(g, bandsAnimals, 1)
+			// 5
+			dg.PutRandomBandN(g, bandsAnimals, 2)
 			dg.PutRandomBandN(g, bandsPlants, 1)
 			dg.PutRandomBandN(g, bandsBipeds, 2)
 		case 4:
@@ -2372,12 +2377,12 @@ func (dg *dgen) GenMonsters(g *game) {
 			dg.PutRandomBandN(g, bandNadre, 5)
 		}
 	case 4:
-		// 11-13
+		// 12-13
 		dg.PutRandomBandN(g, bandsHighGuard, 2)
 		switch RandInt(5) {
 		case 0, 1:
-			// 9
-			dg.PutRandomBandN(g, bandsGuard, 3)
+			// 10
+			dg.PutRandomBandN(g, bandsGuard, 4)
 			dg.PutRandomBandN(g, bandsRare, 2)
 			dg.PutRandomBandN(g, bandGuardPair, 1)
 			dg.PutRandomBandN(g, bandsBipeds, 1)
@@ -2564,8 +2569,8 @@ func (dg *dgen) GenMonsters(g *game) {
 			dg.PutRandomBandN(g, []monsterBand{PairSatowalga}, 1)
 		}
 	case 10:
-		// 21
-		dg.PutRandomBandN(g, bandsHighGuard, 2)
+		// 22
+		dg.PutRandomBandN(g, bandsHighGuard, 3)
 		if RandInt(2) == 0 {
 			// 19
 			dg.PutRandomBandN(g, bandsGuard, 7)
