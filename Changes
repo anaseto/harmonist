@@ -8,6 +8,7 @@ v0.3-dev
   magara.
 + You can now jump 2 or 3 tiles away by propulsing yourself against walls,
   which leaves you exhausted for a few turns, as the usual over monster jumps.
+  A significant buff for acrobatics cloak!
 + Greatly improve and diversify map generation, in particular the tunnel
   generation algorithm used for all kind of maps.
 + New special events: mist level and earthquake.
@@ -16,7 +17,7 @@ v0.3-dev
 + New terrain feature: fake stairs (harmonic illusions).
 + New terrain feature: queen rock, special terrain that amplifies sound, so
   that even so you're usually very silent, your footsteps on such rocks will be
-  heard.
+  heard. One more use for levitation magara!
 + New unique monster: Crazy Imp that sings and plays guitar, attracting
   unwanted attention.
 + New monster: haze cat, with very good night vision.
@@ -47,6 +48,8 @@ v0.3-dev
   plants and tree mushrooms cannot be lignified, blinking frogs partially
   reflect teleportation effects (they teleport but you too), haze cats have
   shallow sleep (they wake up very fast after falling asleep).
++ Improved magical stone placement, and chances of getting a particular kind of
+  stone may depend on whether it's inside or outside a building.
 + Display number of remaining turns for monsters statuses too.
 + Various balance adjustments, like 1 more HP and MP, but less bananas,
   encouraging better strategic play.
