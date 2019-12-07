@@ -12,10 +12,37 @@ func TestInitLevel(t *testing.T) {
 				if g.Dungeon.Cell(g.Places.Shaedra).T != StoryCell {
 					t.Errorf("Shaedra not there: %+v", g.Places.Shaedra)
 				}
+				if g.Objects.Story[g.Places.Shaedra] != StoryShaedra {
+					t.Errorf("bad Shaedra place: %+v", g.Places.Shaedra)
+				}
 			}
 			if g.Depth == MaxDepth {
 				if g.Dungeon.Cell(g.Places.Artifact).T != StoryCell {
 					t.Errorf("Artifact not there: %+v", g.Places.Artifact)
+				}
+				if g.Objects.Story[g.Places.Artifact] != StoryArtifactSealed {
+					t.Errorf("bad Artifact place: %+v", g.Places.Shaedra)
+				}
+			}
+			if g.Depth == MaxDepth || g.Depth == WinDepth {
+				if g.Dungeon.Cell(g.Places.Marevor).T != StoryCell {
+					t.Errorf("Marevor not there: %+v", g.Places.Artifact)
+				}
+				if g.Objects.Story[g.Places.Marevor] != NoStory {
+					t.Errorf("bad Marevor place: %+v", g.Places.Shaedra)
+				}
+			}
+			if g.Depth == MaxDepth || g.Depth == WinDepth {
+				if g.Dungeon.Cell(g.Places.Monolith).T != StoryCell {
+					t.Errorf("Monolith not there: %+v", g.Places.Artifact)
+				}
+				if g.Objects.Story[g.Places.Monolith] != NoStory {
+					t.Errorf("bad Monolith place: %+v", g.Places.Shaedra)
+				}
+			}
+			if g.Depth != WinDepth {
+				if len(g.Objects.Magaras) != 1 {
+					t.Errorf("bad number of magaras: %+v", g.Objects.Magaras)
 				}
 			}
 			for _, m := range g.Monsters {

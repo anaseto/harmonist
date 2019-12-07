@@ -540,7 +540,11 @@ func (ui *gameui) TakingArtifactAnimation() {
 	// TODO this animation cannot be disabled as-is, because code is mixed with it...
 	//return
 	//}
-	g.Print("You take and use the artifact.")
+	g.PrintStyled("You take and use the artifact.", logSpecial)
+	g.Print("[(x) to continue].")
+	ui.DrawDungeonView(NoFlushMode)
+	ui.Flush()
+	ui.WaitForContinue(-1)
 	g.Dungeon.SetCell(g.Places.Artifact, GroundCell)
 	_, _, bg := ui.PositionDrawing(g.Places.Monolith)
 	ui.DrawAtPosition(g.Places.Monolith, false, 'Φ', ColorFgMagicPlace, bg)

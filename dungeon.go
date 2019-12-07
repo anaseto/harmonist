@@ -438,7 +438,7 @@ func (r *room) Dig(dg *dgen) {
 			dg.room[pos] = true
 		}
 		switch c {
-		case '.', '>', '!', 'P', '_', '|', 'M', 'Δ', 'G', '-':
+		case '.', '>', '!', 'P', '_', '|', 'G', '-':
 			if pos.valid() {
 				dg.d.SetCell(pos, GroundCell)
 			}
@@ -488,6 +488,18 @@ func (r *room) Dig(dg *dgen) {
 			if pos.valid() {
 				dg.d.SetCell(pos, WindowCell)
 			}
+		case '"',
+			'?',
+			',',
+			'~',
+			'c',
+			'q',
+			'S',
+			'M',
+			'Δ',
+			'A':
+		default:
+			log.Fatalf("Invalid terrain: %c for room w:%d h:%d pos:%+v\n%s", c, r.w, r.h, r.pos, r.kind)
 		}
 		switch c {
 		case '>':
