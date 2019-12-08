@@ -186,7 +186,7 @@ func (g *game) Jump(mons *monster) error {
 	g.Stats.Jumps++
 	g.Printf("You jump over %s", mons.Kind.Definite(false))
 	g.StoryPrintf("Jumped over %s", mons.Kind)
-	if g.Stats.Jumps == 10 {
+	if g.Stats.Jumps+g.Stats.WallJumps == 15 {
 		AchAcrobat.Get(g)
 	}
 	return nil
@@ -240,7 +240,7 @@ func (g *game) WallJump(pos position) error {
 	g.Stats.WallJumps++
 	g.Print("You jump by propulsing yourself against the wall.")
 	g.ui.PushAnimation(path)
-	if g.Stats.Jumps+g.Stats.WallJumps == 10 {
+	if g.Stats.Jumps+g.Stats.WallJumps == 15 {
 		AchAcrobat.Get(g)
 	}
 	return nil
