@@ -2129,6 +2129,7 @@ func (dg *dgen) PutMonsterBand(g *game, band monsterBand) bool {
 	if monsters == nil {
 		return false
 	}
+	awake := RandInt(5) > 0
 	var bdinf bandInfo
 	switch band {
 	case LoneYack, LoneWorm, PairYack:
@@ -2154,6 +2155,9 @@ func (dg *dgen) PutMonsterBand(g *game, band monsterBand) bool {
 		} else {
 			bdinf = dg.BandInfoGuardSpecial(g, band)
 		}
+		if !awake && RandInt(2) > 0 {
+			awake = true
+		}
 	case UniqueCrazyImp:
 		bdinf = dg.BandInfoOutside(g, band)
 		bdinf.Beh = BehCrazyImp
@@ -2161,7 +2165,6 @@ func (dg *dgen) PutMonsterBand(g *game, band monsterBand) bool {
 		bdinf = dg.BandInfoPatrol(g, band, PlacePatrol)
 	}
 	g.Bands = append(g.Bands, bdinf)
-	awake := RandInt(5) > 0
 	var pos position
 	if len(bdinf.Path) == 0 {
 		// should not happen now
