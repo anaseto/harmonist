@@ -54,7 +54,7 @@ func (st stair) ShortDesc(g *game) (desc string) {
 	case WinStair:
 		desc = "a monolith portal"
 	case BlockedStair:
-		desc = "blocked stairs downwards"
+		desc = "blocked " + NormalStair.ShortDesc(g)
 	}
 	return desc
 }
@@ -76,7 +76,7 @@ func (st stair) Desc(g *game) (desc string) {
 			desc += " You may want to take those after freeing Shaedra from her cell."
 		}
 	case BlockedStair:
-		desc = "Stairs lead to the next level of the Dayoriah Clan's domain in Hareka's Underground. These are sealed by an oric magical barrier that you have to disable by activating a corresponding stone of barrier. You will not be able to come back, because an oric barrier seals the stairs again when they are traversed by intruders. The upside of this is that ennemies cannot follow you either."
+		desc = "Stairs lead to the next level of the Dayoriah Clan's domain in Hareka's Underground. These are sealed by an oric magical barrier that you have to disable by activating a corresponding seal stone. You will not be able to come back, because an oric barrier seals the stairs again when they are traversed by intruders. The upside of this is that ennemies cannot follow you either."
 	}
 	return desc
 }
