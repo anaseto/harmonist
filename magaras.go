@@ -311,17 +311,17 @@ func (mag magara) Desc(g *game) (desc string) {
 	case TeleportMagara:
 		desc = "creates an oric energy disturbance, making you teleport far away on the same level."
 	case SwiftnessMagara:
-		desc = "makes you able to move several times in a row."
+		desc = "makes you able to move several times in a row for free."
 	case LevitationMagara:
 		desc = "makes you levitate with oric energies, allowing you to move over chasms, as well as through oric barriers."
 	case FireMagara:
-		desc = "throws small magical sparks at flammable terrain adjacent to you. Flammable terrain is first consumed by magical flames that are at first harmless to creatures. Then smoke will produce night clouds inducing sleep and confusion in monsters. As a gawalt monkey, you resist sleepiness, but you will still feel confused."
+		desc = "throws small magical sparks at flammable terrain adjacent to you. Flammable terrain is first consumed by magical flames that are by themselves harmless to creatures. Then smoke will produce night clouds inducing sleep and confusion in monsters. As a gawalt monkey, you resist sleepiness, but you will still feel confused. The fire does often expand to other adjacent flammable terrain."
 	case FogMagara:
 		desc = "creates a dense fog in a 2-range radius using harmonic energies. The fog will dissipate with time."
 	case ShadowsMagara:
-		desc = "surrounds you by harmonic shadows, making you detectable only by adjacent monsters when you're not in an lighted cell."
+		desc = "surrounds you by harmonic shadows. While standing on a dark cell, only adjacent monsters will be able to see you. It does not affect your visibility on lighted cells."
 	case NoiseMagara:
-		desc = "tricks monsters in a 12-range area with harmonic magical sounds, making them go away from you for a few turns. It only works on monsters that are not already seeing you."
+		desc = "tricks monsters in a 12-range area with harmonic magical sounds, making them go away from you for a few turns. The possible monster destinations will be marked with noise symbols in the map. It only works on monsters that are not already seeing you."
 	case ConfusionMagara:
 		desc = "confuses monsters in sight with harmonic light and sounds, leaving them unable to attack you."
 	case ParalysisMagara:
@@ -339,15 +339,15 @@ func (mag magara) Desc(g *game) (desc string) {
 	case EnergyMagara:
 		desc = "replenishes your MP and HP."
 	case TransparencyMagara:
-		desc = "feeds surrounding light to harmonic magic to make you transparent, only visible by adjacent monsters, when standing on a lighted cell."
+		desc = "feeds surrounding light to harmonic magic to make you transparent. When standing on a lighted cell, only adjacent monsters will be able to see you. It does not affect your visibility on dark cells."
 	case DisguiseMagara:
-		desc = "surrounds you with harmonic illusions that may you look like a guard, making most monsters ignore you. Monsters with good flair may see through the illusions at less than 3 tiles away. Monsters that are already hunting you will continue doing so."
+		desc = "surrounds you with harmonic illusions that may you look like a guard. As a result, most monsters will ignore you. Monsters with good flair may see through the illusions at less than 3 tiles away. Monsters that are already hunting you will continue doing so."
 	case DelayedNoiseMagara:
-		desc = "will produce a thunderous harmonic noise in your current position after a delay."
+		desc = "will produce a thunderous harmonic noise in your current position. The noise will happen after a delay."
 	case DispersalMagara:
 		desc = "will make monsters that attempt to hit you blink away."
 	case DelayedOricExplosionMagara:
-		desc = "will produce a big rock-destroying oric explosion at your current position after a delay. It destroys only walls."
+		desc = "will produce a big rock-destroying oric explosion at your current position. The explosion will happen after a delay. It destroys only walls."
 	}
 	duration := 0
 	switch mag.Kind {
