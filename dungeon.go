@@ -570,10 +570,10 @@ func (dg *dgen) NewRoom(rpos position, kind string) *room {
 	r.kind = strings.TrimSpace(r.kind)
 	r.ComputeDimensions()
 	drev := 2
-	if r.w > r.h {
-		drev += r.w - r.h
-		if drev > 5 {
-			drev = 5
+	if r.w > r.h+2 {
+		drev += r.w - r.h - 2
+		if drev > 4 {
+			drev = 4
 		}
 	}
 	if RandInt(drev) == 0 {
