@@ -742,7 +742,7 @@ func (dg *dgen) GenRooms(templates []string, n int, pl placement) (ps []position
 	ok = true
 	for i := 0; i < n; i++ {
 		var r *room
-		count := 250
+		count := 500
 		var pos position
 		var tpl string
 		for r == nil && count > 0 {
