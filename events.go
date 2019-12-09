@@ -397,8 +397,9 @@ func (cev *posEvent) Action(g *game) {
 			g.NoiseIllusion[cev.Pos] = true
 			dij := &gridPath{dungeon: g.Dungeon}
 			g.MakeNoise(OricExplosionNoise, cev.Pos)
-			nm := Dijkstra(dij, []position{cev.Pos}, 8)
+			nm := Dijkstra(dij, []position{cev.Pos}, 7)
 			fogs := []position{}
+			terrains := []terrain{}
 			nm.iter(cev.Pos, func(n *node) {
 				c := g.Dungeon.Cell(n.Pos)
 				if !c.T.IsDiggable() {
@@ -406,14 +407,18 @@ func (cev *posEvent) Action(g *game) {
 				}
 				g.Dungeon.SetCell(n.Pos, RubbleCell)
 				g.Stats.Digs++
-				g.UpdateKnowledge(n.Pos, c.T)
 				if g.Player.Sees(n.Pos) {
 					g.ui.WallExplosionAnimation(n.Pos)
 				}
 				fogs = append(fogs, n.Pos)
+				terrains = append(terrains, c.T)
 			})
 			for _, pos := range fogs {
 				g.Fog(pos, 1)
+			}
+			g.ComputeLOS()
+			for i, pos := range fogs {
+				g.UpdateKnowledge(pos, terrains[i])
 			}
 		} else {
 			cev.Timer--
