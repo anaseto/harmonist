@@ -1,4 +1,16 @@
-v0.3-dev
+v0.3 2019-12-10
+
+Highligths:
+
++ Improved monster AI: now they remember you!
++ Limited number of charges for magaras: you'll have to adapt your playstyle.
++ New core mechanic: jump by propulsing against walls!
++ Improved map generation and special events (mist and earthquake)
++ 2 new terrain features: fake stairs and queen rock that amplifies sound.
++ 4 new monsters, a new cloak, 6 new magaras and 2 old ones reworked, and
+  potions.
+
+More detailed list:
 
 + Improve monster AI: now they behave differently after they have spotted you
   at least once. Exact behavior depends on the type of monster, but they all
@@ -54,10 +66,10 @@ v0.3-dev
 + Various balance adjustments, like 1 more HP and MP, but less bananas,
   encouraging better strategic play.
 + Fix/improve many animations.
-+ Fix rare bug when blinking to the same place.
-+ Make “x” key work in key settings menu too.
 + Fix bug which could lead to negative number of bananas when jumping into
   chasm.
++ Fix rare bug when blinking to the same place.
++ Make “x” key work in key settings menu too.
 + Minor UI/messages/stats improvements and other miscellaneous bug fixes.
 
 -----------------------------------------------------------------------------
