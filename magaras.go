@@ -341,7 +341,7 @@ func (mag magara) Desc(g *game) (desc string) {
 	case TransparencyMagara:
 		desc = "feeds surrounding light to harmonic magic to make you transparent. When standing on a lighted cell, only adjacent monsters will be able to see you. It does not affect your visibility on dark cells."
 	case DisguiseMagara:
-		desc = "surrounds you with harmonic illusions that may you look like a guard. As a result, most monsters will ignore you. Monsters with good flair may see through the illusions at less than 3 tiles away. Monsters that are already hunting you will continue doing so."
+		desc = "surrounds you with harmonic illusions that make you look like a guard. As a result, most monsters will ignore you. Monsters with good flair may see through the illusions at less than 3 tiles away. Monsters that are already hunting you will continue doing so."
 	case DelayedNoiseMagara:
 		desc = "will produce a thunderous harmonic noise in your current position. The noise will happen after a delay."
 	case DispersalMagara:
