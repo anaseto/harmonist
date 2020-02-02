@@ -371,7 +371,7 @@ func (g *game) SimplifedDump(err error) string {
 	if maxDepth == 1 {
 		s = ""
 	}
-	fmt.Fprintf(buf, "You explored %d level%s out of %d.\n", maxDepth, s, MaxDepth+1)
+	fmt.Fprintf(buf, "You explored %d level%s out of %d.\n", maxDepth, s, MaxDepth)
 	fmt.Fprintf(buf, "\n")
 	if err != nil {
 		fmt.Fprintf(buf, "Error writing dump: %v.\n", err)
