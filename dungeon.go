@@ -1651,8 +1651,9 @@ func (dg *dgen) GenStones(g *game) {
 			count := 0
 			for pos == InvalidPos {
 				count++
-				if count > 1000 {
-					panic("GenStones")
+				if count > 1500 {
+					pos = dg.CaveGroundCell(g)
+					break
 				}
 				pos = dg.rooms[RandInt(len(dg.rooms))].RandomPlace(PlaceStatic)
 			}
