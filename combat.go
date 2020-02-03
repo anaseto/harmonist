@@ -133,10 +133,13 @@ func (g *game) Jump(mons *monster) error {
 	if mons.Peaceful(g) && mons.Kind != MonsEarthDragon {
 		ompos := mons.Pos
 		if g.Dungeon.Cell(ompos).T == ChasmCell && !g.Player.HasStatus(StatusLevitation) {
-			err := g.AbyssJump()
-			if err != nil {
-				return err
+			if g.DeepChasmDepth() {
+				return errors.New("You cannot jump into deep chasm.")
 			}
+			if !g.AbyssJumpConfirmation() {
+				return errors.New(DoNothing)
+			}
+			g.PushEvent(&simpleEvent{ERank: g.Ev.Rank(), EAction: AbyssFall})
 		}
 		if !mons.CanPass(g, g.Player.Pos) {
 			pos := mons.LeaveRoomForPlayer(g)

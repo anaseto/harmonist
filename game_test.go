@@ -8,6 +8,15 @@ func TestInitLevel(t *testing.T) {
 		g := &game{}
 		for depth := 0; depth < MaxDepth; depth++ {
 			g.InitLevel()
+			if g.Player.Pos == InvalidPos {
+				t.Errorf("Player starting cell is not valid")
+			}
+			if !g.Dungeon.Cell(g.Player.Pos).T.IsPlayerPassable() {
+				t.Errorf("Player starting cell is not passable: %+v", g.Dungeon.Cell(g.Player.Pos).ShortDesc(g, g.Player.Pos))
+			}
+			if g.Dungeon.Cell(g.Player.Pos).T != GroundCell {
+				t.Errorf("Player starting cell is not ground: %+v", g.Dungeon.Cell(g.Player.Pos).ShortDesc(g, g.Player.Pos))
+			}
 			if g.Depth == WinDepth {
 				if g.Dungeon.Cell(g.Places.Shaedra).T != StoryCell {
 					t.Errorf("Shaedra not there: %+v", g.Places.Shaedra)
