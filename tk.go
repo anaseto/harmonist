@@ -78,7 +78,7 @@ $can create image 0 0 -anchor nw -image gamescreen
 	})
 	ui.ir.RegisterCommand("OnClosing", func() {
 		if ui.g != nil && ui.g.Depth > 0 {
-			ui.g.Ev.Renew(ui.g, 0)
+			ui.g.RenewEvent(0)
 			errsave := ui.g.Save()
 			if errsave != nil {
 				log.Printf("Error: %v\n", errsave)

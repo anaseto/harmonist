@@ -62,18 +62,6 @@ func (g *game) Dump() string {
 	} else {
 		fmt.Fprintf(buf, "You are exploring depth %d of Dayoriah Clan's domain.\n", g.Depth)
 	}
-	if g.LiberatedShaedra {
-		fmt.Fprint(buf, "\n")
-		fmt.Fprint(buf, "You rescued Shaedra.\n")
-	} else {
-		fmt.Fprint(buf, "\n")
-		fmt.Fprint(buf, "You did not rescue Shaedra.\n")
-	}
-	if g.LiberatedArtifact {
-		fmt.Fprint(buf, "You recovered the Gem Portal Artifact.\n")
-	} else {
-		fmt.Fprint(buf, "You did not recover the Gem Portal Artifact.\n")
-	}
 	fmt.Fprintf(buf, "\n")
 	fmt.Fprintf(buf, "You have %d/%d HP, %d/%d MP and %d/%d bananas.\n", g.Player.HP, g.Player.HPMax(), g.Player.MP, g.Player.MPMax(), g.Player.Bananas, MaxBananas)
 	fmt.Fprintf(buf, "\n")
@@ -354,16 +342,6 @@ func (g *game) SimplifedDump(err error) string {
 		fmt.Fprintf(buf, "You died while exploring depth %d of Dayoriah Clan's domain.\n", g.Depth)
 	} else {
 		fmt.Fprintf(buf, "You are exploring depth %d of Dayoriah Clan's domain.\n", g.Depth)
-	}
-	if g.LiberatedShaedra {
-		fmt.Fprint(buf, "You rescued Shaedra.\n")
-	} else {
-		fmt.Fprint(buf, "You did not rescue Shaedra.\n")
-	}
-	if g.LiberatedArtifact {
-		fmt.Fprint(buf, "You recovered the Gem Portal Artifact.\n")
-	} else {
-		fmt.Fprint(buf, "You did not recover the Gem Portal Artifact.\n")
 	}
 	fmt.Fprintf(buf, "You spent %d turns in Hareka's Underground.\n", g.Turn)
 	maxDepth := Max(g.Depth, g.ExploredLevels)

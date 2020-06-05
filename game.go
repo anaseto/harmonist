@@ -60,10 +60,8 @@ type game struct {
 	Places             places
 	Params             startParams
 	//Opts                startOpts
-	ui                *gameui
-	LiberatedShaedra  bool
-	LiberatedArtifact bool
-	PlayerAgain       bool
+	ui          *gameui
+	PlayerAgain bool
 }
 
 type specialEvent int
@@ -491,7 +489,7 @@ func (g *game) InitLevel() {
 		}
 	}
 	for i := range g.Monsters {
-		g.PushEventRandomIndex(&monsterEvent{ERank: g.Turn, EAction: MonsterTurn, NMons: i})
+		g.PushEventRandomIndex(&monsterEvent{ERank: g.Turn, NMons: i})
 	}
 	switch g.Params.Event[g.Depth] {
 	case UnstableLevel:

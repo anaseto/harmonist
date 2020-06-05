@@ -405,15 +405,6 @@ func (g *game) SeePosition(pos position) {
 		mons.LastKnownPos = InvalidPos
 	}
 	delete(g.NoiseIllusion, pos)
-	if g.Objects.Story[pos] == StoryShaedra && !g.LiberatedShaedra &&
-		(g.Player.Pos.Distance(pos) <= 1 ||
-			g.Player.Pos.Distance(g.Places.Marevor) <= 1 ||
-			g.Player.Pos.Distance(g.Places.Monolith) <= 1) &&
-		g.Player.Pos != g.Places.Marevor &&
-		g.Player.Pos != g.Places.Monolith && g.Ev != nil {
-		g.PushEvent(&simpleEvent{ERank: g.Ev.Rank(), EAction: ShaedraAnimation})
-		g.LiberatedShaedra = true
-	}
 }
 
 func (g *game) ComputeExclusion(pos position, toggle bool) {

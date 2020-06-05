@@ -964,15 +964,15 @@ func (ui *gameui) HandleKey(rka runeKeyAction) (again bool, quit bool, err error
 		case LightCell:
 			err = g.ExtinguishFire()
 		case StoryCell:
-			if g.Objects.Story[g.Player.Pos] == StoryArtifact && !g.LiberatedArtifact {
-				g.PushEvent(&simpleEvent{ERank: g.Ev.Rank(), EAction: ArtifactAnimation})
-				g.LiberatedArtifact = true
-				g.Ev.Renew(g, DurationTurn)
-			} else if g.Objects.Story[g.Player.Pos] == StoryArtifactSealed {
-				err = errors.New("The artifact is protected by a magical stone barrier.")
-			} else {
-				err = errors.New("You cannot interact with anything here.")
-			}
+			//if g.Objects.Story[g.Player.Pos] == StoryArtifact && !g.LiberatedArtifact {
+			//g.PushEvent(&simpleEvent{ERank: g.Ev.Rank(), EAction: ArtifactAnimation})
+			//g.LiberatedArtifact = true
+			//g.Ev.Renew(g, DurationTurn)
+			//} else if g.Objects.Story[g.Player.Pos] == StoryArtifactSealed {
+			//err = errors.New("The artifact is protected by a magical stone barrier.")
+			//} else {
+			//err = errors.New("You cannot interact with anything here.")
+			//}
 		default:
 			err = errors.New("You cannot interact with anything here.")
 		}
@@ -996,7 +996,7 @@ func (ui *gameui) HandleKey(rka runeKeyAction) (again bool, quit bool, err error
 		ui.DrawPreviousLogs()
 		again = true
 	case ActionSave:
-		g.Ev.Renew(g, 0)
+		g.RenewEvent(0)
 		errsave := g.Save()
 		if errsave != nil {
 			g.PrintfStyled("Error: %v", logError, errsave)
@@ -1025,9 +1025,9 @@ func (ui *gameui) HandleKey(rka runeKeyAction) (again bool, quit bool, err error
 			err = errors.New("Unknown key. Type ? for help.")
 		}
 	case ActionWizardDescend:
-		if g.Wizard && g.Depth == WinDepth {
-			g.RescuedShaedra()
-		}
+		//if g.Wizard && g.Depth == WinDepth {
+		//g.RescuedShaedra()
+		//}
 		if g.Wizard && g.Depth < MaxDepth {
 			g.StoryPrint("Descended wizardly")
 			if g.Descend(DescendNormal) {
@@ -1307,7 +1307,7 @@ func (ui *gameui) CursorKeyAction(targ Targeter, rka runeKeyAction, data *examin
 	case ActionConfigure:
 		err = ui.HandleSettingAction()
 	case ActionSave:
-		g.Ev.Renew(g, 0)
+		g.RenewEvent(0)
 		g.Highlight = nil
 		g.Targeting = InvalidPos
 		errsave := g.Save()
