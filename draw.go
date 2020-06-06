@@ -1843,12 +1843,6 @@ func (ui *gameui) ReadScroll() error {
 			ui.g.StoryPrint("Read lore message")
 		}
 		ui.g.Stats.Lore[ui.g.Depth] = true
-		if len(ui.g.Stats.Lore) == 4 {
-			AchLoreStudent.Get(ui.g)
-		}
-		if len(ui.g.Stats.Lore) == len(ui.g.Params.Lore) {
-			AchLoremaster.Get(ui.g)
-		}
 	default:
 		ui.DrawDescription(sc.Text(ui.g), "Story Message")
 	}

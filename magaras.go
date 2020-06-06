@@ -201,44 +201,14 @@ func (g *game) UseMagara(n int) (err error) {
 	g.StoryPrintf("Evoked %s (MP: %d, Charges: %d)", mag, g.Player.MP, g.Player.Magaras[n].Charges)
 	if mag.Harmonic() {
 		g.Stats.HarmonicMagUse++
-		if g.Stats.HarmonicMagUse == 6 {
-			AchHarmonistNovice.Get(g)
-		}
-		if g.Stats.HarmonicMagUse == 11 {
-			AchHarmonistInitiate.Get(g)
-		}
-		if g.Stats.HarmonicMagUse == 16 {
-			AchHarmonistMaster.Get(g)
-		}
 	} else if mag.Oric() {
 		g.Stats.OricMagUse++
-		if g.Stats.OricMagUse == 6 {
-			AchNoviceOricCelmist.Get(g)
-		}
-		if g.Stats.OricMagUse == 11 {
-			AchInitiateOricCelmist.Get(g)
-		}
-		if g.Stats.OricMagUse == 16 {
-			AchMasterOricCelmist.Get(g)
-		}
 	} else if mag.Kind == FireMagara {
 		g.Stats.FireUse++
-		if g.Stats.FireUse == 2 {
-			AchPyromancerNovice.Get(g)
-		}
-		if g.Stats.FireUse == 4 {
-			AchPyromancerInitiate.Get(g)
-		}
-		if g.Stats.FireUse == 6 {
-			AchPyromancerMaster.Get(g)
-		}
 	}
 	switch mag.Kind {
 	case TeleportMagara, TeleportOtherMagara, BlinkMagara, SwappingMagara, DispersalMagara:
 		g.Stats.OricTelUse++
-		if g.Stats.OricTelUse == 14 {
-			AchTeleport.Get(g)
-		}
 	}
 	g.RenewEvent(DurationTurn)
 	return nil

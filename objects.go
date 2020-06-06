@@ -674,12 +674,6 @@ func (g *game) EquipItem() error {
 		g.Printf("You equip the %s.", it.ShortDesc(g))
 		g.StoryPrintf("Equipped %s", it.ShortDesc(g))
 	}
-	switch {
-	case it.IsCloak():
-		AchCloak.Get(g)
-	case it.IsAmulet():
-		AchAmulet.Get(g)
-	}
 	g.RenewEvent(DurationTurn)
 	return nil
 }
