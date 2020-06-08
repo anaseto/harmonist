@@ -320,15 +320,6 @@ func (m *monster) ComputeLOS(g *game) {
 
 func (g *game) SeeNotable(c cell, pos position) {
 	switch c.T {
-	case MagaraCell:
-		mag := g.Objects.Magaras[pos]
-		dp := &mappingPath{game: g}
-		_, l, ok := AstarPath(dp, g.Player.Pos, pos)
-		if ok {
-			g.StoryPrintf("Spotted %s (distance: %d)", mag, l)
-		} else {
-			g.StoryPrintf("Spotted %s", mag)
-		}
 	case ItemCell:
 		it := g.Objects.Items[pos]
 		dp := &mappingPath{game: g}
@@ -459,9 +450,6 @@ func (g *game) ComputeNoise() {
 		delete(g.Noise, k)
 	}
 	rmax := 2
-	if g.Player.Inventory.Body == CloakHear {
-		rmax += 2
-	}
 	// TODO: maybe if they're close enough you could hear them breathe too, or something like that.
 	nm.iter(g.Player.Pos, func(n *node) {
 		pos := n.Pos
@@ -473,11 +461,11 @@ func (g *game) ComputeNoise() {
 			(RandInt(rmax) > 0 || g.Dungeon.Cell(mons.Pos).T == QueenRockCell) {
 			switch mons.Kind {
 			case MonsMirrorSpecter, MonsSatowalgaPlant, MonsButterfly:
-				if mons.Kind == MonsMirrorSpecter && g.Player.Inventory.Body == CloakHear {
-					g.Noise[pos] = true
-					g.Print("You hear an imperceptible air movement.")
-					count++
-				}
+				//if mons.Kind == MonsMirrorSpecter {
+				//g.Noise[pos] = true
+				//g.Print("You hear an imperceptible air movement.")
+				//count++
+				//}
 			case MonsWingedMilfid, MonsTinyHarpy:
 				g.Noise[pos] = true
 				g.Print("You hear the flapping of wings.")
@@ -529,9 +517,6 @@ func (m *monster) Sees(g *game, pos position) bool {
 	var darkRange = 4
 	if m.Kind == MonsHazeCat {
 		darkRange = DefaultMonsterLOSRange
-	}
-	if g.Player.Inventory.Body == CloakShadows {
-		darkRange--
 	}
 	if g.Player.HasStatus(StatusShadows) {
 		darkRange = 1

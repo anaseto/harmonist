@@ -1009,9 +1009,6 @@ func (dg *dgen) AddSpecial(g *game, ml maplayout) {
 	for i := 0; i < bananas; i++ {
 		dg.GenBanana(g)
 	}
-	if !g.Params.NoMagara[g.Depth] {
-		dg.GenMagara(g)
-	}
 	dg.GenItem(g)
 	dg.GenPotion(g, MagicPotion)
 	if g.Params.HealthPotion[g.Depth] {
@@ -1447,16 +1444,6 @@ func (dg *dgen) GenItem(g *game) {
 		pos = dg.rooms[RandInt(len(dg.rooms))].RandomPlace(PlaceItem)
 	}
 	g.Dungeon.SetCell(pos, ItemCell)
-	var it item
-	switch plan {
-	case GenCloak:
-		it = g.RandomCloak()
-		g.GeneratedCloaks = append(g.GeneratedCloaks, it)
-	case GenAmulet:
-		it = g.RandomAmulet()
-		g.GeneratedAmulets = append(g.GeneratedAmulets, it)
-	}
-	g.Objects.Items[pos] = it
 }
 
 func (dg *dgen) GenBarrierStone(g *game) {
@@ -1471,22 +1458,6 @@ func (dg *dgen) GenBarrierStone(g *game) {
 	}
 	g.Dungeon.SetCell(pos, StoneCell)
 	g.Objects.Stones[pos] = SealStone
-}
-
-func (dg *dgen) GenMagara(g *game) {
-	pos := InvalidPos
-	count := 0
-	for pos == InvalidPos {
-		count++
-		if count > 1000 {
-			panic("GenMagara")
-		}
-		pos = dg.rooms[RandInt(len(dg.rooms))].RandomPlace(PlaceItem)
-	}
-	g.Dungeon.SetCell(pos, MagaraCell)
-	mag := g.RandomMagara()
-	g.Objects.Magaras[pos] = mag
-	g.GeneratedMagaras = append(g.GeneratedMagaras, mag.Kind)
 }
 
 func (dg *dgen) GenStairs(g *game, st stair) {

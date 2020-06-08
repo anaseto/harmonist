@@ -1696,101 +1696,51 @@ func (ui *gameui) ListItemBG(i int) uicolor {
 	return bg
 }
 
-func (ui *gameui) MagaraItem(i, lnum int, c magara, fg uicolor) {
-	bg := ui.ListItemBG(i)
-	ui.ClearLineWithColor(lnum, bg)
-	ui.DrawColoredTextOnBG(fmt.Sprintf("%c - %s (%d charges)", rune(i+97), c, c.Charges), 0, lnum, fg, bg)
-}
+//func (ui *gameui) EquipMagara() error {
+//g := ui.g
+//desc := false
+//ui.DrawDungeonView(NoFlushMode)
+//for {
+//magaras := g.Player.Magaras
+//ui.ClearLine(0)
+//if !ui.Small() {
+//ui.DrawColoredText(MenuInteract.String(), MenuCols[MenuInteract][0], ui.MapHeight(), ColorCyan)
+//ui.DrawSelectDescBasics()
+//}
+//if desc {
+//ui.DrawColoredText("Describe", 0, 0, ColorBlue)
+//col := utf8.RuneCountInString("Describe")
+//ui.DrawText(" which magara? (press ? or click here for equip menu)", col, 0)
+//} else {
+//ui.DrawColoredText("Equip", 0, 0, ColorCyan)
+//col := utf8.RuneCountInString("Evoke")
+//ui.DrawText(" instead of which magara? (press ? or click here for description menu)", col, 0)
+//}
+//for i, r := range magaras {
+//ui.MagaraItem(i, i+1, r, ColorFg)
+//}
+//ui.DrawTextLine(" press (x) to cancel ", len(magaras)+1)
+//ui.Flush()
+//index, alt, err := ui.Select(len(magaras))
+//if alt {
+//desc = !desc
+//continue
+//}
+//if err == nil {
+//ui.MagaraItem(index, index+1, magaras[index], ColorYellow)
+//ui.Flush()
+//Sleep(AnimDurMedium)
+//if desc {
+//ui.DrawDescription(magaras[index].Desc(g), "Magara Description")
+//continue
+//}
+//err = g.EquipMagara(index)
+//}
+//return err
+//}
+//}
 
-func (ui *gameui) SelectMagara() error {
-	g := ui.g
-	desc := false
-	ui.DrawDungeonView(NoFlushMode)
-	for {
-		magaras := g.Player.Magaras
-		ui.ClearLine(0)
-		if !ui.Small() {
-			ui.DrawColoredText(MenuEvoke.String(), MenuCols[MenuEvoke][0], ui.MapHeight(), ColorCyan)
-			ui.DrawSelectDescBasics()
-		}
-		if desc {
-			ui.DrawColoredText("Describe", 0, 0, ColorBlue)
-			col := utf8.RuneCountInString("Describe")
-			ui.DrawText(" which magara? (press ? or click here for evocation menu)", col, 0)
-		} else {
-			ui.DrawColoredText("Evoke", 0, 0, ColorCyan)
-			col := utf8.RuneCountInString("Evoke")
-			ui.DrawText(" which magara? (press ? or click here for description menu)", col, 0)
-		}
-		for i, r := range magaras {
-			ui.MagaraItem(i, i+1, r, ColorFg)
-		}
-		ui.DrawTextLine(" press (x) to cancel ", len(magaras)+1)
-		ui.Flush()
-		index, alt, err := ui.Select(len(magaras))
-		if alt {
-			desc = !desc
-			continue
-		}
-		if err == nil {
-			ui.MagaraItem(index, index+1, magaras[index], ColorYellow)
-			ui.Flush()
-			Sleep(AnimDurMedium)
-			if desc {
-				ui.DrawDescription(magaras[index].Desc(g), "Magara Description")
-				continue
-			}
-			err = g.UseMagara(index)
-		}
-		return err
-	}
-}
-
-func (ui *gameui) EquipMagara() error {
-	g := ui.g
-	desc := false
-	ui.DrawDungeonView(NoFlushMode)
-	for {
-		magaras := g.Player.Magaras
-		ui.ClearLine(0)
-		if !ui.Small() {
-			ui.DrawColoredText(MenuInteract.String(), MenuCols[MenuInteract][0], ui.MapHeight(), ColorCyan)
-			ui.DrawSelectDescBasics()
-		}
-		if desc {
-			ui.DrawColoredText("Describe", 0, 0, ColorBlue)
-			col := utf8.RuneCountInString("Describe")
-			ui.DrawText(" which magara? (press ? or click here for equip menu)", col, 0)
-		} else {
-			ui.DrawColoredText("Equip", 0, 0, ColorCyan)
-			col := utf8.RuneCountInString("Evoke")
-			ui.DrawText(" instead of which magara? (press ? or click here for description menu)", col, 0)
-		}
-		for i, r := range magaras {
-			ui.MagaraItem(i, i+1, r, ColorFg)
-		}
-		ui.DrawTextLine(" press (x) to cancel ", len(magaras)+1)
-		ui.Flush()
-		index, alt, err := ui.Select(len(magaras))
-		if alt {
-			desc = !desc
-			continue
-		}
-		if err == nil {
-			ui.MagaraItem(index, index+1, magaras[index], ColorYellow)
-			ui.Flush()
-			Sleep(AnimDurMedium)
-			if desc {
-				ui.DrawDescription(magaras[index].Desc(g), "Magara Description")
-				continue
-			}
-			err = g.EquipMagara(index)
-		}
-		return err
-	}
-}
-
-func (ui *gameui) InventoryItem(i, lnum int, it item, fg uicolor, part string) {
+func (ui *gameui) InventoryItem(i, lnum int, it *item, fg uicolor, part string) {
 	bg := ui.ListItemBG(i)
 	ui.ClearLineWithColor(lnum, bg)
 	ui.DrawColoredTextOnBG(fmt.Sprintf("%c - %s (%s)", rune(i+97), it.ShortDesc(ui.g), part), 0, lnum, fg, bg)
@@ -1799,8 +1749,9 @@ func (ui *gameui) InventoryItem(i, lnum int, it item, fg uicolor, part string) {
 func (ui *gameui) SelectItem() error {
 	g := ui.g
 	ui.DrawDungeonView(NoFlushMode)
-	items := []item{g.Player.Inventory.Body, g.Player.Inventory.Neck, g.Player.Inventory.Misc}
-	parts := []string{"body", "neck", "backpack"}
+	items := []*item{g.Player.Inventory.Weapon, g.Player.Inventory.Helmet, g.Player.Inventory.Amulet,
+		g.Player.Inventory.Armour, g.Player.Inventory.Boots}
+	parts := []string{"weapon", "helmet", "amulet", "armour", "boots"}
 	for {
 		ui.ClearLine(0)
 		if !ui.Small() {

@@ -10,7 +10,6 @@ type player struct {
 	HPbonus int
 	MP      int
 	Bananas int
-	Magaras []magara
 	Dir     direction
 	//Aptitudes map[aptitude]bool
 	Statuses  map[status]int
@@ -20,21 +19,13 @@ type player struct {
 	LOS       map[position]bool
 	Rays      rayMap
 	Inventory inventory
-}
-
-type inventory struct {
-	Body item
-	Neck item
-	Misc item
+	Passives  map[itemPassive]bool
 }
 
 const DefaultHealth = 5
 
 func (p *player) HPMax() int {
 	hpmax := DefaultHealth
-	if p.Inventory.Body == CloakVitality {
-		hpmax += 2
-	}
 	if hpmax < 2 {
 		hpmax = 2
 	}
@@ -45,9 +36,6 @@ const DefaultMPmax = 6
 
 func (p *player) MPMax() int {
 	mpmax := DefaultMPmax
-	if p.Inventory.Body == CloakMagic {
-		mpmax += 2
-	}
 	return mpmax
 }
 
@@ -211,7 +199,6 @@ func (g *game) CollectGround() {
 	c := g.Dungeon.Cell(pos)
 	if c.IsNotable() {
 		g.DijkstraMapRebuild = true
-	switchcell:
 		switch c.T {
 		case BarrelCell:
 			// TODO: move here message
@@ -225,19 +212,6 @@ func (g *game) CollectGround() {
 				g.Dungeon.SetCell(pos, GroundCell)
 				delete(g.Objects.Bananas, pos)
 			}
-		case MagaraCell:
-			for i, mag := range g.Player.Magaras {
-				if mag.Kind != NoMagara {
-					continue
-				}
-				g.Player.Magaras[i] = g.Objects.Magaras[pos]
-				delete(g.Objects.Magaras, pos)
-				g.Dungeon.SetCell(pos, GroundCell)
-				g.Printf("You take the %s.", g.Player.Magaras[i])
-				g.StoryPrintf("Took %s", g.Player.Magaras[i])
-				break switchcell
-			}
-			g.Printf("You stand over %s.", Indefinite(g.Objects.Magaras[pos].String(), false))
 		case FakeStairCell:
 			g.Dungeon.SetCell(pos, GroundCell)
 			g.PrintStyled("You stand over fake stairs.", logSpecial)
@@ -344,13 +318,13 @@ func (g *game) PlayerBump(pos position) error {
 			g.Stats.Digs++
 			g.Stats.DestructionUse++
 		}
-		if g.Player.Inventory.Body == CloakSmoke {
-			_, ok := g.Clouds[g.Player.Pos]
-			if !ok && g.Dungeon.Cell(g.Player.Pos).AllowsFog() {
-				g.Clouds[g.Player.Pos] = CloudFog
-				g.PushEvent(&posEvent{ERank: g.Ev.Rank() + DurationSmokingCloakFog, EAction: CloudEnd, Pos: g.Player.Pos})
-			}
-		}
+		//if g.Player.Inventory.Body == CloakSmoke {
+		//_, ok := g.Clouds[g.Player.Pos]
+		//if !ok && g.Dungeon.Cell(g.Player.Pos).AllowsFog() {
+		//g.Clouds[g.Player.Pos] = CloudFog
+		//g.PushEvent(&posEvent{ERank: g.Ev.Rank() + DurationSmokingCloakFog, EAction: CloudEnd, Pos: g.Player.Pos})
+		//}
+		//}
 		//}
 		g.Stats.Moves++
 		g.PlacePlayerAt(pos)
@@ -486,4 +460,39 @@ func (g *game) PlayerCanJumpPass(pos position) bool {
 	c := g.Dungeon.Cell(pos)
 	return c.IsJumpPassable() ||
 		g.Player.HasStatus(StatusLevitation) && c.T == BarrierCell
+}
+
+func (g *game) EquipItem() error {
+	it, ok := g.Objects.Items[g.Player.Pos]
+	if !ok {
+		return errors.New("Nothing to equip here.")
+	}
+	var oitem *item
+	switch it.Class {
+	case Weapon:
+		oitem = g.Player.Inventory.Weapon
+		g.Player.Inventory.Weapon = it
+	case Helmet:
+		oitem = g.Player.Inventory.Helmet
+		g.Player.Inventory.Helmet = it
+	case Armour:
+		oitem = g.Player.Inventory.Armour
+		g.Player.Inventory.Armour = it
+	case Boots:
+		oitem = g.Player.Inventory.Boots
+		g.Player.Inventory.Boots = it
+	}
+	if oitem != nil {
+		g.Objects.Items[g.Player.Pos] = oitem
+		g.Printf("You equip the %s.", it.ShortDesc(g))
+		g.Printf("You leave the %s.", oitem.ShortDesc(g))
+		g.StoryPrintf("Equipped %s", it.ShortDesc(g))
+	} else {
+		delete(g.Objects.Items, g.Player.Pos)
+		g.Dungeon.SetCell(g.Player.Pos, GroundCell)
+		g.Printf("You equip the %s.", it.ShortDesc(g))
+		g.StoryPrintf("Equipped %s", it.ShortDesc(g))
+	}
+	g.RenewEvent(DurationTurn)
+	return nil
 }

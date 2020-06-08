@@ -30,9 +30,6 @@ func (m *monster) InflictDamage(g *game, damage, max int) {
 	} else {
 		g.StoryPrintf("Killed by %s", m.Kind)
 	}
-	if g.Player.HP > 0 && g.Player.Inventory.Body == CloakConversion && g.Player.MP < g.Player.MPMax() {
-		g.Player.MP++
-	}
 }
 
 func (g *game) MakeMonstersAware() {
@@ -179,9 +176,6 @@ func (g *game) Jump(mons *monster) error {
 			return nil
 		}
 	}
-	if !g.Player.HasStatus(StatusSwift) && g.Player.Inventory.Body != CloakAcrobat {
-		g.PutStatus(StatusExhausted, 5)
-	}
 	if mons.Kind == MonsEarthDragon {
 		g.Confusion()
 	}
@@ -232,9 +226,6 @@ func (g *game) WallJump(pos position) error {
 	}
 	if !g.PlayerCanPass(tpos) || (count != 3 && count != 2) {
 		return errors.New("There's not enough room to jump.")
-	}
-	if !g.Player.HasStatus(StatusSwift) && g.Player.Inventory.Body != CloakAcrobat {
-		g.PutStatus(StatusExhausted, 5)
 	}
 	g.PlacePlayerAt(tpos)
 	g.Stats.WallJumps++

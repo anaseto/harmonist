@@ -947,9 +947,6 @@ func (ui *gameui) HandleKey(rka runeKeyAction) (again bool, quit bool, err error
 			if err != nil {
 				ui.MenuSelectedAnimation(MenuInteract, false)
 			}
-		case MagaraCell:
-			err = ui.EquipMagara()
-			err = ui.CleanError(err)
 		case StoneCell:
 			ui.MenuSelectedAnimation(MenuInteract, true)
 			err = g.ActivateStone()
@@ -976,9 +973,9 @@ func (ui *gameui) HandleKey(rka runeKeyAction) (again bool, quit bool, err error
 		default:
 			err = errors.New("You cannot interact with anything here.")
 		}
-	case ActionEvoke:
-		err = ui.SelectMagara()
-		err = ui.CleanError(err)
+	//case ActionEvoke:
+	//err = ui.SelectMagara()
+	//err = ui.CleanError(err)
 	case ActionInventory:
 		err = ui.SelectItem()
 		err = ui.CleanError(err)
@@ -1142,9 +1139,6 @@ func (ui *gameui) NextObject(pos position, data *examineData) {
 			data.objects = append(data.objects, p)
 		}
 		for p := range g.Objects.Barrels {
-			data.objects = append(data.objects, p)
-		}
-		for p := range g.Objects.Magaras {
 			data.objects = append(data.objects, p)
 		}
 		for p := range g.Objects.Bananas {
@@ -1487,7 +1481,7 @@ func (ui *gameui) WhichButton(col int) (menu, bool) {
 	}
 	end := len(MenuCols) - 1
 	switch g.Dungeon.Cell(g.Player.Pos).T {
-	case StairCell, BarrelCell, ScrollCell, MagaraCell, StoneCell, LightCell:
+	case StairCell, BarrelCell, ScrollCell, StoneCell, LightCell:
 		end++
 	case StoryCell:
 		if g.Objects.Story[g.Player.Pos] == StoryArtifactSealed || g.Objects.Story[g.Player.Pos] == StoryArtifact {
@@ -1515,9 +1509,6 @@ func (ui *gameui) UpdateInteractButton() string {
 		show = true
 	case BarrelCell:
 		interactMenu = "[rest]"
-		show = true
-	case MagaraCell:
-		interactMenu = "[equip]"
 		show = true
 	case StoneCell:
 		interactMenu = "[activate]"

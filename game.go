@@ -22,9 +22,6 @@ type game struct {
 	Clouds             map[position]cloud
 	MagicalBarriers    map[position]terrain
 	GeneratedLore      map[int]bool
-	GeneratedMagaras   []magaraKind
-	GeneratedCloaks    []item
-	GeneratedAmulets   []item
 	GenPlan            [MaxDepth + 1]genFlavour
 	TerrainKnowledge   map[position]terrain
 	ExclusionsMap      map[position]bool
@@ -85,7 +82,6 @@ type startParams struct {
 	Holes        map[int]bool
 	Stones       map[int]bool
 	Tables       map[int]bool
-	NoMagara     map[int]bool
 	FakeStair    map[int]bool
 	ExtraBanana  map[int]int
 	HealthPotion map[int]bool
@@ -245,20 +241,6 @@ func (g *game) InitPlayer() {
 	g.Player.LOS = map[position]bool{}
 	g.Player.Statuses = map[status]int{}
 	g.Player.Expire = map[status]int{}
-	g.Player.Magaras = []magara{
-		magara{},
-		magara{},
-		magara{},
-		magara{},
-	}
-	g.GeneratedMagaras = []magaraKind{}
-	g.Player.Magaras[0] = g.RandomStartingMagara()
-	g.GeneratedMagaras = append(g.GeneratedMagaras, g.Player.Magaras[0].Kind)
-	g.Player.Inventory.Misc = MarevorMagara
-	// Testing
-	//g.Player.Magaras[1] = magara{Kind: DispersalMagara, Charges: 10}
-	//g.Player.Magaras[2] = magara{Kind: DelayedOricExplosionMagara, Charges: 10}
-	//g.Player.Magaras[2] = ConfusionMagara
 }
 
 type genFlavour int
@@ -291,7 +273,6 @@ func (g *game) InitFirstLevel() {
 	g.RaysCache = rayMap{}
 	g.GeneratedLore = map[int]bool{}
 	g.Stats.KilledMons = map[monsterKind]int{}
-	g.Stats.UsedMagaras = map[magaraKind]int{}
 	g.Stats.Achievements = map[achievement]int{}
 	g.Stats.Lore = map[int]bool{}
 	g.Stats.Statuses = map[status]int{}
@@ -413,8 +394,6 @@ func (g *game) InitFirstLevel() {
 			g.Params.Tables[2+RandInt(MaxDepth-1)] = true
 		}
 	}
-	g.Params.NoMagara = map[int]bool{}
-	g.Params.NoMagara[WinDepth] = true
 	g.Params.Stones = map[int]bool{}
 	if RandInt(MaxDepth) > MaxDepth/2 {
 		g.Params.Stones[2+RandInt(MaxDepth-1)] = true
@@ -443,9 +422,8 @@ func (g *game) InitLevelStructures() {
 	g.ExclusionsMap = map[position]bool{}
 	g.MagicalBarriers = map[position]terrain{}
 	g.LastMonsterKnownAt = map[position]*monster{}
-	g.Objects.Magaras = map[position]magara{}
 	g.Objects.Lore = map[position]int{}
-	g.Objects.Items = map[position]item{}
+	g.Objects.Items = map[position]*item{}
 	g.Objects.Scrolls = map[position]scroll{}
 	g.Objects.Stairs = map[position]stair{}
 	g.Objects.Bananas = make(map[position]bool, 2)
@@ -476,7 +454,6 @@ func (g *game) InitLevel() {
 
 	// Events
 	if g.Depth == 1 {
-		g.StoryPrintf("Started with %s", g.Player.Magaras[0])
 		g.Events = &eventQueue{}
 		heap.Init(g.Events)
 		g.PushEvent(&simpleEvent{ERank: 0, EAction: PlayerTurn})
