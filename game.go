@@ -83,7 +83,7 @@ type startParams struct {
 	Stones       map[int]bool
 	Tables       map[int]bool
 	FakeStair    map[int]bool
-	ExtraBanana  map[int]int
+	ExtraSimella map[int]int
 	HealthPotion map[int]bool
 	MappingStone map[int]bool
 	CrazyImp     int
@@ -233,9 +233,9 @@ func (g *game) GenDungeon() {
 
 func (g *game) InitPlayer() {
 	g.Player = &player{
-		HP:      DefaultHealth,
-		MP:      DefaultMPmax,
-		Bananas: 1,
+		HP:       DefaultHealth,
+		MP:       DefaultMPmax,
+		Simellas: 1,
 	}
 	g.Player.Rays = rayMap{}
 	g.Player.LOS = map[position]bool{}
@@ -358,12 +358,12 @@ func (g *game) InitFirstLevel() {
 			}
 		}
 	}
-	g.Params.ExtraBanana = map[int]int{}
+	g.Params.ExtraSimella = map[int]int{}
 	for i := 0; i < 2; i++ {
-		g.Params.ExtraBanana[1+5*i+RandInt(5)]++
+		g.Params.ExtraSimella[1+5*i+RandInt(5)]++
 	}
 	for i := 0; i < 2; i++ {
-		g.Params.ExtraBanana[1+5*i+RandInt(5)]--
+		g.Params.ExtraSimella[1+5*i+RandInt(5)]--
 	}
 
 	g.Params.Windows = map[int]bool{}
@@ -426,7 +426,7 @@ func (g *game) InitLevelStructures() {
 	g.Objects.Items = map[position]*item{}
 	g.Objects.Scrolls = map[position]scroll{}
 	g.Objects.Stairs = map[position]stair{}
-	g.Objects.Bananas = make(map[position]bool, 2)
+	g.Objects.Simellas = make(map[position]bool, 2)
 	g.Objects.EssenciaticSources = map[position]bool{}
 	g.Objects.Lights = map[position]bool{}
 	g.Objects.FakeStairs = map[position]bool{}
@@ -579,8 +579,8 @@ func (g *game) ApplyRest() {
 	g.Player.MP = g.Player.MPMax()
 	g.Stats.Rest++
 	g.Stats.DRests[g.Depth]++
-	g.PrintStyled("You feel fresh again after eating banana and sleeping.", logStatusEnd)
-	g.StoryPrintf("Rested in barrel (bananas: %d)", g.Player.Bananas)
+	g.PrintStyled("You feel fresh again after eating simella and sleeping.", logStatusEnd)
+	g.StoryPrintf("Rested in barrel (simellas: %d)", g.Player.Simellas)
 }
 
 func (g *game) AutoPlayer(ev event) bool {

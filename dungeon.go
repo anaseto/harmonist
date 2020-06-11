@@ -1004,10 +1004,10 @@ func (dg *dgen) AddSpecial(g *game, ml maplayout) {
 	if g.Params.Blocked[g.Depth] || g.Depth == MaxDepth {
 		dg.GenBarrierStone(g)
 	}
-	bananas := 1
-	bananas += g.Params.ExtraBanana[g.Depth]
-	for i := 0; i < bananas; i++ {
-		dg.GenBanana(g)
+	simellas := 1
+	simellas += g.Params.ExtraSimella[g.Depth]
+	for i := 0; i < simellas; i++ {
+		dg.GenSimella(g)
 	}
 	dg.GenItem(g)
 	dg.GenPotion(g, MagicPotion)
@@ -1258,20 +1258,20 @@ loopnb:
 	}
 }
 
-func (dg *dgen) GenBanana(g *game) {
+func (dg *dgen) GenSimella(g *game) {
 	count := 0
 	for {
 		count++
 		if count > 1000 {
-			panic("GenBanana")
+			panic("GenSimella")
 		}
 		x := RandInt(DungeonWidth)
 		y := RandInt(DungeonHeight)
 		pos := position{x, y}
 		c := dg.d.Cell(pos)
 		if c.T == GroundCell && !dg.room[pos] {
-			dg.d.SetCell(pos, BananaCell)
-			g.Objects.Bananas[pos] = true
+			dg.d.SetCell(pos, SimellaCell)
+			g.Objects.Simellas[pos] = true
 			break
 		}
 	}

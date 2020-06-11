@@ -63,7 +63,7 @@ func (g *game) Dump() string {
 		fmt.Fprintf(buf, "You are exploring depth %d of Dayoriah Clan's domain.\n", g.Depth)
 	}
 	fmt.Fprintf(buf, "\n")
-	fmt.Fprintf(buf, "You have %d/%d HP, %d/%d MP and %d/%d bananas.\n", g.Player.HP, g.Player.HPMax(), g.Player.MP, g.Player.MPMax(), g.Player.Bananas, MaxBananas)
+	fmt.Fprintf(buf, "You have %d/%d HP, %d/%d MP and %d/%d simellas.\n", g.Player.HP, g.Player.HPMax(), g.Player.MP, g.Player.MPMax(), g.Player.Simellas, MaxSimellas)
 	fmt.Fprintf(buf, "\n")
 	fmt.Fprint(buf, g.DumpStatuses())
 	fmt.Fprintf(buf, "\n\n")
@@ -128,8 +128,8 @@ func (g *game) DetailedStatistics(w io.Writer) {
 	if g.Stats.TimesBlinked > 0 {
 		fmt.Fprintf(w, "You were blinked %d times by blinking frogs.\n", g.Stats.TimesBlinked)
 	}
-	if g.Stats.StolenBananas > 0 {
-		fmt.Fprintf(w, "You were stolen %d bananas by harpies.\n", g.Stats.StolenBananas)
+	if g.Stats.StolenSimellas > 0 {
+		fmt.Fprintf(w, "You were stolen %d simellas by harpies.\n", g.Stats.StolenSimellas)
 	}
 	fmt.Fprintf(w, "You jumped %d times over monsters.\n", g.Stats.Jumps)
 	fmt.Fprintf(w, "You jumped %d times by propulsing yourself against walls.\n", g.Stats.WallJumps)
