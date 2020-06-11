@@ -17,7 +17,7 @@ func main() {
 	ui := &gameui{}
 	err := ui.Init()
 	if err != nil {
-		log.Fatalf("harmonist: %v\n", err)
+		log.Fatalf("nboohu: %v\n", err)
 	}
 	defer ui.Close()
 	GameConfig.Tiles = true
@@ -192,7 +192,7 @@ func (g *game) Save() error {
 		return errors.New("localStorage not found")
 	}
 	s := base64.StdEncoding.EncodeToString(save)
-	storage.Call("setItem", "harmonistsave", s)
+	storage.Call("setItem", "nboohusave", s)
 	SaveError = ""
 	return nil
 }
@@ -212,7 +212,7 @@ func (g *game) SaveConfig() error {
 		return errors.New("localStorage not found")
 	}
 	s := base64.StdEncoding.EncodeToString(conf)
-	storage.Call("setItem", "harmonistconfig", s)
+	storage.Call("setItem", "nboohuconfig", s)
 	SaveError = ""
 	return nil
 }
@@ -231,14 +231,14 @@ func (g *game) SaveReplay() error {
 		return err
 	}
 	s := base64.StdEncoding.EncodeToString(data)
-	storage.Call("setItem", "harmonistreplay", s)
+	storage.Call("setItem", "nboohureplay", s)
 	SaveError = ""
 	return nil
 }
 
 func (g *game) RemoveSaveFile() error {
 	storage := js.Global().Get("localStorage")
-	storage.Call("removeItem", "harmonistsave")
+	storage.Call("removeItem", "nboohusave")
 	return nil
 }
 
@@ -253,7 +253,7 @@ func (g *game) Load() (bool, error) {
 	if storage.Type() != js.TypeObject {
 		return true, errors.New("localStorage not found")
 	}
-	save := storage.Call("getItem", "harmonistsave")
+	save := storage.Call("getItem", "nboohusave")
 	if save.Type() != js.TypeString || runtime.GOARCH != "wasm" {
 		return false, nil
 	}
@@ -277,7 +277,7 @@ func (g *game) LoadConfig() (bool, error) {
 	if storage.Type() != js.TypeObject {
 		return true, errors.New("localStorage not found")
 	}
-	conf := storage.Call("getItem", "harmonistconfig")
+	conf := storage.Call("getItem", "nboohuconfig")
 	if conf.Type() != js.TypeString || runtime.GOARCH != "wasm" {
 		return false, nil
 	}
@@ -301,7 +301,7 @@ func (g *game) LoadReplay() error {
 	if storage.Type() != js.TypeObject {
 		return errors.New("localStorage not found")
 	}
-	save := storage.Call("getItem", "harmonistreplay")
+	save := storage.Call("getItem", "nboohureplay")
 	if save.Type() != js.TypeString || runtime.GOARCH != "wasm" {
 		return errors.New("invalid storage")
 	}

@@ -21,7 +21,7 @@ func Replay(file string) error {
 	}
 	err = ui.Init()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "harmonist: %v\n", err)
+		fmt.Fprintf(os.Stderr, "nboohu: %v\n", err)
 		os.Exit(1)
 	}
 	defer ui.Close()
@@ -40,7 +40,7 @@ func (g *game) DataDir() (string, error) {
 	if xdg == "" {
 		xdg = filepath.Join(os.Getenv("HOME"), ".local", "share")
 	}
-	dataDir := filepath.Join(xdg, "harmonist")
+	dataDir := filepath.Join(xdg, "nboohu")
 	_, err := os.Stat(dataDir)
 	if err != nil {
 		err = os.MkdirAll(dataDir, 0755)
