@@ -6,7 +6,7 @@ type inventory struct {
 	Amulet      *item
 	Armour      *item
 	Boots       *item
-	Consumables [NConsumables]*item
+	Consumables []*item
 }
 
 const NConsumables = 6
