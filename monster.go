@@ -728,8 +728,8 @@ func (m *monster) Explode(g *game) {
 			} else {
 				g.Dungeon.SetCell(pos, GroundCell)
 			}
-			if c.T == BarrelCell {
-				delete(g.Objects.Barrels, pos)
+			if c.T == EssenciaticSourceCell {
+				delete(g.Objects.EssenciaticSources, pos)
 			}
 			g.Stats.Digs++
 			g.UpdateKnowledge(pos, c.T)
@@ -1054,8 +1054,8 @@ func (m *monster) HandleMove(g *game) {
 	case !mons.Exists():
 		if m.Kind == MonsEarthDragon && c.IsDestructible() {
 			g.Dungeon.SetCell(target, RubbleCell)
-			if c.T == BarrelCell {
-				delete(g.Objects.Barrels, target)
+			if c.T == EssenciaticSourceCell {
+				delete(g.Objects.EssenciaticSources, target)
 			}
 			g.Stats.Digs++
 			g.UpdateKnowledge(target, c.T)
@@ -1065,7 +1065,7 @@ func (m *monster) HandleMove(g *game) {
 				// XXX use dijkstra distance ?
 				if c.IsWall() {
 					g.Printf("%s You hear an earth-splitting noise.", g.CrackSound())
-				} else if c.T == BarrelCell || c.T == DoorCell || c.T == TableCell {
+				} else if c.T == EssenciaticSourceCell || c.T == DoorCell || c.T == TableCell {
 					g.Printf("%s You hear an wood-splitting noise.", g.CrackSound())
 				}
 				g.StopAuto()
@@ -1149,7 +1149,7 @@ func (m *monster) HandleTurn(g *game) {
 	if m.HandleMonsSpecifics(g) {
 		return
 	}
-	if mpos.Distance(ppos) == 1 && g.Dungeon.Cell(ppos).T != BarrelCell && !m.Peaceful(g) {
+	if mpos.Distance(ppos) == 1 && g.Dungeon.Cell(ppos).T != EssenciaticSourceCell && !m.Peaceful(g) {
 		if m.Status(MonsConfused) {
 			g.Printf("%s appears too confused to attack.", m.Kind.Definite(true))
 			return

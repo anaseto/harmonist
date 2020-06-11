@@ -941,7 +941,7 @@ func (ui *gameui) HandleKey(rka runeKeyAction) (again bool, quit bool, err error
 			} else {
 				err = errors.New("No stairs here.")
 			}
-		case BarrelCell:
+		case EssenciaticSourceCell:
 			ui.MenuSelectedAnimation(MenuInteract, true)
 			err = g.Rest()
 			if err != nil {
@@ -1138,7 +1138,7 @@ func (ui *gameui) NextObject(pos position, data *examineData) {
 		for p := range g.Objects.Stones {
 			data.objects = append(data.objects, p)
 		}
-		for p := range g.Objects.Barrels {
+		for p := range g.Objects.EssenciaticSources {
 			data.objects = append(data.objects, p)
 		}
 		for p := range g.Objects.Bananas {
@@ -1481,7 +1481,7 @@ func (ui *gameui) WhichButton(col int) (menu, bool) {
 	}
 	end := len(MenuCols) - 1
 	switch g.Dungeon.Cell(g.Player.Pos).T {
-	case StairCell, BarrelCell, ScrollCell, StoneCell, LightCell:
+	case StairCell, EssenciaticSourceCell, ScrollCell, StoneCell, LightCell:
 		end++
 	case StoryCell:
 		if g.Objects.Story[g.Player.Pos] == StoryArtifactSealed || g.Objects.Story[g.Player.Pos] == StoryArtifact {
@@ -1507,7 +1507,7 @@ func (ui *gameui) UpdateInteractButton() string {
 			interactMenu = "[escape]"
 		}
 		show = true
-	case BarrelCell:
+	case EssenciaticSourceCell:
 		interactMenu = "[rest]"
 		show = true
 	case StoneCell:

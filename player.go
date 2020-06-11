@@ -127,7 +127,7 @@ func (g *game) MonsterCount() (count int) {
 }
 
 func (g *game) Rest() error {
-	if g.Dungeon.Cell(g.Player.Pos).T != BarrelCell {
+	if g.Dungeon.Cell(g.Player.Pos).T != EssenciaticSourceCell {
 		return fmt.Errorf("This place is not safe for sleeping.")
 	}
 	if cld, ok := g.Clouds[g.Player.Pos]; ok && cld == CloudFire {
@@ -200,7 +200,7 @@ func (g *game) CollectGround() {
 	if c.IsNotable() {
 		g.DijkstraMapRebuild = true
 		switch c.T {
-		case BarrelCell:
+		case EssenciaticSourceCell:
 			// TODO: move here message
 		case BananaCell:
 			if g.Player.Bananas >= MaxBananas {
@@ -285,7 +285,7 @@ func (g *game) PlayerBump(pos position) error {
 		return errors.New("You cannot move into a magical barrier.")
 	case c.T == WindowCell && !g.Player.HasStatus(StatusDig):
 		return errors.New("You cannot pass through the closed window.")
-	case c.T == BarrelCell && g.MonsterLOS[g.Player.Pos]:
+	case c.T == EssenciaticSourceCell && g.MonsterLOS[g.Player.Pos]:
 		return errors.New("You cannot enter a barrel while seen.")
 	}
 	mons := g.MonsterAt(pos)
@@ -301,7 +301,7 @@ func (g *game) PlayerBump(pos position) error {
 		if c.T == ChasmCell && !g.Player.HasStatus(StatusLevitation) {
 			return g.AbyssJump()
 		}
-		if c.T == BarrelCell {
+		if c.T == EssenciaticSourceCell {
 			g.Print("You hide yourself inside the barrel.")
 		} else if c.T == TableCell {
 			g.Print("You hide yourself under the table.")

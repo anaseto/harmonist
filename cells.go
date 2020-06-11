@@ -14,7 +14,7 @@ const (
 	GroundCell
 	DoorCell
 	FoliageCell
-	BarrelCell
+	EssenciaticSourceCell
 	StairCell
 	StoneCell
 	BananaCell
@@ -39,7 +39,7 @@ const (
 
 func (c cell) IsPassable() bool {
 	switch c.T {
-	case WallCell, DoorCell, BarrelCell, TableCell, TreeCell, HoledWallCell, BarrierCell, WindowCell, StoryCell, ChasmCell, WaterCell:
+	case WallCell, DoorCell, EssenciaticSourceCell, TableCell, TreeCell, HoledWallCell, BarrierCell, WindowCell, StoryCell, ChasmCell, WaterCell:
 		return false
 	default:
 		return true
@@ -102,7 +102,7 @@ func (c cell) IsJumpPropulsion() bool {
 
 func (c cell) IsEnclosing() bool {
 	switch c.T {
-	case BarrelCell, TableCell, HoledWallCell:
+	case EssenciaticSourceCell, TableCell, HoledWallCell:
 		return true
 	default:
 		return false
@@ -120,7 +120,7 @@ func (c cell) AllowsFog() bool {
 
 func (c cell) CoversPlayer() bool {
 	switch c.T {
-	case WallCell, BarrelCell, TableCell, TreeCell, HoledWallCell, BarrierCell, WindowCell:
+	case WallCell, EssenciaticSourceCell, TableCell, TreeCell, HoledWallCell, BarrierCell, WindowCell:
 		return true
 	default:
 		return false
@@ -156,7 +156,7 @@ func (c cell) BlocksRange() bool {
 
 func (c cell) Hides() bool {
 	switch c.T {
-	case WallCell, BarrelCell, TableCell, TreeCell, WindowCell, StoryCell:
+	case WallCell, EssenciaticSourceCell, TableCell, TreeCell, WindowCell, StoryCell:
 		return true
 	default:
 		return false
@@ -165,7 +165,7 @@ func (c cell) Hides() bool {
 
 func (c cell) IsIlluminable() bool {
 	switch c.T {
-	case WallCell, BarrelCell, TableCell, TreeCell, HoledWallCell, BarrierCell, WindowCell, ChasmCell, RubbleCell:
+	case WallCell, EssenciaticSourceCell, TableCell, TreeCell, HoledWallCell, BarrierCell, WindowCell, ChasmCell, RubbleCell:
 		return false
 	}
 	return true
@@ -173,7 +173,7 @@ func (c cell) IsIlluminable() bool {
 
 func (c cell) IsDestructible() bool {
 	switch c.T {
-	case WallCell, BarrelCell, DoorCell, TableCell, TreeCell, HoledWallCell, WindowCell:
+	case WallCell, EssenciaticSourceCell, DoorCell, TableCell, TreeCell, HoledWallCell, WindowCell:
 		return true
 	default:
 		return false
@@ -191,7 +191,7 @@ func (c cell) IsWall() bool {
 
 func (c cell) Flammable() bool {
 	switch c.T {
-	case FoliageCell, DoorCell, BarrelCell, TableCell, TreeCell, WindowCell:
+	case FoliageCell, DoorCell, EssenciaticSourceCell, TableCell, TreeCell, WindowCell:
 		return true
 	default:
 		return false
@@ -209,7 +209,7 @@ func (c cell) IsGround() bool {
 
 func (c cell) IsNotable() bool {
 	switch c.T {
-	case StairCell, StoneCell, BarrelCell, BananaCell,
+	case StairCell, StoneCell, EssenciaticSourceCell, BananaCell,
 		ScrollCell, ItemCell, FakeStairCell, PotionCell:
 		return true
 	default:
@@ -227,7 +227,7 @@ func (c cell) ShortDesc(g *game, pos position) (desc string) {
 		desc = "a door"
 	case FoliageCell:
 		desc = "foliage"
-	case BarrelCell:
+	case EssenciaticSourceCell:
 		desc = "a barrel"
 	case StoneCell:
 		desc = g.Objects.Stones[pos].ShortDesc(g)
@@ -291,7 +291,7 @@ func (c cell) Desc(g *game, pos position) (desc string) {
 		desc = "A closed door blocks your line of sight. Doors open automatically when you or a creature stand on them."
 	case FoliageCell:
 		desc = "Blue dense foliage grows in Hareka's Underground. It is difficult to see through."
-	case BarrelCell:
+	case EssenciaticSourceCell:
 		desc = "A barrel. You can hide yourself inside it when no creatures see you. It is a safe place for resting and recovering."
 	case StoneCell:
 		desc = g.Objects.Stones[pos].Desc(g)
@@ -383,7 +383,7 @@ func (c cell) Style(g *game, pos position) (r rune, fg uicolor) {
 		r, fg = '+', ColorFgPlace
 	case FoliageCell:
 		r, fg = '"', ColorFgLOS
-	case BarrelCell:
+	case EssenciaticSourceCell:
 		r, fg = '&', ColorFgObject
 	case StoneCell:
 		r, fg = g.Objects.Stones[pos].Style(g)

@@ -964,7 +964,7 @@ func (g *game) GenRoomTunnels(ml maplayout) {
 		dg.GenFakeStairs(g)
 	}
 	for i := 0; i < 4+RandInt(2); i++ {
-		dg.GenBarrel(g)
+		dg.GenEssenciaticSource(g)
 	}
 	dg.AddSpecial(g, ml)
 	dg.ComputeConnectedComponents(func(pos position) bool {
@@ -1511,7 +1511,7 @@ loop:
 	g.Objects.FakeStairs[pos] = true
 }
 
-func (dg *dgen) GenBarrel(g *game) {
+func (dg *dgen) GenEssenciaticSource(g *game) {
 	pos := InvalidPos
 	count := 0
 	for pos == InvalidPos {
@@ -1521,8 +1521,8 @@ func (dg *dgen) GenBarrel(g *game) {
 		}
 		pos = dg.rooms[RandInt(len(dg.rooms))].RandomPlace(PlaceSpecialStatic)
 	}
-	g.Dungeon.SetCell(pos, BarrelCell)
-	g.Objects.Barrels[pos] = true
+	g.Dungeon.SetCell(pos, EssenciaticSourceCell)
+	g.Objects.EssenciaticSources[pos] = true
 }
 
 func (dg *dgen) GenTable(g *game) {
@@ -1568,7 +1568,6 @@ func (dg *dgen) RandomInStone(g *game) stone {
 		return MappingStone
 	}
 	instones := []stone{
-		BarrelStone,
 		QueenStone,
 		TreeStone,
 		TeleportStone,
@@ -1583,7 +1582,6 @@ func (dg *dgen) RandomInStone(g *game) stone {
 
 func (dg *dgen) RandomOutStone(g *game) stone {
 	instones := []stone{
-		BarrelStone,
 		FogStone,
 		QueenStone,
 		NightStone,

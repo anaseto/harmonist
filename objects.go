@@ -6,17 +6,17 @@ import (
 )
 
 type objects struct {
-	Stairs     map[position]stair
-	Stones     map[position]stone
-	Barrels    map[position]bool
-	Bananas    map[position]bool
-	Lights     map[position]bool // true: on, false: off
-	Scrolls    map[position]scroll
-	Story      map[position]story
-	Lore       map[position]int // TODO simplify? (there's never more than one)
-	Items      map[position]*item
-	FakeStairs map[position]bool
-	Potions    map[position]potion
+	Stairs             map[position]stair
+	Stones             map[position]stone
+	EssenciaticSources map[position]bool
+	Bananas            map[position]bool
+	Lights             map[position]bool // true: on, false: off
+	Scrolls            map[position]scroll
+	Story              map[position]story
+	Lore               map[position]int // TODO simplify? (there's never more than one)
+	Items              map[position]*item
+	FakeStairs         map[position]bool
+	Potions            map[position]potion
 }
 
 type stair int
@@ -101,7 +101,6 @@ type stone int
 
 const (
 	InertStone stone = iota
-	BarrelStone
 	FogStone
 	QueenStone
 	NightStone
@@ -117,8 +116,6 @@ func (stn stone) String() (text string) {
 	switch stn {
 	case InertStone:
 		text = "inert stone"
-	case BarrelStone:
-		text = "barrel stone"
 	case FogStone:
 		text = "fog stone"
 	case QueenStone:
@@ -143,8 +140,6 @@ func (stn stone) Desc(g *game) (text string) {
 	switch stn {
 	case InertStone:
 		text = "This magical stone has been depleted of magical energies."
-	case BarrelStone:
-		text = "Activating this magical stone will teleport you away to a barrel in the same level."
 	case FogStone:
 		text = "Activating this magical stone will produce fog in a 4-radius area using harmonic energies."
 	case QueenStone:
@@ -178,8 +173,6 @@ func (stn stone) Style(g *game) (r rune, fg uicolor) {
 		fg = ColorFgPlayer
 	case MappingStone, SensingStone:
 		fg = ColorViolet
-	case BarrelStone:
-		fg = ColorFgObject
 	default:
 		fg = ColorFgMagicPlace
 	}
@@ -202,9 +195,6 @@ func (g *game) ActivateStone() (err error) {
 	switch stn {
 	case InertStone:
 		err = errors.New("The stone is inert.")
-	case BarrelStone:
-		g.Print("The stone teleports you away.")
-		g.TeleportToBarrel()
 	case FogStone:
 		g.Print("The stone releases fog.")
 		g.Fog(g.Player.Pos, FogStoneDistance)
@@ -333,7 +323,7 @@ func (g *game) ActivateTeleportStone() error {
 
 func (g *game) TeleportToBarrel() {
 	barrels := []position{}
-	for pos := range g.Objects.Barrels {
+	for pos := range g.Objects.EssenciaticSources {
 		barrels = append(barrels, pos)
 	}
 	pos := barrels[RandInt(len(barrels))]
