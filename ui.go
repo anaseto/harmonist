@@ -1141,7 +1141,7 @@ func (ui *gameui) NextObject(pos position, data *examineData) {
 		for p := range g.Objects.EssenciaticSources {
 			data.objects = append(data.objects, p)
 		}
-		for p := range g.Objects.Simellas {
+		for p := range g.Objects.Bananas {
 			data.objects = append(data.objects, p)
 		}
 		for p := range g.Objects.Items {

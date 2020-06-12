@@ -9,7 +9,7 @@ type objects struct {
 	Stairs             map[position]stair
 	Stones             map[position]stone
 	EssenciaticSources map[position]bool
-	Simellas           map[position]bool
+	Bananas            map[position]bool
 	Lights             map[position]bool // true: on, false: off
 	Scrolls            map[position]scroll
 	Story              map[position]story

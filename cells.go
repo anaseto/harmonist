@@ -17,7 +17,7 @@ const (
 	EssenciaticSourceCell
 	StairCell
 	StoneCell
-	SimellaCell
+	BananaCell
 	LightCell
 	ExtinguishedLightCell
 	TableCell
@@ -200,7 +200,7 @@ func (c cell) Flammable() bool {
 
 func (c cell) IsGround() bool {
 	switch c.T {
-	case GroundCell, CavernCell, SimellaCell, PotionCell, QueenRockCell:
+	case GroundCell, CavernCell, BananaCell, PotionCell, QueenRockCell:
 		return true
 	default:
 		return false
@@ -209,7 +209,7 @@ func (c cell) IsGround() bool {
 
 func (c cell) IsNotable() bool {
 	switch c.T {
-	case StairCell, StoneCell, EssenciaticSourceCell, SimellaCell,
+	case StairCell, StoneCell, EssenciaticSourceCell, BananaCell,
 		ScrollCell, ItemCell, FakeStairCell, PotionCell:
 		return true
 	default:
@@ -233,8 +233,8 @@ func (c cell) ShortDesc(g *game, pos position) (desc string) {
 		desc = g.Objects.Stones[pos].ShortDesc(g)
 	case StairCell:
 		desc = g.Objects.Stairs[pos].ShortDesc(g)
-	case SimellaCell:
-		desc = "a simella"
+	case BananaCell:
+		desc = "a banana"
 	case LightCell:
 		desc = "a campfire"
 	case ExtinguishedLightCell:
@@ -242,7 +242,7 @@ func (c cell) ShortDesc(g *game, pos position) (desc string) {
 	case TableCell:
 		desc = "a table"
 	case TreeCell:
-		desc = "a simella tree"
+		desc = "a banana tree"
 	case HoledWallCell:
 		desc = "a holed wall"
 	case ScrollCell:
@@ -297,8 +297,8 @@ func (c cell) Desc(g *game, pos position) (desc string) {
 		desc = g.Objects.Stones[pos].Desc(g)
 	case StairCell:
 		desc = g.Objects.Stairs[pos].Desc(g)
-	case SimellaCell:
-		desc = "A gawalt monkey cannot enter a healthy sleep without eating one of those simellas before."
+	case BananaCell:
+		desc = "A gawalt monkey cannot enter a healthy sleep without eating one of those bananas before."
 	case LightCell:
 		desc = "A campfire illuminates surrounding cells. Creatures can spot you in illuminated cells from a greater range."
 	case ExtinguishedLightCell:
@@ -306,7 +306,7 @@ func (c cell) Desc(g *game, pos position) (desc string) {
 	case TableCell:
 		desc = "You can hide under the table so that only adjacent creatures can see you. Most creatures cannot walk accross the table."
 	case TreeCell:
-		desc = "Underground simella trees grow with nearly no light sources. Their rare simellas are very appreciated by many creatures, specially some harpy species. You may find some simellas dropped by them while exploring. You can climb trees to see farther. Moreover, only big, flying or jumping creatures will be able to attack you while you stand on a tree. The top is never illuminated."
+		desc = "Underground banana trees grow with nearly no light sources. Their rare bananas are very appreciated by many creatures, specially some harpy species. You may find some bananas dropped by them while exploring. You can climb trees to see farther. Moreover, only big, flying or jumping creatures will be able to attack you while you stand on a tree. The top is never illuminated."
 	case HoledWallCell:
 		desc = "Only very small creatures can pass there. It is difficult to see through."
 	case ScrollCell:
@@ -390,7 +390,7 @@ func (c cell) Style(g *game, pos position) (r rune, fg uicolor) {
 	case StairCell:
 		st := g.Objects.Stairs[pos]
 		r, fg = st.Style(g)
-	case SimellaCell:
+	case BananaCell:
 		r, fg = ')', ColorFgObject
 	case LightCell:
 		r, fg = '☼', ColorFgObject

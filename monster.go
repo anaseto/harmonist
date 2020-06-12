@@ -324,7 +324,7 @@ var MonsData = []monsterData{
 
 var MonsDesc = []string{
 	MonsGuard:     "Guards are low rank soldiers who patrol between Dayoriah Clan's buildings.",
-	MonsTinyHarpy: "Tiny harpies are little humanoid flying creatures. They are aggressive when hungry, but peaceful when satiated. This Underground harpy species eats fruits (including simellas) and other vegetables.",
+	MonsTinyHarpy: "Tiny harpies are little humanoid flying creatures. They are aggressive when hungry, but peaceful when satiated. This Underground harpy species eats fruits (including bananas) and other vegetables.",
 	//MonsOgre:            "Ogres are big clunky humanoids that can hit really hard.",
 	MonsOricCelmist:     "Oric celmists are mages that can create magical barriers in cells adjacent to you, complicating your escape.\n\nDayoriah Clan's oric celmists are famous for their knowledge of oric magic force manipulations. They are the ones who instigated the steal of Marevor's Gem Portal Artifact. According to Marevor, they plan on doing some dangerous oric experiments with the Artifact, though that's all you can say about it, because his boring explanations were a bit over your head.",
 	MonsHarmonicCelmist: "Harmonic celmists are mages specialized in manipulation of sound and light. They can illuminate you with harmonic light, making it more difficult to hide from them. They also use alert harmonic sounds around you.\n\nHarmonies are usually mainly used for sneaking around in the shadows, but they can also be used to reveal ennemies, sadly for you. Although harmonies are often considered as less prestigious magic energies than oric energies, the Dayoriah Clan knows how to make good use of them, as they clearly showed when they stole Marevor's Gem Portal Artifact.",
@@ -992,7 +992,7 @@ func (m *monster) Peaceful(g *game) bool {
 	}
 	switch m.Kind {
 	case MonsTinyHarpy:
-		if m.Status(MonsSatiated) || g.Player.Simellas == 0 {
+		if m.Status(MonsSatiated) || g.Player.Bananas == 0 {
 			return true
 		}
 	}
@@ -1338,14 +1338,14 @@ func (m *monster) HitSideEffects(g *game) {
 		if m.Status(MonsSatiated) {
 			return
 		}
-		g.Player.Simellas--
-		if g.Player.Simellas < 0 {
-			g.Player.Simellas = 0
+		g.Player.Bananas--
+		if g.Player.Bananas < 0 {
+			g.Player.Bananas = 0
 		} else {
 			m.PutStatus(g, MonsSatiated, DurationSatiationMonster)
-			g.Print("The tiny harpy steals a simella from you.")
-			g.StoryPrintf("Simella stolen by %s (simellas: %d)", m.Kind, g.Player.Simellas)
-			g.Stats.StolenSimellas++
+			g.Print("The tiny harpy steals a banana from you.")
+			g.StoryPrintf("Banana stolen by %s (bananas: %d)", m.Kind, g.Player.Bananas)
+			g.Stats.StolenBananas++
 			m.Target = m.NextTarget(g)
 			m.MakeWander()
 		}

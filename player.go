@@ -6,11 +6,11 @@ import (
 )
 
 type player struct {
-	HP       int
-	HPbonus  int
-	MP       int
-	Simellas int
-	Dir      direction
+	HP      int
+	HPbonus int
+	MP      int
+	Bananas int
+	Dir     direction
 	//Aptitudes map[aptitude]bool
 	Statuses  map[status]int
 	Expire    map[status]int
@@ -136,14 +136,14 @@ func (g *game) Rest() error {
 	if !g.NeedsRegenRest() && !g.StatusRest() {
 		return errors.New("You do not need to rest.")
 	}
-	if g.Player.Simellas <= 0 {
-		return errors.New("You cannot sleep without eating for dinner a simella first.")
+	if g.Player.Bananas <= 0 {
+		return errors.New("You cannot sleep without eating for dinner a banana first.")
 	}
 	g.ui.DrawMessage("Resting...")
 	g.RenewEvent(DurationTurn)
 	g.Resting = true
 	g.RestingTurns = RandInt(5) // you do not wake up when you want
-	g.Player.Simellas--
+	g.Player.Bananas--
 	return nil
 }
 
@@ -192,7 +192,7 @@ func (g *game) Teleportation() {
 	}
 }
 
-const MaxSimellas = 4
+const MaxBananas = 4
 
 func (g *game) CollectGround() {
 	pos := g.Player.Pos
@@ -202,15 +202,15 @@ func (g *game) CollectGround() {
 		switch c.T {
 		case EssenciaticSourceCell:
 			// TODO: move here message
-		case SimellaCell:
-			if g.Player.Simellas >= MaxSimellas {
-				g.Print("There is a simella, but your pack is already full.")
+		case BananaCell:
+			if g.Player.Bananas >= MaxBananas {
+				g.Print("There is a banana, but your pack is already full.")
 			} else {
-				g.Print("You take a simella.")
-				g.Player.Simellas++
-				g.StoryPrintf("Found simella (simellas: %d)", g.Player.Simellas)
+				g.Print("You take a banana.")
+				g.Player.Bananas++
+				g.StoryPrintf("Found banana (bananas: %d)", g.Player.Bananas)
 				g.Dungeon.SetCell(pos, GroundCell)
-				delete(g.Objects.Simellas, pos)
+				delete(g.Objects.Bananas, pos)
 			}
 		case FakeStairCell:
 			g.Dungeon.SetCell(pos, GroundCell)
@@ -243,8 +243,8 @@ func (g *game) FallAbyss(style descendstyle) {
 	if g.Player.MP < 0 {
 		g.Player.MP = 0
 	}
-	if g.Player.Simellas > 0 {
-		g.Player.Simellas--
+	if g.Player.Bananas > 0 {
+		g.Player.Bananas--
 	}
 	if style == DescendFall && g.Depth == MaxDepth || g.Depth == WinDepth {
 		g.Player.HP = 0

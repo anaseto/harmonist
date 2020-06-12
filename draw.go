@@ -182,7 +182,7 @@ var (
 	ColorFgMonster,
 	ColorFgPlace,
 	ColorFgPlayer,
-	ColorFgSimellas,
+	ColorFgBananas,
 	ColorFgSleepingMonster,
 	ColorFgStatusBad,
 	ColorFgStatusGood,
@@ -220,7 +220,7 @@ func LinkColors() {
 	ColorFgMonster = ColorRed
 	ColorFgPlace = ColorMagenta
 	ColorFgPlayer = ColorBlue
-	ColorFgSimellas = ColorYellow
+	ColorFgBananas = ColorYellow
 	ColorFgSleepingMonster = ColorViolet
 	ColorFgStatusBad = ColorRed
 	ColorFgStatusGood = ColorBlue
@@ -405,7 +405,7 @@ func (ui *gameui) DrawWelcomeCommon() int {
 	p.DrawText("  HARMONIST  ")
 	p.DrawDark("#", ColorViolet)
 	p.DrawDark(".", ColorFgDark)
-	p.DrawDark(")", ColorFgSimellas)
+	p.DrawDark(")", ColorFgBananas)
 	p.DrawDark("t", ColorFgSleepingMonster)
 	p.DrawDark("#", ColorFgDark)
 	p.NewLine()
@@ -695,7 +695,7 @@ func (ui *gameui) ViewPositionDescription(pos position) {
 		return
 	}
 	switch c.T {
-	case SimellaCell, ScrollCell, ItemCell:
+	case BananaCell, ScrollCell, ItemCell:
 		title = "Object Description"
 	case StoryCell:
 		title = "Special Description"
@@ -1123,7 +1123,7 @@ func (ui *gameui) DrawStatusBar(line int) {
 
 	line++
 	line++
-	ui.DrawText(fmt.Sprintf("Simellas: %d/%d", g.Player.Simellas, MaxSimellas), BarCol, line)
+	ui.DrawText(fmt.Sprintf("Bananas: %d/%d", g.Player.Bananas, MaxBananas), BarCol, line)
 	line++
 	if g.Depth == -1 {
 		ui.DrawText("Depth: Out!", BarCol, line)
@@ -1259,9 +1259,9 @@ func (ui *gameui) DrawStatusLine() {
 	col++
 	ui.SetMapCell(col, line, ')', ColorYellow, ColorBg)
 	col++
-	simella := fmt.Sprintf(":%1d/%1d ", g.Player.Simellas, MaxSimellas)
-	ui.DrawColoredText(simella, col, line, ColorFg)
-	col += utf8.RuneCountInString(simella)
+	banana := fmt.Sprintf(":%1d/%1d ", g.Player.Bananas, MaxBananas)
+	ui.DrawColoredText(banana, col, line, ColorFg)
+	col += utf8.RuneCountInString(banana)
 
 	if len(sts) > 0 {
 		ui.DrawText("| ", col, line)
