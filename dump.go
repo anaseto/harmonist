@@ -67,7 +67,20 @@ func (g *game) Dump() string {
 	fmt.Fprintf(buf, "\n")
 	fmt.Fprint(buf, g.DumpStatuses())
 	fmt.Fprintf(buf, "\n\n")
+	fmt.Fprintf(buf, "Magaras:\n")
+	for _, mag := range g.Player.Magaras {
+		if mag.Kind != NoMagara {
+			fmt.Fprintf(buf, "- %s (used %d times, charges: %d)\n", mag, g.Stats.UsedMagaras[mag.Kind], mag.Charges)
+		}
+	}
+	fmt.Fprintf(buf, "\n")
 	fmt.Fprintf(buf, "Inventory:\n")
+	if g.Player.Inventory.Body != NoItem {
+		fmt.Fprintf(buf, "- %s (body)\n", g.Player.Inventory.Body.ShortDesc(g))
+	}
+	if g.Player.Inventory.Neck != NoItem {
+		fmt.Fprintf(buf, "- %s (neck)\n", g.Player.Inventory.Neck.ShortDesc(g))
+	}
 	fmt.Fprintf(buf, "\n")
 	fmt.Fprintf(buf, "Miscellaneous:\n")
 	if g.Stats.Killed > 0 {

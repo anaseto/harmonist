@@ -17,6 +17,7 @@ const (
 	BarrelCell
 	StairCell
 	StoneCell
+	MagaraCell
 	BananaCell
 	LightCell
 	ExtinguishedLightCell
@@ -57,7 +58,7 @@ func (c cell) IsJumpPassable() bool {
 
 func (c cell) IsNormalPatrolWay() bool {
 	switch c.T {
-	case GroundCell, ScrollCell, DoorCell, StairCell, LightCell, ItemCell, ExtinguishedLightCell, StoneCell, FakeStairCell:
+	case GroundCell, ScrollCell, DoorCell, StairCell, LightCell, ItemCell, ExtinguishedLightCell, StoneCell, MagaraCell, FakeStairCell:
 		return true
 	default:
 		return false
@@ -209,7 +210,7 @@ func (c cell) IsGround() bool {
 
 func (c cell) IsNotable() bool {
 	switch c.T {
-	case StairCell, StoneCell, BarrelCell, BananaCell,
+	case StairCell, StoneCell, BarrelCell, MagaraCell, BananaCell,
 		ScrollCell, ItemCell, FakeStairCell, PotionCell:
 		return true
 	default:
@@ -233,6 +234,8 @@ func (c cell) ShortDesc(g *game, pos position) (desc string) {
 		desc = g.Objects.Stones[pos].ShortDesc(g)
 	case StairCell:
 		desc = g.Objects.Stairs[pos].ShortDesc(g)
+	case MagaraCell:
+		desc = g.Objects.Magaras[pos].ShortDesc()
 	case BananaCell:
 		desc = "a banana"
 	case LightCell:
@@ -297,6 +300,8 @@ func (c cell) Desc(g *game, pos position) (desc string) {
 		desc = g.Objects.Stones[pos].Desc(g)
 	case StairCell:
 		desc = g.Objects.Stairs[pos].Desc(g)
+	case MagaraCell:
+		desc = g.Objects.Magaras[pos].Desc(g)
 	case BananaCell:
 		desc = "A gawalt monkey cannot enter a healthy sleep without eating one of those bananas before."
 	case LightCell:
@@ -390,6 +395,8 @@ func (c cell) Style(g *game, pos position) (r rune, fg uicolor) {
 	case StairCell:
 		st := g.Objects.Stairs[pos]
 		r, fg = st.Style(g)
+	case MagaraCell:
+		r, fg = '/', ColorFgObject
 	case BananaCell:
 		r, fg = ')', ColorFgObject
 	case LightCell:

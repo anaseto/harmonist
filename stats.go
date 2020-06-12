@@ -13,6 +13,7 @@ type stats struct {
 	MagarasUsed       int
 	DMagaraUses       [MaxDepth + 1]int
 	UsedStones        int
+	UsedMagaras       map[magaraKind]int
 	Damage            int
 	DDamage           [MaxDepth + 1]int
 	DExplPerc         [MaxDepth + 1]int

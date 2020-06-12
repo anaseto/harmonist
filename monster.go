@@ -1229,40 +1229,40 @@ func (m *monster) HitPlayer(g *game) {
 	if g.Player.HP >= HeavyWoundHP {
 		return
 	}
-	//switch g.Player.Inventory.Neck {
-	//case AmuletConfusion:
-	//m.EnterConfusion(g)
-	//// TODO: maybe affect all monsters in sight?
-	//g.Printf("Your amulet releases confusing harmonies.")
-	//case AmuletFog:
-	//g.Print("Your amulet feels warm.")
-	//g.SwiftFog()
-	//case AmuletObstruction:
-	//opos := m.Pos
-	//pos := m.LeaveRoomForPlayer(g)
-	//if pos == InvalidPos {
-	//m.Blink(g)
-	//} else {
-	//m.MoveTo(g, pos)
-	//}
-	//if opos != m.Pos {
-	//g.MagicalBarrierAt(opos)
-	//g.Print("The amulet releases an oric wind.")
-	//m.Exhaust(g)
-	//}
-	//case AmuletTeleport:
-	//g.Print("Your amulet shines.")
-	//m.TeleportAway(g)
-	//if m.Kind.ReflectsTeleport() {
-	//g.Printf("The %s reflected back some energies.", m.Kind)
-	//g.Teleportation()
-	//}
-	//case AmuletLignification:
-	//g.Print("Your amulet glows.")
-	//if !m.Kind.ResistsLignification() {
-	//m.EnterLignification(g)
-	//}
-	//}
+	switch g.Player.Inventory.Neck {
+	case AmuletConfusion:
+		m.EnterConfusion(g)
+		// TODO: maybe affect all monsters in sight?
+		g.Printf("Your amulet releases confusing harmonies.")
+	case AmuletFog:
+		g.Print("Your amulet feels warm.")
+		g.SwiftFog()
+	case AmuletObstruction:
+		opos := m.Pos
+		pos := m.LeaveRoomForPlayer(g)
+		if pos == InvalidPos {
+			m.Blink(g)
+		} else {
+			m.MoveTo(g, pos)
+		}
+		if opos != m.Pos {
+			g.MagicalBarrierAt(opos)
+			g.Print("The amulet releases an oric wind.")
+			m.Exhaust(g)
+		}
+	case AmuletTeleport:
+		g.Print("Your amulet shines.")
+		m.TeleportAway(g)
+		if m.Kind.ReflectsTeleport() {
+			g.Printf("The %s reflected back some energies.", m.Kind)
+			g.Teleportation()
+		}
+	case AmuletLignification:
+		g.Print("Your amulet glows.")
+		if !m.Kind.ResistsLignification() {
+			m.EnterLignification(g)
+		}
+	}
 }
 
 func (m *monster) PutStatus(g *game, st monsterStatus, duration int) bool {
@@ -1583,21 +1583,20 @@ func (m *monster) ThrowJavelin(g *game) bool {
 }
 
 func (m *monster) Corrode(g *game) {
-	// TODO: corrode
-	//count := 0
-	//for i, _ := range g.Player.Magaras {
-	//n := RandInt(2)
-	//g.Player.Magaras[i].Charges -= n
-	//if g.Player.Magaras[i].Charges < 0 {
-	//g.Player.Magaras[i].Charges = 0
-	//} else {
-	//count += n
-	//}
-	//}
-	//if count > 0 {
-	//g.Printf("You lose %d magara charges by corrosion.", count)
-	//g.StoryPrintf("Corroded by %s (lost %d magara charges)", m.Kind, count)
-	//}
+	count := 0
+	for i, _ := range g.Player.Magaras {
+		n := RandInt(2)
+		g.Player.Magaras[i].Charges -= n
+		if g.Player.Magaras[i].Charges < 0 {
+			g.Player.Magaras[i].Charges = 0
+		} else {
+			count += n
+		}
+	}
+	if count > 0 {
+		g.Printf("You lose %d magara charges by corrosion.", count)
+		g.StoryPrintf("Corroded by %s (lost %d magara charges)", m.Kind, count)
+	}
 }
 
 func (m *monster) ThrowAcid(g *game) bool {
