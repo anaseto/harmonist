@@ -99,6 +99,14 @@ func (mk monsterKind) Letter() rune {
 	return MonsData[mk].letter
 }
 
+func (mk monsterKind) BaseAttack() int {
+	return 1
+}
+
+func (mk monsterKind) Dangerousness() int {
+	return MonsData[mk].dangerousness
+}
+
 func (mk monsterKind) Ranged() bool {
 	switch mk {
 	//case MonsLich, MonsCyclop, MonsHighGuard, MonsSatowalgaPlant, MonsMadNixe, MonsVampire, MonsTreeMushroom:
@@ -222,28 +230,6 @@ func (mk monsterKind) ReflectsTeleport() bool {
 	}
 }
 
-func (mk monsterKind) Size() monsize {
-	switch mk {
-	case MonsTinyHarpy, MonsWorm, MonsAcidMound, MonsDog, MonsSpider, MonsButterfly, MonsCrazyImp, MonsHazeCat:
-		return MonsSmall
-	case MonsEarthDragon, MonsSatowalgaPlant, MonsTreeMushroom:
-		return MonsLarge
-	default:
-		return MonsMedium
-	}
-}
-
-func (mk monsterKind) Skill() monsSkill {
-	switch mk {
-	case MonsGuard, MonsTinyHarpy:
-		return SkillWeak
-	case MonsEarthDragon, MonsTreeMushroom:
-		return SkillStrong
-	default:
-		return SkillAverage
-	}
-}
-
 func (mk monsterKind) Desc() string {
 	return MonsDesc[mk]
 }
@@ -272,63 +258,15 @@ func (mk monsterKind) Definite(capital bool) (text string) {
 	return text
 }
 
-func (mk monsterKind) Dangerousness() int {
-	danger := 8
-	switch mk.Skill() {
-	case SkillStrong:
-		danger += 5
-	case SkillWeak:
-		danger -= 5
-	}
-	switch mk.Size() {
-	case MonsLarge:
-		danger++
-	case MonsSmall:
-		danger--
-	}
-	return danger
-}
-
-func (mk monsterKind) Dmg(g *game) int {
-	p1 := 25
-	p2 := 25
-	switch mk.Skill() {
-	case SkillWeak:
-		p1 = 50
-		p2 = 0
-	case SkillStrong:
-		p1 = 20
-		p2 = 50
-	}
-	if mk.Size() == MonsLarge {
-		p1 -= 10
-		p2 += 10
-	}
-	if mk.Size() == MonsSmall {
-		p1 += 10
-		p2 -= 10
-	}
-	// handle edge cases (should not be needed currently)
-	if p1 < 0 {
-		p1 = 0
-	}
-	if p1 >= 100 {
-		p1 = 100
-	}
-	if p2 < 0 {
-		p2 = 0
-	}
-	if p2 >= 100 {
-		p2 = 100
-	}
-	return Dmg(p1, p2)
+func (mk monsterKind) Size() monsize {
+	return MonsData[mk].size
 }
 
 type monsize int
 
 const (
-	MonsMedium monsize = iota
-	MonsSmall
+	MonsSmall monsize = iota
+	MonsMedium
 	MonsLarge
 )
 
@@ -345,67 +283,43 @@ func (ms monsize) String() (text string) {
 }
 
 type monsterData struct {
-	name   string
-	letter rune
-}
-
-type monsSkill int
-
-const (
-	SkillAverage monsSkill = iota
-	SkillWeak
-	SkillStrong
-)
-
-func Dmg(p1, p3 int) int {
-	r := RandInt(100)
-	if r < p1 {
-		return 1
-	} else if r < p3+p1 {
-		return 3
-	}
-	return 2
-}
-
-func (ms monsSkill) Accuracy(g *game) int {
-	return 50 // TODO mons accuracy
-}
-
-func (ms monsSkill) Evasion(g *game) int {
-	return 50 // TODO mons evasion
+	size          monsize
+	letter        rune
+	name          string
+	dangerousness int
 }
 
 var MonsData = []monsterData{
-	MonsGuard:     {name: "guard", letter: 'g'},
-	MonsTinyHarpy: {name: "tiny harpy", letter: 't'},
+	MonsGuard:     {MonsMedium, 'g', "guard", 3},
+	MonsTinyHarpy: {MonsSmall, 't', "tiny harpy", 3},
 	//MonsOgre:            {10, 2, 20, 3, 'O', "ogre", 7},
-	MonsOricCelmist:     {name: "oric celmist", letter: 'o'},
-	MonsHarmonicCelmist: {name: "harmonic celmist", letter: 'h'},
-	MonsWorm:            {name: "farmer worm", letter: 'w'},
+	MonsOricCelmist:     {MonsMedium, 'o', "oric celmist", 9},
+	MonsHarmonicCelmist: {MonsMedium, 'h', "harmonic celmist", 9},
+	MonsWorm:            {MonsSmall, 'w', "farmer worm", 4},
 	//MonsBrizzia:         {15, 1, 10, 3, 'z', "brizzia", 6},
-	MonsAcidMound: {name: "acid mound", letter: 'a'},
-	MonsDog:       {name: "dog", letter: 'd'},
-	MonsYack:      {name: "yack", letter: 'y'},
+	MonsAcidMound: {MonsSmall, 'a', "acid mound", 4},
+	MonsDog:       {MonsMedium, 'd', "dog", 5},
+	MonsYack:      {MonsMedium, 'y', "yack", 5},
 	//MonsGiantBee:        {5, 1, 10, 1, 'B', "giant bee", 6},
-	MonsHighGuard: {name: "high guard", letter: 'G'},
+	MonsHighGuard: {MonsMedium, 'G', "high guard", 5},
 	//MonsHydra:           {10, 1, 10, 4, 'H', "hydra", 10},
 	//MonsSkeletonWarrior: {10, 1, 10, 3, 'S', "skeleton warrior", 6},
-	MonsSpider:       {name: "spider", letter: 's'},
-	MonsWingedMilfid: {name: "winged milfid", letter: 'W'},
-	MonsBlinkingFrog: {name: "blinking frog", letter: 'F'},
+	MonsSpider:       {MonsSmall, 's', "spider", 15},
+	MonsWingedMilfid: {MonsMedium, 'W', "winged milfid", 6},
+	MonsBlinkingFrog: {MonsMedium, 'F', "blinking frog", 6},
 	//MonsLich:           {10, MonsMedium, 'L', "lich", 15},
-	MonsEarthDragon:    {name: "earth dragon", letter: 'D'},
-	MonsMirrorSpecter:  {name: "mirror specter", letter: 'm'},
-	MonsExplosiveNadre: {name: "explosive nadre", letter: 'n'},
-	MonsSatowalgaPlant: {name: "satowalga plant", letter: 'P'},
-	MonsMadNixe:        {name: "mad nixe", letter: 'N'},
+	MonsEarthDragon:    {MonsLarge, 'D', "earth dragon", 18},
+	MonsMirrorSpecter:  {MonsMedium, 'm', "mirror specter", 11},
+	MonsExplosiveNadre: {MonsMedium, 'n', "explosive nadre", 8},
+	MonsSatowalgaPlant: {MonsLarge, 'P', "satowalga plant", 7},
+	MonsMadNixe:        {MonsMedium, 'N', "mad nixe", 14},
 	//MonsMindCelmist:     {10, 1, 20, 2, 'c', "mind celmist", 12},
-	MonsVampire:      {name: "vampire", letter: 'V'},
-	MonsTreeMushroom: {name: "tree mushroom", letter: 'T'},
+	MonsVampire:      {MonsMedium, 'V', "vampire", 13},
+	MonsTreeMushroom: {MonsLarge, 'T', "tree mushroom", 17},
 	//MonsMarevorHelith: {10, MonsMedium, 'M', "Marevor Helith", 18},
-	MonsButterfly: {name: "kerejat", letter: 'b'},
-	MonsCrazyImp:  {name: "Crazy Imp", letter: 'i'},
-	MonsHazeCat:   {name: "haze cat", letter: 'c'},
+	MonsButterfly: {MonsSmall, 'b', "kerejat", 2},
+	MonsCrazyImp:  {MonsSmall, 'i', "Crazy Imp", 19},
+	MonsHazeCat:   {MonsSmall, 'c', "haze cat", 16},
 }
 
 var MonsDesc = []string{
@@ -595,7 +509,7 @@ type monster struct {
 }
 
 func (m *monster) Init() {
-	//m.Attack = m.Kind.BaseAttack()
+	m.Attack = m.Kind.BaseAttack()
 	m.Pos = InvalidPos
 	m.LOS = map[position]bool{}
 	m.LastKnownPos = InvalidPos
