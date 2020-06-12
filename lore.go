@@ -210,7 +210,7 @@ It was my blood they were drinking. It was their blood I was drinking. I was the
 
 [Piece of paper signed with a blooded cross]
 `,
-	`“Believe me, mom, this Dayoriah clan will give me power. They have oric experts, and runawayds experts; their celmists are really good ones! Even from our village I've heard wonders about their learning, but that's above my expectations! They told me that they will train me, so I will give my best and definitely join them. I don't care if they are seen like demons by others. Strong, resilient, obstinate… They are just what I am looking for!”
+	`“Believe me, mom, this Dayoriah clan will give me power. They have oric experts, and nboohus experts; their celmists are really good ones! Even from our village I've heard wonders about their learning, but that's above my expectations! They told me that they will train me, so I will give my best and definitely join them. I don't care if they are seen like demons by others. Strong, resilient, obstinate… They are just what I am looking for!”
 
 [Undelivered old letter signed: your son, Mel]
 `,
