@@ -224,6 +224,9 @@ func (g *game) CollectGround() {
 				g.StoryPrintf("Found banana (bananas: %d)", g.Player.Bananas)
 				g.Dungeon.SetCell(pos, GroundCell)
 				delete(g.Objects.Bananas, pos)
+				if g.Player.Bananas == MaxBananas {
+					AchBananaCollector.Get(g)
+				}
 			}
 		case MagaraCell:
 			for i, mag := range g.Player.Magaras {
@@ -343,6 +346,15 @@ func (g *game) PlayerBump(pos position) error {
 			g.Fog(pos, 1)
 			g.Stats.Digs++
 			g.Stats.DestructionUse++
+			if g.Stats.DestructionUse == 20 {
+				AchDestructorNovice.Get(g)
+			}
+			if g.Stats.DestructionUse == 40 {
+				AchDestructorInitiate.Get(g)
+			}
+			if g.Stats.DestructionUse == 60 {
+				AchDestructorMaster.Get(g)
+			}
 		}
 		if g.Player.Inventory.Body == CloakSmoke {
 			_, ok := g.Clouds[g.Player.Pos]
@@ -429,6 +441,9 @@ func (g *game) ExtinguishFire() error {
 	g.Dungeon.SetCell(g.Player.Pos, ExtinguishedLightCell)
 	g.Objects.Lights[g.Player.Pos] = false
 	g.Stats.Extinguishments++
+	if g.Stats.Extinguishments >= 15 {
+		AchExtinguisher.Get(g)
+	}
 	g.Print("You extinguish the fire.")
 	g.RenewEvent(DurationTurn)
 	return nil

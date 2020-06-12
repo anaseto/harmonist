@@ -564,6 +564,54 @@ const (
 
 func (g *game) Descend(style descendstyle) bool {
 	g.LevelStats()
+	if g.Stats.DUSpotted[g.Depth] < 3 {
+		AchStealthNovice.Get(g)
+	}
+	if g.Depth >= 3 {
+		if g.Stats.DRests[g.Depth] == 0 && g.Stats.DRests[g.Depth-1] == 0 {
+			AchInsomniaNovice.Get(g)
+		}
+	}
+	if g.Depth >= 5 {
+		if g.Stats.DRests[g.Depth] == 0 && g.Stats.DRests[g.Depth-1] == 0 && g.Stats.DRests[g.Depth-2] == 0 &&
+			g.Stats.DRests[g.Depth-3] == 0 {
+			AchInsomniaInitiate.Get(g)
+		}
+	}
+	if g.Depth >= 8 {
+		if g.Stats.DRests[g.Depth] == 0 && g.Stats.DRests[g.Depth-1] == 0 && g.Stats.DRests[g.Depth-2] == 0 &&
+			g.Stats.DRests[g.Depth-3] == 0 && g.Stats.DRests[g.Depth-4] == 0 && g.Stats.DRests[g.Depth-5] == 0 {
+			AchInsomniaMaster.Get(g)
+		}
+	}
+	if g.Depth >= 3 {
+		if g.Stats.DMagaraUses[g.Depth] == 0 && g.Stats.DMagaraUses[g.Depth-1] == 0 {
+			AchAntimagicNovice.Get(g)
+		}
+	}
+	if g.Depth >= 5 {
+		if g.Stats.DMagaraUses[g.Depth] == 0 && g.Stats.DMagaraUses[g.Depth-1] == 0 && g.Stats.DMagaraUses[g.Depth-2] == 0 &&
+			g.Stats.DMagaraUses[g.Depth-3] == 0 {
+			AchAntimagicInitiate.Get(g)
+		}
+	}
+	if g.Depth >= 8 {
+		if g.Stats.DMagaraUses[g.Depth] == 0 && g.Stats.DMagaraUses[g.Depth-1] == 0 && g.Stats.DMagaraUses[g.Depth-2] == 0 &&
+			g.Stats.DMagaraUses[g.Depth-3] == 0 && g.Stats.DMagaraUses[g.Depth-4] == 0 && g.Stats.DMagaraUses[g.Depth-5] == 0 {
+			AchAntimagicMaster.Get(g)
+		}
+	}
+	if g.Depth >= 5 {
+		if g.Stats.DUSpotted[g.Depth] < 3 && g.Stats.DSpotted[g.Depth-1] < 3 && g.Stats.DSpotted[g.Depth-2] < 3 {
+			AchStealthInitiate.Get(g)
+		}
+	}
+	if g.Depth >= 8 {
+		if g.Stats.DUSpotted[g.Depth] < 3 && g.Stats.DUSpotted[g.Depth-1] < 3 && g.Stats.DSpotted[g.Depth-2] < 3 &&
+			g.Stats.DSpotted[g.Depth-3] < 3 {
+			AchStealthMaster.Get(g)
+		}
+	}
 	c := g.Dungeon.Cell(g.Player.Pos)
 	if c.T == StairCell && g.Objects.Stairs[g.Player.Pos] == WinStair {
 		g.StoryPrint("Escaped!")
@@ -604,6 +652,9 @@ func (g *game) ApplyRest() {
 	g.Stats.DRests[g.Depth]++
 	g.PrintStyled("You feel fresh again after eating banana and sleeping.", logStatusEnd)
 	g.StoryPrintf("Rested in barrel (bananas: %d)", g.Player.Bananas)
+	if g.Stats.Rest == 10 {
+		AchSleepy.Get(g)
+	}
 }
 
 func (g *game) AutoPlayer(ev event) bool {

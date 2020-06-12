@@ -80,6 +80,16 @@ func (g *game) LevelStats() {
 		}
 	}
 	g.Stats.DExplPerc[g.Depth] = exp * 100 / free
+	if g.Stats.DExplPerc[g.Depth] > 93 {
+		AchNoviceExplorer.Get(g)
+	}
+	if g.Depth >= 5 && g.Stats.DExplPerc[g.Depth] > 93 && g.Stats.DExplPerc[g.Depth-1] > 93 && g.Stats.DExplPerc[g.Depth-2] > 93 {
+		AchInitiateExplorer.Get(g)
+	}
+	if g.Depth >= 8 && g.Stats.DExplPerc[g.Depth] > 93 && g.Stats.DExplPerc[g.Depth-1] > 93 && g.Stats.DExplPerc[g.Depth-2] > 93 &&
+		g.Stats.DExplPerc[g.Depth-3] > 93 && g.Stats.DExplPerc[g.Depth-4] > 93 {
+		AchMasterExplorer.Get(g)
+	}
 	//g.Stats.DBurns[g.Depth] = g.Stats.CurBurns // XXX to avoid little dump info leak
 	nmons := len(g.Monsters)
 	kmons := 0
@@ -102,7 +112,49 @@ type achievement string
 
 // Achievements.
 const (
-	NoAchievement achievement = "Pitiful Death"
+	NoAchievement          achievement = "Pitiful Death"
+	AchBananaCollector     achievement = "Banana Collector"
+	AchHarmonistNovice     achievement = "Harmonist Novice"
+	AchHarmonistInitiate   achievement = "Harmonist Initiate"
+	AchHarmonistMaster     achievement = "Harmonist Master"
+	AchNoviceOricCelmist   achievement = "Oric Celmist Novice"
+	AchInitiateOricCelmist achievement = "Oric Celmist Initiate"
+	AchMasterOricCelmist   achievement = "Oric Celmist Master"
+	AchUnstealthy          achievement = "Unstealthy Gawalt"
+	AchStealthNovice       achievement = "Stealth Novice"
+	AchStealthInitiate     achievement = "Stealth Initiate"
+	AchStealthMaster       achievement = "Stealth Master"
+	AchPyromancerNovice    achievement = "Pyromancer Novice"
+	AchPyromancerInitiate  achievement = "Pyromancer Initiate"
+	AchPyromancerMaster    achievement = "Pyromancer Master"
+	AchDestructorNovice    achievement = "Destructor Novice"
+	AchDestructorInitiate  achievement = "Destructor Initiate"
+	AchDestructorMaster    achievement = "Destructor Master"
+	AchTeleport            achievement = "Oric Teleport Maniac"
+	AchCloak               achievement = "Dressed Gawalt"
+	AchAmulet              achievement = "Protective Charm"
+	AchRescuedShaedra      achievement = "Rescued Shaedra"
+	AchRetrievedArtifact   achievement = "Recovered Gem Portal Artifact"
+	AchAcrobat             achievement = "Acrobat"
+	AchTree                achievement = "Tree Climber"
+	AchTable               achievement = "Under Table Gawalt"
+	AchHole                achievement = "Hole Crawler"
+	AchDoors               achievement = "Door Opener"
+	AchBarrels             achievement = "Barrel Enthousiast"
+	AchExtinguisher        achievement = "Light Extinguisher"
+	AchLoreStudent         achievement = "Lore student"
+	AchLoremaster          achievement = "Loremaster"
+	AchNoviceExplorer      achievement = "Novice Explorer"
+	AchInitiateExplorer    achievement = "Initiate Explorer"
+	AchMasterExplorer      achievement = "Master Explorer"
+	AchAssassin            achievement = "Assassin"
+	AchInsomniaNovice      achievement = "Insomnia Novice"
+	AchInsomniaInitiate    achievement = "Insomnia Initiate"
+	AchInsomniaMaster      achievement = "Insomnia Master"
+	AchSleepy              achievement = "Sleepy Gawalt"
+	AchAntimagicNovice     achievement = "Antimagic Novice"
+	AchAntimagicInitiate   achievement = "Antimagic Initiate"
+	AchAntimagicMaster     achievement = "Antimagic Master"
 )
 
 func (ach achievement) Get(g *game) {
@@ -131,13 +183,28 @@ func (pos position) Reach(g *game) {
 	switch c.T {
 	case TreeCell:
 		g.Stats.ClimbedTree++
+		if g.Stats.ClimbedTree == 12 {
+			AchTree.Get(g)
+		}
 	case TableCell:
 		g.Stats.TableHides++
+		if g.Stats.TableHides == 12 {
+			AchTable.Get(g)
+		}
 	case HoledWallCell:
 		g.Stats.HoledWallsCrawled++
+		if g.Stats.HoledWallsCrawled == 12 {
+			AchHole.Get(g)
+		}
 	case DoorCell:
 		g.Stats.DoorsOpened++
+		if g.Stats.DoorsOpened == 100 {
+			AchDoors.Get(g)
+		}
 	case BarrelCell:
 		g.Stats.BarrelHides++
+		if g.Stats.BarrelHides == 20 {
+			AchBarrels.Get(g)
+		}
 	}
 }

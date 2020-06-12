@@ -189,6 +189,9 @@ func (g *game) Jump(mons *monster) error {
 	g.Stats.Jumps++
 	g.Printf("You jump over %s", mons.Kind.Definite(false))
 	g.StoryPrintf("Jumped over %s", mons.Kind)
+	if g.Stats.Jumps+g.Stats.WallJumps == 15 {
+		AchAcrobat.Get(g)
+	}
 	return nil
 }
 
@@ -240,6 +243,9 @@ func (g *game) WallJump(pos position) error {
 	g.Stats.WallJumps++
 	g.Print("You jump by propulsing yourself against the wall.")
 	g.ui.PushAnimation(path)
+	if g.Stats.Jumps+g.Stats.WallJumps == 15 {
+		AchAcrobat.Get(g)
+	}
 	return nil
 }
 
@@ -258,6 +264,9 @@ const (
 func (g *game) HandleKill(mons *monster) {
 	g.Stats.Killed++
 	g.Stats.KilledMons[mons.Kind]++
+	if g.Player.Sees(mons.Pos) {
+		AchAssassin.Get(g)
+	}
 	if g.Dungeon.Cell(mons.Pos).T == DoorCell {
 		g.ComputeLOS()
 	}
