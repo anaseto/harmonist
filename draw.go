@@ -402,7 +402,7 @@ func (ui *gameui) DrawWelcomeCommon() int {
 	p.DrawDark("#.", ColorFgDark)
 	p.DrawLOS("..", ColorFgLOSLight)
 	p.DrawLOS("#", ColorViolet)
-	p.DrawText("  HARMONIST  ")
+	p.DrawText("RUNAWAY DEMON")
 	p.DrawDark("#", ColorViolet)
 	p.DrawDark(".", ColorFgDark)
 	p.DrawDark(")", ColorFgSimellas)
