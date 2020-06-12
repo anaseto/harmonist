@@ -114,7 +114,7 @@ func (ach achievement) Get(g *game) {
 
 func (t terrain) ReachNotable() bool {
 	switch t {
-	case TreeCell, TableCell, HoledWallCell, DoorCell, EssenciaticSourceCell:
+	case TreeCell, TableCell, HoledWallCell, DoorCell, BarrelCell:
 		return true
 	default:
 		return false
@@ -136,7 +136,7 @@ func (pos position) Reach(g *game) {
 		g.Stats.HoledWallsCrawled++
 	case DoorCell:
 		g.Stats.DoorsOpened++
-	case EssenciaticSourceCell:
+	case BarrelCell:
 		g.Stats.BarrelHides++
 	}
 }

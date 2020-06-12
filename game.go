@@ -427,7 +427,7 @@ func (g *game) InitLevelStructures() {
 	g.Objects.Scrolls = map[position]scroll{}
 	g.Objects.Stairs = map[position]stair{}
 	g.Objects.Bananas = make(map[position]bool, 2)
-	g.Objects.EssenciaticSources = map[position]bool{}
+	g.Objects.Barrels = map[position]bool{}
 	g.Objects.Lights = map[position]bool{}
 	g.Objects.FakeStairs = map[position]bool{}
 	g.Objects.Potions = map[position]potion{}
