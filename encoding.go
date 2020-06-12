@@ -8,9 +8,7 @@ import (
 
 func init() {
 	gob.Register(&simpleEvent{})
-	gob.Register(&statusEvent{})
 	gob.Register(&monsterEvent{})
-	gob.Register(&monsterStatusEvent{})
 	gob.Register(&posEvent{})
 }
 
