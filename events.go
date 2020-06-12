@@ -4,14 +4,64 @@ import "container/heap"
 
 type event interface {
 	Rank() int
-	Renew(*game, int)
 	Action(*game)
+	Renew(*game, int)
 }
 
 type iEvent struct {
 	Event event
 	Index int
 }
+
+type eventQueue []iEvent
+
+func (evq eventQueue) Len() int {
+	return len(evq)
+}
+
+func (evq eventQueue) Less(i, j int) bool {
+	return evq[i].Event.Rank() < evq[j].Event.Rank() ||
+		evq[i].Event.Rank() == evq[j].Event.Rank() && evq[i].Index < evq[j].Index
+}
+
+func (evq eventQueue) Swap(i, j int) {
+	evq[i], evq[j] = evq[j], evq[i]
+}
+
+func (evq *eventQueue) Push(x interface{}) {
+	no := x.(iEvent)
+	*evq = append(*evq, no)
+}
+
+func (evq *eventQueue) Pop() interface{} {
+	old := *evq
+	n := len(old)
+	no := old[n-1]
+	*evq = old[0 : n-1]
+	return no
+}
+
+type simpleAction int
+
+const (
+	PlayerTurn simpleAction = iota
+	ShaedraAnimation
+	ArtifactAnimation
+	AbyssFall
+	ExhaustionEnd
+	SwiftEnd
+	EvasionEnd
+	LignificationEnd
+	ConfusionEnd
+	NauseaEnd
+	DigEnd
+	LevitationEnd
+	ShadowsEnd
+	IlluminatedEnd
+	TransparentEnd
+	DisguisedEnd
+	DispersalEnd
+)
 
 func (g *game) PushEvent(ev event) {
 	iev := iEvent{Event: ev, Index: g.EventIndex}
@@ -36,71 +86,72 @@ func (g *game) PopIEvent() iEvent {
 	return iev
 }
 
-func (g *game) RenewEvent(delay int) {
-	g.Ev.Renew(g, delay)
-}
-
-const (
-	DurationSwiftness              = 4
-	DurationShadows                = 15
-	DurationLevitation             = 18
-	DurationShortSwiftness         = 3
-	DurationDigging                = 8
-	DurationParalysisMonster       = 6
-	DurationCloudProgression       = 1
-	DurationFog                    = 15
-	DurationExhaustion             = 6
-	DurationConfusionMonster       = 12
-	DurationConfusionPlayer        = 5
-	DurationLignificationMonster   = 15
-	DurationLignificationPlayer    = 4
-	DurationMagicalBarrier         = 15
-	DurationObstructionProgression = 15
-	DurationMistProgression        = 12
-	DurationSmokingCloakFog        = 2
-	DurationExhaustionMonster      = 10
-	DurationSatiationMonster       = 40
-	DurationIlluminated            = 7
-	DurationTransparency           = 15
-	DurationDisguise               = 9
-	DurationDispersal              = 12
-	DurationHarmonicNoiseDelay     = 13
-	DurationOricExplosionDelay     = 8
-	DurationTurn                   = 1
-	DurationStatusStep             = 1
-	DurationNightFog               = 15
-)
-
-type simpleAction int
-
-const (
-	PlayerTurn simpleAction = iota
-	AbyssFall
-)
-
 type simpleEvent struct {
 	ERank   int
 	EAction simpleAction
 }
 
-func (ev *simpleEvent) Rank() int {
-	return ev.ERank
+func (sev *simpleEvent) Rank() int {
+	return sev.ERank
 }
 
-func (ev *simpleEvent) Renew(g *game, delay int) {
-	ev.ERank += delay
+func (sev *simpleEvent) Renew(g *game, delay int) {
+	sev.ERank += delay
 	if delay == 0 {
-		g.PushAgainEvent(ev)
-		if ev.EAction == PlayerTurn {
+		g.PushAgainEvent(sev)
+		if sev.EAction == PlayerTurn {
 			g.PlayerAgain = true
 		}
 	} else {
-		g.PushEvent(ev)
+		g.PushEvent(sev)
 	}
 }
 
-func (ev *simpleEvent) Action(g *game) {
-	switch ev.EAction {
+var StatusEndMsgs = [...]string{
+	ExhaustionEnd:    "You no longer feel exhausted.",
+	SwiftEnd:         "You no longer feel speedy.",
+	LignificationEnd: "You no longer feel attached to the ground.",
+	ConfusionEnd:     "You no longer feel confused.",
+	NauseaEnd:        "You no longer feel sick.",
+	DigEnd:           "You no longer feel like an earth dragon.",
+	LevitationEnd:    "You no longer levitate.",
+	ShadowsEnd:       "You are no longer surrounded by shadows.",
+	IlluminatedEnd:   "You are no longer illuminated.",
+	TransparentEnd:   "You are no longer transparent.",
+	DisguisedEnd:     "You are no longer disguised.",
+	DispersalEnd:     "You are no longer unstable.",
+}
+
+var EndStatuses = [...]status{
+	ExhaustionEnd:    StatusExhausted,
+	LignificationEnd: StatusLignification,
+	ConfusionEnd:     StatusConfusion,
+	NauseaEnd:        StatusNausea,
+	DigEnd:           StatusDig,
+	LevitationEnd:    StatusLevitation,
+	ShadowsEnd:       StatusShadows,
+	IlluminatedEnd:   StatusIlluminated,
+	TransparentEnd:   StatusTransparent,
+	DisguisedEnd:     StatusDisguised,
+	DispersalEnd:     StatusDispersal,
+}
+
+var StatusEndActions = [...]simpleAction{
+	StatusExhausted:     ExhaustionEnd,
+	StatusLignification: LignificationEnd,
+	StatusConfusion:     ConfusionEnd,
+	StatusNausea:        NauseaEnd,
+	StatusDig:           DigEnd,
+	StatusLevitation:    LevitationEnd,
+	StatusShadows:       ShadowsEnd,
+	StatusIlluminated:   IlluminatedEnd,
+	StatusTransparent:   TransparentEnd,
+	StatusDisguised:     DisguisedEnd,
+	StatusDispersal:     DispersalEnd,
+}
+
+func (sev *simpleEvent) Action(g *game) {
+	switch sev.EAction {
 	case PlayerTurn:
 		if !g.PlayerAgain {
 			g.ComputeNoise()
@@ -109,7 +160,7 @@ func (ev *simpleEvent) Action(g *game) {
 		}
 		g.PlayerAgain = false
 		g.LogNextTick = g.LogIndex
-		g.AutoNext = g.AutoPlayer(ev)
+		g.AutoNext = g.AutoPlayer(sev)
 		if g.AutoNext {
 			g.TurnStats()
 			return
@@ -119,127 +170,113 @@ func (ev *simpleEvent) Action(g *game) {
 			return
 		}
 		g.TurnStats()
+	case ShaedraAnimation:
+		g.ComputeLOS()
+		g.ui.FreeingShaedraAnimation()
+	case ArtifactAnimation:
+		g.ComputeLOS()
+		g.ui.TakingArtifactAnimation()
 	case AbyssFall:
 		if g.Dungeon.Cell(g.Player.Pos).T == ChasmCell {
 			g.FallAbyss(DescendFall)
 		}
-	}
-}
-
-type statusEvent struct {
-	ERank  int
-	Status status
-}
-
-var StatusEndMsgs = [...]string{
-	StatusExhausted:     "You no longer feel exhausted.",
-	StatusSwift:         "You no longer feel speedy.",
-	StatusLignification: "You no longer feel attached to the ground.",
-	StatusConfusion:     "You no longer feel confused.",
-	StatusNausea:        "You no longer feel sick.",
-	StatusDig:           "You no longer feel like an earth dragon.",
-	StatusLevitation:    "You no longer levitate.",
-	StatusShadows:       "You are no longer surrounded by shadows.",
-	StatusIlluminated:   "You are no longer illuminated.",
-	StatusTransparent:   "You are no longer transparent.",
-	StatusDisguised:     "You are no longer disguised.",
-	StatusDispersal:     "You are no longer unstable.",
-}
-
-func (ev *statusEvent) Rank() int {
-	return ev.ERank
-}
-
-func (ev *statusEvent) Renew(g *game, delay int) {
-	ev.ERank += delay
-	g.PushEvent(ev)
-}
-
-func (ev *statusEvent) Action(g *game) {
-	st := ev.Status
-	g.Player.Statuses[st] -= DurationStatusStep
-	if g.Player.Statuses[st] <= 0 {
-		g.Player.Statuses[st] = 0
-		g.PrintStyled(StatusEndMsgs[st], logStatusEnd)
-		g.ui.StatusEndAnimation()
-		switch st {
-		case StatusLevitation:
-			if g.Dungeon.Cell(g.Player.Pos).T == ChasmCell {
-				g.FallAbyss(DescendFall)
+	default:
+		st := EndStatuses[sev.EAction]
+		g.Player.Statuses[st] -= DurationStatusStep
+		if g.Player.Statuses[st] <= 0 {
+			g.Player.Statuses[st] = 0
+			g.PrintStyled(StatusEndMsgs[sev.EAction], logStatusEnd)
+			g.ui.StatusEndAnimation()
+			switch sev.EAction {
+			case LevitationEnd:
+				if g.Dungeon.Cell(g.Player.Pos).T == ChasmCell {
+					g.FallAbyss(DescendFall)
+				}
+			case LignificationEnd:
+				g.Player.HPbonus -= LignificationHPbonus
+				if g.Player.HPbonus < 0 {
+					g.Player.HPbonus = 0
+				}
 			}
-		case StatusLignification:
-			g.Player.HPbonus -= LignificationHPbonus
-			if g.Player.HPbonus < 0 {
-				g.Player.HPbonus = 0
-			}
+		} else {
+			sev.Renew(g, DurationStatusStep)
 		}
-	} else {
-		ev.Renew(g, DurationStatusStep)
 	}
 }
+
+type monsterAction int
+
+const (
+	MonsterTurn monsterAction = iota
+	MonsConfusionEnd
+	MonsExhaustionEnd
+	MonsParalysedEnd
+	MonsSatiatedEnd
+	MonsLignificationEnd
+)
 
 type monsterEvent struct {
-	ERank int
-	NMons int
+	ERank   int
+	NMons   int
+	EAction monsterAction
 }
 
 func (mev *monsterEvent) Rank() int {
 	return mev.ERank
 }
 
-func (mev *monsterEvent) Renew(g *game, delay int) {
-	mev.ERank += delay
-	g.PushEvent(mev)
+var MonsStatusEndMsgs = [...]string{
+	MonsConfusionEnd:     "confused",
+	MonsLignificationEnd: "lignified",
+	MonsParalysedEnd:     "slowed",
+	MonsExhaustionEnd:    "exhausted",
+	MonsSatiatedEnd:      "satiated",
+}
+
+var MonsEndStatuses = [...]monsterStatus{
+	MonsConfusionEnd:     MonsConfused,
+	MonsLignificationEnd: MonsLignified,
+	MonsParalysedEnd:     MonsParalysed,
+	MonsExhaustionEnd:    MonsExhausted,
+	MonsSatiatedEnd:      MonsSatiated,
+}
+
+var MonsStatusEndActions = [...]monsterAction{
+	MonsConfused:  MonsConfusionEnd,
+	MonsLignified: MonsLignificationEnd,
+	MonsParalysed: MonsParalysedEnd,
+	MonsExhausted: MonsExhaustionEnd,
+	MonsSatiated:  MonsSatiatedEnd,
 }
 
 func (mev *monsterEvent) Action(g *game) {
-	mons := g.Monsters[mev.NMons]
-	if mons.Exists() {
-		mons.HandleTurn(g)
+	switch mev.EAction {
+	case MonsterTurn:
+		mons := g.Monsters[mev.NMons]
 		if mons.Exists() {
-			mev.Renew(g, DurationTurn)
+			mons.HandleTurn(g)
+		}
+	default:
+		mons := g.Monsters[mev.NMons]
+		mons.Statuses[MonsEndStatuses[mev.EAction]] -= DurationStatusStep
+		if mons.Statuses[MonsEndStatuses[mev.EAction]] <= 0 {
+			mons.Statuses[MonsEndStatuses[mev.EAction]] = 0
+			if g.Player.Sees(mons.Pos) {
+				g.Printf("%s is no longer %s.", mons.Kind.Definite(true), StatusEndMsgs[mev.EAction])
+			}
+			switch mev.EAction {
+			case MonsConfusionEnd, MonsLignificationEnd:
+				mons.Path = mons.APath(g, mons.Pos, mons.Target)
+			}
+		} else {
+			g.PushEvent(&monsterEvent{NMons: mev.NMons, ERank: mev.Rank() + DurationStatusStep, EAction: mev.EAction})
 		}
 	}
 }
 
-type monsterStatusEvent struct {
-	ERank  int
-	NMons  int
-	Status monsterStatus
-}
-
-var MonsStatusEndMsgs = [...]string{
-	MonsConfused:  "confused",
-	MonsLignified: "lignified",
-	MonsParalysed: "slowed",
-	MonsExhausted: "exhausted",
-	MonsSatiated:  "satiated",
-}
-
-func (mev *monsterStatusEvent) Rank() int {
-	return mev.ERank
-}
-
-func (mev *monsterStatusEvent) Renew(g *game, delay int) {
+func (mev *monsterEvent) Renew(g *game, delay int) {
 	mev.ERank += delay
 	g.PushEvent(mev)
-}
-
-func (mev *monsterStatusEvent) Action(g *game) {
-	mons := g.Monsters[mev.NMons]
-	mons.Statuses[mev.Status] -= DurationStatusStep
-	if mons.Statuses[mev.Status] <= 0 {
-		mons.Statuses[mev.Status] = 0
-		if g.Player.Sees(mons.Pos) {
-			g.Printf("%s is no longer %s.", mons.Kind.Definite(true), StatusEndMsgs[mev.Status])
-		}
-		switch mev.Status {
-		case MonsConfused, MonsLignified:
-			mons.Path = mons.APath(g, mons.Pos, mons.Target)
-		}
-	} else {
-		g.PushEvent(&monsterStatusEvent{NMons: mev.NMons, ERank: mev.Rank() + DurationStatusStep, Status: mev.Status})
-	}
 }
 
 type posAction int
@@ -263,33 +300,28 @@ type posEvent struct {
 	Timer   int
 }
 
-func (ev *posEvent) Rank() int {
-	return ev.ERank
+func (cev *posEvent) Rank() int {
+	return cev.ERank
 }
 
-func (ev *posEvent) Renew(g *game, delay int) {
-	ev.ERank += delay
-	g.PushEvent(ev)
-}
-
-func (ev *posEvent) Action(g *game) {
-	switch ev.EAction {
+func (cev *posEvent) Action(g *game) {
+	switch cev.EAction {
 	case CloudEnd:
-		delete(g.Clouds, ev.Pos)
+		delete(g.Clouds, cev.Pos)
 		g.ComputeLOS()
 	case ObstructionEnd:
-		t := g.MagicalBarriers[ev.Pos]
-		if !g.Player.Sees(ev.Pos) && g.Dungeon.Cell(ev.Pos).T == BarrierCell {
+		t := g.MagicalBarriers[cev.Pos]
+		if !g.Player.Sees(cev.Pos) && g.Dungeon.Cell(cev.Pos).T == BarrierCell {
 			// XXX does not handle all cases
-			g.UpdateKnowledge(ev.Pos, BarrierCell)
+			g.UpdateKnowledge(cev.Pos, BarrierCell)
 		} else {
-			delete(g.MagicalBarriers, ev.Pos)
-			delete(g.TerrainKnowledge, ev.Pos)
+			delete(g.MagicalBarriers, cev.Pos)
+			delete(g.TerrainKnowledge, cev.Pos)
 		}
-		if g.Dungeon.Cell(ev.Pos).T != BarrierCell {
+		if g.Dungeon.Cell(cev.Pos).T != BarrierCell {
 			break
 		}
-		g.Dungeon.SetCell(ev.Pos, t)
+		g.Dungeon.SetCell(cev.Pos, t)
 	case ObstructionProgression:
 		pos := g.FreePassableCell()
 		g.MagicalBarrierAt(pos)
@@ -297,50 +329,50 @@ func (ev *posEvent) Action(g *game) {
 			g.Printf("You see an oric barrier appear out of thin air.")
 			g.StopAuto()
 		}
-		g.PushEvent(&posEvent{ERank: ev.Rank() + DurationObstructionProgression + RandInt(DurationObstructionProgression/4),
+		g.PushEvent(&posEvent{ERank: cev.Rank() + DurationObstructionProgression + RandInt(DurationObstructionProgression/4),
 			EAction: ObstructionProgression})
 	case FireProgression:
-		if _, ok := g.Clouds[ev.Pos]; !ok {
+		if _, ok := g.Clouds[cev.Pos]; !ok {
 			break
 		}
-		for _, pos := range g.Dungeon.FreeNeighbors(ev.Pos) {
+		for _, pos := range g.Dungeon.FreeNeighbors(cev.Pos) {
 			if RandInt(10) == 0 {
 				continue
 			}
 			g.Burn(pos)
 		}
-		delete(g.Clouds, ev.Pos)
-		g.NightFog(ev.Pos, 1, &simpleEvent{ERank: ev.Rank()})
+		delete(g.Clouds, cev.Pos)
+		g.NightFog(cev.Pos, 1, &simpleEvent{ERank: cev.Rank()})
 		g.ComputeLOS()
 	case NightProgression:
-		if _, ok := g.Clouds[ev.Pos]; !ok {
+		if _, ok := g.Clouds[cev.Pos]; !ok {
 			break
 		}
-		if ev.Timer <= 0 {
-			delete(g.Clouds, ev.Pos)
+		if cev.Timer <= 0 {
+			delete(g.Clouds, cev.Pos)
 			g.ComputeLOS()
 			break
 		}
-		g.MakeCreatureSleep(ev.Pos)
-		ev.Timer--
-		ev.Renew(g, DurationTurn)
+		g.MakeCreatureSleep(cev.Pos)
+		cev.Timer--
+		cev.Renew(g, DurationTurn)
 	case MistProgression:
 		pos := g.FreePassableCell()
 		g.Fog(pos, 1)
-		g.PushEvent(&posEvent{ERank: ev.Rank() + DurationMistProgression + RandInt(DurationMistProgression/4),
+		g.PushEvent(&posEvent{ERank: cev.Rank() + DurationMistProgression + RandInt(DurationMistProgression/4),
 			EAction: MistProgression})
 	case Earthquake:
 		g.PrintStyled("The earth suddenly shakes with force!", logSpecial)
 		g.PrintStyled("Craack!", logSpecial)
 		g.StoryPrint("Special event: earthquake!")
-		g.MakeNoise(EarthquakeNoise, ev.Pos)
-		g.NoiseIllusion[ev.Pos] = true
+		g.MakeNoise(EarthquakeNoise, cev.Pos)
+		g.NoiseIllusion[cev.Pos] = true
 		for i, c := range g.Dungeon.Cells {
 			pos := idxtopos(i)
 			if !c.T.IsDiggable() || !g.Dungeon.HasFreeNeighbor(pos) {
 				continue
 			}
-			if ev.Pos.Distance(pos) > RandInt(35) || RandInt(2) == 0 {
+			if cev.Pos.Distance(pos) > RandInt(35) || RandInt(2) == 0 {
 				continue
 			}
 			g.Dungeon.SetCell(pos, RubbleCell)
@@ -348,27 +380,27 @@ func (ev *posEvent) Action(g *game) {
 			g.Fog(pos, 1)
 		}
 	case DelayedHarmonicNoiseEvent:
-		if ev.Timer <= 1 {
+		if cev.Timer <= 1 {
 			g.Player.Statuses[StatusDelay] = 0
 			g.Print("Pop!")
-			g.NoiseIllusion[ev.Pos] = true
-			g.MakeNoise(DelayedHarmonicNoise, ev.Pos)
+			g.NoiseIllusion[cev.Pos] = true
+			g.MakeNoise(DelayedHarmonicNoise, cev.Pos)
 		} else {
-			ev.Timer--
-			g.Player.Statuses[StatusDelay] = ev.Timer
-			ev.Renew(g, DurationTurn)
+			cev.Timer--
+			g.Player.Statuses[StatusDelay] = cev.Timer
+			cev.Renew(g, DurationTurn)
 		}
 	case DelayedOricExplosionEvent:
-		if ev.Timer <= 1 {
+		if cev.Timer <= 1 {
 			g.Player.Statuses[StatusDelay] = 0
 			g.Print(g.CrackSound())
-			g.NoiseIllusion[ev.Pos] = true
+			g.NoiseIllusion[cev.Pos] = true
 			dij := &gridPath{dungeon: g.Dungeon}
-			g.MakeNoise(OricExplosionNoise, ev.Pos)
-			nm := Dijkstra(dij, []position{ev.Pos}, 7)
+			g.MakeNoise(OricExplosionNoise, cev.Pos)
+			nm := Dijkstra(dij, []position{cev.Pos}, 7)
 			fogs := []position{}
 			terrains := []terrain{}
-			nm.iter(ev.Pos, func(n *node) {
+			nm.iter(cev.Pos, func(n *node) {
 				c := g.Dungeon.Cell(n.Pos)
 				if !c.T.IsDiggable() {
 					return
@@ -389,9 +421,9 @@ func (ev *posEvent) Action(g *game) {
 				g.UpdateKnowledge(pos, terrains[i])
 			}
 		} else {
-			ev.Timer--
-			g.Player.Statuses[StatusDelay] = ev.Timer
-			ev.Renew(g, DurationTurn)
+			cev.Timer--
+			g.Player.Statuses[StatusDelay] = cev.Timer
+			cev.Renew(g, DurationTurn)
 		}
 	}
 }
@@ -463,31 +495,42 @@ func (g *game) Burn(pos position) {
 	g.PushEvent(&posEvent{ERank: g.Ev.Rank() + DurationCloudProgression, EAction: FireProgression, Pos: pos})
 }
 
-// eventQueue datastructure for the queue
-type eventQueue []iEvent
-
-func (evq eventQueue) Len() int {
-	return len(evq)
+func (cev *posEvent) Renew(g *game, delay int) {
+	cev.ERank += delay
+	g.PushEvent(cev)
 }
 
-func (evq eventQueue) Less(i, j int) bool {
-	return evq[i].Event.Rank() < evq[j].Event.Rank() ||
-		evq[i].Event.Rank() == evq[j].Event.Rank() && evq[i].Index < evq[j].Index
-}
+const (
+	DurationSwiftness              = 4
+	DurationShadows                = 15
+	DurationLevitation             = 18
+	DurationShortSwiftness         = 3
+	DurationDigging                = 8
+	DurationParalysisMonster       = 6
+	DurationCloudProgression       = 1
+	DurationFog                    = 15
+	DurationExhaustion             = 6
+	DurationConfusionMonster       = 12
+	DurationConfusionPlayer        = 5
+	DurationLignificationMonster   = 15
+	DurationLignificationPlayer    = 4
+	DurationMagicalBarrier         = 15
+	DurationObstructionProgression = 15
+	DurationMistProgression        = 12
+	DurationSmokingCloakFog        = 2
+	DurationExhaustionMonster      = 10
+	DurationSatiationMonster       = 40
+	DurationIlluminated            = 7
+	DurationTransparency           = 15
+	DurationDisguise               = 9
+	DurationDispersal              = 12
+	DurationHarmonicNoiseDelay     = 13
+	DurationOricExplosionDelay     = 8
+	DurationTurn                   = 1
+	DurationStatusStep             = 1
+	DurationNightFog               = 15
+)
 
-func (evq eventQueue) Swap(i, j int) {
-	evq[i], evq[j] = evq[j], evq[i]
-}
-
-func (evq *eventQueue) Push(x interface{}) {
-	no := x.(iEvent)
-	*evq = append(*evq, no)
-}
-
-func (evq *eventQueue) Pop() interface{} {
-	old := *evq
-	n := len(old)
-	no := old[n-1]
-	*evq = old[0 : n-1]
-	return no
+func (g *game) RenewEvent(delay int) {
+	g.Ev.Renew(g, delay)
 }
