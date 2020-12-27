@@ -196,9 +196,12 @@ func (g *game) BuildRayMap(from position, rs raystyle, rm rayMap) {
 		delete(rm, k)
 	}
 	rm[from] = raynode{Cost: 0}
+	var parents [2]position
 	for d := 1; d <= wallcost; d++ {
 		for x := -d + from.X; x <= d+from.X; x++ {
-			for _, pos := range []position{{x, from.Y + d}, {x, from.Y - d}} {
+			parents[0] = position{x, from.Y + d}
+			parents[1] = position{x, from.Y - d}
+			for _, pos := range parents {
 				if !pos.valid() {
 					continue
 				}
@@ -207,7 +210,9 @@ func (g *game) BuildRayMap(from position, rs raystyle, rm rayMap) {
 			}
 		}
 		for y := -d + 1 + from.Y; y <= d-1+from.Y; y++ {
-			for _, pos := range []position{{from.X + d, y}, {from.X - d, y}} {
+			parents[0] = position{from.X + d, y}
+			parents[1] = position{from.X - d, y}
+			for _, pos := range parents {
 				if !pos.valid() {
 					continue
 				}
