@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 	"unicode/utf8"
+
+	"github.com/anaseto/gruid"
 )
 
 var (
@@ -348,39 +350,17 @@ type cellDraw struct {
 	Y    int
 }
 
-func (ui *model) SetCell(x, y int, r rune, fg, bg uicolor) {
-	ui.SetGenCell(x, y, r, fg, bg, false)
-}
+const (
+	AttrText gruid.AttrsMask = iota
+	AttrInMap
+)
 
-func (ui *model) SetGenCell(x, y int, r rune, fg, bg uicolor, inmap bool) {
-	i := ui.GetIndex(x, y)
-	if i >= UIHeight*UIWidth {
-		return
-	}
-	c := UICell{R: r, Fg: fg, Bg: bg, InMap: inmap}
-	ui.g.DrawBuffer[i] = c
+func (ui *model) SetCell(x, y int, r rune, fg, bg uicolor) {
+	ui.gd.Set(gruid.Point{x, y}, gruid.Cell{Rune: r, Style: gruid.Style{Fg: fg, Bg: bg, Attrs: AttrText}})
 }
 
 func (ui *model) SetMapCell(x, y int, r rune, fg, bg uicolor) {
-	ui.SetGenCell(x, y, r, fg, bg, true)
-}
-
-func (ui *model) DrawLogFrame() {
-	if len(ui.g.drawBackBuffer) != len(ui.g.DrawBuffer) {
-		ui.g.drawBackBuffer = make([]UICell, len(ui.g.DrawBuffer))
-	}
-	ui.g.DrawLog = append(ui.g.DrawLog, drawFrame{Time: time.Now()})
-	for i := 0; i < len(ui.g.DrawBuffer); i++ {
-		if ui.g.DrawBuffer[i] == ui.g.drawBackBuffer[i] {
-			continue
-		}
-		c := ui.g.DrawBuffer[i]
-		x, y := ui.GetPos(i)
-		cdraw := cellDraw{Cell: c, X: x, Y: y}
-		last := len(ui.g.DrawLog) - 1
-		ui.g.DrawLog[last].Draws = append(ui.g.DrawLog[last].Draws, cdraw)
-		ui.g.drawBackBuffer[i] = c
-	}
+	ui.gd.Set(gruid.Point{x, y}, gruid.Cell{Rune: r, Style: gruid.Style{Fg: fg, Bg: bg, Attrs: AttrInMap}})
 }
 
 func (ui *model) DrawWelcomeCommon() int {
@@ -802,6 +782,7 @@ func (ui *model) DrawAtPosition(pos gruid.Point, targeting bool, r rune, fg, bg 
 }
 
 func (ui *model) DrawDungeonView(m uiMode) {
+	// TODO: remove uiMode
 	g := ui.g
 	ui.Clear()
 	d := g.Dungeon
@@ -812,81 +793,14 @@ func (ui *model) DrawDungeonView(m uiMode) {
 		ui.SetCell(ui.MapWidth(), i, '│', ColorFg, ColorBg)
 	}
 	ui.SetCell(ui.MapWidth(), ui.MapHeight(), '┘', ColorFg, ColorBg)
-	if CenteredCamera {
-		for i := 0; i < DungeonWidth; i++ {
-			ui.SetCell(i, ui.MapHeight(), '─', ColorFg, ColorBg)
-		}
-		for i := 0; i < ui.MapHeight(); i++ {
-			ui.SetCell(DungeonWidth, i, '│', ColorFg, ColorBg)
-		}
-		ui.SetCell(DungeonWidth, ui.MapHeight(), '┘', ColorFg, ColorBg)
-	}
 	for i := range d.Cells {
 		pos := idxtopos(i)
-		if CenteredCamera {
-			x, y := ui.CameraOffset(pos, m == TargetingMode)
-			if x < 0 || x >= ui.MapWidth() || y < 0 || y >= ui.MapHeight() {
-				continue
-			}
-		}
 		r, fgColor, bgColor := ui.PositionDrawing(pos)
 		ui.DrawAtPosition(pos, m == TargetingMode, r, fgColor, bgColor)
 	}
 	line := 0
-	if !ui.Small() {
-		// TODO: centered camera case
-	}
-	if ui.Small() {
-		ui.DrawStatusLine()
-	} else {
-		ui.DrawStatusBar(line)
-		ui.DrawMenus()
-	}
-	if ui.Small() {
-		ui.DrawLog(2)
-	} else {
-		ui.DrawLog(4)
-		ui.DrawKeysBasics(m)
-	}
-	if m == NormalMode {
-		ui.Flush()
-	}
-}
-
-func (ui *model) DrawKeysBasics(m uiMode) {
-	line := ui.MapHeight() - 3
-	if CenteredCamera {
-		line -= 5
-	}
-	if m == TargetingMode {
-		ui.SetCell(ui.MapWidth()+3, line, '↑', ColorFgPlayer, ColorBg)
-		ui.DrawColoredText("←.→", ui.MapWidth()+2, line+1, ColorFgPlayer)
-		ui.DrawColoredText(" ↓ ", ui.MapWidth()+2, line+2, ColorFgPlayer)
-		ui.SetCell(ui.MapWidth()+2, line+3, 'v', ColorFgPlayer, ColorBg)
-		ui.SetCell(ui.MapWidth()+2, line+4, 'x', ColorFgPlayer, ColorBg)
-		ui.SetCell(ui.MapWidth()+2, line+5, '?', ColorFgPlayer, ColorBg)
-		const margin = 6
-		ui.DrawText("move cursor/go", ui.MapWidth()+margin, line+1)
-		ui.DrawText("view info", ui.MapWidth()+margin, line+3)
-		ui.DrawText("close mode", ui.MapWidth()+margin, line+4)
-		ui.DrawText("examine help", ui.MapWidth()+margin, line+5)
-	} else if m == NormalMode || m == AnimationMode {
-		ui.SetCell(ui.MapWidth()+3, line, '↑', ColorFgPlayer, ColorBg)
-		ui.DrawColoredText("←.→", ui.MapWidth()+2, line+1, ColorFgPlayer)
-		ui.DrawColoredText(" ↓ ", ui.MapWidth()+2, line+2, ColorFgPlayer)
-		ui.SetCell(ui.MapWidth()+2, line+3, 'e', ColorFgPlayer, ColorBg)
-		ui.SetCell(ui.MapWidth()+2, line+4, 'v', ColorFgPlayer, ColorBg)
-		ui.SetCell(ui.MapWidth()+2, line+5, 'i', ColorFgPlayer, ColorBg)
-		ui.SetCell(ui.MapWidth()+2, line+6, 'x', ColorFgPlayer, ColorBg)
-		ui.SetCell(ui.MapWidth()+2, line+7, '?', ColorFgPlayer, ColorBg)
-		const margin = 6
-		ui.DrawText("move/jump/wait", ui.MapWidth()+margin, line+1)
-		ui.DrawText("interact", ui.MapWidth()+margin, line+3)
-		ui.DrawText("evoke", ui.MapWidth()+margin, line+4)
-		ui.DrawText("inventory", ui.MapWidth()+margin, line+5)
-		ui.DrawText("examine", ui.MapWidth()+margin, line+6)
-		ui.DrawText("command help", ui.MapWidth()+margin, line+7)
-	}
+	ui.DrawStatusLine()
+	ui.DrawLog(2)
 }
 
 func (ui *model) DrawLoading() {
@@ -1488,10 +1402,7 @@ loop:
 
 func (ui *model) DrawPreviousLogs() {
 	g := ui.g
-	bottom := 4
-	if ui.Small() {
-		bottom = 2
-	}
+	bottom := 2
 	lines := ui.MapHeight() + bottom
 	nmax := len(g.Log) - lines
 	n := nmax
@@ -1709,10 +1620,6 @@ func (ui *model) SelectMagara() error {
 	for {
 		magaras := g.Player.Magaras
 		ui.ClearLine(0)
-		if !ui.Small() {
-			ui.DrawColoredText(MenuEvoke.String(), MenuCols[MenuEvoke][0], ui.MapHeight(), ColorCyan)
-			ui.DrawSelectDescBasics()
-		}
 		if desc {
 			ui.DrawColoredText("Describe", 0, 0, ColorBlue)
 			col := utf8.RuneCountInString("Describe")
@@ -1753,10 +1660,6 @@ func (ui *model) EquipMagara() error {
 	for {
 		magaras := g.Player.Magaras
 		ui.ClearLine(0)
-		if !ui.Small() {
-			ui.DrawColoredText(MenuInteract.String(), MenuCols[MenuInteract][0], ui.MapHeight(), ColorCyan)
-			ui.DrawSelectDescBasics()
-		}
 		if desc {
 			ui.DrawColoredText("Describe", 0, 0, ColorBlue)
 			col := utf8.RuneCountInString("Describe")
@@ -1803,10 +1706,6 @@ func (ui *model) SelectItem() error {
 	parts := []string{"body", "neck", "backpack"}
 	for {
 		ui.ClearLine(0)
-		if !ui.Small() {
-			ui.DrawColoredText(MenuInventory.String(), MenuCols[MenuInventory][0], ui.MapHeight(), ColorCyan)
-			ui.DrawSelectBasics()
-		}
 		ui.DrawColoredText("Inventory", 0, 0, ColorCyan)
 		col := utf8.RuneCountInString("Inventory")
 		ui.DrawText(" (select to see description)", col, 0)
@@ -1878,10 +1777,6 @@ func (ui *model) SelectAction(actions []action) (action, error) {
 	ui.DrawDungeonView(NoFlushMode)
 	for {
 		ui.ClearLine(0)
-		if !ui.Small() {
-			ui.DrawColoredText(MenuOther.String(), MenuCols[MenuOther][0], ui.MapHeight(), ColorCyan)
-			ui.DrawSelectBasics()
-		}
 		ui.DrawColoredText("Choose", 0, 0, ColorCyan)
 		col := utf8.RuneCountInString("Choose")
 		ui.DrawText(" which action?", col, 0)
@@ -1956,9 +1851,6 @@ func (ui *model) SelectConfigure(actions []setting) (setting, error) {
 			ui.ConfItem(i, i+1, r, ColorFg)
 		}
 		ui.DrawTextLine(" press (x) to cancel ", len(actions)+1)
-		if !ui.Small() {
-			ui.DrawSelectBasics()
-		}
 		ui.Flush()
 		index, alt, err := ui.Select(len(actions))
 		if alt {
@@ -2034,9 +1926,6 @@ func (ui *model) SelectWizardMagic(actions []wizardAction) (wizardAction, error)
 			ui.WizardItem(i, i+1, r, ColorFg)
 		}
 		ui.DrawTextLine(" press (x) to cancel ", len(actions)+1)
-		if !ui.Small() {
-			ui.DrawSelectBasics()
-		}
 		ui.Flush()
 		index, alt, err := ui.Select(len(actions))
 		if alt {

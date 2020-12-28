@@ -1,4 +1,4 @@
-// +build js tk
+// +build js sdl
 
 // font used for letters: source code pro
 

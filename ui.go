@@ -10,22 +10,6 @@ import (
 	"unicode/utf8"
 )
 
-type UICell struct {
-	Fg    uicolor
-	Bg    uicolor
-	R     rune
-	InMap bool
-}
-
-type uiInput struct {
-	key       string
-	mouse     bool
-	mouseX    int
-	mouseY    int
-	button    int
-	interrupt bool
-}
-
 func (ui *model) HideCursor() {
 	ui.cursor = InvalidPos
 }
@@ -34,477 +18,8 @@ func (ui *model) SetCursor(pos gruid.Point) {
 	ui.cursor = pos
 }
 
-func (ui *model) KeyToRuneKeyAction(in uiInput) rune {
-	if utf8.RuneCountInString(in.key) != 1 {
-		return 0
-	}
-	return ui.ReadKey(in.key)
-}
-
-func (ui *model) WaitForContinue(line int) {
-loop:
-	for {
-		in := ui.PollEvent()
-		r := ui.KeyToRuneKeyAction(in)
-		switch r {
-		case '\x1b', ' ', 'x', 'X':
-			break loop
-		}
-		if in.mouse && in.button == -1 {
-			continue
-		}
-		if in.mouse && line >= 0 {
-			if in.mouseY > line || in.mouseX > DungeonWidth {
-				break loop
-			}
-		} else if in.mouse {
-			break loop
-		}
-	}
-}
-
-func (ui *model) PromptConfirmation() bool {
-	// TODO: this cannot be done with the mouse
-	for {
-		in := ui.PollEvent()
-		switch in.key {
-		case "Y", "y":
-			return true
-		case "":
-		default:
-			return false
-		}
-	}
-}
-
-func (ui *model) PressAnyKey() error {
-	for {
-		e := ui.PollEvent()
-		if e.interrupt {
-			return errors.New("interrupted")
-		}
-		if e.key != "" || (e.mouse && e.button != -1) {
-			return nil
-		}
-	}
-}
-
-type startAction int
-
-const (
-	StartPlay startAction = iota
-	StartWatchReplay
-)
-
-func (ui *model) StartMenu(l int) startAction {
-	for {
-		in := ui.PollEvent()
-		switch in.key {
-		case "P", "p":
-			ui.ColorLine(l, ColorYellow)
-			ui.Flush()
-			Sleep(AnimDurShort)
-			return StartPlay
-		case "W", "w":
-			ui.ColorLine(l+1, ColorYellow)
-			ui.Flush()
-			Sleep(AnimDurShort)
-			return StartWatchReplay
-		}
-		if in.key != "" && !in.mouse {
-			continue
-		}
-		y := in.mouseY
-		switch in.button {
-		case -1:
-			oih := ui.itemHover
-			if y < l || y >= l+2 {
-				ui.itemHover = -1
-				if oih != -1 {
-					ui.ColorLine(oih, ColorFg)
-					ui.Flush()
-				}
-				break
-			}
-			if y == oih {
-				break
-			}
-			ui.itemHover = y
-			ui.ColorLine(y, ColorYellow)
-			if oih != -1 {
-				ui.ColorLine(oih, ColorFg)
-			}
-			ui.Flush()
-		case 0:
-			if y < l || y >= l+2 {
-				ui.itemHover = -1
-				break
-			}
-			ui.itemHover = -1
-			switch y - l {
-			case 0:
-				return StartPlay
-			case 1:
-				return StartWatchReplay
-			}
-		}
-	}
-}
-
-func (ui *model) PlayerTurnEvent() (again, quit bool, err error) {
-	g := ui.g
-	again = true
-	in := ui.PollEvent()
-	switch in.key {
-	case "":
-		if in.mouse {
-			var mpos gruid.Point
-			if CenteredCamera {
-				mpos = ui.CameraTargetPosition(in.mouseX, in.mouseY, true)
-			} else {
-				mpos = gruid.Point{in.mouseX, in.mouseY}
-			}
-			switch in.button {
-			case -1:
-				if in.mouseY == ui.MapHeight() {
-					m, ok := ui.WhichButton(in.mouseX)
-					omh := ui.menuHover
-					if ok {
-						ui.menuHover = m
-					} else {
-						ui.menuHover = -1
-					}
-					if ui.menuHover != omh {
-						ui.DrawMenus()
-						ui.Flush()
-					}
-					break
-				}
-				ui.menuHover = -1
-				if in.mouseX >= ui.MapWidth() || in.mouseY >= ui.MapHeight() {
-					again = true
-					break
-				}
-				fallthrough
-			case 0:
-				if in.mouseY == ui.MapHeight() {
-					m, ok := ui.WhichButton(in.mouseX)
-					if !ok {
-						again = true
-						break
-					}
-					again, quit, err = ui.HandleKeyAction(runeKeyAction{k: m.Key(g)})
-					if err != nil {
-						again = true
-					}
-					return again, quit, err
-				} else if in.mouseX >= ui.MapWidth() || in.mouseY >= ui.MapHeight() {
-					again = true
-				} else {
-					again, quit, err = ui.ExaminePos(mpos)
-				}
-			case 2:
-				again, quit, err = ui.HandleKeyAction(runeKeyAction{k: ActionMenu})
-				if err != nil {
-					again = true
-				}
-				return again, quit, err
-			}
-		}
-	default:
-		r := ui.KeyToRuneKeyAction(in)
-		if r == 0 {
-			again = true
-		} else {
-			again, quit, err = ui.HandleKeyAction(runeKeyAction{r: r})
-		}
-	}
-	if err != nil {
-		again = true
-	}
-	return again, quit, err
-}
-
-func (ui *model) Scroll(n int) (m int, quit bool) {
-	in := ui.PollEvent()
-	switch in.key {
-	case "Escape", "\x1b", " ", "x", "X":
-		quit = true
-	case "u", "9", "b":
-		n -= 12
-	case "d", "3", "f":
-		n += 12
-	case "j", "2", ".":
-		n++
-	case "k", "8":
-		n--
-	case "":
-		if in.mouse {
-			switch in.button {
-			case 0:
-				y := in.mouseY
-				x := in.mouseX
-				if x >= DungeonWidth {
-					quit = true
-					break
-				}
-				if y > UIHeight {
-					break
-				}
-				n += y - (ui.MapHeight()+3)/2
-			}
-		}
-	}
-	return n, quit
-}
-
-func (ui *model) GetIndex(x, y int) int {
-	return y*UIWidth + x
-}
-
 func (ui *model) GetPos(i int) (int, int) {
 	return i - (i/UIWidth)*UIWidth, i / UIWidth
-}
-
-func (ui *model) Select(l int) (index int, alternate bool, err error) {
-	if ui.itemHover >= 1 && ui.itemHover <= l {
-		ui.ColorLine(ui.itemHover, ColorYellow)
-		ui.Flush()
-	} else {
-		ui.itemHover = -1
-	}
-	for {
-		in := ui.PollEvent()
-		r := ui.ReadKey(in.key)
-		switch {
-		case in.key == "\x1b" || in.key == "Escape" || in.key == " " || in.key == "x" || in.key == "X":
-			return -1, false, errors.New(DoNothing)
-		case in.key == "?":
-			return -1, true, nil
-		case 97 <= r && int(r) < 97+l:
-			if ui.itemHover >= 1 && ui.itemHover <= l {
-				ui.ColorLine(ui.itemHover, ColorFg)
-			}
-			ui.itemHover = int(r-97) + 1
-			return int(r - 97), false, nil
-		case in.key == "2":
-			oih := ui.itemHover
-			ui.itemHover++
-			if ui.itemHover < 1 || ui.itemHover > l {
-				ui.itemHover = 1
-			}
-			if oih > 0 && oih <= l {
-				ui.ColorLine(oih, ColorFg)
-			}
-			ui.ColorLine(ui.itemHover, ColorYellow)
-			ui.Flush()
-		case in.key == "8":
-			oih := ui.itemHover
-			ui.itemHover--
-			if ui.itemHover < 1 {
-				ui.itemHover = l
-			}
-			if oih > 0 && oih <= l {
-				ui.ColorLine(oih, ColorFg)
-			}
-			ui.ColorLine(ui.itemHover, ColorYellow)
-			ui.Flush()
-		case in.key == "." && ui.itemHover >= 1 && ui.itemHover <= l:
-			if ui.itemHover >= 1 && ui.itemHover <= l {
-				ui.ColorLine(ui.itemHover, ColorFg)
-			}
-			return ui.itemHover - 1, false, nil
-		case in.key == "" && in.mouse:
-			y := in.mouseY
-			x := in.mouseX
-			switch in.button {
-			case -1:
-				oih := ui.itemHover
-				if y <= 0 || y > l || x >= DungeonWidth {
-					ui.itemHover = -1
-					if oih > 0 {
-						ui.ColorLine(oih, ColorFg)
-						ui.Flush()
-					}
-					break
-				}
-				if y == oih {
-					break
-				}
-				ui.itemHover = y
-				ui.ColorLine(y, ColorYellow)
-				if oih > 0 {
-					ui.ColorLine(oih, ColorFg)
-				}
-				ui.Flush()
-			case 0:
-				if y < 0 || y > l || x >= DungeonWidth {
-					ui.itemHover = -1
-					return -1, false, errors.New(DoNothing)
-				}
-				if y == 0 {
-					ui.itemHover = -1
-					return -1, true, nil
-				}
-				ui.itemHover = -1
-				return y - 1, false, nil
-			case 2:
-				ui.itemHover = -1
-				return -1, true, nil
-			case 1:
-				ui.itemHover = -1
-				return -1, false, errors.New(DoNothing)
-			}
-		}
-	}
-}
-
-func (ui *model) KeyMenuAction(n int) (m int, action keyConfigAction) {
-	in := ui.PollEvent()
-	r := ui.KeyToRuneKeyAction(in)
-	switch string(r) {
-	case "a":
-		action = ChangeKeys
-	case "\x1b", " ", "x", "X":
-		action = QuitKeyConfig
-	case "u":
-		n -= ui.MapHeight() / 2
-	case "d":
-		n += ui.MapHeight() / 2
-	case "j", "2", "ArrowDown":
-		n++
-	case "k", "8", "ArrowUp":
-		n--
-	case "R":
-		action = ResetKeys
-	default:
-		if r == 0 && in.mouse {
-			y := in.mouseY
-			x := in.mouseX
-			switch in.button {
-			case 0:
-				if x > DungeonWidth || y > ui.MapHeight() {
-					action = QuitKeyConfig
-				}
-			case 1:
-				action = QuitKeyConfig
-			}
-		}
-	}
-	return n, action
-}
-
-func (ui *model) TargetModeEvent(targ Targeter, data *examineData) (again, quit, notarg bool, err error) {
-	g := ui.g
-	again = true
-	in := ui.PollEvent()
-	switch in.key {
-	case "\x1b", "Escape", " ", "x", "X":
-		g.Targeting = InvalidPos
-		notarg = true
-	case "":
-		if !in.mouse {
-			return
-		}
-		switch in.button {
-		case -1:
-			if in.mouseY == ui.MapHeight() {
-				m, ok := ui.WhichButton(in.mouseX)
-				omh := ui.menuHover
-				if ok {
-					ui.menuHover = m
-				} else {
-					ui.menuHover = -1
-				}
-				if ui.menuHover != omh {
-					ui.DrawMenus()
-					ui.Flush()
-				}
-				g.Targeting = InvalidPos
-				notarg = true
-				err = errors.New(DoNothing)
-				break
-			}
-			ui.menuHover = -1
-			if in.mouseY >= ui.MapHeight() || in.mouseX >= ui.MapWidth() {
-				g.Targeting = InvalidPos
-				notarg = true
-				err = errors.New(DoNothing)
-				break
-			}
-			var mpos gruid.Point
-			if CenteredCamera {
-				mpos = ui.CameraTargetPosition(in.mouseX, in.mouseY, true)
-			} else {
-				mpos = gruid.Point{in.mouseX, in.mouseY}
-			}
-			if g.Targeting == mpos {
-				break
-			}
-			g.Targeting = InvalidPos
-			fallthrough
-		case 0:
-			if in.mouseY == ui.MapHeight() {
-				m, ok := ui.WhichButton(in.mouseX)
-				if !ok {
-					g.Targeting = InvalidPos
-					notarg = true
-					err = errors.New(DoNothing)
-					break
-				}
-				again, quit, notarg, err = ui.CursorKeyAction(targ, runeKeyAction{k: m.Key(g)}, data)
-			} else if in.mouseX >= ui.MapWidth() || in.mouseY >= ui.MapHeight() {
-				g.Targeting = InvalidPos
-				notarg = true
-				err = errors.New(DoNothing)
-			} else {
-				var mpos gruid.Point
-				if CenteredCamera {
-					mpos = ui.CameraTargetPosition(in.mouseX, in.mouseY, true)
-				} else {
-					mpos = gruid.Point{in.mouseX, in.mouseY}
-				}
-				again, notarg = ui.CursorMouseLeft(targ, mpos, data)
-			}
-		case 2:
-			if in.mouseY >= ui.MapHeight() || in.mouseX >= ui.MapWidth() {
-				again, quit, notarg, err = ui.CursorKeyAction(targ, runeKeyAction{k: ActionMenu}, data)
-			} else {
-				again, quit, notarg, err = ui.CursorKeyAction(targ, runeKeyAction{k: ActionDescription}, data)
-			}
-		case 1:
-			again, quit, notarg, err = ui.CursorKeyAction(targ, runeKeyAction{k: ActionExclude}, data)
-		}
-	default:
-		r := ui.KeyToRuneKeyAction(in)
-		if r != 0 {
-			return ui.CursorKeyAction(targ, runeKeyAction{r: r}, data)
-		}
-		again = true
-	}
-	return
-}
-
-func (ui *model) ReadRuneKey() rune {
-	for {
-		in := ui.PollEvent()
-		switch in.key {
-		case "\x1b", "Escape", " ", "x", "X":
-			return 0
-		case "Enter":
-			return '.'
-		}
-		r := ui.ReadKey(in.key)
-		if unicode.IsPrint(r) {
-			return r
-		}
-	}
-}
-
-func (ui *model) ReadKey(s string) (r rune) {
-	bs := strings.NewReader(s)
-	r, _, _ = bs.ReadRune()
-	return r
 }
 
 type uiMode int
@@ -772,6 +287,7 @@ func (k action) TargetingModeAction() bool {
 var GameConfig config
 
 func ApplyDefaultKeyBindings() {
+	// TODO: rewrite with gruid.Key
 	GameConfig.RuneNormalModeKeys = map[rune]action{
 		'h': ActionW,
 		'j': ActionS,
@@ -1073,12 +589,14 @@ func (ui *model) ExaminePos(pos gruid.Point) (again, quit bool, err error) {
 }
 
 func (ui *model) Examine(start *gruid.Point) (again, quit bool, err error) {
+	// TODO: rewrite
 	ex := &examiner{}
 	again, quit, err = ui.CursorAction(ex, start)
 	return again, quit, err
 }
 
 func (ui *model) ChooseTarget(targ Targeter) error {
+	// TODO: rewrite
 	_, _, err := ui.CursorAction(targ, nil)
 	if err != nil {
 		return err
@@ -1187,6 +705,7 @@ func (ui *model) ExcludeZone(pos gruid.Point) {
 }
 
 func (ui *model) CursorMouseLeft(targ Targeter, pos gruid.Point, data *examineData) (again, notarg bool) {
+	// TODO: rewrite
 	g := ui.g
 	again = true
 	if data.npos == pos {
@@ -1208,6 +727,7 @@ func (ui *model) CursorMouseLeft(targ Targeter, pos gruid.Point, data *examineDa
 }
 
 func (ui *model) CursorKeyAction(targ Targeter, rka runeKeyAction, data *examineData) (again, quit, notarg bool, err error) {
+	// TODO: rewrite
 	g := ui.g
 	pos := data.npos
 	again = true
@@ -1342,6 +862,7 @@ type examineData struct {
 var InvalidPos = gruid.Point{-1, -1}
 
 func (ui *model) CursorAction(targ Targeter, start *gruid.Point) (again, quit bool, err error) {
+	// TODO: rewrite
 	g := ui.g
 	pos := g.Player.Pos
 	if start != nil {
@@ -1462,89 +983,49 @@ func (m menu) Key(g *state) (key action) {
 	return key
 }
 
-var MenuCols = [][2]int{
-	//MenuExplore:  {0, 0},
-	MenuOther:     {0, 0},
-	MenuInventory: {0, 0},
-	MenuEvoke:     {0, 0},
-	MenuInteract:  {0, 0}}
-
-func init() {
-	for i := range MenuCols {
-		runes := utf8.RuneCountInString(menu(i).String())
-		if i == 0 {
-			MenuCols[0] = [2]int{25, 25 + runes}
-			continue
-		}
-		MenuCols[i] = [2]int{MenuCols[i-1][1] + 2, MenuCols[i-1][1] + 2 + runes}
-	}
-}
-
-func (ui *model) WhichButton(col int) (menu, bool) {
-	g := ui.g
-	if ui.Small() {
-		return MenuOther, false
-	}
-	end := len(MenuCols) - 1
-	switch g.Dungeon.Cell(g.Player.Pos).T {
-	case StairCell, BarrelCell, ScrollCell, MagaraCell, StoneCell, LightCell:
-		end++
-	case StoryCell:
-		if g.Objects.Story[g.Player.Pos] == StoryArtifactSealed || g.Objects.Story[g.Player.Pos] == StoryArtifact {
-			end++
-		}
-	}
-	for i, cols := range MenuCols[0:end] {
-		if cols[0] >= 0 && col >= cols[0] && col < cols[1] {
-			return menu(i), true
-		}
-	}
-	return MenuOther, false
-}
-
-func (ui *model) UpdateInteractButton() string {
-	g := ui.g
-	var interactMenu string
-	var show bool
-	switch g.Dungeon.Cell(g.Player.Pos).T {
-	case StairCell:
-		interactMenu = "[descend]"
-		if g.Objects.Stairs[g.Player.Pos] == WinStair {
-			interactMenu = "[escape]"
-		}
-		show = true
-	case BarrelCell:
-		interactMenu = "[rest]"
-		show = true
-	case MagaraCell:
-		interactMenu = "[equip]"
-		show = true
-	case StoneCell:
-		interactMenu = "[activate]"
-		show = true
-	case ScrollCell:
-		interactMenu = "[read]"
-		show = true
-	case ItemCell:
-		interactMenu = "[equip]"
-		show = true
-	case LightCell:
-		interactMenu = "[extinguish]"
-		show = true
-	case StoryCell:
-		if g.Objects.Story[g.Player.Pos] == StoryArtifactSealed || g.Objects.Story[g.Player.Pos] == StoryArtifact {
-			interactMenu = "[take]"
-			show = true
-		}
-	}
-	if !show {
-		return ""
-	}
-	i := len(MenuCols) - 1
-	runes := utf8.RuneCountInString(interactMenu)
-	MenuCols[i][1] = MenuCols[i][0] + runes
-	return interactMenu
-}
+//func (ui *model) UpdateInteractButton() string {
+//g := ui.g
+//var interactMenu string
+//var show bool
+//switch g.Dungeon.Cell(g.Player.Pos).T {
+//case StairCell:
+//interactMenu = "[descend]"
+//if g.Objects.Stairs[g.Player.Pos] == WinStair {
+//interactMenu = "[escape]"
+//}
+//show = true
+//case BarrelCell:
+//interactMenu = "[rest]"
+//show = true
+//case MagaraCell:
+//interactMenu = "[equip]"
+//show = true
+//case StoneCell:
+//interactMenu = "[activate]"
+//show = true
+//case ScrollCell:
+//interactMenu = "[read]"
+//show = true
+//case ItemCell:
+//interactMenu = "[equip]"
+//show = true
+//case LightCell:
+//interactMenu = "[extinguish]"
+//show = true
+//case StoryCell:
+//if g.Objects.Story[g.Player.Pos] == StoryArtifactSealed || g.Objects.Story[g.Player.Pos] == StoryArtifact {
+//interactMenu = "[take]"
+//show = true
+//}
+//}
+//if !show {
+//return ""
+//}
+//i := len(MenuCols) - 1
+//runes := utf8.RuneCountInString(interactMenu)
+//MenuCols[i][1] = MenuCols[i][0] + runes
+//return interactMenu
+//}
 
 type wizardAction int
 
@@ -1569,6 +1050,7 @@ var WizardActions = []wizardAction{
 }
 
 func (ui *model) HandleWizardAction() error {
+	// TODO: rewrite
 	g := ui.g
 	s, err := ui.SelectWizardMagic(WizardActions)
 	if err != nil {
@@ -1599,13 +1081,14 @@ func (ui *model) Death() {
 	}
 	g.Print("You die... [(x) to continue]")
 	ui.DrawDungeonView(NormalMode)
-	ui.WaitForContinue(-1)
+	//ui.WaitForContinue(-1)
 	err := g.WriteDump()
 	ui.Dump(err)
-	ui.WaitForContinue(-1)
+	//ui.WaitForContinue(-1)
 }
 
 func (ui *model) Win() {
+	// TODO: rewrite
 	g := ui.g
 	err := g.RemoveSaveFile()
 	if err != nil {
@@ -1617,104 +1100,49 @@ func (ui *model) Win() {
 		g.Print("You escape by the magic portal! [(x) to continue]")
 	}
 	ui.DrawDungeonView(NormalMode)
-	ui.WaitForContinue(-1)
+	//ui.WaitForContinue(-1)
 	err = g.WriteDump()
 	ui.Dump(err)
-	ui.WaitForContinue(-1)
+	//ui.WaitForContinue(-1)
 }
 
 func (ui *model) Dump(err error) {
 	g := ui.g
-	ui.Clear()
 	ui.DrawText(g.SimplifedDump(err), 0, 0)
-	ui.Flush()
 }
 
 func (ui *model) CriticalHPWarning() {
-	g := ui.g
-	g.PrintStyled("*** CRITICAL HP WARNING *** [(x) to continue]", logCritic)
-	ui.DrawDungeonView(NormalMode)
-	ui.WaitForContinue(ui.MapHeight())
-	g.Print("Ok. Be careful, then.")
+	// TODO
+	//g := ui.g
+	//g.PrintStyled("*** CRITICAL HP WARNING *** [(x) to continue]", logCritic)
+	//ui.DrawDungeonView(NormalMode)
+	//ui.WaitForContinue(ui.MapHeight())
+	//g.Print("Ok. Be careful, then.")
 }
 
-func (ui *model) Quit() bool {
-	g := ui.g
-	g.Print("Do you really want to quit without saving? [y/N]")
-	ui.DrawDungeonView(NormalMode)
-	quit := ui.PromptConfirmation()
-	if quit {
-		err := g.RemoveSaveFile()
-		if err != nil {
-			g.PrintfStyled("Error removing save file: %v ——press any key to quit——", logError, err)
-			ui.DrawDungeonView(NormalMode)
-			ui.PressAnyKey()
-		}
-	} else {
-		g.Print(DoNothing)
-	}
-	return quit
-}
-
-func (ui *model) Wizard() bool {
-	g := ui.g
-	g.Print("Do you really want to enter wizard mode (no return)? [y/N]")
-	ui.DrawDungeonView(NormalMode)
-	return ui.PromptConfirmation()
-}
-
-func (ui *model) HandlePlayerTurn() bool {
-	g := ui.g
-getKey:
-	for {
-		var err error
-		var again, quit bool
-		if g.Targeting.valid() {
-			again, quit, err = ui.ExaminePos(g.Targeting)
-		} else {
-			ui.DrawDungeonView(NormalMode)
-			again, quit, err = ui.PlayerTurnEvent()
-		}
-		if err != nil && err.Error() != "" {
-			g.Print(err.Error())
-		}
-		if again {
-			continue getKey
-		}
-		return quit
-	}
-}
-
-func (ui *model) ExploreStep() bool {
-	next := make(chan bool)
-	var stop bool
-	go func() {
-		Sleep(10)
-		ui.Interrupt()
-	}()
-	go func() {
-		err := ui.PressAnyKey()
-		interrupted := err != nil
-		next <- !interrupted
-	}()
-	stop = <-next
-	ui.DrawDungeonView(NormalMode)
-	return stop
-}
+//func (ui *model) Quit() bool {
+//g := ui.g
+//g.Print("Do you really want to quit without saving? [y/N]")
+//ui.DrawDungeonView(NormalMode)
+//quit := ui.PromptConfirmation()
+//if quit {
+//err := g.RemoveSaveFile()
+//if err != nil {
+//g.PrintfStyled("Error removing save file: %v ——press any key to quit——", logError, err)
+//ui.DrawDungeonView(NormalMode)
+//ui.PressAnyKey()
+//}
+//} else {
+//g.Print(DoNothing)
+//}
+//return quit
+//}
 
 func (ui *model) Clear() {
-	for i := 0; i < UIHeight*UIWidth; i++ {
-		x, y := ui.GetPos(i)
-		ui.SetCell(x, y, ' ', ColorFg, ColorBg)
-	}
-}
-
-func (ui *model) DrawBufferInit() {
-	if len(ui.g.DrawBuffer) == 0 {
-		ui.g.DrawBuffer = make([]UICell, UIHeight*UIWidth)
-	} else if len(ui.g.DrawBuffer) != UIHeight*UIWidth {
-		ui.g.DrawBuffer = make([]UICell, UIHeight*UIWidth)
-	}
+	c := gruid.Cell{}
+	c.Rune = ' '
+	c.Style = gruid.Style{Fg: ColorFg, Bg: ColorBg}
+	ui.gd.Fill(c)
 }
 
 func ApplyConfig() {
@@ -1728,14 +1156,7 @@ func ApplyConfig() {
 	}
 }
 
-func (ui *model) ColorLine(y int, fg uicolor) {
-	for x := 0; x < DungeonWidth; x++ {
-		i := ui.GetIndex(x, y)
-		c := ui.g.DrawBuffer[i]
-		ui.SetCell(x, y, c.R, fg, c.Bg)
-	}
-}
-
 func Sleep(d time.Duration) {
-	time.Sleep(d * time.Millisecond)
+	// TODO: fix animations
+	//time.Sleep(d * time.Millisecond)
 }

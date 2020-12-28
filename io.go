@@ -10,26 +10,6 @@ import (
 	"path/filepath"
 )
 
-func Replay(file string) error {
-	ui := &model{}
-	g := &state{}
-	ui.g = g
-	g.ui = ui
-	err := g.LoadReplay(file)
-	if err != nil {
-		return fmt.Errorf("loading replay: %v", err)
-	}
-	err = ui.Init()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "harmonist: %v\n", err)
-		os.Exit(1)
-	}
-	defer ui.Close()
-	ui.DrawBufferInit()
-	ui.Replay()
-	return nil
-}
-
 func (g *state) DataDir() (string, error) {
 	var xdg string
 	if os.Getenv("GOOS") == "windows" {
@@ -160,52 +140,6 @@ func (g *state) RemoveDataFile(file string) error {
 			return err
 		}
 	}
-	return nil
-}
-
-func (g *state) SaveReplay() error {
-	dataDir, err := g.DataDir()
-	if err != nil {
-		g.Print(err.Error())
-		return err
-	}
-	saveFile := filepath.Join(dataDir, "replay")
-	data, err := g.EncodeDrawLog()
-	if err != nil {
-		g.Print(err.Error())
-		return err
-	}
-	err = ioutil.WriteFile(saveFile, data, 0644)
-	if err != nil {
-		g.Print(err.Error())
-		return err
-	}
-	return nil
-}
-
-func (g *state) LoadReplay(file string) error {
-	dataDir, err := g.DataDir()
-	if err != nil {
-		return err
-	}
-	replayFile := filepath.Join(dataDir, "replay")
-	if file != "_" {
-		replayFile = file
-	}
-	_, err = os.Stat(replayFile)
-	if err != nil {
-		// no save file, new state
-		return err
-	}
-	data, err := ioutil.ReadFile(replayFile)
-	if err != nil {
-		return err
-	}
-	dl, err := g.DecodeDrawLog(data)
-	if err != nil {
-		return err
-	}
-	g.DrawLog = dl
 	return nil
 }
 

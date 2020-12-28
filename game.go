@@ -44,9 +44,6 @@ type state struct {
 	AutoDir            direction
 	AutoHalt           bool
 	AutoNext           bool
-	DrawBuffer         []UICell
-	drawBackBuffer     []UICell
-	DrawLog            []drawFrame
 	Log                []logEntry
 	LogIndex           int
 	LogNextTick        int
