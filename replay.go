@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-func (ui *gameui) Replay() {
+func (ui *model) Replay() {
 	g := ui.g
 	dl := g.DrawLog
 	if len(dl) == 0 {
@@ -19,7 +19,7 @@ func (ui *gameui) Replay() {
 }
 
 type replay struct {
-	ui       *gameui
+	ui       *model
 	frames   []drawFrame
 	undo     [][]cellDraw
 	frame    int

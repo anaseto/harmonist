@@ -48,8 +48,8 @@ func main() {
 		DisableAnimations = true
 	}
 
-	ui := &gameui{}
-	g := &game{}
+	ui := &model{}
+	g := &state{}
 	ui.g = g
 	if CenteredCamera {
 		UIWidth = 80
@@ -86,7 +86,7 @@ func main() {
 	} else if err != nil {
 		g.InitLevel()
 		g.PrintfStyled("Error: %v", logError, err)
-		g.PrintStyled("Could not load saved game… starting new game.", logError)
+		g.PrintStyled("Could not load saved state… starting new state.", logError)
 	} else {
 		ui.DrawBufferInit()
 	}

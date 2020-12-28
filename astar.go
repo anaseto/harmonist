@@ -28,10 +28,10 @@ import (
 )
 
 type node struct {
-	Pos        position
+	Pos        gruid.Point
 	Cost       int
 	Rank       int
-	Parent     *position
+	Parent     *gruid.Point
 	Open       bool
 	Closed     bool
 	Index      int
@@ -52,7 +52,7 @@ func init() {
 	queueCache = make(priorityQueue, 0, DungeonNCells)
 }
 
-func (nm nodeMap) get(p position) *node {
+func (nm nodeMap) get(p gruid.Point) *node {
 	n := &nm.Nodes[p.idx()]
 	if n.CacheIndex != nm.Index {
 		nm.Nodes[p.idx()] = node{Pos: p, CacheIndex: nm.Index}
@@ -60,7 +60,7 @@ func (nm nodeMap) get(p position) *node {
 	return n
 }
 
-func (nm nodeMap) at(p position) (*node, bool) {
+func (nm nodeMap) at(p gruid.Point) (*node, bool) {
 	n := &nm.Nodes[p.idx()]
 	if n.CacheIndex != nm.Index {
 		return nil, false
@@ -71,8 +71,8 @@ func (nm nodeMap) at(p position) (*node, bool) {
 var iterVisitedCache [DungeonNCells]int
 var iterQueueCache [DungeonNCells]int
 
-func (nm nodeMap) iter(pos position, f func(*node)) {
-	nb := make([]position, 4)
+func (nm nodeMap) iter(pos gruid.Point, f func(*node)) {
+	nb := make([]gruid.Point, 4)
 	var qstart, qend int
 	iterQueueCache[qend] = pos.idx()
 	iterVisitedCache[qend] = nm.Index
@@ -80,7 +80,7 @@ func (nm nodeMap) iter(pos position, f func(*node)) {
 	for qstart < qend {
 		pos = idxtopos(iterQueueCache[qstart])
 		qstart++
-		nb = pos.CardinalNeighbors(nb, func(npos position) bool { return npos.valid() })
+		nb = pos.CardinalNeighbors(nb, func(npos gruid.Point) bool { return npos.valid() })
 		for _, npos := range nb {
 			n := &nm.Nodes[npos.idx()]
 			if n.CacheIndex == nm.Index && iterVisitedCache[npos.idx()] != nm.Index {
@@ -94,12 +94,12 @@ func (nm nodeMap) iter(pos position, f func(*node)) {
 }
 
 type Astar interface {
-	Neighbors(position) []position
-	Cost(position, position) int
-	Estimation(position, position) int
+	Neighbors(gruid.Point) []gruid.Point
+	Cost(gruid.Point, gruid.Point) int
+	Estimation(gruid.Point, gruid.Point) int
 }
 
-func AstarPath(ast Astar, from, to position) (path []position, length int, found bool) {
+func AstarPath(ast Astar, from, to gruid.Point) (path []gruid.Point, length int, found bool) {
 	nodeCache.Index++
 	nqs := queueCache[:0]
 	nq := &nqs
@@ -120,7 +120,7 @@ func AstarPath(ast Astar, from, to position) (path []position, length int, found
 
 		if current.Pos == to {
 			// Found a path to the goal.
-			p := []position{}
+			p := []gruid.Point{}
 			curr := current
 			for {
 				p = append(p, curr.Pos)

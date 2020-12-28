@@ -1,4 +1,4 @@
-// +build js tk
+// +build js sdl
 
 package main
 
@@ -11,18 +11,6 @@ import (
 	"image/png"
 	"log"
 )
-
-func (ui *gameui) ApplyToggleTiles() {
-	GameConfig.Tiles = !GameConfig.Tiles
-	for c, _ := range ui.cache {
-		if c.InMap {
-			delete(ui.cache, c)
-		}
-	}
-	for i := 0; i < len(ui.g.drawBackBuffer); i++ {
-		ui.g.drawBackBuffer[i] = UICell{}
-	}
-}
 
 func (c uicolor) String() string {
 	color := "#002b36"
@@ -232,32 +220,30 @@ var LetterNames = map[rune]string{
 	'‗':  "queenrock",
 }
 
-func (ui *gameui) Interrupt() {
-	Interrupt <- true
+type monochromeTileManager struct{}
+
+func (tm *monochromeTileManager) TileSize() (int, int) {
+	return 16, 24
 }
 
-func (ui *gameui) Small() bool {
-	return GameConfig.Small
-}
-
-func getImage(cell UICell) *image.RGBA {
+func (tm *monochromeTileManager) GetImage(gc gruid.Cell) *image.RGBA {
 	var pngImg []byte
 	hastile := false
-	if cell.InMap && GameConfig.Tiles {
+	if gc.Style.Attrs == StyleMap && GameConfig.Tiles {
 		pngImg = TileImgs["map-notile"]
-		if im, ok := TileImgs["map-"+string(cell.R)]; ok {
+		if im, ok := TileImgs["map-"+string(gc.Rune)]; ok {
 			pngImg = im
 			hastile = true
-		} else if im, ok := TileImgs["map-"+MapNames[cell.R]]; ok {
+		} else if im, ok := TileImgs["map-"+MapNames[gc.Rune]]; ok {
 			pngImg = im
 			hastile = true
 		}
 	}
 	if !hastile {
 		pngImg = TileImgs["map-notile"]
-		if im, ok := TileImgs["letter-"+string(cell.R)]; ok {
+		if im, ok := TileImgs["letter-"+string(gc.Rune)]; ok {
 			pngImg = im
-		} else if im, ok := TileImgs["letter-"+LetterNames[cell.R]]; ok {
+		} else if im, ok := TileImgs["letter-"+LetterNames[gc.Rune]]; ok {
 			pngImg = im
 		}
 	}
@@ -266,13 +252,13 @@ func getImage(cell UICell) *image.RGBA {
 	br := bytes.NewReader(buf)
 	img, err := png.Decode(br)
 	if err != nil {
-		log.Printf("Rune %s: could not decode png: %v", string(cell.R), err)
+		log.Printf("Rune %s: could not decode png: %v", string(gc.Rune), err)
 	}
 	rect := img.Bounds()
 	rgbaimg := image.NewRGBA(rect)
 	draw.Draw(rgbaimg, rect, img, rect.Min, draw.Src)
-	bgc := cell.Bg.Color()
-	fgc := cell.Fg.Color()
+	bgc := ColorToRGBA(gc.Style.Bg)
+	fgc := ColorToRGBA(gc.Style.Fg)
 	for y := 0; y < rect.Max.Y; y++ {
 		for x := 0; x < rect.Max.X; x++ {
 			c := rgbaimg.At(x, y)
@@ -285,11 +271,4 @@ func getImage(cell UICell) *image.RGBA {
 		}
 	}
 	return rgbaimg
-}
-
-func (ui *gameui) PostConfig() {
-	if GameConfig.Small {
-		GameConfig.Small = false
-		ui.ApplyToggleLayoutWithClear(false)
-	}
 }

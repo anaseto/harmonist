@@ -12,7 +12,7 @@ func init() {
 	gob.Register(&posEvent{})
 }
 
-func (g *game) GameSave() ([]byte, error) {
+func (g *state) GameSave() ([]byte, error) {
 	data := bytes.Buffer{}
 	enc := gob.NewEncoder(&data)
 	err := enc.Encode(g)
@@ -46,14 +46,14 @@ func (c *config) ConfigSave() ([]byte, error) {
 	return data.Bytes(), nil
 }
 
-func (g *game) DecodeGameSave(data []byte) (*game, error) {
+func (g *state) DecodeGameSave(data []byte) (*state, error) {
 	buf := bytes.NewReader(data)
 	r, err := zlib.NewReader(buf)
 	if err != nil {
 		return nil, err
 	}
 	dec := gob.NewDecoder(r)
-	lg := &game{}
+	lg := &state{}
 	err = dec.Decode(lg)
 	if err != nil {
 		return nil, err
@@ -62,7 +62,7 @@ func (g *game) DecodeGameSave(data []byte) (*game, error) {
 	return lg, nil
 }
 
-func (g *game) DecodeConfigSave(data []byte) (*config, error) {
+func (g *state) DecodeConfigSave(data []byte) (*config, error) {
 	buf := bytes.NewBuffer(data)
 	dec := gob.NewDecoder(buf)
 	c := &config{}
@@ -73,7 +73,7 @@ func (g *game) DecodeConfigSave(data []byte) (*config, error) {
 	return c, nil
 }
 
-func (g *game) EncodeDrawLog() ([]byte, error) {
+func (g *state) EncodeDrawLog() ([]byte, error) {
 	data := bytes.Buffer{}
 	enc := gob.NewEncoder(&data)
 	err := enc.Encode(&g.DrawLog)
@@ -87,7 +87,7 @@ func (g *game) EncodeDrawLog() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func (g *game) DecodeDrawLog(data []byte) ([]drawFrame, error) {
+func (g *state) DecodeDrawLog(data []byte) ([]drawFrame, error) {
 	buf := bytes.NewReader(data)
 	r, err := zlib.NewReader(buf)
 	if err != nil {

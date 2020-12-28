@@ -2,10 +2,10 @@
 
 package main
 
-func (ui *gameui) ApplyToggleTiles() {
+func (ui *model) ApplyToggleTiles() {
 }
 
-func (ui *gameui) PostConfig() {
+func (ui *model) PostConfig() {
 	if GameConfig.Small {
 		UIHeight = 24
 		UIWidth = 80

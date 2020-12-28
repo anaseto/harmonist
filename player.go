@@ -15,9 +15,9 @@ type player struct {
 	//Aptitudes map[aptitude]bool
 	Statuses  map[status]int
 	Expire    map[status]int
-	Pos       position
-	Target    position
-	LOS       map[position]bool
+	Pos       gruid.Point
+	Target    gruid.Point
+	LOS       map[gruid.Point]bool
 	Rays      rayMap
 	Inventory inventory
 }
@@ -55,7 +55,7 @@ func (p *player) HasStatus(st status) bool {
 	return p.Statuses[st] > 0
 }
 
-func (g *game) AutoToDir() bool {
+func (g *state) AutoToDir() bool {
 	if g.MonsterInLOS() == nil {
 		pos := g.Player.Pos.To(g.AutoDir)
 		if g.PlayerCanPass(pos) {
@@ -75,7 +75,7 @@ func (g *game) AutoToDir() bool {
 	return false
 }
 
-func (g *game) GoToDir(dir direction) error {
+func (g *state) GoToDir(dir direction) error {
 	if g.MonsterInLOS() != nil {
 		g.AutoDir = NoDir
 		return errors.New("You cannot travel while there are monsters in view.")
@@ -92,7 +92,7 @@ func (g *game) GoToDir(dir direction) error {
 	return nil
 }
 
-func (g *game) MoveToTarget() bool {
+func (g *state) MoveToTarget() bool {
 	if !g.AutoTarget.valid() {
 		return false
 	}
@@ -124,12 +124,12 @@ func (g *game) MoveToTarget() bool {
 	return true
 }
 
-func (g *game) WaitTurn() {
+func (g *state) WaitTurn() {
 	g.Stats.Waits++
 	g.RenewEvent(DurationTurn)
 }
 
-func (g *game) MonsterCount() (count int) {
+func (g *state) MonsterCount() (count int) {
 	for _, mons := range g.Monsters {
 		if mons.Exists() {
 			count++
@@ -138,7 +138,7 @@ func (g *game) MonsterCount() (count int) {
 	return count
 }
 
-func (g *game) Rest() error {
+func (g *state) Rest() error {
 	if g.Dungeon.Cell(g.Player.Pos).T != BarrelCell {
 		return fmt.Errorf("This place is not safe for sleeping.")
 	}
@@ -159,7 +159,7 @@ func (g *game) Rest() error {
 	return nil
 }
 
-func (g *game) StatusRest() bool {
+func (g *state) StatusRest() bool {
 	for st, q := range g.Player.Statuses {
 		if st.Info() {
 			continue
@@ -171,12 +171,12 @@ func (g *game) StatusRest() bool {
 	return false
 }
 
-func (g *game) NeedsRegenRest() bool {
+func (g *state) NeedsRegenRest() bool {
 	return g.Player.HP < g.Player.HPMax() || g.Player.MP < g.Player.MPMax()
 }
 
-func (g *game) Teleportation() {
-	var pos position
+func (g *state) Teleportation() {
+	var pos gruid.Point
 	i := 0
 	count := 0
 	for {
@@ -206,7 +206,7 @@ func (g *game) Teleportation() {
 
 const MaxBananas = 4
 
-func (g *game) CollectGround() {
+func (g *state) CollectGround() {
 	pos := g.Player.Pos
 	c := g.Dungeon.Cell(pos)
 	if c.IsNotable() {
@@ -260,7 +260,7 @@ func (g *game) CollectGround() {
 	}
 }
 
-func (g *game) FallAbyss(style descendstyle) {
+func (g *state) FallAbyss(style descendstyle) {
 	if g.Player.HasStatus(StatusLevitation) {
 		return
 	}
@@ -282,18 +282,18 @@ func (g *game) FallAbyss(style descendstyle) {
 	g.Descend(style)
 }
 
-func (g *game) AbyssJumpConfirmation() bool {
+func (g *state) AbyssJumpConfirmation() bool {
 	g.Print("Do you really want to jump into the abyss? (DANGEROUS) [y/N]")
 	g.ui.DrawDungeonView(NoFlushMode)
 	g.ui.Flush()
 	return g.ui.PromptConfirmation()
 }
 
-func (g *game) DeepChasmDepth() bool {
+func (g *state) DeepChasmDepth() bool {
 	return g.Depth == WinDepth || g.Depth == MaxDepth
 }
 
-func (g *game) AbyssJump() error {
+func (g *state) AbyssJump() error {
 	if g.DeepChasmDepth() {
 		return errors.New("You cannot jump into deep chasm.")
 	}
@@ -304,7 +304,7 @@ func (g *game) AbyssJump() error {
 	return nil
 }
 
-func (g *game) PlayerBump(pos position) error {
+func (g *state) PlayerBump(pos gruid.Point) error {
 	if !pos.valid() {
 		return errors.New("You cannot move there.")
 	}
@@ -381,9 +381,9 @@ func (g *game) PlayerBump(pos position) error {
 	return nil
 }
 
-func (g *game) SwiftFog() {
-	dij := &noisePath{game: g}
-	nm := Dijkstra(dij, []position{g.Player.Pos}, 2)
+func (g *state) SwiftFog() {
+	dij := &noisePath{state: g}
+	nm := Dijkstra(dij, []gruid.Point{g.Player.Pos}, 2)
 	nm.iter(g.Player.Pos, func(n *node) {
 		pos := n.Pos
 		_, ok := g.Clouds[pos]
@@ -397,13 +397,13 @@ func (g *game) SwiftFog() {
 	g.Print("You feel an energy burst and smoke comes out from you.")
 }
 
-func (g *game) Confusion() {
+func (g *state) Confusion() {
 	if g.PutStatus(StatusConfusion, DurationConfusionPlayer) {
 		g.Print("You feel confused.")
 	}
 }
 
-func (g *game) PlacePlayerAt(pos position) {
+func (g *state) PlacePlayerAt(pos gruid.Point) {
 	if pos == g.Player.Pos {
 		return
 	}
@@ -430,14 +430,14 @@ func (g *game) PlacePlayerAt(pos position) {
 
 const LignificationHPbonus = 4
 
-func (g *game) EnterLignification() {
+func (g *state) EnterLignification() {
 	if g.PutStatus(StatusLignification, DurationLignificationPlayer) {
 		g.Print("You feel rooted to the ground.")
 		g.Player.HPbonus += LignificationHPbonus
 	}
 }
 
-func (g *game) ExtinguishFire() error {
+func (g *state) ExtinguishFire() error {
 	g.Dungeon.SetCell(g.Player.Pos, ExtinguishedLightCell)
 	g.Objects.Lights[g.Player.Pos] = false
 	g.Stats.Extinguishments++
@@ -449,7 +449,7 @@ func (g *game) ExtinguishFire() error {
 	return nil
 }
 
-func (g *game) PutStatus(st status, duration int) bool {
+func (g *state) PutStatus(st status, duration int) bool {
 	if g.Player.Statuses[st] != 0 {
 		return false
 	}
@@ -462,7 +462,7 @@ func (g *game) PutStatus(st status, duration int) bool {
 	return true
 }
 
-func (g *game) PutFakeStatus(st status, duration int) bool {
+func (g *state) PutFakeStatus(st status, duration int) bool {
 	if g.Player.Statuses[st] != 0 {
 		return false
 	}
@@ -474,7 +474,7 @@ func (g *game) PutFakeStatus(st status, duration int) bool {
 	return true
 }
 
-func (g *game) UpdateKnowledge(pos position, t terrain) {
+func (g *state) UpdateKnowledge(pos gruid.Point, t terrain) {
 	if g.Player.Sees(pos) {
 		return
 	}
@@ -484,7 +484,7 @@ func (g *game) UpdateKnowledge(pos position, t terrain) {
 	}
 }
 
-func (g *game) PlayerCanPass(pos position) bool {
+func (g *state) PlayerCanPass(pos gruid.Point) bool {
 	if !pos.valid() {
 		return false
 	}
@@ -494,7 +494,7 @@ func (g *game) PlayerCanPass(pos position) bool {
 		g.Player.HasStatus(StatusDig) && c.T.IsDiggable()
 }
 
-func (g *game) PlayerCanJumpPass(pos position) bool {
+func (g *state) PlayerCanJumpPass(pos gruid.Point) bool {
 	if !pos.valid() {
 		return false
 	}

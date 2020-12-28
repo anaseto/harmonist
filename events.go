@@ -4,8 +4,8 @@ import "container/heap"
 
 type event interface {
 	Rank() int
-	Action(*game)
-	Renew(*game, int)
+	Action(*state)
+	Renew(*state, int)
 }
 
 type iEvent struct {
@@ -63,7 +63,7 @@ const (
 	DispersalEnd
 )
 
-func (g *game) PushEvent(ev event) {
+func (g *state) PushEvent(ev event) {
 	iev := iEvent{Event: ev, Index: g.EventIndex}
 	g.EventIndex++
 	heap.Push(g.Events, iev)
@@ -71,17 +71,17 @@ func (g *game) PushEvent(ev event) {
 
 // PushEventRandomIndex pushes a new even to the heap, with randomised Index.
 // Used so that monster turn order is not predictable.
-func (g *game) PushEventRandomIndex(ev event) {
+func (g *state) PushEventRandomIndex(ev event) {
 	iev := iEvent{Event: ev, Index: RandInt(10)}
 	heap.Push(g.Events, iev)
 }
 
-func (g *game) PushAgainEvent(ev event) {
+func (g *state) PushAgainEvent(ev event) {
 	iev := iEvent{Event: ev, Index: 0}
 	heap.Push(g.Events, iev)
 }
 
-func (g *game) PopIEvent() iEvent {
+func (g *state) PopIEvent() iEvent {
 	iev := heap.Pop(g.Events).(iEvent)
 	return iev
 }
@@ -95,7 +95,7 @@ func (sev *simpleEvent) Rank() int {
 	return sev.ERank
 }
 
-func (sev *simpleEvent) Renew(g *game, delay int) {
+func (sev *simpleEvent) Renew(g *state, delay int) {
 	sev.ERank += delay
 	if delay == 0 {
 		g.PushAgainEvent(sev)
@@ -150,7 +150,7 @@ var StatusEndActions = [...]simpleAction{
 	StatusDispersal:     DispersalEnd,
 }
 
-func (sev *simpleEvent) Action(g *game) {
+func (sev *simpleEvent) Action(g *state) {
 	switch sev.EAction {
 	case PlayerTurn:
 		if !g.PlayerAgain {
@@ -249,7 +249,7 @@ var MonsStatusEndActions = [...]monsterAction{
 	MonsSatiated:  MonsSatiatedEnd,
 }
 
-func (mev *monsterEvent) Action(g *game) {
+func (mev *monsterEvent) Action(g *state) {
 	switch mev.EAction {
 	case MonsterTurn:
 		mons := g.Monsters[mev.NMons]
@@ -274,7 +274,7 @@ func (mev *monsterEvent) Action(g *game) {
 	}
 }
 
-func (mev *monsterEvent) Renew(g *game, delay int) {
+func (mev *monsterEvent) Renew(g *state, delay int) {
 	mev.ERank += delay
 	g.PushEvent(mev)
 }
@@ -295,7 +295,7 @@ const (
 
 type posEvent struct {
 	ERank   int
-	Pos     position
+	Pos     gruid.Point
 	EAction posAction
 	Timer   int
 }
@@ -304,7 +304,7 @@ func (cev *posEvent) Rank() int {
 	return cev.ERank
 }
 
-func (cev *posEvent) Action(g *game) {
+func (cev *posEvent) Action(g *state) {
 	switch cev.EAction {
 	case CloudEnd:
 		delete(g.Clouds, cev.Pos)
@@ -397,8 +397,8 @@ func (cev *posEvent) Action(g *game) {
 			g.NoiseIllusion[cev.Pos] = true
 			dij := &gridPath{dungeon: g.Dungeon}
 			g.MakeNoise(OricExplosionNoise, cev.Pos)
-			nm := Dijkstra(dij, []position{cev.Pos}, 7)
-			fogs := []position{}
+			nm := Dijkstra(dij, []gruid.Point{cev.Pos}, 7)
+			fogs := []gruid.Point{}
 			terrains := []terrain{}
 			nm.iter(cev.Pos, func(n *node) {
 				c := g.Dungeon.Cell(n.Pos)
@@ -428,9 +428,9 @@ func (cev *posEvent) Action(g *game) {
 	}
 }
 
-func (g *game) NightFog(at position, radius int, ev event) {
-	dij := &noisePath{game: g}
-	nm := Dijkstra(dij, []position{at}, radius)
+func (g *state) NightFog(at gruid.Point, radius int, ev event) {
+	dij := &noisePath{state: g}
+	nm := Dijkstra(dij, []gruid.Point{at}, radius)
 	nm.iter(at, func(n *node) {
 		pos := n.Pos
 		_, ok := g.Clouds[pos]
@@ -444,7 +444,7 @@ func (g *game) NightFog(at position, radius int, ev event) {
 	g.ComputeLOS()
 }
 
-func (g *game) MakeCreatureSleep(pos position) {
+func (g *state) MakeCreatureSleep(pos gruid.Point) {
 	if pos == g.Player.Pos {
 		if g.PutStatus(StatusConfusion, DurationConfusionPlayer) {
 			g.Print("The clouds of night confuse you.")
@@ -465,7 +465,7 @@ func (g *game) MakeCreatureSleep(pos position) {
 	mons.ExhaustTime(g, 4+RandInt(2))
 }
 
-func (g *game) Burn(pos position) {
+func (g *state) Burn(pos gruid.Point) {
 	if _, ok := g.Clouds[pos]; ok {
 		return
 	}
@@ -495,7 +495,7 @@ func (g *game) Burn(pos position) {
 	g.PushEvent(&posEvent{ERank: g.Ev.Rank() + DurationCloudProgression, EAction: FireProgression, Pos: pos})
 }
 
-func (cev *posEvent) Renew(g *game, delay int) {
+func (cev *posEvent) Renew(g *state, delay int) {
 	cev.ERank += delay
 	g.PushEvent(cev)
 }
@@ -531,6 +531,6 @@ const (
 	DurationNightFog               = 15
 )
 
-func (g *game) RenewEvent(delay int) {
+func (g *state) RenewEvent(delay int) {
 	g.Ev.Renew(g, delay)
 }

@@ -17,18 +17,18 @@ func init() {
 	Interrupt = make(chan bool)
 }
 
-type gameui struct {
-	g       *game
+type model struct {
+	g       *state
 	bStdin  *bufio.Reader
 	bStdout *bufio.Writer
-	cursor  position
+	cursor  gruid.Point
 	stty    string
 	// below unused for this backend
 	menuHover menu
 	itemHover int
 }
 
-func (ui *gameui) Init() error {
+func (ui *model) Init() error {
 	ui.bStdin = bufio.NewReader(os.Stdin)
 	ui.bStdout = bufio.NewWriter(os.Stdout)
 	fmt.Fprint(ui.bStdout, "\x1b[2J")
@@ -57,7 +57,7 @@ func (ui *gameui) Init() error {
 	return nil
 }
 
-func (ui *gameui) Close() {
+func (ui *model) Close() {
 	fmt.Fprint(ui.bStdout, "\x1b[2J")
 	fmt.Fprintf(ui.bStdout, "\x1b[?25h")
 	ui.bStdout.Flush()
@@ -71,11 +71,11 @@ func (ui *gameui) Close() {
 	}
 }
 
-func (ui *gameui) MoveTo(x, y int) {
+func (ui *model) MoveTo(x, y int) {
 	fmt.Fprintf(ui.bStdout, "\x1b[%d;%dH", y+1, x+1)
 }
 
-func (ui *gameui) Flush() {
+func (ui *model) Flush() {
 	ui.DrawLogFrame()
 	var prevfg, prevbg uicolor
 	first := true
@@ -123,7 +123,7 @@ func (ui *gameui) Flush() {
 	ui.bStdout.Flush()
 }
 
-func (ui *gameui) ApplyToggleLayout() {
+func (ui *model) ApplyToggleLayout() {
 	GameConfig.Small = !GameConfig.Small
 	if GameConfig.Small {
 		ui.Clear()
@@ -142,15 +142,15 @@ func (ui *gameui) ApplyToggleLayout() {
 	ui.Clear()
 }
 
-func (ui *gameui) Small() bool {
+func (ui *model) Small() bool {
 	return GameConfig.Small
 }
 
-func (ui *gameui) Interrupt() {
+func (ui *model) Interrupt() {
 	Interrupt <- true
 }
 
-func (ui *gameui) PollEvent() (in uiInput) {
+func (ui *model) PollEvent() (in uiInput) {
 	select {
 	case in = <-InCh:
 	case in.interrupt = <-Interrupt:

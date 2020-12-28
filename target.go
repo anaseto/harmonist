@@ -3,9 +3,9 @@ package main
 import "errors"
 
 type Targeter interface {
-	ComputeHighlight(*game, position)
-	Action(*game, position) error
-	Reachable(*game, position) bool
+	ComputeHighlight(*state, gruid.Point)
+	Action(*state, gruid.Point) error
+	Reachable(*state, gruid.Point) bool
 	Done() bool
 }
 
@@ -14,19 +14,19 @@ type examiner struct {
 	stairs bool
 }
 
-func (ex *examiner) ComputeHighlight(g *game, pos position) {
+func (ex *examiner) ComputeHighlight(g *state, pos gruid.Point) {
 	g.ComputePathHighlight(pos)
 }
 
-func (g *game) ComputePathHighlight(pos position) {
+func (g *state) ComputePathHighlight(pos gruid.Point) {
 	path := g.PlayerPath(g.Player.Pos, pos)
-	g.Highlight = map[position]bool{}
+	g.Highlight = map[gruid.Point]bool{}
 	for _, p := range path {
 		g.Highlight[p] = true
 	}
 }
 
-func (ex *examiner) Action(g *game, pos position) error {
+func (ex *examiner) Action(g *state, pos gruid.Point) error {
 	if !g.Dungeon.Cell(pos).Explored {
 		return errors.New("You do not know this place.")
 	}
@@ -49,7 +49,7 @@ func (ex *examiner) Action(g *game, pos position) error {
 	return errors.New("Invalid destination.")
 }
 
-func (ex *examiner) Reachable(g *game, pos position) bool {
+func (ex *examiner) Reachable(g *state, pos gruid.Point) bool {
 	return true
 }
 

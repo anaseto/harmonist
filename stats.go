@@ -33,7 +33,7 @@ type stats struct {
 	DUSpotted         [MaxDepth + 1]int
 	DUSpottedPerc     [MaxDepth + 1]int
 	Achievements      map[achievement]int
-	AtNotablePos      map[position]bool
+	AtNotablePos      map[gruid.Point]bool
 	HarmonicMagUse    int
 	OricMagUse        int
 	FireUse           int
@@ -53,7 +53,7 @@ type stats struct {
 	TimesBlocked      int
 }
 
-func (g *game) TurnStats() {
+func (g *state) TurnStats() {
 	g.Stats.Turns++
 	g.DepthPlayerTurn++
 	if g.Player.HP < g.Player.HPMax() {
@@ -67,7 +67,7 @@ func (g *game) TurnStats() {
 	}
 }
 
-func (g *game) LevelStats() {
+func (g *state) LevelStats() {
 	free := 0
 	exp := 0
 	for _, c := range g.Dungeon.Cells {
@@ -157,7 +157,7 @@ const (
 	AchAntimagicMaster     achievement = "Antimagic Master"
 )
 
-func (ach achievement) Get(g *game) {
+func (ach achievement) Get(g *state) {
 	if g.Stats.Achievements[ach] == 0 {
 		g.Stats.Achievements[ach] = g.Turn
 		g.PrintfStyled("Achievement: %s.", logSpecial, ach)
@@ -174,7 +174,7 @@ func (t terrain) ReachNotable() bool {
 	}
 }
 
-func (pos position) Reach(g *game) {
+func (pos gruid.Point) Reach(g *state) {
 	if g.Stats.AtNotablePos[pos] {
 		return
 	}

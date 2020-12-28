@@ -7,7 +7,7 @@ import (
 	"fmt"
 )
 
-func (g *game) DamagePlayer(damage int) {
+func (g *state) DamagePlayer(damage int) {
 	g.Stats.Damage += damage
 	g.Stats.DDamage[g.Depth] += damage
 	g.Player.HPbonus -= damage
@@ -17,7 +17,7 @@ func (g *game) DamagePlayer(damage int) {
 	}
 }
 
-func (m *monster) InflictDamage(g *game, damage, max int) {
+func (m *monster) InflictDamage(g *state, damage, max int) {
 	g.Stats.ReceivedHits++
 	oldHP := g.Player.HP
 	g.DamagePlayer(damage)
@@ -35,7 +35,7 @@ func (m *monster) InflictDamage(g *game, damage, max int) {
 	}
 }
 
-func (g *game) MakeMonstersAware() {
+func (g *state) MakeMonstersAware() {
 	for _, m := range g.Monsters {
 		if m.Dead {
 			continue
@@ -49,9 +49,9 @@ func (g *game) MakeMonstersAware() {
 	}
 }
 
-func (g *game) MakeNoise(noise int, at position) {
-	dij := &noisePath{game: g}
-	nm := Dijkstra(dij, []position{at}, noise)
+func (g *state) MakeNoise(noise int, at gruid.Point) {
+	dij := &noisePath{state: g}
+	nm := Dijkstra(dij, []gruid.Point{at}, noise)
 	//if at.Distance(g.Player.Pos)-noise < DefaultLOSRange && noise > 4 {
 	//g.ui.LOSWavesAnimation(noise, WaveNoise, at)
 	//}
@@ -79,9 +79,9 @@ func (g *game) MakeNoise(noise int, at position) {
 	}
 }
 
-func (m *monster) LeaveRoomForPlayer(g *game) position {
-	dij := &monPath{game: g, monster: m}
-	nm := Dijkstra(dij, []position{m.Pos}, 10)
+func (m *monster) LeaveRoomForPlayer(g *state) gruid.Point {
+	dij := &monPath{state: g, monster: m}
+	nm := Dijkstra(dij, []gruid.Point{m.Pos}, 10)
 	free := InvalidPos
 	dist := unreachable
 	nm.iter(m.Pos, func(n *node) {
@@ -104,9 +104,9 @@ func (m *monster) LeaveRoomForPlayer(g *game) position {
 	return free
 }
 
-func (g *game) FindJumpTarget(m *monster) position {
-	dij := &jumpPath{game: g}
-	nm := Dijkstra(dij, []position{m.Pos}, 10)
+func (g *state) FindJumpTarget(m *monster) gruid.Point {
+	dij := &jumpPath{state: g}
+	nm := Dijkstra(dij, []gruid.Point{m.Pos}, 10)
 	free := InvalidPos
 	dist := unreachable
 	nm.iter(m.Pos, func(n *node) {
@@ -129,7 +129,7 @@ func (g *game) FindJumpTarget(m *monster) position {
 	return free
 }
 
-func (g *game) Jump(mons *monster) error {
+func (g *state) Jump(mons *monster) error {
 	if mons.Peaceful(g) && mons.Kind != MonsEarthDragon {
 		ompos := mons.Pos
 		if g.Dungeon.Cell(ompos).T == ChasmCell && !g.Player.HasStatus(StatusLevitation) {
@@ -195,7 +195,7 @@ func (g *game) Jump(mons *monster) error {
 	return nil
 }
 
-func (g *game) WallJump(pos position) error {
+func (g *state) WallJump(pos gruid.Point) error {
 	c := g.Dungeon.Cell(g.Player.Pos)
 	if c.IsEnclosing() {
 		return fmt.Errorf("You cannot jump from %s.", c.ShortDesc(g, g.Player.Pos))
@@ -207,7 +207,7 @@ func (g *game) WallJump(pos position) error {
 	pos = g.Player.Pos
 	tpos := pos
 	count := 0
-	path := []position{tpos}
+	path := []gruid.Point{tpos}
 	for count < 4 {
 		pos = pos.To(dir)
 		if !g.PlayerCanJumpPass(pos) {
@@ -249,7 +249,7 @@ func (g *game) WallJump(pos position) error {
 	return nil
 }
 
-func (g *game) HitNoise(clang bool) int {
+func (g *state) HitNoise(clang bool) int {
 	noise := BaseHitNoise
 	if clang {
 		noise += 5
@@ -261,7 +261,7 @@ const (
 	DmgNormal = 1
 )
 
-func (g *game) HandleKill(mons *monster) {
+func (g *state) HandleKill(mons *monster) {
 	g.Stats.Killed++
 	g.Stats.KilledMons[mons.Kind]++
 	if g.Player.Sees(mons.Pos) {
@@ -290,6 +290,6 @@ const (
 	OricExplosionNoise     = 20
 )
 
-func (g *game) ClangMsg() (sclang string) {
+func (g *state) ClangMsg() (sclang string) {
 	return " Smash!"
 }

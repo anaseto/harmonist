@@ -4,7 +4,7 @@ import "errors"
 
 var DijkstraMapCache [DungeonNCells]int
 
-func (g *game) Autoexplore() error {
+func (g *state) Autoexplore() error {
 	if mons := g.MonsterInLOS(); mons.Exists() {
 		return errors.New("You cannot auto-explore while there are monsters in view.")
 	}
@@ -28,8 +28,8 @@ func (g *game) Autoexplore() error {
 	return g.PlayerBump(*n)
 }
 
-func (g *game) AllExplored() bool {
-	np := &noisePath{game: g}
+func (g *state) AllExplored() bool {
+	np := &noisePath{state: g}
 	for i, c := range g.Dungeon.Cells {
 		pos := idxtopos(i)
 		if c.IsWall() {
@@ -44,9 +44,9 @@ func (g *game) AllExplored() bool {
 	return true
 }
 
-func (g *game) AutoexploreSources() []int {
+func (g *state) AutoexploreSources() []int {
 	sources := []int{}
-	np := &noisePath{game: g}
+	np := &noisePath{state: g}
 	for i, c := range g.Dungeon.Cells {
 		pos := idxtopos(i)
 		if c.IsWall() {
@@ -65,14 +65,14 @@ func (g *game) AutoexploreSources() []int {
 	return sources
 }
 
-func (g *game) BuildAutoexploreMap(sources []int) {
-	ap := &autoexplorePath{game: g}
+func (g *state) BuildAutoexploreMap(sources []int) {
+	ap := &autoexplorePath{state: g}
 	g.AutoExploreDijkstra(ap, sources)
 	g.DijkstraMapRebuild = false
 }
 
-func (g *game) NextAuto() (next *position, finished bool) {
-	ap := &autoexplorePath{game: g}
+func (g *state) NextAuto() (next *gruid.Point, finished bool) {
+	ap := &autoexplorePath{state: g}
 	if DijkstraMapCache[g.Player.Pos.idx()] == unreachable {
 		return nil, false
 	}

@@ -356,7 +356,7 @@ var MonsDesc = []string{
 }
 
 type bandInfo struct {
-	Path []position
+	Path []gruid.Point
 	I    int
 	Kind monsterBand
 	Beh  mbehaviour
@@ -492,18 +492,18 @@ type monster struct {
 	Dead          bool
 	State         monsterState
 	Statuses      [NMonsStatus]int
-	Pos           position
-	LastKnownPos  position
-	Target        position
-	Path          []position // cache
+	Pos           gruid.Point
+	LastKnownPos  gruid.Point
+	Target        gruid.Point
+	Path          []gruid.Point // cache
 	FireReady     bool
 	Seen          bool
-	LOS           map[position]bool
+	LOS           map[gruid.Point]bool
 	LastSeenState monsterState
 	Swapped       bool
 	Watching      int
 	Left          bool
-	Search        position
+	Search        gruid.Point
 	Alerted       bool
 	Waiting       int
 }
@@ -511,7 +511,7 @@ type monster struct {
 func (m *monster) Init() {
 	m.Attack = m.Kind.BaseAttack()
 	m.Pos = InvalidPos
-	m.LOS = map[position]bool{}
+	m.LOS = map[gruid.Point]bool{}
 	m.LastKnownPos = InvalidPos
 	m.Search = InvalidPos
 	if RandInt(2) == 0 {
@@ -525,7 +525,7 @@ func (m *monster) Init() {
 	}
 }
 
-func (m *monster) CanPass(g *game, pos position) bool {
+func (m *monster) CanPass(g *state, pos gruid.Point) bool {
 	if !pos.valid() {
 		return false
 	}
@@ -537,7 +537,7 @@ func (m *monster) CanPass(g *game, pos position) bool {
 		c.T == HoledWallCell && m.Kind.Size() == MonsSmall
 }
 
-func (m *monster) CanPassDestruct(g *game, pos position) bool {
+func (m *monster) CanPassDestruct(g *state, pos gruid.Point) bool {
 	if !pos.valid() {
 		return false
 	}
@@ -580,7 +580,7 @@ func (m *monster) Alternate() {
 	}
 }
 
-func (m *monster) TeleportAway(g *game) {
+func (m *monster) TeleportAway(g *state) {
 	pos := m.Pos
 	i := 0
 	count := 0
@@ -614,7 +614,7 @@ func (m *monster) TeleportAway(g *game) {
 	}
 }
 
-func (m *monster) MoveTo(g *game, pos position) {
+func (m *monster) MoveTo(g *state, pos gruid.Point) {
 	if g.Player.Sees(pos) {
 		m.UpdateKnowledge(g, pos)
 	} else if g.Player.Sees(m.Pos) {
@@ -649,7 +649,7 @@ func (m *monster) MoveTo(g *game, pos position) {
 	}
 }
 
-func (m *monster) PlaceAt(g *game, pos position) {
+func (m *monster) PlaceAt(g *state, pos gruid.Point) {
 	if !m.Pos.valid() {
 		m.Pos = pos
 		g.MonstersPosCache[m.Pos.idx()] = m.Index + 1
@@ -686,7 +686,7 @@ func (m *monster) CorrectDir() {
 	}
 }
 
-func (m *monster) AttackAction(g *game) {
+func (m *monster) AttackAction(g *state) {
 	m.Dir = g.Player.Pos.Dir(m.Pos)
 	m.CorrectDir()
 	switch m.Kind {
@@ -704,7 +704,7 @@ func (m *monster) AttackAction(g *game) {
 	g.RenewEvent(DurationTurn)
 }
 
-func (m *monster) Explode(g *game) {
+func (m *monster) Explode(g *state) {
 	m.Dead = true
 	neighbors := m.Pos.ValidCardinalNeighbors()
 	g.Printf("%s %s explodes with a loud boom.", g.ExplosionSound(), m.Kind.Definite(true))
@@ -743,7 +743,7 @@ func (m *monster) Explode(g *game) {
 	}
 }
 
-func (m *monster) NaturalAwake(g *game) {
+func (m *monster) NaturalAwake(g *state) {
 	m.Target = m.NextTarget(g)
 	switch g.Bands[m.Band].Beh {
 	case BehGuard:
@@ -754,10 +754,10 @@ func (m *monster) NaturalAwake(g *game) {
 	m.GatherBand(g)
 }
 
-func (m *monster) RandomFreeNeighbor(g *game) position {
+func (m *monster) RandomFreeNeighbor(g *state) gruid.Point {
 	pos := m.Pos
-	neighbors := [4]position{pos.E(), pos.W(), pos.N(), pos.S()}
-	fnb := []position{}
+	neighbors := [4]gruid.Point{pos.E(), pos.W(), pos.N(), pos.S()}
+	fnb := []gruid.Point{}
 	for _, nbpos := range neighbors {
 		if !nbpos.valid() {
 			continue
@@ -793,11 +793,11 @@ const (
 	BehCrazyImp
 )
 
-var SearchAroundCache []position
+var SearchAroundCache []gruid.Point
 
-func (m *monster) SearchAround(g *game, pos position, radius int) position {
-	dij := &monPath{game: g, monster: m}
-	nm := Dijkstra(dij, []position{pos}, radius)
+func (m *monster) SearchAround(g *state, pos gruid.Point, radius int) gruid.Point {
+	dij := &monPath{state: g, monster: m}
+	nm := Dijkstra(dij, []gruid.Point{pos}, radius)
 	SearchAroundCache = SearchAroundCache[:0]
 	nm.iter(pos, func(n *node) {
 		SearchAroundCache = append(SearchAroundCache, n.Pos)
@@ -809,7 +809,7 @@ func (m *monster) SearchAround(g *game, pos position, radius int) position {
 	return InvalidPos
 }
 
-func (m *monster) NextTarget(g *game) (pos position) {
+func (m *monster) NextTarget(g *state) (pos gruid.Point) {
 	band := g.Bands[m.Band]
 	pos = m.Pos
 	switch band.Beh {
@@ -884,7 +884,7 @@ func (m *monster) NextTarget(g *game) (pos position) {
 	return pos
 }
 
-func (m *monster) HandleMonsSpecifics(g *game) (done bool) {
+func (m *monster) HandleMonsSpecifics(g *state) (done bool) {
 	switch m.Kind {
 	case MonsSatowalgaPlant:
 		switch m.State {
@@ -936,7 +936,7 @@ func (m *monster) HandleMonsSpecifics(g *game) (done bool) {
 const DogFlairDist = 5
 const DisguiseFlairDist = 3
 
-func (m *monster) HandleWatching(g *game) {
+func (m *monster) HandleWatching(g *state) {
 	turns := 4
 	if m.Kind == MonsHazeCat {
 		turns = 3
@@ -945,8 +945,8 @@ func (m *monster) HandleWatching(g *game) {
 		m.Alternate()
 		m.Watching++
 		if m.Kind == MonsDog {
-			dij := &monPath{game: g, monster: m}
-			nm := Dijkstra(dij, []position{m.Pos}, DogFlairDist)
+			dij := &monPath{state: g, monster: m}
+			nm := Dijkstra(dij, []gruid.Point{m.Pos}, DogFlairDist)
 			if _, ok := nm.at(g.Player.Pos); ok {
 				m.Target = g.Player.Pos
 				m.MakeWander()
@@ -970,7 +970,7 @@ func (m *monster) HandleWatching(g *game) {
 	g.Ev.Renew(g, DurationTurn)
 }
 
-func (m *monster) ComputePath(g *game) {
+func (m *monster) ComputePath(g *state) {
 
 	if !(len(m.Path) > 0 && m.Path[0] == m.Target && m.Path[len(m.Path)-1] == m.Pos) {
 		m.Path = m.APath(g, m.Pos, m.Target)
@@ -987,7 +987,7 @@ func (m *monster) ComputePath(g *game) {
 	}
 }
 
-func (m *monster) Peaceful(g *game) bool {
+func (m *monster) Peaceful(g *state) bool {
 	if m.Kind.Peaceful() {
 		return true
 	}
@@ -1003,7 +1003,7 @@ func (m *monster) Peaceful(g *game) bool {
 	return false
 }
 
-func (m *monster) HandleEndPath(g *game) {
+func (m *monster) HandleEndPath(g *state) {
 	if len(m.Path) == 0 && m.Search != InvalidPos && m.Search.Distance(m.Target) < 10 && m.Pos != m.Target {
 		// the cell where the player was last noticed may not be recheable for the monster
 		m.Search = InvalidPos
@@ -1022,7 +1022,7 @@ func (m *monster) HandleEndPath(g *game) {
 	g.Ev.Renew(g, DurationTurn)
 }
 
-func (m *monster) MakeWanderAt(target position) {
+func (m *monster) MakeWanderAt(target gruid.Point) {
 	m.Target = target
 	if m.Kind == MonsSatowalgaPlant {
 		m.State = Hunting
@@ -1039,7 +1039,7 @@ func (m *monster) MakeWander() {
 	}
 }
 
-func (m *monster) HandleMove(g *game) {
+func (m *monster) HandleMove(g *state) {
 	target := m.Path[len(m.Path)-2]
 	mons := g.MonsterAt(target)
 	monstarget := InvalidPos
@@ -1124,7 +1124,7 @@ func (m *monster) HandleMove(g *game) {
 	g.Ev.Renew(g, DurationTurn)
 }
 
-func (m *monster) HandleTurn(g *game) {
+func (m *monster) HandleTurn(g *state) {
 	if m.Status(MonsParalysed) {
 		g.RenewEvent(DurationTurn)
 		return
@@ -1189,7 +1189,7 @@ func (m *monster) HandleTurn(g *game) {
 	m.HandleMove(g)
 }
 
-func (m *monster) InvertFoliage(g *game) {
+func (m *monster) InvertFoliage(g *state) {
 	if m.Kind != MonsWorm {
 		return
 	}
@@ -1211,15 +1211,15 @@ func (m *monster) InvertFoliage(g *game) {
 	}
 }
 
-func (m *monster) Exhaust(g *game) {
+func (m *monster) Exhaust(g *state) {
 	m.ExhaustTime(g, DurationExhaustionMonster+RandInt(DurationExhaustionMonster/2))
 }
 
-func (m *monster) ExhaustTime(g *game, t int) {
+func (m *monster) ExhaustTime(g *state, t int) {
 	m.PutStatus(g, MonsExhausted, t)
 }
 
-func (m *monster) HitPlayer(g *game) {
+func (m *monster) HitPlayer(g *state) {
 	if g.Player.HP <= 0 || g.Player.Pos.Distance(m.Pos) > 1 {
 		return
 	}
@@ -1277,7 +1277,7 @@ func (m *monster) HitPlayer(g *game) {
 	}
 }
 
-func (m *monster) PutStatus(g *game, st monsterStatus, duration int) bool {
+func (m *monster) PutStatus(g *state, st monsterStatus, duration int) bool {
 	if m.Status(st) {
 		return false
 	}
@@ -1289,7 +1289,7 @@ func (m *monster) PutStatus(g *game, st monsterStatus, duration int) bool {
 	return true
 }
 
-func (m *monster) EnterConfusion(g *game) bool {
+func (m *monster) EnterConfusion(g *state) bool {
 	if m.PutStatus(g, MonsConfused, DurationConfusionMonster) {
 		m.Path = m.Path[:0]
 		if g.Player.Sees(m.Pos) {
@@ -1300,7 +1300,7 @@ func (m *monster) EnterConfusion(g *game) bool {
 	return false
 }
 
-func (m *monster) EnterLignification(g *game) {
+func (m *monster) EnterLignification(g *state) {
 	if m.PutStatus(g, MonsLignified, DurationLignificationMonster) {
 		m.Path = m.Path[:0]
 		if g.Player.Sees(m.Pos) {
@@ -1309,7 +1309,7 @@ func (m *monster) EnterLignification(g *game) {
 	}
 }
 
-func (m *monster) HitSideEffects(g *game) {
+func (m *monster) HitSideEffects(g *state) {
 	switch m.Kind {
 	case MonsEarthDragon:
 		if m.Status(MonsConfused) {
@@ -1364,14 +1364,14 @@ func (m *monster) HitSideEffects(g *game) {
 	}
 }
 
-func (m *monster) PushPlayer(g *game, dist int) {
+func (m *monster) PushPlayer(g *state, dist int) {
 	if g.Player.HasStatus(StatusLignification) {
 		return
 	}
 	dir := g.Player.Pos.Dir(m.Pos)
 	pos := g.Player.Pos
 	npos := pos
-	path := []position{pos}
+	path := []gruid.Point{pos}
 	i := 0
 	for {
 		i++
@@ -1412,7 +1412,7 @@ func (m *monster) PushPlayer(g *game, dist int) {
 	}
 }
 
-func (m *monster) RangedAttack(g *game) bool {
+func (m *monster) RangedAttack(g *state) bool {
 	if !m.Kind.Ranged() {
 		return false
 	}
@@ -1456,7 +1456,7 @@ func (m *monster) RangedAttack(g *game) bool {
 	return false
 }
 
-func (m *monster) RangeBlocked(g *game) bool {
+func (m *monster) RangeBlocked(g *state) bool {
 	ray := g.Ray(m.Pos)
 	if len(ray) == 1 {
 		return false
@@ -1478,7 +1478,7 @@ func (m *monster) RangeBlocked(g *game) bool {
 	return false
 }
 
-func (g *game) BarrierCandidates(pos position, todir direction) []position {
+func (g *state) BarrierCandidates(pos gruid.Point, todir direction) []gruid.Point {
 	candidates := pos.ValidCardinalNeighbors()
 	bestpos := pos.To(todir)
 	if bestpos.Distance(pos) > 1 {
@@ -1514,7 +1514,7 @@ func (g *game) BarrierCandidates(pos position, todir direction) []position {
 	return candidates
 }
 
-func (m *monster) CreateBarrier(g *game) bool {
+func (m *monster) CreateBarrier(g *state) bool {
 	// TODO: add noise?
 	dir := g.Player.Pos.Dir(m.Pos)
 	candidates := g.BarrierCandidates(g.Player.Pos, dir)
@@ -1540,7 +1540,7 @@ func (m *monster) CreateBarrier(g *game) bool {
 	return true
 }
 
-func (m *monster) Illuminate(g *game) bool {
+func (m *monster) Illuminate(g *state) bool {
 	if g.PutStatus(StatusIlluminated, DurationIlluminated) {
 		g.Print("The harmonic celmist casts magical harmonies on you.")
 		g.StoryPrintf("Illuminated by %s", m.Kind)
@@ -1552,7 +1552,7 @@ func (m *monster) Illuminate(g *game) bool {
 	return false
 }
 
-func (m *monster) VampireSpit(g *game) bool {
+func (m *monster) VampireSpit(g *state) bool {
 	blocked := m.RangeBlocked(g)
 	if blocked || g.Player.HasStatus(StatusConfusion) {
 		return false
@@ -1565,7 +1565,7 @@ func (m *monster) VampireSpit(g *game) bool {
 	return true
 }
 
-func (m *monster) ThrowSpores(g *game) bool {
+func (m *monster) ThrowSpores(g *state) bool {
 	blocked := m.RangeBlocked(g)
 	if blocked || g.Player.HasStatus(StatusLignification) {
 		return false
@@ -1578,7 +1578,7 @@ func (m *monster) ThrowSpores(g *game) bool {
 	return true
 }
 
-func (m *monster) ThrowJavelin(g *game) bool {
+func (m *monster) ThrowJavelin(g *state) bool {
 	blocked := m.RangeBlocked(g)
 	if blocked {
 		return false
@@ -1600,7 +1600,7 @@ func (m *monster) ThrowJavelin(g *game) bool {
 	return true
 }
 
-func (m *monster) Corrode(g *game) {
+func (m *monster) Corrode(g *state) {
 	count := 0
 	for i, _ := range g.Player.Magaras {
 		n := RandInt(2)
@@ -1617,7 +1617,7 @@ func (m *monster) Corrode(g *game) {
 	}
 }
 
-func (m *monster) ThrowAcid(g *game) bool {
+func (m *monster) ThrowAcid(g *state) bool {
 	blocked := m.RangeBlocked(g)
 	if blocked {
 		return false
@@ -1634,7 +1634,7 @@ func (m *monster) ThrowAcid(g *game) bool {
 	return true
 }
 
-func (m *monster) NixeAttraction(g *game) bool {
+func (m *monster) NixeAttraction(g *state) bool {
 	blocked := m.RangeBlocked(g)
 	if blocked {
 		return false
@@ -1654,7 +1654,7 @@ func (m *monster) NixeAttraction(g *game) bool {
 	return true
 }
 
-func (m *monster) SmitingAttack(g *game) bool {
+func (m *monster) SmitingAttack(g *state) bool {
 	if !m.Kind.Smiting() {
 		return false
 	}
@@ -1691,7 +1691,7 @@ func (m *monster) SmitingAttack(g *game) bool {
 	return false
 }
 
-func (m *monster) AbsorbMana(g *game) bool {
+func (m *monster) AbsorbMana(g *state) bool {
 	if g.Player.MP == 0 {
 		return false
 	}
@@ -1703,7 +1703,7 @@ func (m *monster) AbsorbMana(g *game) bool {
 	return true
 }
 
-func (m *monster) Blink(g *game) {
+func (m *monster) Blink(g *state) {
 	npos := g.BlinkPos(true)
 	if !npos.valid() || npos == g.Player.Pos || npos == m.Pos {
 		return
@@ -1714,7 +1714,7 @@ func (m *monster) Blink(g *game) {
 	m.MoveTo(g, npos)
 }
 
-func (m *monster) MakeHunt(g *game) (noticed bool) {
+func (m *monster) MakeHunt(g *state) (noticed bool) {
 	if m.State != Hunting {
 		m.State = Hunting
 		g.Stats.NSpotted++
@@ -1734,7 +1734,7 @@ func (m *monster) MakeHunt(g *game) (noticed bool) {
 	return noticed
 }
 
-func (m *monster) MakeWatchIfHurt(g *game) {
+func (m *monster) MakeWatchIfHurt(g *state) {
 	// TODO: not used now.
 	if m.Exists() && m.State != Hunting {
 		m.MakeHunt(g)
@@ -1748,7 +1748,7 @@ func (m *monster) MakeWatchIfHurt(g *game) {
 	}
 }
 
-func (m *monster) MakeAware(g *game) {
+func (m *monster) MakeAware(g *state) {
 	if m.Peaceful(g) || m.Status(MonsSatiated) {
 		if m.State == Resting && m.Pos.Distance(g.Player.Pos) == 1 {
 			g.Printf("%s awakens.", m.Kind.Definite(true))
@@ -1772,12 +1772,12 @@ func (m *monster) MakeAware(g *game) {
 	}
 }
 
-func (m *monster) GatherBand(g *game) {
+func (m *monster) GatherBand(g *state) {
 	if !MonsBands[g.Bands[m.Band].Kind].Band {
 		return
 	}
-	dij := &noisePath{game: g}
-	nm := Dijkstra(dij, []position{m.Pos}, 4)
+	dij := &noisePath{state: g}
+	nm := Dijkstra(dij, []gruid.Point{m.Pos}, 4)
 	for _, mons := range g.Monsters {
 		if mons.Band == m.Band {
 			if mons.State == Hunting && m.State != Hunting {
@@ -1795,7 +1795,7 @@ func (m *monster) GatherBand(g *game) {
 	}
 }
 
-func (g *game) MonsterAt(pos position) *monster {
+func (g *state) MonsterAt(pos gruid.Point) *monster {
 	if !pos.valid() {
 		return nil
 	}
@@ -1806,7 +1806,7 @@ func (g *game) MonsterAt(pos position) *monster {
 	return g.Monsters[i-1]
 }
 
-func (g *game) MonsterInLOS() *monster {
+func (g *state) MonsterInLOS() *monster {
 	for _, mons := range g.Monsters {
 		if mons.Exists() && g.Player.Sees(mons.Pos) {
 			return mons

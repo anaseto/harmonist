@@ -5,11 +5,11 @@ import (
 )
 
 type Dijkstrer interface {
-	Neighbors(position) []position
-	Cost(position, position) int
+	Neighbors(gruid.Point) []gruid.Point
+	Cost(gruid.Point, gruid.Point) int
 }
 
-func Dijkstra(dij Dijkstrer, sources []position, maxCost int) nodeMap {
+func Dijkstra(dij Dijkstrer, sources []gruid.Point, maxCost int) nodeMap {
 	nodeCache.Index++
 	nqs := queueCache[:0]
 	nq := &nqs
@@ -53,7 +53,7 @@ const unreachable = 9999
 
 // AutoExploreDijkstra is an optimized version of the dijkstra algorithm for
 // auto-exploration.
-func (g *game) AutoExploreDijkstra(dij Dijkstrer, sources []int) {
+func (g *state) AutoExploreDijkstra(dij Dijkstrer, sources []int) {
 	d := g.Dungeon
 	dmap := DijkstraMapCache[:]
 	var visited [DungeonNCells]bool

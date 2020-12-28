@@ -1,148 +1,34 @@
-// +build tcell
+// +build !sdl,!js
 
 package main
 
 import (
-	"runtime"
-
-	"github.com/gdamore/tcell"
+	"github.com/anaseto/gruid"
+	"github.com/anaseto/gruid/drivers/tcell"
+	tc "github.com/gdamore/tcell/v2"
 )
 
-type gameui struct {
-	g *game
-	tcell.Screen
-	cursor position
-	small  bool
-	// below unused for this backend
-	menuHover menu
-	itemHover int
+var driver gruid.Driver
+
+func init() {
+	st := styler{}
+	dr := tcell.NewDriver(tcell.Config{StyleManager: st})
+	dr.PreventQuit()
+	driver = dr
 }
 
-func (ui *gameui) Init() error {
-	screen, err := tcell.NewScreen()
-	ui.Screen = screen
-	if err != nil {
-		return err
-	}
-	err = ui.Screen.Init()
-	if err != nil {
-		return err
-	}
-	ui.Screen.SetStyle(tcell.StyleDefault)
-	if runtime.GOOS != "openbsd" {
-		ui.Screen.EnableMouse()
-	}
-	ui.Screen.HideCursor()
-	ui.HideCursor()
-	ui.menuHover = -1
-	return nil
-}
+// styler implements the tcell.StyleManager interface.
+type styler struct{}
 
-func (ui *gameui) Close() {
-	ui.Screen.Fini()
-}
-
-var SmallScreen = false
-
-func (ui *gameui) Flush() {
-	ui.DrawLogFrame()
-	for _, cdraw := range ui.g.DrawLog[len(ui.g.DrawLog)-1].Draws {
-		cell := cdraw.Cell
-		st := tcell.StyleDefault
-		fg := cell.Fg
-		bg := cell.Bg
-		if Only8Colors {
-			fg = Map16ColorTo8Color(fg)
-			bg = Map16ColorTo8Color(bg)
-		}
-		st = st.Foreground(tcell.Color(fg)).Background(tcell.Color(bg))
-		ui.Screen.SetContent(cdraw.X, cdraw.Y, cell.R, nil, st)
+func (sty styler) GetStyle(st gruid.Style) tc.Style {
+	ts := tc.StyleDefault
+	switch st.Fg {
+	case colorPlayer:
+		ts = ts.Foreground(tc.ColorNavy) // blue color for the player
 	}
-	//ui.g.Printf("%d %d %d", ui.g.DrawFrame, ui.g.DrawFrameStart, len(ui.g.DrawLog))
-	ui.Screen.Show()
-	w, h := ui.Screen.Size()
-	if w <= UIWidth-8 || h <= UIHeight-2 {
-		SmallScreen = true
-	} else {
-		SmallScreen = false
+	switch st.Bg {
+	case colorPath:
+		ts = ts.Reverse(true)
 	}
-}
-
-func (ui *gameui) ApplyToggleLayout() {
-	GameConfig.Small = !GameConfig.Small
-	if GameConfig.Small {
-		ui.Clear()
-		ui.Flush()
-		UIHeight = 24
-		UIWidth = 80
-	} else {
-		UIHeight = 26
-		if CenteredCamera {
-			UIWidth = 80
-		} else {
-			UIWidth = 100
-		}
-	}
-	ui.g.DrawBuffer = make([]UICell, UIWidth*UIHeight)
-	ui.Clear()
-}
-
-func (ui *gameui) Small() bool {
-	return GameConfig.Small || SmallScreen
-}
-
-func (ui *gameui) Interrupt() {
-	ui.Screen.PostEvent(tcell.NewEventInterrupt(nil))
-}
-
-func (ui *gameui) PollEvent() (in uiInput) {
-	switch tev := ui.Screen.PollEvent().(type) {
-	case *tcell.EventKey:
-		switch tev.Key() {
-		case tcell.KeyEsc:
-			in.key = " "
-		case tcell.KeyLeft:
-			// TODO: will not work if user changes keybindings
-			in.key = "4"
-		case tcell.KeyDown:
-			in.key = "2"
-		case tcell.KeyUp:
-			in.key = "8"
-		case tcell.KeyRight:
-			in.key = "6"
-		case tcell.KeyPgUp:
-			in.key = "u"
-		case tcell.KeyPgDn:
-			in.key = "d"
-		case tcell.KeyDelete:
-			in.key = "5"
-		case tcell.KeyCtrlW:
-			in.key = "W"
-		case tcell.KeyCtrlQ:
-			in.key = "Q"
-		case tcell.KeyCtrlP:
-			in.key = "m"
-		case tcell.KeyEnter:
-			in.key = "."
-		}
-		if tev.Rune() != 0 && in.key == "" {
-			in.key = string(tev.Rune())
-		}
-	case *tcell.EventMouse:
-		in.mouseX, in.mouseY = tev.Position()
-		switch tev.Buttons() {
-		case tcell.Button1:
-			in.mouse = true
-			in.button = 0
-		case tcell.Button2:
-			in.mouse = true
-			in.button = 1
-		case tcell.Button3:
-			in.mouse = true
-			in.button = 2
-		}
-	case *tcell.EventInterrupt:
-		in.interrupt = true
-	}
-	return in
+	return ts
 }

@@ -23,7 +23,7 @@ func (ms monsSlice) Less(i, j int) bool {
 	return ms[i].Dangerousness() > ms[j].Dangerousness()
 }
 
-func (g *game) DumpStatuses() string {
+func (g *state) DumpStatuses() string {
 	sts := sort.StringSlice{}
 	for st, c := range g.Player.Statuses {
 		if c > 0 {
@@ -37,7 +37,7 @@ func (g *game) DumpStatuses() string {
 	return "Statuses:\n" + strings.Join(sts, "\n")
 }
 
-func (g *game) SortedKilledMonsters() monsSlice {
+func (g *state) SortedKilledMonsters() monsSlice {
 	var ms monsSlice
 	for mk, p := range g.Stats.KilledMons {
 		if p == 0 {
@@ -49,7 +49,7 @@ func (g *game) SortedKilledMonsters() monsSlice {
 	return ms
 }
 
-func (g *game) Dump() string {
+func (g *state) Dump() string {
 	buf := &bytes.Buffer{}
 	fmt.Fprintf(buf, " -- Harmonist version %s character file --\n\n", Version)
 	if g.Wizard {
@@ -129,7 +129,7 @@ func (g *game) Dump() string {
 	return buf.String()
 }
 
-func (g *game) DetailedStatistics(w io.Writer) {
+func (g *state) DetailedStatistics(w io.Writer) {
 	fmt.Fprintf(w, "\n")
 	fmt.Fprintf(w, "Statistics:\n")
 	fmt.Fprintf(w, "You evoked magaras %d times (%d oric magaras, %d harmonic, %d others).\n",
@@ -282,11 +282,11 @@ func (g *game) DetailedStatistics(w io.Writer) {
 	}
 }
 
-func (g *game) DumpStory() string {
+func (g *state) DumpStory() string {
 	return strings.Join(g.Stats.Story, "\n")
 }
 
-func (g *game) DumpDungeon() string {
+func (g *state) DumpDungeon() string {
 	buf := bytes.Buffer{}
 	for i, c := range g.Dungeon.Cells {
 		if i%DungeonWidth == 0 {
@@ -332,7 +332,7 @@ func (g *game) DumpDungeon() string {
 	return buf.String()
 }
 
-func (g *game) DumpedKilledMonsters() string {
+func (g *state) DumpedKilledMonsters() string {
 	buf := &bytes.Buffer{}
 	fmt.Fprint(buf, "Killed Monsters:\n")
 	ms := g.SortedKilledMonsters()
@@ -342,7 +342,7 @@ func (g *game) DumpedKilledMonsters() string {
 	return buf.String()
 }
 
-func (g *game) SimplifedDump(err error) string {
+func (g *state) SimplifedDump(err error) string {
 	buf := &bytes.Buffer{}
 	fmt.Fprintf(buf, " ♣ Harmonist version %s play summary ♣\n\n", Version)
 	if g.Wizard {
@@ -379,9 +379,9 @@ func (g *game) SimplifedDump(err error) string {
 		dataDir, err := g.DataDir()
 		if err == nil {
 			if dataDir == "" {
-				fmt.Fprintf(buf, "Full game statistics written below.\n")
+				fmt.Fprintf(buf, "Full state statistics written below.\n")
 			} else {
-				fmt.Fprintf(buf, "Full game statistics dump written to %s.\n", filepath.Join(dataDir, "dump"))
+				fmt.Fprintf(buf, "Full state statistics dump written to %s.\n", filepath.Join(dataDir, "dump"))
 			}
 		}
 	}

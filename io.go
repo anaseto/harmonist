@@ -11,8 +11,8 @@ import (
 )
 
 func Replay(file string) error {
-	ui := &gameui{}
-	g := &game{}
+	ui := &model{}
+	g := &state{}
 	ui.g = g
 	g.ui = ui
 	err := g.LoadReplay(file)
@@ -30,7 +30,7 @@ func Replay(file string) error {
 	return nil
 }
 
-func (g *game) DataDir() (string, error) {
+func (g *state) DataDir() (string, error) {
 	var xdg string
 	if os.Getenv("GOOS") == "windows" {
 		xdg = os.Getenv("LOCALAPPDATA")
@@ -51,7 +51,7 @@ func (g *game) DataDir() (string, error) {
 	return dataDir, nil
 }
 
-func (g *game) Save() error {
+func (g *state) Save() error {
 	dataDir, err := g.DataDir()
 	if err != nil {
 		g.Print(err.Error())
@@ -71,11 +71,11 @@ func (g *game) Save() error {
 	return nil
 }
 
-func (g *game) RemoveSaveFile() error {
+func (g *state) RemoveSaveFile() error {
 	return g.RemoveDataFile("save")
 }
 
-func (g *game) Load() (bool, error) {
+func (g *state) Load() (bool, error) {
 	dataDir, err := g.DataDir()
 	if err != nil {
 		return false, err
@@ -83,7 +83,7 @@ func (g *game) Load() (bool, error) {
 	saveFile := filepath.Join(dataDir, "save")
 	_, err = os.Stat(saveFile)
 	if err != nil {
-		// no save file, new game
+		// no save file, new state
 		return false, err
 	}
 	data, err := ioutil.ReadFile(saveFile)
@@ -95,13 +95,13 @@ func (g *game) Load() (bool, error) {
 		return true, err
 	}
 	if lg.Version != Version {
-		return true, fmt.Errorf("saved game for previous version %s.", lg.Version)
+		return true, fmt.Errorf("saved state for previous version %s.", lg.Version)
 	}
 	*g = *lg
 	return true, nil
 }
 
-func (g *game) SaveConfig() error {
+func (g *state) SaveConfig() error {
 	dataDir, err := g.DataDir()
 	if err != nil {
 		g.Print(err.Error())
@@ -121,7 +121,7 @@ func (g *game) SaveConfig() error {
 	return nil
 }
 
-func (g *game) LoadConfig() (bool, error) {
+func (g *state) LoadConfig() (bool, error) {
 	dataDir, err := g.DataDir()
 	if err != nil {
 		return false, err
@@ -129,7 +129,7 @@ func (g *game) LoadConfig() (bool, error) {
 	saveFile := filepath.Join(dataDir, "config.gob")
 	_, err = os.Stat(saveFile)
 	if err != nil {
-		// no save file, new game
+		// no save file, new state
 		return false, err
 	}
 	data, err := ioutil.ReadFile(saveFile)
@@ -147,7 +147,7 @@ func (g *game) LoadConfig() (bool, error) {
 	return true, nil
 }
 
-func (g *game) RemoveDataFile(file string) error {
+func (g *state) RemoveDataFile(file string) error {
 	dataDir, err := g.DataDir()
 	if err != nil {
 		return err
@@ -163,7 +163,7 @@ func (g *game) RemoveDataFile(file string) error {
 	return nil
 }
 
-func (g *game) SaveReplay() error {
+func (g *state) SaveReplay() error {
 	dataDir, err := g.DataDir()
 	if err != nil {
 		g.Print(err.Error())
@@ -183,7 +183,7 @@ func (g *game) SaveReplay() error {
 	return nil
 }
 
-func (g *game) LoadReplay(file string) error {
+func (g *state) LoadReplay(file string) error {
 	dataDir, err := g.DataDir()
 	if err != nil {
 		return err
@@ -194,7 +194,7 @@ func (g *game) LoadReplay(file string) error {
 	}
 	_, err = os.Stat(replayFile)
 	if err != nil {
-		// no save file, new game
+		// no save file, new state
 		return err
 	}
 	data, err := ioutil.ReadFile(replayFile)
@@ -209,14 +209,14 @@ func (g *game) LoadReplay(file string) error {
 	return nil
 }
 
-func (g *game) WriteDump() error {
+func (g *state) WriteDump() error {
 	dataDir, err := g.DataDir()
 	if err != nil {
 		return err
 	}
 	err = ioutil.WriteFile(filepath.Join(dataDir, "dump"), []byte(g.Dump()), 0644)
 	if err != nil {
-		return fmt.Errorf("writing game statistics: %v", err)
+		return fmt.Errorf("writing state statistics: %v", err)
 	}
 	err = g.SaveReplay()
 	if err != nil {

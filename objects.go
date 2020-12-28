@@ -6,18 +6,18 @@ import (
 )
 
 type objects struct {
-	Stairs     map[position]stair
-	Stones     map[position]stone
-	Magaras    map[position]magara // TODO simplify? (there's never more than one)
-	Barrels    map[position]bool
-	Bananas    map[position]bool
-	Lights     map[position]bool // true: on, false: off
-	Scrolls    map[position]scroll
-	Story      map[position]story
-	Lore       map[position]int // TODO simplify? (there's never more than one)
-	Items      map[position]item
-	FakeStairs map[position]bool
-	Potions    map[position]potion
+	Stairs     map[gruid.Point]stair
+	Stones     map[gruid.Point]stone
+	Magaras    map[gruid.Point]magara // TODO simplify? (there's never more than one)
+	Barrels    map[gruid.Point]bool
+	Bananas    map[gruid.Point]bool
+	Lights     map[gruid.Point]bool // true: on, false: off
+	Scrolls    map[gruid.Point]scroll
+	Story      map[gruid.Point]story
+	Lore       map[gruid.Point]int // TODO simplify? (there's never more than one)
+	Items      map[gruid.Point]item
+	FakeStairs map[gruid.Point]bool
+	Potions    map[gruid.Point]potion
 }
 
 type stair int
@@ -43,7 +43,7 @@ func (st stair) String() (desc string) {
 const NormalStairShortDesc = "stairs downwards"
 const DeepStairShortDesc = "deep stairs downwards"
 
-func (st stair) ShortDesc(g *game) (desc string) {
+func (st stair) ShortDesc(g *state) (desc string) {
 	switch st {
 	case NormalStair:
 		if g.Depth == WinDepth {
@@ -62,7 +62,7 @@ func (st stair) ShortDesc(g *game) (desc string) {
 const NormalStairDesc = "Stairs lead to the next level of Dayoriah Clan's domain in Hareka's Underground. You will not be able to come back, because an oric barrier seals the stairs when they are traversed by intruders. The upside of this is that ennemies cannot follow you either."
 const DeepStairDesc = "Those very deep stairs lead to the next level of Dayoriah Clan's domain in Hareka's Underground. You will not be able to come back, because an oric barrier seals the stairs when they are traversed by intruders. The upside of this is that ennemies cannot follow you either."
 
-func (st stair) Desc(g *game) (desc string) {
+func (st stair) Desc(g *state) (desc string) {
 	switch st {
 	case WinStair:
 		desc = "Going through this portal will make you escape from this place, going back to the Surface."
@@ -81,7 +81,7 @@ func (st stair) Desc(g *game) (desc string) {
 	return desc
 }
 
-func (st stair) Style(g *game) (r rune, fg uicolor) {
+func (st stair) Style(g *state) (r rune, fg uicolor) {
 	r = '>'
 	switch st {
 	case WinStair:
@@ -140,7 +140,7 @@ func (stn stone) String() (text string) {
 	return text
 }
 
-func (stn stone) Desc(g *game) (text string) {
+func (stn stone) Desc(g *state) (text string) {
 	switch stn {
 	case InertStone:
 		text = "This magical stone has been depleted of magical energies."
@@ -159,18 +159,18 @@ func (stn stone) Desc(g *game) (text string) {
 	case MappingStone:
 		text = "Activating this magical stone shows you the map layout and item locations in a wide area."
 	case SensingStone:
-		text = "Activating this magical stone shows you the current position of monsters in a wide area."
+		text = "Activating this magical stone shows you the current gruid.Point of monsters in a wide area."
 	case SealStone:
 		text = "Activating this magical stone will disable a magical barrier somewhere in the same level, usually one blocking stairs."
 	}
 	return text
 }
 
-func (stn stone) ShortDesc(g *game) string {
+func (stn stone) ShortDesc(g *state) string {
 	return Indefinite(stn.String(), false)
 }
 
-func (stn stone) Style(g *game) (r rune, fg uicolor) {
+func (stn stone) Style(g *state) (r rune, fg uicolor) {
 	r = '∩'
 	switch stn {
 	case InertStone:
@@ -187,14 +187,14 @@ func (stn stone) Style(g *game) (r rune, fg uicolor) {
 	return r, fg
 }
 
-func (g *game) UseStone(pos position) {
+func (g *state) UseStone(pos gruid.Point) {
 	g.StoryPrintf("Activated %s", g.Objects.Stones[pos])
 	g.Objects.Stones[pos] = InertStone
 	g.Stats.UsedStones++
 	g.Print("The stone becomes inert.")
 }
 
-func (g *game) ActivateStone() (err error) {
+func (g *state) ActivateStone() (err error) {
 	stn, ok := g.Objects.Stones[g.Player.Pos]
 	if !ok {
 		return errors.New("No stone to activate here.")
@@ -238,10 +238,10 @@ const (
 	MappingDistance    = 32
 )
 
-func (g *game) ActivateQueenStone() {
+func (g *state) ActivateQueenStone() {
 	g.MakeNoise(QueenStoneNoise, g.Player.Pos)
-	dij := &noisePath{game: g}
-	nm := Dijkstra(dij, []position{g.Player.Pos}, QueenStoneDistance)
+	dij := &noisePath{state: g}
+	nm := Dijkstra(dij, []gruid.Point{g.Player.Pos}, QueenStoneDistance)
 	targets := []*monster{}
 	for _, m := range g.Monsters {
 		if !m.Exists() {
@@ -266,7 +266,7 @@ func (g *game) ActivateQueenStone() {
 	}
 }
 
-func (g *game) ActivateNightStone() error {
+func (g *state) ActivateNightStone() error {
 	targets := []*monster{}
 	for _, mons := range g.Monsters {
 		if !mons.Exists() || !g.Player.Sees(mons.Pos) {
@@ -290,7 +290,7 @@ func (g *game) ActivateNightStone() error {
 	return nil
 }
 
-func (g *game) ActivateTreeStone() error {
+func (g *state) ActivateTreeStone() error {
 	targets := []*monster{}
 	for _, mons := range g.Monsters {
 		if !mons.Exists() || !g.Player.Sees(mons.Pos) || mons.Kind.ResistsLignification() {
@@ -312,7 +312,7 @@ func (g *game) ActivateTreeStone() error {
 	return nil
 }
 
-func (g *game) ActivateTeleportStone() error {
+func (g *state) ActivateTeleportStone() error {
 	targets := g.MonstersInLOS()
 	if len(targets) == 0 {
 		return errors.New("There are no suitable monsters in sight.")
@@ -332,8 +332,8 @@ func (g *game) ActivateTeleportStone() error {
 	return nil
 }
 
-func (g *game) TeleportToBarrel() {
-	barrels := []position{}
+func (g *state) TeleportToBarrel() {
+	barrels := []gruid.Point{}
 	for pos := range g.Objects.Barrels {
 		barrels = append(barrels, pos)
 	}
@@ -344,9 +344,9 @@ func (g *game) TeleportToBarrel() {
 	g.PlacePlayerAt(pos)
 }
 
-func (g *game) MagicMapping(maxdist int) error {
-	dp := &mappingPath{game: g}
-	nm := Dijkstra(dp, []position{g.Player.Pos}, maxdist)
+func (g *state) MagicMapping(maxdist int) error {
+	dp := &mappingPath{state: g}
+	nm := Dijkstra(dp, []gruid.Point{g.Player.Pos}, maxdist)
 	cdists := make(map[int][]int)
 	nm.iter(g.Player.Pos, func(n *node) {
 		pos := n.Pos
@@ -380,7 +380,7 @@ func (g *game) MagicMapping(maxdist int) error {
 	return nil
 }
 
-func (g *game) Sensing() error {
+func (g *state) Sensing() error {
 	for _, mons := range g.Monsters {
 		if mons.Exists() && !g.Player.Sees(mons.Pos) && mons.Pos.Distance(g.Player.Pos) <= MappingDistance {
 			mons.UpdateKnowledge(g, mons.Pos)
@@ -390,7 +390,7 @@ func (g *game) Sensing() error {
 	return nil
 }
 
-func (g *game) BarrierStone() error {
+func (g *state) BarrierStone() error {
 	if g.Depth == MaxDepth {
 		g.Objects.Story[g.Places.Artifact] = StoryArtifact
 		g.Print("You feel oric energies dissipating.")
@@ -415,7 +415,7 @@ const (
 	ScrollLore
 )
 
-func (sc scroll) ShortDesc(g *game) (desc string) {
+func (sc scroll) ShortDesc(g *state) (desc string) {
 	switch sc {
 	case ScrollLore:
 		desc = "a message"
@@ -425,7 +425,7 @@ func (sc scroll) ShortDesc(g *game) (desc string) {
 	return desc
 }
 
-func (sc scroll) Text(g *game) (desc string) {
+func (sc scroll) Text(g *state) (desc string) {
 	switch sc {
 	case ScrollStory:
 		desc = "Your friend Shaedra got captured by nasty people from the Dayoriah Clan while she was trying to retrieve a powerful magara artifact that was stolen from the great magara-specialist Marevor Helith.\n\nAs a gawalt monkey, you don't understand much why people complicate so much their lives caring about artifacts and the like, but one thing is clear: you have to rescue your friend, somewhere to be found in this Underground area controlled by the Dayoriah Clan. If what you heard the guards say is true, Shaedra's imprisoned on the eighth floor.\n\nYou are small and have good night vision, so you hope the infiltration will go smoothly..."
@@ -451,12 +451,12 @@ func (sc scroll) Text(g *game) (desc string) {
 	return desc
 }
 
-func (sc scroll) Desc(g *game) (desc string) {
+func (sc scroll) Desc(g *state) (desc string) {
 	desc = "A message. It can be read."
 	return desc
 }
 
-func (sc scroll) Style(g *game) (r rune, fg uicolor) {
+func (sc scroll) Style(g *state) (r rune, fg uicolor) {
 	r = '?'
 	fg = ColorFgMagicPlace
 	if sc == ScrollLore {
@@ -475,7 +475,7 @@ const (
 	StoryArtifactSealed
 )
 
-func (st story) Desc(g *game, pos position) (desc string) {
+func (st story) Desc(g *state, pos gruid.Point) (desc string) {
 	switch st {
 	case NoStory:
 		desc = cell{T: GroundCell}.Desc(g, pos)
@@ -491,7 +491,7 @@ func (st story) Desc(g *game, pos position) (desc string) {
 	return desc
 }
 
-func (st story) ShortDesc(g *game, pos position) (desc string) {
+func (st story) ShortDesc(g *state, pos gruid.Point) (desc string) {
 	switch st {
 	case NoStory:
 		desc = cell{T: GroundCell}.ShortDesc(g, pos)
@@ -507,7 +507,7 @@ func (st story) ShortDesc(g *game, pos position) (desc string) {
 	return desc
 }
 
-func (st story) Style(g *game) (r rune, fg uicolor) {
+func (st story) Style(g *state) (r rune, fg uicolor) {
 	fg = ColorFgPlayer
 	switch st {
 	case NoStory:
@@ -571,7 +571,7 @@ func (it item) IsAmulet() bool {
 	return false
 }
 
-func (it item) ShortDesc(g *game) (desc string) {
+func (it item) ShortDesc(g *state) (desc string) {
 	switch it {
 	case NoItem:
 		desc = "empty slot"
@@ -605,7 +605,7 @@ func (it item) ShortDesc(g *game) (desc string) {
 	return desc
 }
 
-func (it item) Desc(g *game) (desc string) {
+func (it item) Desc(g *state) (desc string) {
 	switch it {
 	case NoItem:
 		return "You do not have an item equipped on this slot."
@@ -639,7 +639,7 @@ func (it item) Desc(g *game) (desc string) {
 	return "The " + it.ShortDesc(g) + " " + desc
 }
 
-func (it item) Style(g *game) (r rune, fg uicolor) {
+func (it item) Style(g *state) (r rune, fg uicolor) {
 	fg = ColorFgObject
 	if it.IsAmulet() {
 		r = '='
@@ -649,7 +649,7 @@ func (it item) Style(g *game) (r rune, fg uicolor) {
 	return r, fg
 }
 
-func (g *game) EquipItem() error {
+func (g *state) EquipItem() error {
 	it, ok := g.Objects.Items[g.Player.Pos]
 	if !ok {
 		return errors.New("Nothing to equip here.")
@@ -684,7 +684,7 @@ func (g *game) EquipItem() error {
 	return nil
 }
 
-func (g *game) RandomCloak() (it item) {
+func (g *state) RandomCloak() (it item) {
 	cloaks := []item{CloakMagic,
 		CloakHear,
 		CloakVitality,
@@ -705,7 +705,7 @@ loop:
 	return it
 }
 
-func (g *game) RandomAmulet() (it item) {
+func (g *state) RandomAmulet() (it item) {
 	amulets := []item{AmuletTeleport,
 		AmuletConfusion,
 		AmuletFog,
@@ -741,11 +741,11 @@ func (p potion) String() (desc string) {
 	return desc
 }
 
-func (p potion) ShortDesc(g *game) (desc string) {
+func (p potion) ShortDesc(g *state) (desc string) {
 	return Indefinite(p.String(), false)
 }
 
-func (p potion) Desc(g *game) (desc string) {
+func (p potion) Desc(g *state) (desc string) {
 	switch p {
 	case HealthPotion:
 		desc = "Drinking a health potion will cure 1 HP."
@@ -756,7 +756,7 @@ func (p potion) Desc(g *game) (desc string) {
 	return desc
 }
 
-func (p potion) Style(g *game) (r rune, fg uicolor) {
+func (p potion) Style(g *state) (r rune, fg uicolor) {
 	r = '!'
 	switch p {
 	case HealthPotion:
@@ -767,7 +767,7 @@ func (p potion) Style(g *game) (r rune, fg uicolor) {
 	return r, fg
 }
 
-func (g *game) DrinkPotion(pos position) {
+func (g *state) DrinkPotion(pos gruid.Point) {
 	p, ok := g.Objects.Potions[pos]
 	if !ok {
 		// should not happen

@@ -14,7 +14,7 @@ const (
 	AnimDurExtraLong   = 300
 )
 
-func (ui *gameui) SwappingAnimation(mpos, ppos position) {
+func (ui *model) SwappingAnimation(mpos, ppos gruid.Point) {
 	if DisableAnimations {
 		return
 	}
@@ -32,7 +32,7 @@ func (ui *gameui) SwappingAnimation(mpos, ppos position) {
 	Sleep(AnimDurMedium)
 }
 
-func (ui *gameui) TeleportAnimation(from, to position, showto bool) {
+func (ui *model) TeleportAnimation(from, to gruid.Point, showto bool) {
 	if DisableAnimations {
 		return
 	}
@@ -57,7 +57,7 @@ const (
 	AroundWallExplosion
 )
 
-func (ui *gameui) MonsterProjectileAnimation(ray []position, r rune, fg uicolor) {
+func (ui *model) MonsterProjectileAnimation(ray []gruid.Point, r rune, fg uicolor) {
 	if DisableAnimations {
 		return
 	}
@@ -73,12 +73,12 @@ func (ui *gameui) MonsterProjectileAnimation(ray []position, r rune, fg uicolor)
 	}
 }
 
-func (ui *gameui) WaveDrawAt(pos position, fg uicolor) {
+func (ui *model) WaveDrawAt(pos gruid.Point, fg uicolor) {
 	r, _, bgColor := ui.PositionDrawing(pos)
 	ui.DrawAtPosition(pos, true, r, bgColor, fg)
 }
 
-func (ui *gameui) ExplosionDrawAt(pos position, fg uicolor) {
+func (ui *model) ExplosionDrawAt(pos gruid.Point, fg uicolor) {
 	g := ui.g
 	_, _, bgColor := ui.PositionDrawing(pos)
 	mons := g.MonsterAt(pos)
@@ -103,7 +103,7 @@ func (ui *gameui) ExplosionDrawAt(pos position, fg uicolor) {
 	ui.DrawAtPosition(pos, true, r, bgColor, fg)
 }
 
-func (ui *gameui) NoiseAnimation(noises []position) {
+func (ui *model) NoiseAnimation(noises []gruid.Point) {
 	if DisableAnimations {
 		return
 	}
@@ -123,7 +123,7 @@ func (ui *gameui) NoiseAnimation(noises []position) {
 
 }
 
-func (ui *gameui) ExplosionAnimation(es explosionStyle, pos position) {
+func (ui *model) ExplosionAnimation(es explosionStyle, pos gruid.Point) {
 	g := ui.g
 	if DisableAnimations {
 		return
@@ -152,15 +152,15 @@ func (ui *gameui) ExplosionAnimation(es explosionStyle, pos position) {
 	}
 }
 
-func (g *game) Waves(maxCost int, ws wavestyle, center position) (dists []int, cdists map[int][]int) {
+func (g *state) Waves(maxCost int, ws wavestyle, center gruid.Point) (dists []int, cdists map[int][]int) {
 	var dij Dijkstrer
 	switch ws {
 	case WaveMagicNoise:
 		dij = &gridPath{dungeon: g.Dungeon}
 	default:
-		dij = &noisePath{game: g}
+		dij = &noisePath{state: g}
 	}
-	nm := Dijkstra(dij, []position{center}, maxCost)
+	nm := Dijkstra(dij, []gruid.Point{center}, maxCost)
 	cdists = make(map[int][]int)
 	nm.iter(g.Player.Pos, func(n *node) {
 		pos := n.Pos
@@ -173,7 +173,7 @@ func (g *game) Waves(maxCost int, ws wavestyle, center position) (dists []int, c
 	return dists, cdists
 }
 
-func (ui *gameui) LOSWavesAnimation(r int, ws wavestyle, center position) {
+func (ui *model) LOSWavesAnimation(r int, ws wavestyle, center gruid.Point) {
 	dists, cdists := ui.g.Waves(r, ws, center)
 	for _, d := range dists {
 		wave := cdists[d]
@@ -195,7 +195,7 @@ const (
 	WaveSleeping
 )
 
-func (ui *gameui) WaveAnimation(wave []int, ws wavestyle) {
+func (ui *model) WaveAnimation(wave []int, ws wavestyle) {
 	if DisableAnimations {
 		return
 	}
@@ -237,7 +237,7 @@ func (ui *gameui) WaveAnimation(wave []int, ws wavestyle) {
 	Sleep(AnimDurShort)
 }
 
-func (ui *gameui) WallExplosionAnimation(pos position) {
+func (ui *model) WallExplosionAnimation(pos gruid.Point) {
 	if DisableAnimations {
 		return
 	}
@@ -259,7 +259,7 @@ const (
 	BeamObstruction
 )
 
-func (ui *gameui) BeamsAnimation(ray []position, bs beamstyle) {
+func (ui *model) BeamsAnimation(ray []gruid.Point, bs beamstyle) {
 	if DisableAnimations {
 		return
 	}
@@ -290,7 +290,7 @@ func (ui *gameui) BeamsAnimation(ray []position, bs beamstyle) {
 	}
 }
 
-func (ui *gameui) SlowingMagaraAnimation(ray []position) {
+func (ui *model) SlowingMagaraAnimation(ray []gruid.Point) {
 	if DisableAnimations {
 		return
 	}
@@ -313,7 +313,7 @@ func (ui *gameui) SlowingMagaraAnimation(ray []position) {
 	}
 }
 
-func (ui *gameui) ProjectileSymbol(dir direction) (r rune) {
+func (ui *model) ProjectileSymbol(dir direction) (r rune) {
 	switch dir {
 	case E, ENE, ESE, WNW, W, WSW:
 		r = '—'
@@ -327,7 +327,7 @@ func (ui *gameui) ProjectileSymbol(dir direction) (r rune) {
 	return r
 }
 
-func (ui *gameui) MonsterJavelinAnimation(ray []position, hit bool) {
+func (ui *model) MonsterJavelinAnimation(ray []gruid.Point, hit bool) {
 	g := ui.g
 	if DisableAnimations {
 		return
@@ -345,7 +345,7 @@ func (ui *gameui) MonsterJavelinAnimation(ray []position, hit bool) {
 	Sleep(AnimDurShort)
 }
 
-func (ui *gameui) WoundedAnimation() {
+func (ui *model) WoundedAnimation() {
 	g := ui.g
 	if DisableAnimations {
 		return
@@ -362,7 +362,7 @@ func (ui *gameui) WoundedAnimation() {
 	}
 }
 
-func (ui *gameui) PlayerGoodEffectAnimation() {
+func (ui *model) PlayerGoodEffectAnimation() {
 	g := ui.g
 	if DisableAnimations {
 		return
@@ -380,7 +380,7 @@ func (ui *gameui) PlayerGoodEffectAnimation() {
 	ui.Flush()
 }
 
-func (ui *gameui) StatusEndAnimation() {
+func (ui *model) StatusEndAnimation() {
 	g := ui.g
 	if DisableAnimations {
 		return
@@ -392,7 +392,7 @@ func (ui *gameui) StatusEndAnimation() {
 	Sleep(AnimDurShortMedium)
 }
 
-func (ui *gameui) FoundFakeStairsAnimation() {
+func (ui *model) FoundFakeStairsAnimation() {
 	g := ui.g
 	if DisableAnimations {
 		return
@@ -405,7 +405,7 @@ func (ui *gameui) FoundFakeStairsAnimation() {
 	ui.Flush()
 }
 
-func (ui *gameui) MusicAnimation(pos position) {
+func (ui *model) MusicAnimation(pos gruid.Point) {
 	if DisableAnimations {
 		return
 	}
@@ -418,7 +418,7 @@ func (ui *gameui) MusicAnimation(pos position) {
 	//ui.Flush()
 }
 
-func (ui *gameui) PushAnimation(path []position) {
+func (ui *model) PushAnimation(path []gruid.Point) {
 	if DisableAnimations {
 		return
 	}
@@ -436,7 +436,7 @@ func (ui *gameui) PushAnimation(path []position) {
 	Sleep(AnimDurMediumLong)
 }
 
-func (ui *gameui) MenuSelectedAnimation(m menu, ok bool) {
+func (ui *model) MenuSelectedAnimation(m menu, ok bool) {
 	if DisableAnimations {
 		return
 	}
@@ -465,7 +465,7 @@ func (ui *gameui) MenuSelectedAnimation(m menu, ok bool) {
 	}
 }
 
-func (ui *gameui) MagicMappingAnimation(border []int) {
+func (ui *model) MagicMappingAnimation(border []int) {
 	if DisableAnimations {
 		return
 	}
@@ -477,7 +477,7 @@ func (ui *gameui) MagicMappingAnimation(border []int) {
 	ui.Flush()
 }
 
-func (ui *gameui) FreeingShaedraAnimation() {
+func (ui *model) FreeingShaedraAnimation() {
 	g := ui.g
 	//if DisableAnimations {
 	// TODO this animation cannot be disabled as-is, because code is mixed with it...
@@ -522,7 +522,7 @@ func (ui *gameui) FreeingShaedraAnimation() {
 	g.RescuedShaedra()
 }
 
-func (g *game) RescuedShaedra() {
+func (g *state) RescuedShaedra() {
 	g.Player.Magaras = append(g.Player.Magaras, magara{})
 	g.Player.Inventory.Misc = NoItem
 	g.PrintStyled("You equip the new magara in the artifact's old place.", logSpecial)
@@ -534,7 +534,7 @@ func (g *game) RescuedShaedra() {
 	AchRescuedShaedra.Get(g)
 }
 
-func (ui *gameui) TakingArtifactAnimation() {
+func (ui *model) TakingArtifactAnimation() {
 	g := ui.g
 	//if DisableAnimations {
 	// TODO this animation cannot be disabled as-is, because code is mixed with it...

@@ -26,22 +26,22 @@ type uiInput struct {
 	interrupt bool
 }
 
-func (ui *gameui) HideCursor() {
+func (ui *model) HideCursor() {
 	ui.cursor = InvalidPos
 }
 
-func (ui *gameui) SetCursor(pos position) {
+func (ui *model) SetCursor(pos gruid.Point) {
 	ui.cursor = pos
 }
 
-func (ui *gameui) KeyToRuneKeyAction(in uiInput) rune {
+func (ui *model) KeyToRuneKeyAction(in uiInput) rune {
 	if utf8.RuneCountInString(in.key) != 1 {
 		return 0
 	}
 	return ui.ReadKey(in.key)
 }
 
-func (ui *gameui) WaitForContinue(line int) {
+func (ui *model) WaitForContinue(line int) {
 loop:
 	for {
 		in := ui.PollEvent()
@@ -63,7 +63,7 @@ loop:
 	}
 }
 
-func (ui *gameui) PromptConfirmation() bool {
+func (ui *model) PromptConfirmation() bool {
 	// TODO: this cannot be done with the mouse
 	for {
 		in := ui.PollEvent()
@@ -77,7 +77,7 @@ func (ui *gameui) PromptConfirmation() bool {
 	}
 }
 
-func (ui *gameui) PressAnyKey() error {
+func (ui *model) PressAnyKey() error {
 	for {
 		e := ui.PollEvent()
 		if e.interrupt {
@@ -96,7 +96,7 @@ const (
 	StartWatchReplay
 )
 
-func (ui *gameui) StartMenu(l int) startAction {
+func (ui *model) StartMenu(l int) startAction {
 	for {
 		in := ui.PollEvent()
 		switch in.key {
@@ -151,18 +151,18 @@ func (ui *gameui) StartMenu(l int) startAction {
 	}
 }
 
-func (ui *gameui) PlayerTurnEvent() (again, quit bool, err error) {
+func (ui *model) PlayerTurnEvent() (again, quit bool, err error) {
 	g := ui.g
 	again = true
 	in := ui.PollEvent()
 	switch in.key {
 	case "":
 		if in.mouse {
-			var mpos position
+			var mpos gruid.Point
 			if CenteredCamera {
 				mpos = ui.CameraTargetPosition(in.mouseX, in.mouseY, true)
 			} else {
-				mpos = position{in.mouseX, in.mouseY}
+				mpos = gruid.Point{in.mouseX, in.mouseY}
 			}
 			switch in.button {
 			case -1:
@@ -225,7 +225,7 @@ func (ui *gameui) PlayerTurnEvent() (again, quit bool, err error) {
 	return again, quit, err
 }
 
-func (ui *gameui) Scroll(n int) (m int, quit bool) {
+func (ui *model) Scroll(n int) (m int, quit bool) {
 	in := ui.PollEvent()
 	switch in.key {
 	case "Escape", "\x1b", " ", "x", "X":
@@ -258,15 +258,15 @@ func (ui *gameui) Scroll(n int) (m int, quit bool) {
 	return n, quit
 }
 
-func (ui *gameui) GetIndex(x, y int) int {
+func (ui *model) GetIndex(x, y int) int {
 	return y*UIWidth + x
 }
 
-func (ui *gameui) GetPos(i int) (int, int) {
+func (ui *model) GetPos(i int) (int, int) {
 	return i - (i/UIWidth)*UIWidth, i / UIWidth
 }
 
-func (ui *gameui) Select(l int) (index int, alternate bool, err error) {
+func (ui *model) Select(l int) (index int, alternate bool, err error) {
 	if ui.itemHover >= 1 && ui.itemHover <= l {
 		ui.ColorLine(ui.itemHover, ColorYellow)
 		ui.Flush()
@@ -359,7 +359,7 @@ func (ui *gameui) Select(l int) (index int, alternate bool, err error) {
 	}
 }
 
-func (ui *gameui) KeyMenuAction(n int) (m int, action keyConfigAction) {
+func (ui *model) KeyMenuAction(n int) (m int, action keyConfigAction) {
 	in := ui.PollEvent()
 	r := ui.KeyToRuneKeyAction(in)
 	switch string(r) {
@@ -394,7 +394,7 @@ func (ui *gameui) KeyMenuAction(n int) (m int, action keyConfigAction) {
 	return n, action
 }
 
-func (ui *gameui) TargetModeEvent(targ Targeter, data *examineData) (again, quit, notarg bool, err error) {
+func (ui *model) TargetModeEvent(targ Targeter, data *examineData) (again, quit, notarg bool, err error) {
 	g := ui.g
 	again = true
 	in := ui.PollEvent()
@@ -432,11 +432,11 @@ func (ui *gameui) TargetModeEvent(targ Targeter, data *examineData) (again, quit
 				err = errors.New(DoNothing)
 				break
 			}
-			var mpos position
+			var mpos gruid.Point
 			if CenteredCamera {
 				mpos = ui.CameraTargetPosition(in.mouseX, in.mouseY, true)
 			} else {
-				mpos = position{in.mouseX, in.mouseY}
+				mpos = gruid.Point{in.mouseX, in.mouseY}
 			}
 			if g.Targeting == mpos {
 				break
@@ -458,11 +458,11 @@ func (ui *gameui) TargetModeEvent(targ Targeter, data *examineData) (again, quit
 				notarg = true
 				err = errors.New(DoNothing)
 			} else {
-				var mpos position
+				var mpos gruid.Point
 				if CenteredCamera {
 					mpos = ui.CameraTargetPosition(in.mouseX, in.mouseY, true)
 				} else {
-					mpos = position{in.mouseX, in.mouseY}
+					mpos = gruid.Point{in.mouseX, in.mouseY}
 				}
 				again, notarg = ui.CursorMouseLeft(targ, mpos, data)
 			}
@@ -485,7 +485,7 @@ func (ui *gameui) TargetModeEvent(targ Targeter, data *examineData) (again, quit
 	return
 }
 
-func (ui *gameui) ReadRuneKey() rune {
+func (ui *model) ReadRuneKey() rune {
 	for {
 		in := ui.PollEvent()
 		switch in.key {
@@ -501,7 +501,7 @@ func (ui *gameui) ReadRuneKey() rune {
 	}
 }
 
-func (ui *gameui) ReadKey(s string) (r rune) {
+func (ui *model) ReadKey(s string) (r rune) {
 	bs := strings.NewReader(s)
 	r, _, _ = bs.ReadRune()
 	return r
@@ -518,7 +518,7 @@ const (
 
 const DoNothing = "Do nothing, then."
 
-func (ui *gameui) EnterWizard() {
+func (ui *model) EnterWizard() {
 	g := ui.g
 	if ui.Wizard() {
 		g.EnterWizardMode()
@@ -528,7 +528,7 @@ func (ui *gameui) EnterWizard() {
 	}
 }
 
-func (ui *gameui) CleanError(err error) error {
+func (ui *model) CleanError(err error) error {
 	if err != nil && err.Error() == DoNothing {
 		err = errors.New("")
 	}
@@ -685,7 +685,7 @@ func (k action) NormalModeDescription() (text string) {
 	case ActionLogs:
 		text = "View previous messages"
 	case ActionDump:
-		text = "Write game statistics to file"
+		text = "Write state statistics to file"
 	case ActionSave:
 		text = "Save and Quit"
 	case ActionQuit:
@@ -855,7 +855,7 @@ type runeKeyAction struct {
 	k action
 }
 
-func (ui *gameui) HandleKeyAction(rka runeKeyAction) (again bool, quit bool, err error) {
+func (ui *model) HandleKeyAction(rka runeKeyAction) (again bool, quit bool, err error) {
 	if rka.r != 0 {
 		var ok bool
 		rka.k, ok = GameConfig.RuneNormalModeKeys[rka.r]
@@ -881,7 +881,7 @@ func (ui *gameui) HandleKeyAction(rka runeKeyAction) (again bool, quit bool, err
 	return ui.HandleKey(rka)
 }
 
-func (ui *gameui) OptionalDescendConfirmation(st stair) (err error) {
+func (ui *model) OptionalDescendConfirmation(st stair) (err error) {
 	g := ui.g
 	if g.Depth == WinDepth && st == NormalStair && g.Dungeon.Cell(g.Places.Shaedra).T == StoryCell {
 		err = errors.New("You have to rescue Shaedra first!")
@@ -890,7 +890,7 @@ func (ui *gameui) OptionalDescendConfirmation(st stair) (err error) {
 
 }
 
-func (ui *gameui) HandleKey(rka runeKeyAction) (again bool, quit bool, err error) {
+func (ui *model) HandleKey(rka runeKeyAction) (again bool, quit bool, err error) {
 	g := ui.g
 	switch rka.k {
 	case ActionW, ActionS, ActionN, ActionE:
@@ -1000,7 +1000,7 @@ func (ui *gameui) HandleKey(rka runeKeyAction) (again bool, quit bool, err error
 		errsave := g.Save()
 		if errsave != nil {
 			g.PrintfStyled("Error: %v", logError, errsave)
-			g.PrintStyled("Could not save game.", logError)
+			g.PrintStyled("Could not save state.", logError)
 		} else {
 			quit = true
 		}
@@ -1063,8 +1063,8 @@ func (ui *gameui) HandleKey(rka runeKeyAction) (again bool, quit bool, err error
 	return again, quit, err
 }
 
-func (ui *gameui) ExaminePos(pos position) (again, quit bool, err error) {
-	var start *position
+func (ui *model) ExaminePos(pos gruid.Point) (again, quit bool, err error) {
+	var start *gruid.Point
 	if pos.valid() {
 		start = &pos
 	}
@@ -1072,13 +1072,13 @@ func (ui *gameui) ExaminePos(pos position) (again, quit bool, err error) {
 	return again, quit, err
 }
 
-func (ui *gameui) Examine(start *position) (again, quit bool, err error) {
+func (ui *model) Examine(start *gruid.Point) (again, quit bool, err error) {
 	ex := &examiner{}
 	again, quit, err = ui.CursorAction(ex, start)
 	return again, quit, err
 }
 
-func (ui *gameui) ChooseTarget(targ Targeter) error {
+func (ui *model) ChooseTarget(targ Targeter) error {
 	_, _, err := ui.CursorAction(targ, nil)
 	if err != nil {
 		return err
@@ -1089,7 +1089,7 @@ func (ui *gameui) ChooseTarget(targ Targeter) error {
 	return nil
 }
 
-func (ui *gameui) NextMonster(r rune, pos position, data *examineData) {
+func (ui *model) NextMonster(r rune, pos gruid.Point, data *examineData) {
 	g := ui.g
 	nmonster := data.nmonster
 	for i := 0; i < len(g.Monsters); i++ {
@@ -1113,7 +1113,7 @@ func (ui *gameui) NextMonster(r rune, pos position, data *examineData) {
 	data.nmonster = nmonster
 }
 
-func (ui *gameui) NextStair(data *examineData) {
+func (ui *model) NextStair(data *examineData) {
 	g := ui.g
 	if data.sortedStairs == nil {
 		stairs := g.StairsSlice()
@@ -1128,7 +1128,7 @@ func (ui *gameui) NextStair(data *examineData) {
 	}
 }
 
-func (ui *gameui) NextObject(pos position, data *examineData) {
+func (ui *model) NextObject(pos gruid.Point, data *examineData) {
 	g := ui.g
 	nobject := data.nobject
 	if len(data.objects) == 0 {
@@ -1176,7 +1176,7 @@ func (ui *gameui) NextObject(pos position, data *examineData) {
 	data.nobject = nobject
 }
 
-func (ui *gameui) ExcludeZone(pos position) {
+func (ui *model) ExcludeZone(pos gruid.Point) {
 	g := ui.g
 	if !g.Dungeon.Cell(pos).Explored {
 		g.Print("You cannot choose an unexplored cell for exclusion.")
@@ -1186,7 +1186,7 @@ func (ui *gameui) ExcludeZone(pos position) {
 	}
 }
 
-func (ui *gameui) CursorMouseLeft(targ Targeter, pos position, data *examineData) (again, notarg bool) {
+func (ui *model) CursorMouseLeft(targ Targeter, pos gruid.Point, data *examineData) (again, notarg bool) {
 	g := ui.g
 	again = true
 	if data.npos == pos {
@@ -1207,7 +1207,7 @@ func (ui *gameui) CursorMouseLeft(targ Targeter, pos position, data *examineData
 	return again, notarg
 }
 
-func (ui *gameui) CursorKeyAction(targ Targeter, rka runeKeyAction, data *examineData) (again, quit, notarg bool, err error) {
+func (ui *model) CursorKeyAction(targ Targeter, rka runeKeyAction, data *examineData) (again, quit, notarg bool, err error) {
 	g := ui.g
 	pos := data.npos
 	again = true
@@ -1313,7 +1313,7 @@ func (ui *gameui) CursorKeyAction(targ Targeter, rka runeKeyAction, data *examin
 		errsave := g.Save()
 		if errsave != nil {
 			g.PrintfStyled("Error: %v", logError, errsave)
-			g.PrintStyled("Could not save game.", logError)
+			g.PrintStyled("Could not save state.", logError)
 		} else {
 			notarg = true
 			again = false
@@ -1331,17 +1331,17 @@ func (ui *gameui) CursorKeyAction(targ Targeter, rka runeKeyAction, data *examin
 }
 
 type examineData struct {
-	npos         position
+	npos         gruid.Point
 	nmonster     int
-	objects      []position
+	objects      []gruid.Point
 	nobject      int
-	sortedStairs []position
+	sortedStairs []gruid.Point
 	stairIndex   int
 }
 
-var InvalidPos = position{-1, -1}
+var InvalidPos = gruid.Point{-1, -1}
 
-func (ui *gameui) CursorAction(targ Targeter, start *position) (again, quit bool, err error) {
+func (ui *model) CursorAction(targ Targeter, start *gruid.Point) (again, quit bool, err error) {
 	g := ui.g
 	pos := g.Player.Pos
 	if start != nil {
@@ -1360,7 +1360,7 @@ func (ui *gameui) CursorAction(targ Targeter, start *position) (again, quit bool
 	}
 	data := &examineData{
 		npos:    pos,
-		objects: []position{},
+		objects: []gruid.Point{},
 	}
 	if _, ok := targ.(*examiner); ok && pos == g.Player.Pos && start == nil {
 		ui.NextObject(InvalidPos, data)
@@ -1446,7 +1446,7 @@ func (m menu) String() (text string) {
 	return "[" + text + "]"
 }
 
-func (m menu) Key(g *game) (key action) {
+func (m menu) Key(g *state) (key action) {
 	switch m {
 	//case MenuExplore:
 	//key = KeyExplore
@@ -1480,7 +1480,7 @@ func init() {
 	}
 }
 
-func (ui *gameui) WhichButton(col int) (menu, bool) {
+func (ui *model) WhichButton(col int) (menu, bool) {
 	g := ui.g
 	if ui.Small() {
 		return MenuOther, false
@@ -1502,7 +1502,7 @@ func (ui *gameui) WhichButton(col int) (menu, bool) {
 	return MenuOther, false
 }
 
-func (ui *gameui) UpdateInteractButton() string {
+func (ui *model) UpdateInteractButton() string {
 	g := ui.g
 	var interactMenu string
 	var show bool
@@ -1568,7 +1568,7 @@ var WizardActions = []wizardAction{
 	WizardToggleMode,
 }
 
-func (ui *gameui) HandleWizardAction() error {
+func (ui *model) HandleWizardAction() error {
 	g := ui.g
 	s, err := ui.SelectWizardMagic(WizardActions)
 	if err != nil {
@@ -1592,7 +1592,7 @@ func (ui *gameui) HandleWizardAction() error {
 	return nil
 }
 
-func (ui *gameui) Death() {
+func (ui *model) Death() {
 	g := ui.g
 	if len(g.Stats.Achievements) == 0 {
 		NoAchievement.Get(g)
@@ -1605,7 +1605,7 @@ func (ui *gameui) Death() {
 	ui.WaitForContinue(-1)
 }
 
-func (ui *gameui) Win() {
+func (ui *model) Win() {
 	g := ui.g
 	err := g.RemoveSaveFile()
 	if err != nil {
@@ -1623,14 +1623,14 @@ func (ui *gameui) Win() {
 	ui.WaitForContinue(-1)
 }
 
-func (ui *gameui) Dump(err error) {
+func (ui *model) Dump(err error) {
 	g := ui.g
 	ui.Clear()
 	ui.DrawText(g.SimplifedDump(err), 0, 0)
 	ui.Flush()
 }
 
-func (ui *gameui) CriticalHPWarning() {
+func (ui *model) CriticalHPWarning() {
 	g := ui.g
 	g.PrintStyled("*** CRITICAL HP WARNING *** [(x) to continue]", logCritic)
 	ui.DrawDungeonView(NormalMode)
@@ -1638,7 +1638,7 @@ func (ui *gameui) CriticalHPWarning() {
 	g.Print("Ok. Be careful, then.")
 }
 
-func (ui *gameui) Quit() bool {
+func (ui *model) Quit() bool {
 	g := ui.g
 	g.Print("Do you really want to quit without saving? [y/N]")
 	ui.DrawDungeonView(NormalMode)
@@ -1656,14 +1656,14 @@ func (ui *gameui) Quit() bool {
 	return quit
 }
 
-func (ui *gameui) Wizard() bool {
+func (ui *model) Wizard() bool {
 	g := ui.g
 	g.Print("Do you really want to enter wizard mode (no return)? [y/N]")
 	ui.DrawDungeonView(NormalMode)
 	return ui.PromptConfirmation()
 }
 
-func (ui *gameui) HandlePlayerTurn() bool {
+func (ui *model) HandlePlayerTurn() bool {
 	g := ui.g
 getKey:
 	for {
@@ -1685,7 +1685,7 @@ getKey:
 	}
 }
 
-func (ui *gameui) ExploreStep() bool {
+func (ui *model) ExploreStep() bool {
 	next := make(chan bool)
 	var stop bool
 	go func() {
@@ -1702,14 +1702,14 @@ func (ui *gameui) ExploreStep() bool {
 	return stop
 }
 
-func (ui *gameui) Clear() {
+func (ui *model) Clear() {
 	for i := 0; i < UIHeight*UIWidth; i++ {
 		x, y := ui.GetPos(i)
 		ui.SetCell(x, y, ' ', ColorFg, ColorBg)
 	}
 }
 
-func (ui *gameui) DrawBufferInit() {
+func (ui *model) DrawBufferInit() {
 	if len(ui.g.DrawBuffer) == 0 {
 		ui.g.DrawBuffer = make([]UICell, UIHeight*UIWidth)
 	} else if len(ui.g.DrawBuffer) != UIHeight*UIWidth {
@@ -1728,7 +1728,7 @@ func ApplyConfig() {
 	}
 }
 
-func (ui *gameui) ColorLine(y int, fg uicolor) {
+func (ui *model) ColorLine(y int, fg uicolor) {
 	for x := 0; x < DungeonWidth; x++ {
 		i := ui.GetIndex(x, y)
 		c := ui.g.DrawBuffer[i]

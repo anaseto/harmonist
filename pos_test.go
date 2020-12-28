@@ -4,29 +4,29 @@ import "testing"
 
 func TestDir(t *testing.T) {
 	type tableTest struct {
-		pos position
+		pos gruid.Point
 		dir direction
 	}
 	table := []tableTest{
-		{position{3, 2}, E},
-		{position{4, 1}, ENE},
-		{position{3, 1}, NE},
-		{position{3, 0}, NNE},
-		{position{2, 1}, N},
-		{position{1, 0}, NNW},
-		{position{1, 1}, NW},
-		{position{0, 1}, WNW},
-		{position{1, 2}, W},
-		{position{0, 3}, WSW},
-		{position{1, 3}, SW},
-		{position{1, 4}, SSW},
-		{position{2, 3}, S},
-		{position{3, 4}, SSE},
-		{position{3, 3}, SE},
-		{position{4, 3}, ESE},
+		{gruid.Point{3, 2}, E},
+		{gruid.Point{4, 1}, ENE},
+		{gruid.Point{3, 1}, NE},
+		{gruid.Point{3, 0}, NNE},
+		{gruid.Point{2, 1}, N},
+		{gruid.Point{1, 0}, NNW},
+		{gruid.Point{1, 1}, NW},
+		{gruid.Point{0, 1}, WNW},
+		{gruid.Point{1, 2}, W},
+		{gruid.Point{0, 3}, WSW},
+		{gruid.Point{1, 3}, SW},
+		{gruid.Point{1, 4}, SSW},
+		{gruid.Point{2, 3}, S},
+		{gruid.Point{3, 4}, SSE},
+		{gruid.Point{3, 3}, SE},
+		{gruid.Point{4, 3}, ESE},
 	}
 	for _, test := range table {
-		if test.pos.Dir(position{2, 2}) != test.dir {
+		if test.pos.Dir(gruid.Point{2, 2}) != test.dir {
 			t.Errorf("Bad direction for %+v\n", test)
 		}
 	}

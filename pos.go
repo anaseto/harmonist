@@ -4,50 +4,50 @@ import (
 	"fmt"
 )
 
-type position struct {
+type gruid.Point struct {
 	X int
 	Y int
 }
 
-func (pos position) E() position {
-	return position{pos.X + 1, pos.Y}
+func (pos gruid.Point) E() gruid.Point {
+	return gruid.Point{pos.X + 1, pos.Y}
 }
 
-func (pos position) SE() position {
-	return position{pos.X + 1, pos.Y + 1}
+func (pos gruid.Point) SE() gruid.Point {
+	return gruid.Point{pos.X + 1, pos.Y + 1}
 }
 
-func (pos position) NE() position {
-	return position{pos.X + 1, pos.Y - 1}
+func (pos gruid.Point) NE() gruid.Point {
+	return gruid.Point{pos.X + 1, pos.Y - 1}
 }
 
-func (pos position) N() position {
-	return position{pos.X, pos.Y - 1}
+func (pos gruid.Point) N() gruid.Point {
+	return gruid.Point{pos.X, pos.Y - 1}
 }
 
-func (pos position) S() position {
-	return position{pos.X, pos.Y + 1}
+func (pos gruid.Point) S() gruid.Point {
+	return gruid.Point{pos.X, pos.Y + 1}
 }
 
-func (pos position) W() position {
-	return position{pos.X - 1, pos.Y}
+func (pos gruid.Point) W() gruid.Point {
+	return gruid.Point{pos.X - 1, pos.Y}
 }
 
-func (pos position) SW() position {
-	return position{pos.X - 1, pos.Y + 1}
+func (pos gruid.Point) SW() gruid.Point {
+	return gruid.Point{pos.X - 1, pos.Y + 1}
 }
 
-func (pos position) NW() position {
-	return position{pos.X - 1, pos.Y - 1}
+func (pos gruid.Point) NW() gruid.Point {
+	return gruid.Point{pos.X - 1, pos.Y - 1}
 }
 
-func (pos position) Distance(to position) int {
+func (pos gruid.Point) Distance(to gruid.Point) int {
 	deltaX := Abs(to.X - pos.X)
 	deltaY := Abs(to.Y - pos.Y)
 	return deltaX + deltaY
 }
 
-func (pos position) MaxCardinalDist(to position) int {
+func (pos gruid.Point) MaxCardinalDist(to gruid.Point) int {
 	deltaX := Abs(to.X - pos.X)
 	deltaY := Abs(to.Y - pos.Y)
 	if deltaX > deltaY {
@@ -56,12 +56,12 @@ func (pos position) MaxCardinalDist(to position) int {
 	return deltaY
 }
 
-func (pos position) DistanceX(to position) int {
+func (pos gruid.Point) DistanceX(to gruid.Point) int {
 	deltaX := Abs(to.X - pos.X)
 	return deltaX
 }
 
-func (pos position) DistanceY(to position) int {
+func (pos gruid.Point) DistanceY(to gruid.Point) int {
 	deltaY := Abs(to.Y - pos.Y)
 	return deltaY
 }
@@ -142,7 +142,7 @@ func KeyToDir(k action) (dir direction) {
 	return dir
 }
 
-func (pos position) To(dir direction) position {
+func (pos gruid.Point) To(dir direction) gruid.Point {
 	to := pos
 	switch dir {
 	case E, ENE, ESE:
@@ -165,7 +165,7 @@ func (pos position) To(dir direction) position {
 	return to
 }
 
-func (pos position) Dir(from position) direction {
+func (pos gruid.Point) Dir(from gruid.Point) direction {
 	deltaX := Abs(pos.X - from.X)
 	deltaY := Abs(pos.Y - from.Y)
 	switch {
@@ -214,11 +214,11 @@ func (pos position) Dir(from position) direction {
 			return ESE
 		}
 	default:
-		panic(fmt.Sprintf("internal error: invalid position:%+v-%+v", pos, from))
+		panic(fmt.Sprintf("internal error: invalid gruid.Point:%+v-%+v", pos, from))
 	}
 }
 
-func (pos position) Parents(from position, p []position) []position {
+func (pos gruid.Point) Parents(from gruid.Point, p []gruid.Point) []gruid.Point {
 	switch pos.Dir(from) {
 	case E:
 		p = append(p, pos.W())
@@ -256,15 +256,15 @@ func (pos position) Parents(from position, p []position) []position {
 	return p
 }
 
-func (pos position) RandomNeighbor(diag bool) position {
+func (pos gruid.Point) RandomNeighbor(diag bool) gruid.Point {
 	if diag {
 		return pos.RandomNeighborDiagonals()
 	}
 	return pos.RandomNeighborCardinal()
 }
 
-func (pos position) RandomNeighborDiagonals() position {
-	neighbors := [8]position{pos.E(), pos.W(), pos.N(), pos.S(), pos.NE(), pos.NW(), pos.SE(), pos.SW()}
+func (pos gruid.Point) RandomNeighborDiagonals() gruid.Point {
+	neighbors := [8]gruid.Point{pos.E(), pos.W(), pos.N(), pos.S(), pos.NE(), pos.NW(), pos.SE(), pos.SW()}
 	var r int
 	switch RandInt(8) {
 	case 0:
@@ -277,8 +277,8 @@ func (pos position) RandomNeighborDiagonals() position {
 	return neighbors[r]
 }
 
-func (pos position) RandomNeighborCardinal() position {
-	neighbors := [4]position{pos.E(), pos.W(), pos.N(), pos.S()}
+func (pos gruid.Point) RandomNeighborCardinal() gruid.Point {
+	neighbors := [4]gruid.Point{pos.E(), pos.W(), pos.N(), pos.S()}
 	var r int
 	switch RandInt(4) {
 	case 0, 1:
@@ -289,43 +289,43 @@ func (pos position) RandomNeighborCardinal() position {
 	return neighbors[r]
 }
 
-func idxtopos(i int) position {
-	return position{i % DungeonWidth, i / DungeonWidth}
+func idxtopos(i int) gruid.Point {
+	return gruid.Point{i % DungeonWidth, i / DungeonWidth}
 }
 
-func (pos position) idx() int {
+func (pos gruid.Point) idx() int {
 	return pos.Y*DungeonWidth + pos.X
 }
 
-func (pos position) valid() bool {
+func (pos gruid.Point) valid() bool {
 	return pos.Y >= 0 && pos.Y < DungeonHeight && pos.X >= 0 && pos.X < DungeonWidth
 }
 
-func (pos position) Laterals(dir direction) []position {
+func (pos gruid.Point) Laterals(dir direction) []gruid.Point {
 	switch dir {
 	case E, ENE, ESE:
-		return []position{pos.NE(), pos.SE()}
+		return []gruid.Point{pos.NE(), pos.SE()}
 	case NE:
-		return []position{pos.E(), pos.N()}
+		return []gruid.Point{pos.E(), pos.N()}
 	case N, NNE, NNW:
-		return []position{pos.NW(), pos.NE()}
+		return []gruid.Point{pos.NW(), pos.NE()}
 	case NW:
-		return []position{pos.W(), pos.N()}
+		return []gruid.Point{pos.W(), pos.N()}
 	case W, WNW, WSW:
-		return []position{pos.SW(), pos.NW()}
+		return []gruid.Point{pos.SW(), pos.NW()}
 	case SW:
-		return []position{pos.W(), pos.S()}
+		return []gruid.Point{pos.W(), pos.S()}
 	case S, SSW, SSE:
-		return []position{pos.SW(), pos.SE()}
+		return []gruid.Point{pos.SW(), pos.SE()}
 	case SE:
-		return []position{pos.S(), pos.E()}
+		return []gruid.Point{pos.S(), pos.E()}
 	default:
 		// should not happen
-		return []position{}
+		return []gruid.Point{}
 	}
 }
 
-func (dir direction) InViewCone(from, to position) bool {
+func (dir direction) InViewCone(from, to gruid.Point) bool {
 	if to == from {
 		return true
 	}

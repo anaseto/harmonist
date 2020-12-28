@@ -74,7 +74,7 @@ func (m magaraKind) DefaultCharges() int {
 	}
 }
 
-func (g *game) RandomStartingMagara() magara {
+func (g *state) RandomStartingMagara() magara {
 	mags := []magaraKind{BlinkMagara, DigMagara, TeleportMagara,
 		SwiftnessMagara, LevitationMagara, FireMagara, FogMagara,
 		ShadowsMagara, NoiseMagara, ConfusionMagara, SleepingMagara,
@@ -95,7 +95,7 @@ loop:
 	return magara{Kind: mag, Charges: mag.DefaultCharges()}
 }
 
-func (g *game) RandomMagara() magara {
+func (g *state) RandomMagara() magara {
 	mags := []magaraKind{BlinkMagara, DigMagara, TeleportMagara,
 		SwiftnessMagara, LevitationMagara, FireMagara, FogMagara,
 		ShadowsMagara, NoiseMagara, ConfusionMagara, SleepingMagara,
@@ -116,7 +116,7 @@ loop:
 	return magara{Kind: mag, Charges: mag.DefaultCharges()}
 }
 
-func (g *game) EquipMagara(i int) (err error) {
+func (g *state) EquipMagara(i int) (err error) {
 	omagara := g.Player.Magaras[i]
 	g.Player.Magaras[i] = g.Objects.Magaras[g.Player.Pos]
 	g.Objects.Magaras[g.Player.Pos] = omagara
@@ -127,7 +127,7 @@ func (g *game) EquipMagara(i int) (err error) {
 	return nil
 }
 
-func (g *game) UseMagara(n int) (err error) {
+func (g *state) UseMagara(n int) (err error) {
 	if g.Player.HasStatus(StatusNausea) {
 		return errors.New("You cannot use magaras while sick.")
 	}
@@ -300,7 +300,7 @@ func (mag magara) ShortDesc() string {
 	return fmt.Sprintf("%s (%d)", mag.String(), mag.Charges)
 }
 
-func (mag magara) Desc(g *game) (desc string) {
+func (mag magara) Desc(g *state) (desc string) {
 	switch mag.Kind {
 	case NoMagara:
 		desc = "can be used for a new magara."
@@ -343,11 +343,11 @@ func (mag magara) Desc(g *game) (desc string) {
 	case DisguiseMagara:
 		desc = "surrounds you with harmonic illusions that make you look like a guard. As a result, most monsters will ignore you. Monsters with good flair may see through the illusions at less than 3 tiles away. Monsters that are already hunting you will continue doing so."
 	case DelayedNoiseMagara:
-		desc = "will produce a thunderous harmonic noise in your current position. The noise will happen after a delay."
+		desc = "will produce a thunderous harmonic noise in your current gruid.Point. The noise will happen after a delay."
 	case DispersalMagara:
 		desc = "will make monsters that attempt to hit you blink away."
 	case DelayedOricExplosionMagara:
-		desc = "will produce a big rock-destroying oric explosion at your current position. The explosion will happen after a delay. It destroys only walls."
+		desc = "will produce a big rock-destroying oric explosion at your current gruid.Point. The explosion will happen after a delay. It destroys only walls."
 	}
 	duration := 0
 	switch mag.Kind {
@@ -388,7 +388,7 @@ func (mag magara) Desc(g *game) (desc string) {
 	return fmt.Sprintf("The %s %s", mag, desc)
 }
 
-func (mag magara) MPCost(g *game) int {
+func (mag magara) MPCost(g *state) int {
 	if mag.Kind == NoMagara || mag.Kind == EnergyMagara {
 		return 0
 	}
@@ -396,7 +396,7 @@ func (mag magara) MPCost(g *game) int {
 	return cost
 }
 
-func (g *game) EvokeBlink() error {
+func (g *state) EvokeBlink() error {
 	if g.Player.HasStatus(StatusLignification) {
 		return errors.New("You cannot blink while lignified.")
 	}
@@ -404,7 +404,7 @@ func (g *game) EvokeBlink() error {
 	return nil
 }
 
-func (g *game) Blink() bool {
+func (g *state) Blink() bool {
 	if g.Player.HasStatus(StatusLignification) {
 		return false
 	}
@@ -425,8 +425,8 @@ func (g *game) Blink() bool {
 	return true
 }
 
-func (g *game) BlinkPos(mpassable bool) position {
-	losPos := []position{}
+func (g *state) BlinkPos(mpassable bool) gruid.Point {
+	losPos := []gruid.Point{}
 	for pos, b := range g.Player.LOS {
 		// XXX: skip if not seen by monster?
 		if !b {
@@ -455,7 +455,7 @@ func (g *game) BlinkPos(mpassable bool) position {
 	return npos
 }
 
-func (g *game) EvokeTeleport() error {
+func (g *state) EvokeTeleport() error {
 	if g.Player.HasStatus(StatusLignification) {
 		return errors.New("You cannot teleport while lignified.")
 	}
@@ -463,7 +463,7 @@ func (g *game) EvokeTeleport() error {
 	return nil
 }
 
-func (g *game) EvokeDig() error {
+func (g *state) EvokeDig() error {
 	if !g.PutStatus(StatusDig, DurationDigging) {
 		return errors.New("You are already digging.")
 	}
@@ -472,7 +472,7 @@ func (g *game) EvokeDig() error {
 	return nil
 }
 
-func (g *game) MonstersInLOS() []*monster {
+func (g *state) MonstersInLOS() []*monster {
 	ms := []*monster{}
 	for _, mons := range g.Monsters {
 		if mons.Exists() && g.Player.Sees(mons.Pos) {
@@ -487,7 +487,7 @@ func (g *game) MonstersInLOS() []*monster {
 	return ms
 }
 
-func (g *game) MonstersInCardinalLOS() []*monster {
+func (g *state) MonstersInCardinalLOS() []*monster {
 	ms := []*monster{}
 	for _, mons := range g.Monsters {
 		if mons.Exists() && g.Player.Sees(mons.Pos) && (mons.Pos.X == g.Player.Pos.X || mons.Pos.Y == g.Player.Pos.Y) {
@@ -502,7 +502,7 @@ func (g *game) MonstersInCardinalLOS() []*monster {
 	return ms
 }
 
-func (g *game) EvokeTeleportOther() error {
+func (g *state) EvokeTeleportOther() error {
 	ms := g.MonstersInCardinalLOS()
 	if len(ms) == 0 {
 		return errors.New("There are no targetable monsters.")
@@ -526,21 +526,21 @@ func (g *game) EvokeTeleportOther() error {
 	return nil
 }
 
-func (g *game) EvokeHealWounds() error {
+func (g *state) EvokeHealWounds() error {
 	g.Player.HP = g.Player.HPMax()
 	g.Print("Your feel healthy again.")
 	g.ui.PlayerGoodEffectAnimation()
 	return nil
 }
 
-func (g *game) EvokeRefillMagic() error {
+func (g *state) EvokeRefillMagic() error {
 	g.Player.MP = g.Player.MPMax()
 	g.Print("Your magic forces return.")
 	g.ui.PlayerGoodEffectAnimation()
 	return nil
 }
 
-func (g *game) EvokeSwiftness() error {
+func (g *state) EvokeSwiftness() error {
 	if g.Player.HasStatus(StatusSwift) {
 		return errors.New("You are already swift.")
 	}
@@ -550,7 +550,7 @@ func (g *game) EvokeSwiftness() error {
 	return nil
 }
 
-func (g *game) EvokeLevitation() error {
+func (g *state) EvokeLevitation() error {
 	if !g.PutStatus(StatusLevitation, DurationLevitation) {
 		return errors.New("You are already levitating.")
 	}
@@ -559,7 +559,7 @@ func (g *game) EvokeLevitation() error {
 	return nil
 }
 
-func (g *game) EvokeSwapping() error {
+func (g *state) EvokeSwapping() error {
 	if g.Player.HasStatus(StatusLignification) {
 		return errors.New("You cannot use this magara while lignified.")
 	}
@@ -586,7 +586,7 @@ func (g *game) EvokeSwapping() error {
 	return nil
 }
 
-func (g *game) SwapWithMonster(mons *monster) {
+func (g *state) SwapWithMonster(mons *monster) {
 	ompos := mons.Pos
 	g.Printf("You swap positions with the %s.", mons.Kind)
 	g.ui.SwappingAnimation(mons.Pos, g.Player.Pos)
@@ -606,15 +606,15 @@ const (
 	CloudNight
 )
 
-func (g *game) EvokeFog() error {
+func (g *state) EvokeFog() error {
 	g.Fog(g.Player.Pos, 3)
 	g.Print("You are surrounded by a dense fog.")
 	return nil
 }
 
-func (g *game) Fog(at position, radius int) {
-	dij := &noisePath{game: g}
-	nm := Dijkstra(dij, []position{at}, radius)
+func (g *state) Fog(at gruid.Point, radius int) {
+	dij := &noisePath{state: g}
+	nm := Dijkstra(dij, []gruid.Point{at}, radius)
 	nm.iter(at, func(n *node) {
 		pos := n.Pos
 		_, ok := g.Clouds[pos]
@@ -626,7 +626,7 @@ func (g *game) Fog(at position, radius int) {
 	g.ComputeLOS()
 }
 
-func (g *game) EvokeShadows() error {
+func (g *state) EvokeShadows() error {
 	if g.Player.HasStatus(StatusIlluminated) {
 		return errors.New("You cannot surround yourself by shadows while illuminated.")
 	}
@@ -637,7 +637,7 @@ func (g *game) EvokeShadows() error {
 	return nil
 }
 
-func (g *game) EvokeParalysis() error {
+func (g *state) EvokeParalysis() error {
 	ms := g.MonstersInLOS()
 	count := 0
 	for _, mons := range ms {
@@ -656,7 +656,7 @@ func (g *game) EvokeParalysis() error {
 	return nil
 }
 
-func (g *game) EvokeSleeping() error {
+func (g *state) EvokeSleeping() error {
 	ms := g.MonstersInCardinalLOS()
 	if len(ms) == 0 {
 		return errors.New("There are no targetable monsters.")
@@ -665,7 +665,7 @@ func (g *game) EvokeSleeping() error {
 	if max > len(ms) {
 		max = len(ms)
 	}
-	targets := []position{}
+	targets := []gruid.Point{}
 	// XXX: maybe use noise distance instead of LOS?
 	for i := 0; i < max; i++ {
 		mons := ms[i]
@@ -692,7 +692,7 @@ func (g *game) EvokeSleeping() error {
 	return nil
 }
 
-func (g *game) EvokeLignification() error {
+func (g *state) EvokeLignification() error {
 	ms := g.MonstersInLOS()
 	if len(ms) == 0 {
 		return errors.New("There are no monsters in view.")
@@ -701,7 +701,7 @@ func (g *game) EvokeLignification() error {
 	if max > len(ms) {
 		max = len(ms)
 	}
-	targets := []position{}
+	targets := []gruid.Point{}
 	for i := 0; i < max; i++ {
 		mons := ms[i]
 		if mons.Status(MonsLignified) || mons.Kind.ResistsLignification() {
@@ -725,11 +725,11 @@ func (g *game) EvokeLignification() error {
 	return nil
 }
 
-func (g *game) EvokeNoise() error {
-	dij := &noisePath{game: g}
-	nm := Dijkstra(dij, []position{g.Player.Pos}, 23)
-	noises := []position{}
-	g.NoiseIllusion = map[position]bool{}
+func (g *state) EvokeNoise() error {
+	dij := &noisePath{state: g}
+	nm := Dijkstra(dij, []gruid.Point{g.Player.Pos}, 23)
+	noises := []gruid.Point{}
+	g.NoiseIllusion = map[gruid.Point]bool{}
 	for _, mons := range g.Monsters {
 		if !mons.Exists() {
 			continue
@@ -741,7 +741,7 @@ func (g *game) EvokeNoise() error {
 		if mons.SeesPlayer(g) {
 			continue
 		}
-		mp := &monPath{game: g, monster: mons}
+		mp := &monPath{state: g, monster: mons}
 		target := mons.Pos
 		best := n.Cost
 		for {
@@ -775,7 +775,7 @@ func (g *game) EvokeNoise() error {
 	return nil
 }
 
-func (g *game) EvokeConfusion() error {
+func (g *state) EvokeConfusion() error {
 	ms := g.MonstersInLOS()
 	count := 0
 	for _, mons := range ms {
@@ -794,7 +794,7 @@ func (g *game) EvokeConfusion() error {
 	return nil
 }
 
-func (g *game) EvokeFire() error {
+func (g *state) EvokeFire() error {
 	burnpos := g.Dungeon.CardinalFlammableNeighbors(g.Player.Pos)
 	if len(burnpos) == 0 {
 		return errors.New("You are not surrounded by any flammable terrain.")
@@ -806,8 +806,8 @@ func (g *game) EvokeFire() error {
 	return nil
 }
 
-func (g *game) EvokeObstruction() error {
-	targets := []position{}
+func (g *state) EvokeObstruction() error {
+	targets := []gruid.Point{}
 	for _, mons := range g.Monsters {
 		if !mons.Exists() || !g.Player.Sees(mons.Pos) {
 			continue
@@ -838,7 +838,7 @@ func (g *game) EvokeObstruction() error {
 	return nil
 }
 
-func (g *game) MagicalBarrierAt(pos position) {
+func (g *state) MagicalBarrierAt(pos gruid.Point) {
 	if g.Dungeon.Cell(pos).T == WallCell || g.Dungeon.Cell(pos).T == BarrierCell {
 		return
 	}
@@ -847,7 +847,7 @@ func (g *game) MagicalBarrierAt(pos position) {
 	g.ComputeLOS()
 }
 
-func (g *game) CreateMagicalBarrierAt(pos position) {
+func (g *state) CreateMagicalBarrierAt(pos gruid.Point) {
 	t := g.Dungeon.Cell(pos).T
 	g.Dungeon.SetCell(pos, BarrierCell)
 	delete(g.Clouds, pos)
@@ -855,7 +855,7 @@ func (g *game) CreateMagicalBarrierAt(pos position) {
 	g.PushEvent(&posEvent{ERank: g.Ev.Rank() + DurationMagicalBarrier + RandInt(DurationMagicalBarrier/2), Pos: pos, EAction: ObstructionEnd})
 }
 
-func (g *game) EvokeEnergyMagara() error {
+func (g *state) EvokeEnergyMagara() error {
 	if g.Player.MP == g.Player.MPMax() && g.Player.HP == g.Player.HPMax() {
 		return errors.New("You are already full of energy.")
 	}
@@ -866,7 +866,7 @@ func (g *game) EvokeEnergyMagara() error {
 	return nil
 }
 
-func (g *game) EvokeTransparencyMagara() error {
+func (g *state) EvokeTransparencyMagara() error {
 	if !g.PutStatus(StatusTransparent, DurationTransparency) {
 		return errors.New("You are already transparent.")
 	}
@@ -874,7 +874,7 @@ func (g *game) EvokeTransparencyMagara() error {
 	return nil
 }
 
-func (g *game) EvokeDisguiseMagara() error {
+func (g *state) EvokeDisguiseMagara() error {
 	if !g.PutStatus(StatusDisguised, DurationDisguise) {
 		return errors.New("You are already disguised.")
 	}
@@ -882,7 +882,7 @@ func (g *game) EvokeDisguiseMagara() error {
 	return nil
 }
 
-func (g *game) EvokeDelayedNoiseMagara() error {
+func (g *state) EvokeDelayedNoiseMagara() error {
 	if !g.PutFakeStatus(StatusDelay, DurationHarmonicNoiseDelay) {
 		return errors.New("You are already using delayed magic.")
 	}
@@ -893,7 +893,7 @@ func (g *game) EvokeDelayedNoiseMagara() error {
 	return nil
 }
 
-func (g *game) EvokeDispersalMagara() error {
+func (g *state) EvokeDispersalMagara() error {
 	if !g.PutStatus(StatusDispersal, DurationDispersal) {
 		return errors.New("You are already dispersing.")
 	}
@@ -901,7 +901,7 @@ func (g *game) EvokeDispersalMagara() error {
 	return nil
 }
 
-func (g *game) EvokeOricExplosionMagara() error {
+func (g *state) EvokeOricExplosionMagara() error {
 	if !g.PutFakeStatus(StatusDelay, DurationHarmonicNoiseDelay) {
 		return errors.New("You are already using delayed magic.")
 	}

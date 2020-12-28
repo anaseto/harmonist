@@ -5,7 +5,7 @@
 // two directions are allowed. This allows the algorithm to be a simple pass on
 // squares around the player, starting from radius 1 until line of sight range.
 //
-// Going from a position from to a position pos has a cost, which depends
+// Going from a gruid.Point from to a gruid.Point pos has a cost, which depends
 // essentially on the type of terrain in from. Some circumstances, such as
 // being on top of a tree, can influence the cost of terrains.
 //
@@ -19,10 +19,10 @@ type raynode struct {
 	Cost int
 }
 
-type rayMap map[position]raynode
+type rayMap map[gruid.Point]raynode
 
-func (g *game) BestParent(rm rayMap, from, pos position, rs raystyle) (position, int) {
-	var parents [2]position
+func (g *state) BestParent(rm rayMap, from, pos gruid.Point, rs raystyle) (gruid.Point, int) {
+	var parents [2]gruid.Point
 	p := parents[:0]
 	p = pos.Parents(from, p)
 	b := p[0]
@@ -32,12 +32,12 @@ func (g *game) BestParent(rm rayMap, from, pos position, rs raystyle) (position,
 	return b, rm[b].Cost + g.LOSCost(from, b, pos, rs)
 }
 
-func (g *game) DiagonalOpaque(from, to position, rs raystyle) bool {
-	// The game uses cardinal movement only, so two diagonal walls should,
+func (g *state) DiagonalOpaque(from, to gruid.Point, rs raystyle) bool {
+	// The state uses cardinal movement only, so two diagonal walls should,
 	// for example, block line of sight. This is in contrast with the main
 	// mechanics of the line of sight algorithm, which for gameplay reasons
 	// allows diagonals for light rays in normal circumstances.
-	var cache [2]position
+	var cache [2]gruid.Point
 	p := cache[:0]
 	switch to.Dir(from) {
 	case NE:
@@ -72,10 +72,10 @@ func (g *game) DiagonalOpaque(from, to position, rs raystyle) bool {
 	return count > 1
 }
 
-func (g *game) DiagonalDifficult(from, to position) bool {
+func (g *state) DiagonalDifficult(from, to gruid.Point) bool {
 	// For reasons similar as in DiagonalOpaque, two diagonal foliage cells
 	// should reduce range of line of sight in that diagonal direction.
-	var cache [2]position
+	var cache [2]gruid.Point
 	p := cache[:0]
 	switch to.Dir(from) {
 	case NE:
@@ -107,7 +107,7 @@ func (g *game) DiagonalDifficult(from, to position) bool {
 
 // LOSCost gives cost of expanding from 'pos' to 'to' light ray originated at
 // 'from', for particular circumstances rs of light ray.
-func (g *game) LOSCost(from, pos, to position, rs raystyle) int {
+func (g *state) LOSCost(from, pos, to gruid.Point, rs raystyle) int {
 	var wallcost int
 	switch rs {
 	case TreePlayerRay:
@@ -180,7 +180,7 @@ const (
 
 const LightRange = 6
 
-func (g *game) BuildRayMap(from position, rs raystyle, rm rayMap) {
+func (g *state) BuildRayMap(from gruid.Point, rs raystyle, rm rayMap) {
 	var wallcost int
 	switch rs {
 	case TreePlayerRay:
@@ -196,11 +196,11 @@ func (g *game) BuildRayMap(from position, rs raystyle, rm rayMap) {
 		delete(rm, k)
 	}
 	rm[from] = raynode{Cost: 0}
-	var childs [2]position
+	var childs [2]gruid.Point
 	for d := 1; d <= wallcost; d++ {
 		for x := -d + from.X; x <= d+from.X; x++ {
-			childs[0] = position{x, from.Y + d}
-			childs[1] = position{x, from.Y - d}
+			childs[0] = gruid.Point{x, from.Y + d}
+			childs[1] = gruid.Point{x, from.Y - d}
 			for _, pos := range childs {
 				if !pos.valid() {
 					continue
@@ -210,8 +210,8 @@ func (g *game) BuildRayMap(from position, rs raystyle, rm rayMap) {
 			}
 		}
 		for y := -d + 1 + from.Y; y <= d-1+from.Y; y++ {
-			childs[0] = position{from.X + d, y}
-			childs[1] = position{from.X - d, y}
+			childs[0] = gruid.Point{from.X + d, y}
+			childs[1] = gruid.Point{from.X - d, y}
 			for _, pos := range childs {
 				if !pos.valid() {
 					continue
@@ -226,11 +226,11 @@ func (g *game) BuildRayMap(from position, rs raystyle, rm rayMap) {
 const DefaultLOSRange = 12
 const DefaultMonsterLOSRange = 12
 
-func (g *game) LosRange() int {
+func (g *state) LosRange() int {
 	return DefaultLOSRange
 }
 
-func (g *game) StopAuto() {
+func (g *state) StopAuto() {
 	if g.Autoexploring && !g.AutoHalt {
 		g.Print("You stop exploring.")
 	} else if g.AutoDir != NoDir {
@@ -245,7 +245,7 @@ func (g *game) StopAuto() {
 
 const TreeRange = 50
 
-func (g *game) ComputeLOS() {
+func (g *state) ComputeLOS() {
 	g.ComputeLights()
 	for k := range g.Player.LOS {
 		delete(g.Player.LOS, k)
@@ -256,14 +256,14 @@ func (g *game) ComputeLOS() {
 		rs = TreePlayerRay
 	}
 	g.BuildRayMap(g.Player.Pos, rs, g.Player.Rays)
-	nb := make([]position, 8)
+	nb := make([]gruid.Point, 8)
 	for pos, n := range g.Player.Rays {
 		if n.Cost <= DefaultLOSRange {
 			g.Player.LOS[pos] = true
 		} else if c.T == TreeCell && g.Illuminated[pos.idx()] && n.Cost <= TreeRange {
 			if g.Dungeon.Cell(pos).T == WallCell {
 				// this is just an approximation, but ok in practice
-				nb = pos.Neighbors(nb, func(npos position) bool {
+				nb = pos.Neighbors(nb, func(npos gruid.Point) bool {
 					if !npos.valid() || !g.Illuminated[npos.idx()] || g.Dungeon.Cell(npos).IsWall() {
 						return false
 					}
@@ -300,7 +300,7 @@ func (g *game) ComputeLOS() {
 	}
 }
 
-func (m *monster) ComputeLOS(g *game) {
+func (m *monster) ComputeLOS(g *state) {
 	if m.Kind.Peaceful() {
 		return
 	}
@@ -323,11 +323,11 @@ func (m *monster) ComputeLOS(g *game) {
 	}
 }
 
-func (g *game) SeeNotable(c cell, pos position) {
+func (g *state) SeeNotable(c cell, pos gruid.Point) {
 	switch c.T {
 	case MagaraCell:
 		mag := g.Objects.Magaras[pos]
-		dp := &mappingPath{game: g}
+		dp := &mappingPath{state: g}
 		_, l, ok := AstarPath(dp, g.Player.Pos, pos)
 		if ok {
 			g.StoryPrintf("Spotted %s (distance: %d)", mag, l)
@@ -336,7 +336,7 @@ func (g *game) SeeNotable(c cell, pos position) {
 		}
 	case ItemCell:
 		it := g.Objects.Items[pos]
-		dp := &mappingPath{game: g}
+		dp := &mappingPath{state: g}
 		_, l, ok := AstarPath(dp, g.Player.Pos, pos)
 		if ok {
 			g.StoryPrintf("Spotted %s (distance: %d)", it.ShortDesc(g), l)
@@ -345,7 +345,7 @@ func (g *game) SeeNotable(c cell, pos position) {
 		}
 	case StairCell:
 		st := g.Objects.Stairs[pos]
-		dp := &mappingPath{game: g}
+		dp := &mappingPath{state: g}
 		_, l, ok := AstarPath(dp, g.Player.Pos, pos)
 		if ok {
 			g.StoryPrintf("Discovered %s (distance: %d)", st, l)
@@ -353,7 +353,7 @@ func (g *game) SeeNotable(c cell, pos position) {
 			g.StoryPrintf("Discovered %s", st)
 		}
 	case FakeStairCell:
-		dp := &mappingPath{game: g}
+		dp := &mappingPath{state: g}
 		_, l, ok := AstarPath(dp, g.Player.Pos, pos)
 		if ok {
 			g.StoryPrintf("Discovered %s (distance: %d)", NormalStairShortDesc, l)
@@ -363,7 +363,7 @@ func (g *game) SeeNotable(c cell, pos position) {
 	case StoryCell:
 		st := g.Objects.Story[pos]
 		if st == StoryArtifactSealed {
-			dp := &mappingPath{game: g}
+			dp := &mappingPath{state: g}
 			_, l, ok := AstarPath(dp, g.Player.Pos, pos)
 			if ok {
 				g.StoryPrintf("Discovered Portal Moon Gem Artifact (distance: %d)", l)
@@ -374,7 +374,7 @@ func (g *game) SeeNotable(c cell, pos position) {
 	}
 }
 
-func (g *game) SeePosition(pos position) {
+func (g *state) SeePosition(pos gruid.Point) {
 	c := g.Dungeon.Cell(pos)
 	t, okT := g.TerrainKnowledge[pos]
 	if !c.Explored {
@@ -421,12 +421,12 @@ func (g *game) SeePosition(pos position) {
 	}
 }
 
-func (g *game) ComputeExclusion(pos position, toggle bool) {
+func (g *state) ComputeExclusion(pos gruid.Point, toggle bool) {
 	exclusionRange := g.LosRange()
 	g.ExclusionsMap[pos] = toggle
 	for d := 1; d <= exclusionRange; d++ {
 		for x := -d + pos.X; x <= d+pos.X; x++ {
-			for _, pos := range []position{{x, pos.Y + d}, {x, pos.Y - d}} {
+			for _, pos := range []gruid.Point{{x, pos.Y + d}, {x, pos.Y - d}} {
 				if !pos.valid() {
 					continue
 				}
@@ -434,7 +434,7 @@ func (g *game) ComputeExclusion(pos position, toggle bool) {
 			}
 		}
 		for y := -d + 1 + pos.Y; y <= d-1+pos.Y; y++ {
-			for _, pos := range []position{{pos.X + d, y}, {pos.X - d, y}} {
+			for _, pos := range []gruid.Point{{pos.X + d, y}, {pos.X - d, y}} {
 				if !pos.valid() {
 					continue
 				}
@@ -444,11 +444,11 @@ func (g *game) ComputeExclusion(pos position, toggle bool) {
 	}
 }
 
-func (g *game) Ray(pos position) []position {
+func (g *state) Ray(pos gruid.Point) []gruid.Point {
 	if !g.Player.LOS[pos] {
 		return nil
 	}
-	ray := []position{}
+	ray := []gruid.Point{}
 	for pos != g.Player.Pos {
 		ray = append(ray, pos)
 		pos, _ = g.BestParent(g.Player.Rays, g.Player.Pos, pos, TargetingRay)
@@ -456,18 +456,18 @@ func (g *game) Ray(pos position) []position {
 	return ray
 }
 
-func (g *game) ComputeRayHighlight(pos position) {
-	g.Highlight = map[position]bool{}
+func (g *state) ComputeRayHighlight(pos gruid.Point) {
+	g.Highlight = map[gruid.Point]bool{}
 	ray := g.Ray(pos)
 	for _, p := range ray {
 		g.Highlight[p] = true
 	}
 }
 
-func (g *game) ComputeNoise() {
-	dij := &noisePath{game: g}
+func (g *state) ComputeNoise() {
+	dij := &noisePath{state: g}
 	rg := DefaultLOSRange
-	nm := Dijkstra(dij, []position{g.Player.Pos}, rg)
+	nm := Dijkstra(dij, []gruid.Point{g.Player.Pos}, rg)
 	count := 0
 	for k := range g.Noise {
 		delete(g.Noise, k)
@@ -520,16 +520,16 @@ func (g *game) ComputeNoise() {
 	}
 }
 
-func (p *player) Sees(pos position) bool {
+func (p *player) Sees(pos gruid.Point) bool {
 	//return pos == p.Pos || p.LOS[pos] && p.Dir.InViewCone(p.Pos, pos)
 	return p.LOS[pos]
 }
 
-func (m *monster) SeesPlayer(g *game) bool {
+func (m *monster) SeesPlayer(g *state) bool {
 	return m.Sees(g, g.Player.Pos) && g.Player.Sees(m.Pos)
 }
 
-func (m *monster) SeesLight(g *game, pos position) bool {
+func (m *monster) SeesLight(g *state, pos gruid.Point) bool {
 	if !(m.LOS[pos] && m.Dir.InViewCone(m.Pos, pos)) {
 		return false
 	}
@@ -539,7 +539,7 @@ func (m *monster) SeesLight(g *game, pos position) bool {
 	return true
 }
 
-func (m *monster) Sees(g *game, pos position) bool {
+func (m *monster) Sees(g *state, pos gruid.Point) bool {
 	var darkRange = 4
 	if m.Kind == MonsHazeCat {
 		darkRange = DefaultMonsterLOSRange
@@ -570,7 +570,7 @@ func (m *monster) Sees(g *game, pos position) bool {
 	return true
 }
 
-func (g *game) ComputeMonsterLOS() {
+func (g *state) ComputeMonsterLOS() {
 	for k := range g.MonsterLOS {
 		delete(g.MonsterLOS, k)
 	}
@@ -601,7 +601,7 @@ func (g *game) ComputeMonsterLOS() {
 	}
 }
 
-func (g *game) ComputeLights() {
+func (g *state) ComputeLights() {
 	// XXX: could be optimized further to avoid unnecessary recalculations
 	for i := 0; i < DungeonNCells; i++ {
 		g.Illuminated[i] = false
@@ -636,8 +636,8 @@ func (g *game) ComputeLights() {
 	}
 }
 
-func (g *game) ComputeMonsterCone(m *monster) {
-	g.MonsterTargLOS = make(map[position]bool)
+func (g *state) ComputeMonsterCone(m *monster) {
+	g.MonsterTargLOS = make(map[gruid.Point]bool)
 	for pos := range g.Player.LOS {
 		if !g.Player.Sees(pos) {
 			continue
@@ -648,7 +648,7 @@ func (g *game) ComputeMonsterCone(m *monster) {
 	}
 }
 
-func (m *monster) UpdateKnowledge(g *game, pos position) {
+func (m *monster) UpdateKnowledge(g *state, pos gruid.Point) {
 	if mons, ok := g.LastMonsterKnownAt[pos]; ok {
 		mons.LastKnownPos = InvalidPos
 	}

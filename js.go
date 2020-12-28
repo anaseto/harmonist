@@ -14,7 +14,7 @@ import (
 )
 
 func main() {
-	ui := &gameui{}
+	ui := &model{}
 	err := ui.Init()
 	if err != nil {
 		log.Fatalf("harmonist: %v\n", err)
@@ -35,8 +35,8 @@ func main() {
 	}
 }
 
-func newGame(ui *gameui) {
-	g := &game{}
+func newGame(ui *model) {
+	g := &state{}
 	ui.g = g
 	load, err := g.LoadConfig()
 	if load && err != nil {
@@ -63,7 +63,7 @@ func newGame(ui *gameui) {
 		g.InitLevel()
 	} else if err != nil {
 		g.InitLevel()
-		g.Printf("Error loading saved game… starting new game. (%v)", err)
+		g.Printf("Error loading saved state… starting new state. (%v)", err)
 	} else {
 		ui.DrawBufferInit()
 	}
@@ -76,7 +76,7 @@ func newGame(ui *gameui) {
 	ui.PressAnyKey()
 }
 
-func (ui *gameui) HandleStartMenu() (again bool) {
+func (ui *model) HandleStartMenu() (again bool) {
 	l := ui.DrawWelcomeCommon()
 	g := ui.g
 	for {
@@ -109,20 +109,20 @@ func (ui *gameui) HandleStartMenu() (again bool) {
 
 var SaveError string
 
-type gameui struct {
-	g         *game
-	cursor    position
+type model struct {
+	g         *state
+	cursor    gruid.Point
 	display   js.Value
 	cache     map[UICell]js.Value
 	ctx       js.Value
 	width     int
 	height    int
-	mousepos  position
+	mousepos  gruid.Point
 	menuHover menu
 	itemHover int
 }
 
-func (ui *gameui) InitElements() error {
+func (ui *model) InitElements() error {
 	canvas := js.Global().Get("document").Call("getElementById", "gamecanvas")
 	canvas.Call("addEventListener", "contextmenu", js.FuncOf(func(this js.Value, args []js.Value) interface{} {
 		e := args[0]
@@ -140,7 +140,7 @@ func (ui *gameui) InitElements() error {
 	return nil
 }
 
-func (ui *gameui) Draw(cell UICell, x, y int) {
+func (ui *model) Draw(cell UICell, x, y int) {
 	var canvas js.Value
 	if cv, ok := ui.cache[cell]; ok {
 		canvas = cv
@@ -161,7 +161,7 @@ func (ui *gameui) Draw(cell UICell, x, y int) {
 	ui.ctx.Call("drawImage", canvas, x*ui.width, ui.height*y)
 }
 
-func (ui *gameui) GetMousePos(evt js.Value) (int, int) {
+func (ui *model) GetMousePos(evt js.Value) (int, int) {
 	canvas := js.Global().Get("document").Call("getElementById", "gamecanvas")
 	rect := canvas.Call("getBoundingClientRect")
 	scaleX := canvas.Get("width").Float() / rect.Get("width").Float()
@@ -173,11 +173,11 @@ func (ui *gameui) GetMousePos(evt js.Value) (int, int) {
 
 // io compatibility functions
 
-func (g *game) DataDir() (string, error) {
+func (g *state) DataDir() (string, error) {
 	return "", nil
 }
 
-func (g *game) Save() error {
+func (g *state) Save() error {
 	if runtime.GOARCH != "wasm" {
 		return errors.New("Saving games is not available in the web html version.") // TODO remove when it works
 	}
@@ -197,7 +197,7 @@ func (g *game) Save() error {
 	return nil
 }
 
-func (g *game) SaveConfig() error {
+func (g *state) SaveConfig() error {
 	if runtime.GOARCH != "wasm" {
 		return nil
 	}
@@ -217,7 +217,7 @@ func (g *game) SaveConfig() error {
 	return nil
 }
 
-func (g *game) SaveReplay() error {
+func (g *state) SaveReplay() error {
 	if runtime.GOARCH != "wasm" {
 		return nil
 	}
@@ -236,19 +236,19 @@ func (g *game) SaveReplay() error {
 	return nil
 }
 
-func (g *game) RemoveSaveFile() error {
+func (g *state) RemoveSaveFile() error {
 	storage := js.Global().Get("localStorage")
 	storage.Call("removeItem", "harmonistsave")
 	return nil
 }
 
-func (g *game) RemoveDataFile(file string) error {
+func (g *state) RemoveDataFile(file string) error {
 	storage := js.Global().Get("localStorage")
 	storage.Call("removeItem", file)
 	return nil
 }
 
-func (g *game) Load() (bool, error) {
+func (g *state) Load() (bool, error) {
 	storage := js.Global().Get("localStorage")
 	if storage.Type() != js.TypeObject {
 		return true, errors.New("localStorage not found")
@@ -272,7 +272,7 @@ func (g *game) Load() (bool, error) {
 	return true, nil
 }
 
-func (g *game) LoadConfig() (bool, error) {
+func (g *state) LoadConfig() (bool, error) {
 	storage := js.Global().Get("localStorage")
 	if storage.Type() != js.TypeObject {
 		return true, errors.New("localStorage not found")
@@ -296,7 +296,7 @@ func (g *game) LoadConfig() (bool, error) {
 	return true, nil
 }
 
-func (g *game) LoadReplay() error {
+func (g *state) LoadReplay() error {
 	storage := js.Global().Get("localStorage")
 	if storage.Type() != js.TypeObject {
 		return errors.New("localStorage not found")
@@ -317,7 +317,7 @@ func (g *game) LoadReplay() error {
 	return nil
 }
 
-func (g *game) WriteDump() error {
+func (g *state) WriteDump() error {
 	pre := js.Global().Get("document").Call("getElementById", "dump")
 	pre.Set("innerHTML", g.Dump())
 	err := g.SaveReplay()
@@ -329,7 +329,7 @@ func (g *game) WriteDump() error {
 
 // End of io compatibility functions
 
-func (ui *gameui) Init() error {
+func (ui *model) Init() error {
 	canvas := js.Global().Get("document").Call("getElementById", "gamecanvas")
 	gamediv := js.Global().Get("document").Call("getElementById", "gamediv")
 	js.Global().Get("document").Call(
@@ -399,22 +399,22 @@ func init() {
 	ReqFrame = make(chan bool)
 }
 
-func (ui *gameui) Close() {
+func (ui *model) Close() {
 	// nothing to do
 }
 
-func (ui *gameui) Flush() {
+func (ui *model) Flush() {
 	ReqFrame <- true
 	<-Flushdone
 }
 
-func (ui *gameui) ReqAnimFrame() {
+func (ui *model) ReqAnimFrame() {
 	<-ReqFrame
 	js.Global().Get("window").Call("requestAnimationFrame",
 		js.FuncOf(func(this js.Value, args []js.Value) interface{} { ui.FlushCallback(args[0]); return nil }))
 }
 
-func (ui *gameui) ApplyToggleLayoutWithClear(clear bool) {
+func (ui *model) ApplyToggleLayoutWithClear(clear bool) {
 	GameConfig.Small = !GameConfig.Small
 	if GameConfig.Small {
 		if clear {
@@ -441,14 +441,14 @@ func (ui *gameui) ApplyToggleLayoutWithClear(clear bool) {
 	}
 }
 
-func (ui *gameui) ApplyToggleLayout() {
+func (ui *model) ApplyToggleLayout() {
 	ui.ApplyToggleLayoutWithClear(true)
 }
 
 var Flushdone chan bool
 var ReqFrame chan bool
 
-func (ui *gameui) FlushCallback(t js.Value) {
+func (ui *model) FlushCallback(t js.Value) {
 	ui.DrawLogFrame()
 	for _, cdraw := range ui.g.DrawLog[len(ui.g.DrawLog)-1].Draws {
 		cell := cdraw.Cell
@@ -457,7 +457,7 @@ func (ui *gameui) FlushCallback(t js.Value) {
 	Flushdone <- true
 }
 
-func (ui *gameui) PollEvent() (in uiInput) {
+func (ui *model) PollEvent() (in uiInput) {
 	select {
 	case in = <-InCh:
 	case in.interrupt = <-Interrupt:

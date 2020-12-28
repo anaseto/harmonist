@@ -4,7 +4,7 @@ import "container/heap"
 
 var Version string = "v0.3"
 
-type game struct {
+type state struct {
 	Dungeon            *dungeon
 	Player             *player
 	Monsters           []*monster
@@ -17,30 +17,30 @@ type game struct {
 	ExploredLevels     int
 	DepthPlayerTurn    int
 	Turn               int
-	Highlight          map[position]bool // highlighted positions (e.g. targeted ray)
+	Highlight          map[gruid.Point]bool // highlighted positions (e.g. targeted ray)
 	Objects            objects
-	Clouds             map[position]cloud
-	MagicalBarriers    map[position]terrain
+	Clouds             map[gruid.Point]cloud
+	MagicalBarriers    map[gruid.Point]terrain
 	GeneratedLore      map[int]bool
 	GeneratedMagaras   []magaraKind
 	GeneratedCloaks    []item
 	GeneratedAmulets   []item
 	GenPlan            [MaxDepth + 1]genFlavour
-	TerrainKnowledge   map[position]terrain
-	ExclusionsMap      map[position]bool
-	Noise              map[position]bool
-	NoiseIllusion      map[position]bool
-	LastMonsterKnownAt map[position]*monster
-	MonsterLOS         map[position]bool
-	MonsterTargLOS     map[position]bool
+	TerrainKnowledge   map[gruid.Point]terrain
+	ExclusionsMap      map[gruid.Point]bool
+	Noise              map[gruid.Point]bool
+	NoiseIllusion      map[gruid.Point]bool
+	LastMonsterKnownAt map[gruid.Point]*monster
+	MonsterLOS         map[gruid.Point]bool
+	MonsterTargLOS     map[gruid.Point]bool
 	Illuminated        []bool
 	RaysCache          rayMap
 	Resting            bool
 	RestingTurns       int
 	Autoexploring      bool
 	DijkstraMapRebuild bool
-	Targeting          position
-	AutoTarget         position
+	Targeting          gruid.Point
+	AutoTarget         gruid.Point
 	AutoDir            direction
 	AutoHalt           bool
 	AutoNext           bool
@@ -60,7 +60,7 @@ type game struct {
 	Places             places
 	Params             startParams
 	//Opts                startOpts
-	ui                *gameui
+	ui                *model
 	LiberatedShaedra  bool
 	LiberatedArtifact bool
 	PlayerAgain       bool
@@ -96,10 +96,10 @@ type startParams struct {
 }
 
 type places struct {
-	Shaedra  position
-	Monolith position
-	Marevor  position
-	Artifact position
+	Shaedra  gruid.Point
+	Monolith gruid.Point
+	Marevor  gruid.Point
+	Artifact gruid.Point
 }
 
 type wizardMode int
@@ -110,7 +110,7 @@ const (
 	WizardSeeAll
 )
 
-func (g *game) FreePassableCell() position {
+func (g *state) FreePassableCell() gruid.Point {
 	d := g.Dungeon
 	count := 0
 	for {
@@ -120,7 +120,7 @@ func (g *game) FreePassableCell() position {
 		}
 		x := RandInt(DungeonWidth)
 		y := RandInt(DungeonHeight)
-		pos := position{x, y}
+		pos := gruid.Point{x, y}
 		c := d.Cell(pos)
 		if !c.IsPassable() {
 			continue
@@ -136,9 +136,9 @@ func (g *game) FreePassableCell() position {
 	}
 }
 
-func (g *game) FreeCellForPlayer() position {
+func (g *state) FreeCellForPlayer() gruid.Point {
 	// TODO: not used now, but could be for cases when you fall into the abyss
-	center := position{DungeonWidth / 2, DungeonHeight / 2}
+	center := gruid.Point{DungeonWidth / 2, DungeonHeight / 2}
 	bestpos := g.FreePassableCell()
 	for i := 0; i < 5; i++ {
 		pos := g.FreePassableCell()
@@ -149,7 +149,7 @@ func (g *game) FreeCellForPlayer() position {
 	return bestpos
 }
 
-func (g *game) FreeCellForMonster() position {
+func (g *state) FreeCellForMonster() gruid.Point {
 	d := g.Dungeon
 	count := 0
 	for {
@@ -159,7 +159,7 @@ func (g *game) FreeCellForMonster() position {
 		}
 		x := RandInt(DungeonWidth)
 		y := RandInt(DungeonHeight)
-		pos := position{x, y}
+		pos := gruid.Point{x, y}
 		c := d.Cell(pos)
 		if !c.IsPassable() {
 			continue
@@ -175,7 +175,7 @@ func (g *game) FreeCellForMonster() position {
 	}
 }
 
-func (g *game) FreeCellForBandMonster(pos position) position {
+func (g *state) FreeCellForBandMonster(pos gruid.Point) gruid.Point {
 	count := 0
 	for {
 		count++
@@ -205,7 +205,7 @@ const (
 	DungeonNCells = DungeonWidth * DungeonHeight
 )
 
-func (g *game) GenDungeon() {
+func (g *state) GenDungeon() {
 	ml := AutomataCave
 	switch g.Depth {
 	case 2, 6, 7:
@@ -237,14 +237,14 @@ func (g *game) GenDungeon() {
 	g.GenRoomTunnels(ml)
 }
 
-func (g *game) InitPlayer() {
+func (g *state) InitPlayer() {
 	g.Player = &player{
 		HP:      DefaultHealth,
 		MP:      DefaultMPmax,
 		Bananas: 1,
 	}
 	g.Player.Rays = rayMap{}
-	g.Player.LOS = map[position]bool{}
+	g.Player.LOS = map[gruid.Point]bool{}
 	g.Player.Statuses = map[status]int{}
 	g.Player.Expire = map[status]int{}
 	g.Player.Magaras = []magara{
@@ -283,7 +283,7 @@ func PutRandomLevels(m map[int]bool, n int) {
 	}
 }
 
-func (g *game) InitFirstLevel() {
+func (g *state) InitFirstLevel() {
 	g.Version = Version
 	g.Depth++ // start at 1
 	g.InitPlayer()
@@ -438,32 +438,32 @@ func (g *game) InitFirstLevel() {
 	g.Params.CrazyImp = 2 + RandInt(MaxDepth-2)
 }
 
-func (g *game) InitLevelStructures() {
+func (g *state) InitLevelStructures() {
 	g.MonstersPosCache = make([]int, DungeonNCells)
-	g.Noise = map[position]bool{}
-	g.TerrainKnowledge = map[position]terrain{}
-	g.ExclusionsMap = map[position]bool{}
-	g.MagicalBarriers = map[position]terrain{}
-	g.LastMonsterKnownAt = map[position]*monster{}
-	g.Objects.Magaras = map[position]magara{}
-	g.Objects.Lore = map[position]int{}
-	g.Objects.Items = map[position]item{}
-	g.Objects.Scrolls = map[position]scroll{}
-	g.Objects.Stairs = map[position]stair{}
-	g.Objects.Bananas = make(map[position]bool, 2)
-	g.Objects.Barrels = map[position]bool{}
-	g.Objects.Lights = map[position]bool{}
-	g.Objects.FakeStairs = map[position]bool{}
-	g.Objects.Potions = map[position]potion{}
-	g.NoiseIllusion = map[position]bool{}
-	g.Clouds = map[position]cloud{}
-	g.MonsterLOS = map[position]bool{}
-	g.Stats.AtNotablePos = map[position]bool{}
+	g.Noise = map[gruid.Point]bool{}
+	g.TerrainKnowledge = map[gruid.Point]terrain{}
+	g.ExclusionsMap = map[gruid.Point]bool{}
+	g.MagicalBarriers = map[gruid.Point]terrain{}
+	g.LastMonsterKnownAt = map[gruid.Point]*monster{}
+	g.Objects.Magaras = map[gruid.Point]magara{}
+	g.Objects.Lore = map[gruid.Point]int{}
+	g.Objects.Items = map[gruid.Point]item{}
+	g.Objects.Scrolls = map[gruid.Point]scroll{}
+	g.Objects.Stairs = map[gruid.Point]stair{}
+	g.Objects.Bananas = make(map[gruid.Point]bool, 2)
+	g.Objects.Barrels = map[gruid.Point]bool{}
+	g.Objects.Lights = map[gruid.Point]bool{}
+	g.Objects.FakeStairs = map[gruid.Point]bool{}
+	g.Objects.Potions = map[gruid.Point]potion{}
+	g.NoiseIllusion = map[gruid.Point]bool{}
+	g.Clouds = map[gruid.Point]cloud{}
+	g.MonsterLOS = map[gruid.Point]bool{}
+	g.Stats.AtNotablePos = map[gruid.Point]bool{}
 }
 
 var Testing = false
 
-func (g *game) InitLevel() {
+func (g *state) InitLevel() {
 	// Starting data
 	if g.Depth == 0 {
 		g.InitFirstLevel()
@@ -512,7 +512,7 @@ func (g *game) InitLevel() {
 		g.PushEvent(&posEvent{
 			ERank:   g.Turn + 10 + RandInt(50),
 			EAction: Earthquake,
-			Pos:     position{DungeonWidth/2 - 15 + RandInt(30), DungeonHeight/2 - 5 + RandInt(10)},
+			Pos:     gruid.Point{DungeonWidth/2 - 15 + RandInt(30), DungeonHeight/2 - 5 + RandInt(10)},
 		})
 	}
 
@@ -529,7 +529,7 @@ func (g *game) InitLevel() {
 	g.MakeMonstersAware()
 }
 
-func (g *game) CleanEvents() {
+func (g *state) CleanEvents() {
 	evq := &eventQueue{}
 	for g.Events.Len() > 0 {
 		iev := g.PopIEvent()
@@ -543,9 +543,9 @@ func (g *game) CleanEvents() {
 	g.Events = evq
 }
 
-func (g *game) StairsSlice() []position {
+func (g *state) StairsSlice() []gruid.Point {
 	// TODO: use cache?
-	stairs := []position{}
+	stairs := []gruid.Point{}
 	for i, c := range g.Dungeon.Cells {
 		if (c.T != StairCell && c.T != FakeStairCell) || !c.Explored {
 			continue
@@ -564,7 +564,7 @@ const (
 	DescendFall
 )
 
-func (g *game) Descend(style descendstyle) bool {
+func (g *state) Descend(style descendstyle) bool {
 	g.LevelStats()
 	if g.Stats.DUSpotted[g.Depth] < 3 {
 		AchStealthNovice.Get(g)
@@ -640,13 +640,13 @@ func (g *game) Descend(style descendstyle) bool {
 	return false
 }
 
-func (g *game) EnterWizardMode() {
+func (g *state) EnterWizardMode() {
 	g.Wizard = true
 	g.PrintStyled("You are now in wizard mode and cannot obtain winner status.", logSpecial)
 	g.StoryPrint("Entered wizard mode.")
 }
 
-func (g *game) ApplyRest() {
+func (g *state) ApplyRest() {
 	g.Player.HP = g.Player.HPMax()
 	g.Player.HPbonus = 0
 	g.Player.MP = g.Player.MPMax()
@@ -659,7 +659,7 @@ func (g *game) ApplyRest() {
 	}
 }
 
-func (g *game) AutoPlayer(ev event) bool {
+func (g *state) AutoPlayer(ev event) bool {
 	if g.Resting {
 		const enoughRestTurns = 25
 		if g.RestingTurns < enoughRestTurns {
@@ -680,7 +680,7 @@ func (g *game) AutoPlayer(ev event) bool {
 		case g.AutoHalt:
 			// stop exploring
 		default:
-			var n *position
+			var n *gruid.Point
 			var finished bool
 			if g.DijkstraMapRebuild {
 				if g.AllExplored() {
@@ -725,7 +725,7 @@ func (g *game) AutoPlayer(ev event) bool {
 	return false
 }
 
-func (g *game) EventLoop() {
+func (g *state) EventLoop() {
 loop:
 	for {
 		if g.Player.HP <= 0 {
