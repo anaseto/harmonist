@@ -4,43 +4,6 @@ import (
 	"fmt"
 )
 
-type gruid.Point struct {
-	X int
-	Y int
-}
-
-func (pos gruid.Point) E() gruid.Point {
-	return gruid.Point{pos.X + 1, pos.Y}
-}
-
-func (pos gruid.Point) SE() gruid.Point {
-	return gruid.Point{pos.X + 1, pos.Y + 1}
-}
-
-func (pos gruid.Point) NE() gruid.Point {
-	return gruid.Point{pos.X + 1, pos.Y - 1}
-}
-
-func (pos gruid.Point) N() gruid.Point {
-	return gruid.Point{pos.X, pos.Y - 1}
-}
-
-func (pos gruid.Point) S() gruid.Point {
-	return gruid.Point{pos.X, pos.Y + 1}
-}
-
-func (pos gruid.Point) W() gruid.Point {
-	return gruid.Point{pos.X - 1, pos.Y}
-}
-
-func (pos gruid.Point) SW() gruid.Point {
-	return gruid.Point{pos.X - 1, pos.Y + 1}
-}
-
-func (pos gruid.Point) NW() gruid.Point {
-	return gruid.Point{pos.X - 1, pos.Y - 1}
-}
-
 func (pos gruid.Point) Distance(to gruid.Point) int {
 	deltaX := Abs(to.X - pos.X)
 	deltaY := Abs(to.Y - pos.Y)

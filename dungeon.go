@@ -663,22 +663,22 @@ func (g *state) DoorCandidate(pos gruid.Point) bool {
 	if !pos.valid() || d.Cell(pos).IsPassable() {
 		return false
 	}
-	return pos.W().valid() && pos.E().valid() &&
-		d.Cell(pos.W()).IsGround() && d.Cell(pos.E()).IsGround() &&
-		(!pos.N().valid() || d.Cell(pos.N()).T == WallCell) &&
-		(!pos.S().valid() || d.Cell(pos.S()).T == WallCell) &&
-		((pos.NW().valid() && d.Cell(pos.NW()).IsPassable()) ||
-			(pos.SW().valid() && d.Cell(pos.SW()).IsPassable()) ||
-			(pos.NE().valid() && d.Cell(pos.NE()).IsPassable()) ||
-			(pos.SE().valid() && d.Cell(pos.SE()).IsPassable())) ||
-		pos.N().valid() && pos.S().valid() &&
-			d.Cell(pos.N()).IsGround() && d.Cell(pos.S()).IsGround() &&
-			(!pos.E().valid() || d.Cell(pos.E()).T == WallCell) &&
-			(!pos.W().valid() || d.Cell(pos.W()).T == WallCell) &&
-			((pos.NW().valid() && d.Cell(pos.NW()).IsPassable()) ||
-				(pos.SW().valid() && d.Cell(pos.SW()).IsPassable()) ||
-				(pos.NE().valid() && d.Cell(pos.NE()).IsPassable()) ||
-				(pos.SE().valid() && d.Cell(pos.SE()).IsPassable()))
+	return pos.Add(gruid.Point{-1, 0}).valid() && pos.Add(gruid.Point{1, 0}).valid() &&
+		d.Cell(pos.Add(gruid.Point{-1, 0})).IsGround() && d.Cell(pos.Add(gruid.Point{1, 0})).IsGround() &&
+		(!pos.Add(gruid.Point{0, -1}).valid() || d.Cell(pos.Add(gruid.Point{0, -1})).T == WallCell) &&
+		(!pos.Add(gruid.Point{0, 1}).valid() || d.Cell(pos.Add(gruid.Point{0, 1})).T == WallCell) &&
+		((pos.Add(gruid.Point{-1, -1}).valid() && d.Cell(pos.Add(gruid.Point{-1, -1})).IsPassable()) ||
+			(pos.Add(gruid.Point{-1, 1}).valid() && d.Cell(pos.Add(gruid.Point{-1, 1})).IsPassable()) ||
+			(pos.Add(gruid.Point{1, -1}).valid() && d.Cell(pos.Add(gruid.Point{1, -1})).IsPassable()) ||
+			(pos.Add(gruid.Point{1, 1}).valid() && d.Cell(pos.Add(gruid.Point{1, 1})).IsPassable())) ||
+		pos.Add(gruid.Point{0, -1}).valid() && pos.Add(gruid.Point{0, 1}).valid() &&
+			d.Cell(pos.Add(gruid.Point{0, -1})).IsGround() && d.Cell(pos.Add(gruid.Point{0, 1})).IsGround() &&
+			(!pos.Add(gruid.Point{1, 0}).valid() || d.Cell(pos.Add(gruid.Point{1, 0})).T == WallCell) &&
+			(!pos.Add(gruid.Point{-1, 0}).valid() || d.Cell(pos.Add(gruid.Point{-1, 0})).T == WallCell) &&
+			((pos.Add(gruid.Point{-1, -1}).valid() && d.Cell(pos.Add(gruid.Point{-1, -1})).IsPassable()) ||
+				(pos.Add(gruid.Point{-1, 1}).valid() && d.Cell(pos.Add(gruid.Point{-1, 1})).IsPassable()) ||
+				(pos.Add(gruid.Point{1, -1}).valid() && d.Cell(pos.Add(gruid.Point{1, -1})).IsPassable()) ||
+				(pos.Add(gruid.Point{1, 1}).valid() && d.Cell(pos.Add(gruid.Point{1, 1})).IsPassable()))
 }
 
 func (dg *dgen) PutHoledWalls(g *state, n int) {
@@ -720,14 +720,14 @@ func (g *state) HoledWallCandidate(pos gruid.Point) bool {
 	if !pos.valid() || !d.Cell(pos).IsWall() {
 		return false
 	}
-	return pos.W().valid() && pos.E().valid() &&
-		d.Cell(pos.W()).IsWall() && d.Cell(pos.E()).IsWall() &&
-		pos.N().valid() && d.Cell(pos.N()).IsPassable() &&
-		pos.S().valid() && d.Cell(pos.S()).IsPassable() ||
-		(pos.W().valid() && pos.E().valid() &&
-			d.Cell(pos.W()).IsPassable() && d.Cell(pos.E()).IsPassable() &&
-			pos.N().valid() && d.Cell(pos.N()).IsWall() &&
-			pos.S().valid() && d.Cell(pos.S()).IsWall())
+	return pos.Add(gruid.Point{-1, 0}).valid() && pos.Add(gruid.Point{1, 0}).valid() &&
+		d.Cell(pos.Add(gruid.Point{-1, 0})).IsWall() && d.Cell(pos.Add(gruid.Point{1, 0})).IsWall() &&
+		pos.Add(gruid.Point{0, -1}).valid() && d.Cell(pos.Add(gruid.Point{0, -1})).IsPassable() &&
+		pos.Add(gruid.Point{0, 1}).valid() && d.Cell(pos.Add(gruid.Point{0, 1})).IsPassable() ||
+		(pos.Add(gruid.Point{-1, 0}).valid() && pos.Add(gruid.Point{1, 0}).valid() &&
+			d.Cell(pos.Add(gruid.Point{-1, 0})).IsPassable() && d.Cell(pos.Add(gruid.Point{1, 0})).IsPassable() &&
+			pos.Add(gruid.Point{0, -1}).valid() && d.Cell(pos.Add(gruid.Point{0, -1})).IsWall() &&
+			pos.Add(gruid.Point{0, 1}).valid() && d.Cell(pos.Add(gruid.Point{0, 1})).IsWall())
 }
 
 type placement int
@@ -1911,14 +1911,14 @@ func (dg *dgen) GenTreeCaveMap() {
 	d := dg.d
 	center := gruid.Point{40, 10}
 	d.SetCell(center, GroundCell)
-	d.SetCell(center.E(), GroundCell)
-	d.SetCell(center.NE(), GroundCell)
-	d.SetCell(center.S(), GroundCell)
-	d.SetCell(center.SE(), GroundCell)
-	d.SetCell(center.N(), GroundCell)
-	d.SetCell(center.NW(), GroundCell)
-	d.SetCell(center.W(), GroundCell)
-	d.SetCell(center.SW(), GroundCell)
+	d.SetCell(center.Add(gruid.Point{1, 0}), GroundCell)
+	d.SetCell(center.Add(gruid.Point{1, -1}), GroundCell)
+	d.SetCell(center.Add(gruid.Point{0, 1}), GroundCell)
+	d.SetCell(center.Add(gruid.Point{1, 1}), GroundCell)
+	d.SetCell(center.Add(gruid.Point{0, -1}), GroundCell)
+	d.SetCell(center.Add(gruid.Point{-1, -1}), GroundCell)
+	d.SetCell(center.Add(gruid.Point{-1, 0}), GroundCell)
+	d.SetCell(center.Add(gruid.Point{-1, 1}), GroundCell)
 	max := 21 * 21
 	cells := 1
 	block := make([]gruid.Point, 0, 64)

@@ -48,7 +48,7 @@ func (gp *gridPath) Estimation(from, to gruid.Point) int {
 }
 
 type mappingPath struct {
-	state      *state
+	state     *state
 	neighbors [8]gruid.Point
 }
 
@@ -106,7 +106,7 @@ func (tp *tunnelPath) Estimation(from, to gruid.Point) int {
 }
 
 type playerPath struct {
-	state      *state
+	state     *state
 	neighbors [8]gruid.Point
 	goal      gruid.Point
 }
@@ -143,7 +143,7 @@ func (pp *playerPath) Estimation(from, to gruid.Point) int {
 }
 
 type jumpPath struct {
-	state      *state
+	state     *state
 	neighbors [8]gruid.Point
 }
 
@@ -166,7 +166,7 @@ func (jp *jumpPath) Estimation(from, to gruid.Point) int {
 }
 
 type noisePath struct {
-	state      *state
+	state     *state
 	neighbors [8]gruid.Point
 }
 
@@ -184,7 +184,7 @@ func (fp *noisePath) Cost(from, to gruid.Point) int {
 }
 
 type autoexplorePath struct {
-	state      *state
+	state     *state
 	neighbors [8]gruid.Point
 }
 
@@ -212,7 +212,7 @@ func (ap *autoexplorePath) Cost(from, to gruid.Point) int {
 }
 
 type monPath struct {
-	state      *state
+	state     *state
 	monster   *monster
 	neighbors [8]gruid.Point
 }

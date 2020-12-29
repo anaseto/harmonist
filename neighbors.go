@@ -1,7 +1,7 @@
 package main
 
 func (pos gruid.Point) Neighbors(nb []gruid.Point, keep func(gruid.Point) bool) []gruid.Point {
-	neighbors := [8]gruid.Point{pos.E(), pos.W(), pos.N(), pos.S(), pos.NE(), pos.NW(), pos.SE(), pos.SW()}
+	neighbors := [8]gruid.Point{pos.Add(gruid.Point{1, 0}), pos.Add(gruid.Point{-1, 0}), pos.Add(gruid.Point{0, -1}), pos.Add(gruid.Point{0, 1}), pos.Add(gruid.Point{1, -1}), pos.Add(gruid.Point{-1, -1}), pos.Add(gruid.Point{1, 1}), pos.Add(gruid.Point{-1, 1})}
 	nb = nb[:0]
 	for _, npos := range neighbors {
 		if keep(npos) {
@@ -12,7 +12,7 @@ func (pos gruid.Point) Neighbors(nb []gruid.Point, keep func(gruid.Point) bool) 
 }
 
 func (pos gruid.Point) CardinalNeighbors(nb []gruid.Point, keep func(gruid.Point) bool) []gruid.Point {
-	neighbors := [4]gruid.Point{pos.E(), pos.W(), pos.N(), pos.S()}
+	neighbors := [4]gruid.Point{pos.Add(gruid.Point{1, 0}), pos.Add(gruid.Point{-1, 0}), pos.Add(gruid.Point{0, -1}), pos.Add(gruid.Point{0, 1})}
 	nb = nb[:0]
 	for _, npos := range neighbors {
 		if keep(npos) {

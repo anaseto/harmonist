@@ -756,7 +756,7 @@ func (m *monster) NaturalAwake(g *state) {
 
 func (m *monster) RandomFreeNeighbor(g *state) gruid.Point {
 	pos := m.Pos
-	neighbors := [4]gruid.Point{pos.E(), pos.W(), pos.N(), pos.S()}
+	neighbors := [4]gruid.Point{pos.Add(gruid.Point{1, 0}), pos.Add(gruid.Point{-1, 0}), pos.Add(gruid.Point{0, -1}), pos.Add(gruid.Point{0, 1})}
 	fnb := []gruid.Point{}
 	for _, nbpos := range neighbors {
 		if !nbpos.valid() {

@@ -14,15 +14,6 @@ const (
 	modeMenu
 )
 
-var invalidPos = gruid.Point{-1, -1}
-
-type state struct {
-	PlayerPos gruid.Point
-	Move      autoMove         // automatic movement
-	PR        *paths.PathRange // path finding in the grid range
-	Path      []gruid.Point    // current path (reverse highlighting)
-}
-
 type model struct {
 	st     *state // game state
 	gd     gruid.Grid

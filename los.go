@@ -41,13 +41,13 @@ func (g *state) DiagonalOpaque(from, to gruid.Point, rs raystyle) bool {
 	p := cache[:0]
 	switch to.Dir(from) {
 	case NE:
-		p = append(p, to.S(), to.W())
+		p = append(p, to.Add(gruid.Point{0, 1}), to.Add(gruid.Point{-1, 0}))
 	case NW:
-		p = append(p, to.S(), to.E())
+		p = append(p, to.Add(gruid.Point{0, 1}), to.Add(gruid.Point{1, 0}))
 	case SW:
-		p = append(p, to.N(), to.E())
+		p = append(p, to.Add(gruid.Point{0, -1}), to.Add(gruid.Point{1, 0}))
 	case SE:
-		p = append(p, to.N(), to.W())
+		p = append(p, to.Add(gruid.Point{0, -1}), to.Add(gruid.Point{-1, 0}))
 	}
 	count := 0
 	for _, pos := range p {
@@ -79,13 +79,13 @@ func (g *state) DiagonalDifficult(from, to gruid.Point) bool {
 	p := cache[:0]
 	switch to.Dir(from) {
 	case NE:
-		p = append(p, to.S(), to.W())
+		p = append(p, to.Add(gruid.Point{0, 1}), to.Add(gruid.Point{-1, 0}))
 	case NW:
-		p = append(p, to.S(), to.E())
+		p = append(p, to.Add(gruid.Point{0, 1}), to.Add(gruid.Point{1, 0}))
 	case SW:
-		p = append(p, to.N(), to.E())
+		p = append(p, to.Add(gruid.Point{0, -1}), to.Add(gruid.Point{1, 0}))
 	case SE:
-		p = append(p, to.N(), to.W())
+		p = append(p, to.Add(gruid.Point{0, -1}), to.Add(gruid.Point{-1, 0}))
 	}
 	count := 0
 	for _, pos := range p {
