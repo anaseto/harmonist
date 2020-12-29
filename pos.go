@@ -105,25 +105,25 @@ func KeyToDir(k action) (dir direction) {
 	return dir
 }
 
-func (pos gruid.Point) To(dir direction) gruid.Point {
-	to := pos
+func To(dir direction, from gruid.Point) gruid.Point {
+	to := from
 	switch dir {
 	case E, ENE, ESE:
-		to = pos.E()
+		to = pos.Add(gruid.Point{1, 0})
 	case NE:
-		to = pos.NE()
+		to = from.Add(gruid.Point{1, -1})
 	case NNE, N, NNW:
-		to = pos.N()
+		to = from.Add(gruid.Point{0, -1})
 	case NW:
-		to = pos.NW()
+		to = from.Add(gruid.Point{-1, -1})
 	case WNW, W, WSW:
-		to = pos.W()
+		to = from.Add(gruid.Point{-1, 0})
 	case SW:
-		to = pos.SW()
+		to = from.Add(gruid.Point{-1, 1})
 	case SSW, S, SSE:
-		to = pos.S()
+		to = from.Add(gruid.Point{0, 1})
 	case SE:
-		to = pos.SE()
+		to = from.Add(gruid.Point{1, 1})
 	}
 	return to
 }
@@ -184,37 +184,37 @@ func (pos gruid.Point) Dir(from gruid.Point) direction {
 func (pos gruid.Point) Parents(from gruid.Point, p []gruid.Point) []gruid.Point {
 	switch pos.Dir(from) {
 	case E:
-		p = append(p, pos.W())
+		p = append(p, pos.Add(gruid.Point{-1, 0}))
 	case ENE:
-		p = append(p, pos.W(), pos.SW())
+		p = append(p, pos.Add(gruid.Point{-1, 0}), pos.Add(gruid.Point{-1, 1}))
 	case NE:
-		p = append(p, pos.SW())
+		p = append(p, pos.Add(gruid.Point{-1, 1}))
 	case NNE:
-		p = append(p, pos.S(), pos.SW())
+		p = append(p, pos.Add(gruid.Point{0, 1}), pos.Add(gruid.Point{-1, 1}))
 	case N:
-		p = append(p, pos.S())
+		p = append(p, pos.Add(gruid.Point{0, 1}))
 	case NNW:
-		p = append(p, pos.S(), pos.SE())
+		p = append(p, pos.Add(gruid.Point{0, 1}), pos.Add(gruid.Point{1, 1}))
 	case NW:
-		p = append(p, pos.SE())
+		p = append(p, pos.Add(gruid.Point{1, 1}))
 	case WNW:
-		p = append(p, pos.E(), pos.SE())
+		p = append(p, pos.Add(gruid.Point{1, 0}), pos.Add(gruid.Point{1, 1}))
 	case W:
-		p = append(p, pos.E())
+		p = append(p, pos.Add(gruid.Point{1, 0}))
 	case WSW:
-		p = append(p, pos.E(), pos.NE())
+		p = append(p, pos.Add(gruid.Point{1, 0}), pos.Add(gruid.Point{1, -1}))
 	case SW:
-		p = append(p, pos.NE())
+		p = append(p, pos.Add(gruid.Point{1, -1}))
 	case SSW:
-		p = append(p, pos.N(), pos.NE())
+		p = append(p, pos.Add(gruid.Point{0, -1}), pos.Add(gruid.Point{1, -1}))
 	case S:
-		p = append(p, pos.N())
+		p = append(p, pos.Add(gruid.Point{0, -1}))
 	case SSE:
-		p = append(p, pos.N(), pos.NW())
+		p = append(p, pos.Add(gruid.Point{0, -1}), pos.Add(gruid.Point{-1, -1}))
 	case SE:
-		p = append(p, pos.NW())
+		p = append(p, pos.Add(gruid.Point{-1, -1}))
 	case ESE:
-		p = append(p, pos.W(), pos.NW())
+		p = append(p, pos.Add(gruid.Point{-1, 0}), pos.Add(gruid.Point{-1, -1}))
 	}
 	return p
 }
@@ -227,7 +227,7 @@ func (pos gruid.Point) RandomNeighbor(diag bool) gruid.Point {
 }
 
 func (pos gruid.Point) RandomNeighborDiagonals() gruid.Point {
-	neighbors := [8]gruid.Point{pos.E(), pos.W(), pos.N(), pos.S(), pos.NE(), pos.NW(), pos.SE(), pos.SW()}
+	neighbors := [8]gruid.Point{pos.Add(gruid.Point{1, 0}), pos.Add(gruid.Point{-1, 0}), pos.Add(gruid.Point{0, -1}), pos.Add(gruid.Point{0, 1}), pos.Add(gruid.Point{1, -1}), pos.Add(gruid.Point{-1, -1}), pos.Add(gruid.Point{1, 1}), pos.Add(gruid.Point{-1, 1})}
 	var r int
 	switch RandInt(8) {
 	case 0:
@@ -241,7 +241,7 @@ func (pos gruid.Point) RandomNeighborDiagonals() gruid.Point {
 }
 
 func (pos gruid.Point) RandomNeighborCardinal() gruid.Point {
-	neighbors := [4]gruid.Point{pos.E(), pos.W(), pos.N(), pos.S()}
+	neighbors := [4]gruid.Point{pos.Add(gruid.Point{1, 0}), pos.Add(gruid.Point{-1, 0}), pos.Add(gruid.Point{0, -1}), pos.Add(gruid.Point{0, 1})}
 	var r int
 	switch RandInt(4) {
 	case 0, 1:
@@ -267,21 +267,21 @@ func (pos gruid.Point) valid() bool {
 func (pos gruid.Point) Laterals(dir direction) []gruid.Point {
 	switch dir {
 	case E, ENE, ESE:
-		return []gruid.Point{pos.NE(), pos.SE()}
+		return []gruid.Point{pos.Add(gruid.Point{1, -1}), pos.Add(gruid.Point{1, 1})}
 	case NE:
-		return []gruid.Point{pos.E(), pos.N()}
+		return []gruid.Point{pos.Add(gruid.Point{1, 0}), pos.Add(gruid.Point{0, -1})}
 	case N, NNE, NNW:
-		return []gruid.Point{pos.NW(), pos.NE()}
+		return []gruid.Point{pos.Add(gruid.Point{-1, -1}), pos.Add(gruid.Point{1, -1})}
 	case NW:
-		return []gruid.Point{pos.W(), pos.N()}
+		return []gruid.Point{pos.Add(gruid.Point{-1, 0}), pos.Add(gruid.Point{0, -1})}
 	case W, WNW, WSW:
-		return []gruid.Point{pos.SW(), pos.NW()}
+		return []gruid.Point{pos.Add(gruid.Point{-1, 1}), pos.Add(gruid.Point{-1, -1})}
 	case SW:
-		return []gruid.Point{pos.W(), pos.S()}
+		return []gruid.Point{pos.Add(gruid.Point{-1, 0}), pos.Add(gruid.Point{0, 1})}
 	case S, SSW, SSE:
-		return []gruid.Point{pos.SW(), pos.SE()}
+		return []gruid.Point{pos.Add(gruid.Point{-1, 1}), pos.Add(gruid.Point{1, 1})}
 	case SE:
-		return []gruid.Point{pos.S(), pos.E()}
+		return []gruid.Point{pos.Add(gruid.Point{0, 1}), pos.Add(gruid.Point{1, 0})}
 	default:
 		// should not happen
 		return []gruid.Point{}
