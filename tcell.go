@@ -13,7 +13,7 @@ var driver gruid.Driver
 func init() {
 	st := styler{}
 	dr := tcell.NewDriver(tcell.Config{StyleManager: st})
-	dr.PreventQuit()
+	//dr.PreventQuit()
 	driver = dr
 }
 
@@ -21,14 +21,7 @@ func init() {
 type styler struct{}
 
 func (sty styler) GetStyle(st gruid.Style) tc.Style {
-	ts := tc.StyleDefault
-	switch st.Fg {
-	case colorPlayer:
-		ts = ts.Foreground(tc.ColorNavy) // blue color for the player
-	}
-	switch st.Bg {
-	case colorPath:
-		ts = ts.Reverse(true)
-	}
-	return ts
+	st := tc.StyleDefault
+	st = st.Foreground(tc.ColorValid + tc.Color(cst.Fg)).Background(tc.ColorValid + tc.Color(cst.Bg))
+	return st
 }
