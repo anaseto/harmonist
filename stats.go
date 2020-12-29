@@ -178,7 +178,7 @@ func (t terrain) ReachNotable() bool {
 	}
 }
 
-func (pos gruid.Point) Reach(g *state) {
+func (g *state) Reach(pos gruid.Point) {
 	if g.Stats.AtNotablePos[pos] {
 		return
 	}

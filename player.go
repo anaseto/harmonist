@@ -261,7 +261,7 @@ func (g *state) CollectGround() {
 		g.Print("You stand at the door.")
 	}
 	if c.T.ReachNotable() {
-		pos.Reach(g)
+		g.Reach(pos)
 	}
 }
 

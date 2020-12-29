@@ -1162,7 +1162,7 @@ func Sleep(d time.Duration) {
 }
 
 type posInfo struct {
-	Pos         Position
+	Pos         gruid.Point
 	Unknown     bool
 	Noise       bool
 	Unreachable bool
@@ -1245,7 +1245,7 @@ func (pi *posInfo) Draw(ui *model) {
 	formatBox(title, strings.Join(mdesc, "\n"), fg)
 }
 
-func (pi *posInfo) Update(g *state, pos Position, targ Targeter) {
+func (pi *posInfo) Update(g *state, pos gruid.Point, targ Targeter) {
 	*pi = posInfo{}
 	pi.Pos = pos
 	switch {
