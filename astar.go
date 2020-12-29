@@ -53,15 +53,15 @@ func init() {
 }
 
 func (nm nodeMap) get(p gruid.Point) *node {
-	n := &nm.Nodes[p.idx()]
+	n := &nm.Nodes[idx(p)]
 	if n.CacheIndex != nm.Index {
-		nm.Nodes[p.idx()] = node{Pos: p, CacheIndex: nm.Index}
+		nm.Nodes[idx(p)] = node{Pos: p, CacheIndex: nm.Index}
 	}
 	return n
 }
 
 func (nm nodeMap) at(p gruid.Point) (*node, bool) {
-	n := &nm.Nodes[p.idx()]
+	n := &nm.Nodes[idx(p)]
 	if n.CacheIndex != nm.Index {
 		return nil, false
 	}
@@ -74,7 +74,7 @@ var iterQueueCache [DungeonNCells]int
 func (nm nodeMap) iter(pos gruid.Point, f func(*node)) {
 	nb := make([]gruid.Point, 4)
 	var qstart, qend int
-	iterQueueCache[qend] = pos.idx()
+	iterQueueCache[qend] = idx(pos)
 	iterVisitedCache[qend] = nm.Index
 	qend++
 	for qstart < qend {
@@ -82,12 +82,12 @@ func (nm nodeMap) iter(pos gruid.Point, f func(*node)) {
 		qstart++
 		nb = pos.CardinalNeighbors(nb, func(npos gruid.Point) bool { return npos.valid() })
 		for _, npos := range nb {
-			n := &nm.Nodes[npos.idx()]
-			if n.CacheIndex == nm.Index && iterVisitedCache[npos.idx()] != nm.Index {
+			n := &nm.Nodes[idx(npos)]
+			if n.CacheIndex == nm.Index && iterVisitedCache[idx(npos)] != nm.Index {
 				f(n)
-				iterQueueCache[qend] = npos.idx()
+				iterQueueCache[qend] = idx(npos)
 				qend++
-				iterVisitedCache[npos.idx()] = nm.Index
+				iterVisitedCache[idx(npos)] = nm.Index
 			}
 		}
 	}

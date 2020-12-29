@@ -652,7 +652,7 @@ func (m *monster) MoveTo(g *state, pos gruid.Point) {
 func (m *monster) PlaceAt(g *state, pos gruid.Point) {
 	if !m.Pos.valid() {
 		m.Pos = pos
-		g.MonstersPosCache[m.Pos.idx()] = m.Index + 1
+		g.MonstersPosCache[idx(m.Pos)] = m.Index + 1
 		npos := m.RandomFreeNeighbor(g)
 		if npos != m.Pos {
 			m.Dir = Dir(m.Pos, npos)
@@ -667,9 +667,9 @@ func (m *monster) PlaceAt(g *state, pos gruid.Point) {
 	}
 	m.Dir = Dir(m.Pos, pos)
 	m.CorrectDir()
-	g.MonstersPosCache[m.Pos.idx()] = 0
+	g.MonstersPosCache[idx(m.Pos)] = 0
 	m.Pos = pos
-	g.MonstersPosCache[m.Pos.idx()] = m.Index + 1
+	g.MonstersPosCache[idx(m.Pos)] = m.Index + 1
 	m.Waiting = 0
 }
 
@@ -1096,7 +1096,7 @@ func (m *monster) HandleMove(g *state) {
 		if len(mons.Path) > 0 {
 			mons.Path = mons.Path[:len(mons.Path)-1]
 		}
-		g.MonstersPosCache[m.Pos.idx()] = m.Index + 1
+		g.MonstersPosCache[idx(m.Pos)] = m.Index + 1
 		mons.Swapped = true
 	case m.State == Hunting && mons.State != Hunting:
 		if m.Waiting > 2+RandInt(3) {
@@ -1799,7 +1799,7 @@ func (g *state) MonsterAt(pos gruid.Point) *monster {
 	if !pos.valid() {
 		return nil
 	}
-	i := g.MonstersPosCache[pos.idx()]
+	i := g.MonstersPosCache[idx(pos)]
 	if i <= 0 {
 		return nil
 	}

@@ -73,7 +73,7 @@ func (g *state) AutoExploreDijkstra(dij Dijkstrer, sources []int) {
 		qstart++
 		cpos := idxtopos(cidx)
 		for _, npos := range dij.Neighbors(cpos) {
-			nidx := npos.idx()
+			nidx := idx(npos)
 			if !npos.valid() || d.Cells[nidx].IsWall() { // XXX: IsWall ?
 				continue
 			}

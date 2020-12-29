@@ -14,7 +14,7 @@ type dungeon struct {
 }
 
 func (d *dungeon) Cell(pos gruid.Point) cell {
-	return d.Cells[pos.idx()]
+	return d.Cells[idx(pos)]
 }
 
 func (d *dungeon) Border(pos gruid.Point) bool {
@@ -22,11 +22,11 @@ func (d *dungeon) Border(pos gruid.Point) bool {
 }
 
 func (d *dungeon) SetCell(pos gruid.Point, t terrain) {
-	d.Cells[pos.idx()].T = t
+	d.Cells[idx(pos)].T = t
 }
 
 func (d *dungeon) SetExplored(pos gruid.Point) {
-	d.Cells[pos.idx()].Explored = true
+	d.Cells[idx(pos)].Explored = true
 }
 
 func (d *dungeon) Area(area []gruid.Point, pos gruid.Point, radius int) []gruid.Point {
@@ -148,8 +148,8 @@ func (dg *dgen) ComputeConnectedComponents(nf func(gruid.Point) bool) {
 			count++
 			nb = pos.CardinalNeighbors(nb, nf)
 			for _, npos := range nb {
-				if dg.cc[npos.idx()] != index {
-					dg.cc[npos.idx()] = index
+				if dg.cc[idx(npos)] != index {
+					dg.cc[idx(npos)] = index
 					stack = append(stack, npos)
 				}
 			}
@@ -2092,7 +2092,7 @@ func (dg *dgen) BandInfoOutsideExplore(g *state, band monsterBand) bandInfo {
 	for i := 0; i < 4; i++ {
 		for j := 0; j < 100; j++ {
 			pos := dg.OutsideCell(g)
-			if dg.cc[pos.idx()] == dg.cc[bandinfo.Path[0].idx()] {
+			if dg.cc[idx(pos)] == dg.cc[idx(bandinfo.Path[0])] {
 				bandinfo.Path = append(bandinfo.Path, pos)
 				break
 			}
@@ -2108,7 +2108,7 @@ func (dg *dgen) BandInfoOutsideExploreButterfly(g *state, band monsterBand) band
 	for i := 0; i < 9; i++ {
 		for j := 0; j < 100; j++ {
 			pos := dg.OutsideCell(g)
-			if dg.cc[pos.idx()] == dg.cc[bandinfo.Path[0].idx()] {
+			if dg.cc[idx(pos)] == dg.cc[idx(bandinfo.Path[0])] {
 				bandinfo.Path = append(bandinfo.Path, pos)
 				break
 			}

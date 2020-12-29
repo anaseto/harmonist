@@ -164,7 +164,7 @@ func (g *state) Waves(maxCost int, ws wavestyle, center gruid.Point) (dists []in
 	cdists = make(map[int][]int)
 	nm.iter(g.Player.Pos, func(n *node) {
 		pos := n.Pos
-		cdists[n.Cost] = append(cdists[n.Cost], pos.idx())
+		cdists[n.Cost] = append(cdists[n.Cost], idx(pos))
 	})
 	for dist := range cdists {
 		dists = append(dists, dist)

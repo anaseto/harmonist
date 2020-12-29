@@ -73,7 +73,7 @@ func (g *state) BuildAutoexploreMap(sources []int) {
 
 func (g *state) NextAuto() (next *gruid.Point, finished bool) {
 	ap := &autoexplorePath{state: g}
-	if DijkstraMapCache[g.Player.Pos.idx()] == unreachable {
+	if DijkstraMapCache[idx(g.Player.Pos)] == unreachable {
 		return nil, false
 	}
 	neighbors := ap.Neighbors(g.Player.Pos)
@@ -81,15 +81,15 @@ func (g *state) NextAuto() (next *gruid.Point, finished bool) {
 		return nil, false
 	}
 	n := neighbors[0]
-	ncost := DijkstraMapCache[n.idx()]
+	ncost := DijkstraMapCache[idx(n)]
 	for _, pos := range neighbors[1:] {
-		cost := DijkstraMapCache[pos.idx()]
+		cost := DijkstraMapCache[idx(pos)]
 		if cost < ncost {
 			n = pos
 			ncost = cost
 		}
 	}
-	if ncost >= DijkstraMapCache[g.Player.Pos.idx()] {
+	if ncost >= DijkstraMapCache[idx(g.Player.Pos)] {
 		finished = true
 	}
 	next = &n

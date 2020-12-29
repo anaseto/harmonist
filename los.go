@@ -260,11 +260,11 @@ func (g *state) ComputeLOS() {
 	for pos, n := range g.Player.Rays {
 		if n.Cost <= DefaultLOSRange {
 			g.Player.LOS[pos] = true
-		} else if c.T == TreeCell && g.Illuminated[pos.idx()] && n.Cost <= TreeRange {
+		} else if c.T == TreeCell && g.Illuminated[idx(pos)] && n.Cost <= TreeRange {
 			if g.Dungeon.Cell(pos).T == WallCell {
 				// this is just an approximation, but ok in practice
 				nb = pos.Neighbors(nb, func(npos gruid.Point) bool {
-					if !npos.valid() || !g.Illuminated[npos.idx()] || g.Dungeon.Cell(npos).IsWall() {
+					if !npos.valid() || !g.Illuminated[idx(npos)] || g.Dungeon.Cell(npos).IsWall() {
 						return false
 					}
 					node, ok := g.Player.Rays[npos]
@@ -558,13 +558,13 @@ func (m *monster) Sees(g *state, pos gruid.Point) bool {
 		return false
 	}
 	c := g.Dungeon.Cell(pos)
-	if (!g.Illuminated[pos.idx()] && !g.Player.HasStatus(StatusIlluminated) || !c.IsIlluminable()) && Distance(m.Pos, pos) > darkRange {
+	if (!g.Illuminated[idx(pos)] && !g.Player.HasStatus(StatusIlluminated) || !c.IsIlluminable()) && Distance(m.Pos, pos) > darkRange {
 		return false
 	}
 	if c.T == TableCell && Distance(m.Pos, pos) > tableRange {
 		return false
 	}
-	if g.Player.HasStatus(StatusTransparent) && g.Illuminated[pos.idx()] && Distance(m.Pos, pos) > 1 {
+	if g.Player.HasStatus(StatusTransparent) && g.Illuminated[idx(pos)] && Distance(m.Pos, pos) > 1 {
 		return false
 	}
 	return true
@@ -594,7 +594,7 @@ func (g *state) ComputeMonsterLOS() {
 		g.Player.Statuses[StatusUnhidden] = 0
 		g.Player.Statuses[StatusHidden] = 1
 	}
-	if g.Illuminated[g.Player.Pos.idx()] && g.Dungeon.Cell(g.Player.Pos).IsIlluminable() {
+	if g.Illuminated[idx(g.Player.Pos)] && g.Dungeon.Cell(g.Player.Pos).IsIlluminable() {
 		g.Player.Statuses[StatusLight] = 1
 	} else {
 		g.Player.Statuses[StatusLight] = 0
@@ -616,7 +616,7 @@ func (g *state) ComputeLights() {
 		g.BuildRayMap(lpos, LightRay, g.RaysCache)
 		for pos, n := range g.RaysCache {
 			if n.Cost <= LightRange {
-				g.Illuminated[pos.idx()] = true
+				g.Illuminated[idx(pos)] = true
 			}
 		}
 	}
@@ -630,7 +630,7 @@ func (g *state) ComputeLights() {
 		g.BuildRayMap(mons.Pos, LightRay, g.RaysCache)
 		for pos, n := range g.RaysCache {
 			if n.Cost <= LightRange {
-				g.Illuminated[pos.idx()] = true
+				g.Illuminated[idx(pos)] = true
 			}
 		}
 	}

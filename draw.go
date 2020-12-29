@@ -657,7 +657,7 @@ func (ui *model) DescribePosition(pos gruid.Point, targ Targeter) {
 	desc += c.ShortDesc(g, pos)
 	if g.MonsterLOS[pos] {
 		desc += " (unhidden)"
-	} else if g.Illuminated[pos.idx()] && c.IsIlluminable() && g.Player.Sees(pos) {
+	} else if g.Illuminated[idx(pos)] && c.IsIlluminable() && g.Player.Sees(pos) {
 		desc += " (lighted)"
 	}
 	if g.Noise[pos] || g.NoiseIllusion[pos] {
@@ -974,7 +974,7 @@ func (ui *model) PositionDrawing(pos gruid.Point) (r rune, fgColor, bgColor uico
 				}
 			}
 		}
-		if fgColor == ColorFgLOS && g.Illuminated[pos.idx()] && c.IsIlluminable() {
+		if fgColor == ColorFgLOS && g.Illuminated[idx(pos)] && c.IsIlluminable() {
 			fgColor = ColorFgLOSLight
 		}
 	}

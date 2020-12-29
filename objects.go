@@ -350,7 +350,7 @@ func (g *state) MagicMapping(maxdist int) error {
 	cdists := make(map[int][]int)
 	nm.iter(g.Player.Pos, func(n *node) {
 		pos := n.Pos
-		cdists[n.Cost] = append(cdists[n.Cost], pos.idx())
+		cdists[n.Cost] = append(cdists[n.Cost], idx(pos))
 	})
 	var dists []int
 	for dist := range cdists {
