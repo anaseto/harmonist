@@ -56,7 +56,7 @@ func (g *state) DiagonalOpaque(from, to gruid.Point, rs raystyle) bool {
 			count++
 			continue
 		}
-		if !pos.valid() {
+		if !valid(pos) {
 			continue
 		}
 		c := g.Dungeon.Cell(pos)
@@ -89,7 +89,7 @@ func (g *state) DiagonalDifficult(from, to gruid.Point) bool {
 	}
 	count := 0
 	for _, pos := range p {
-		if !pos.valid() {
+		if !valid(pos) {
 			continue
 		}
 		_, ok := g.Clouds[pos]
@@ -202,7 +202,7 @@ func (g *state) BuildRayMap(from gruid.Point, rs raystyle, rm rayMap) {
 			childs[0] = gruid.Point{x, from.Y + d}
 			childs[1] = gruid.Point{x, from.Y - d}
 			for _, pos := range childs {
-				if !pos.valid() {
+				if !valid(pos) {
 					continue
 				}
 				_, c := g.BestParent(rm, from, pos, rs)
@@ -213,7 +213,7 @@ func (g *state) BuildRayMap(from gruid.Point, rs raystyle, rm rayMap) {
 			childs[0] = gruid.Point{from.X + d, y}
 			childs[1] = gruid.Point{from.X - d, y}
 			for _, pos := range childs {
-				if !pos.valid() {
+				if !valid(pos) {
 					continue
 				}
 				_, c := g.BestParent(rm, from, pos, rs)
@@ -264,7 +264,7 @@ func (g *state) ComputeLOS() {
 			if g.Dungeon.Cell(pos).T == WallCell {
 				// this is just an approximation, but ok in practice
 				nb = pos.Neighbors(nb, func(npos gruid.Point) bool {
-					if !npos.valid() || !g.Illuminated[idx(npos)] || g.Dungeon.Cell(npos).IsWall() {
+					if !valid(npos) || !g.Illuminated[idx(npos)] || g.Dungeon.Cell(npos).IsWall() {
 						return false
 					}
 					node, ok := g.Player.Rays[npos]
@@ -427,7 +427,7 @@ func (g *state) ComputeExclusion(pos gruid.Point, toggle bool) {
 	for d := 1; d <= exclusionRange; d++ {
 		for x := -d + pos.X; x <= d+pos.X; x++ {
 			for _, pos := range []gruid.Point{{x, pos.Y + d}, {x, pos.Y - d}} {
-				if !pos.valid() {
+				if !valid(pos) {
 					continue
 				}
 				g.ExclusionsMap[pos] = toggle
@@ -435,7 +435,7 @@ func (g *state) ComputeExclusion(pos gruid.Point, toggle bool) {
 		}
 		for y := -d + 1 + pos.Y; y <= d-1+pos.Y; y++ {
 			for _, pos := range []gruid.Point{{pos.X + d, y}, {pos.X - d, y}} {
-				if !pos.valid() {
+				if !valid(pos) {
 					continue
 				}
 				g.ExclusionsMap[pos] = toggle

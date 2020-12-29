@@ -409,7 +409,7 @@ func (g *state) Blink() bool {
 		return false
 	}
 	npos := g.BlinkPos(false)
-	if !npos.valid() {
+	if !valid(npos) {
 		// should not happen
 		g.Print("You could not blink.")
 		return false

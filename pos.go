@@ -260,32 +260,8 @@ func idx(pos gruid.Point) int {
 	return pos.Y*DungeonWidth + pos.X
 }
 
-func (pos gruid.Point) valid() bool {
+func valid(pos gruid.Point) bool {
 	return pos.Y >= 0 && pos.Y < DungeonHeight && pos.X >= 0 && pos.X < DungeonWidth
-}
-
-func (pos gruid.Point) Laterals(dir direction) []gruid.Point {
-	switch dir {
-	case E, ENE, ESE:
-		return []gruid.Point{pos.Add(gruid.Point{1, -1}), pos.Add(gruid.Point{1, 1})}
-	case NE:
-		return []gruid.Point{pos.Add(gruid.Point{1, 0}), pos.Add(gruid.Point{0, -1})}
-	case N, NNE, NNW:
-		return []gruid.Point{pos.Add(gruid.Point{-1, -1}), pos.Add(gruid.Point{1, -1})}
-	case NW:
-		return []gruid.Point{pos.Add(gruid.Point{-1, 0}), pos.Add(gruid.Point{0, -1})}
-	case W, WNW, WSW:
-		return []gruid.Point{pos.Add(gruid.Point{-1, 1}), pos.Add(gruid.Point{-1, -1})}
-	case SW:
-		return []gruid.Point{pos.Add(gruid.Point{-1, 0}), pos.Add(gruid.Point{0, 1})}
-	case S, SSW, SSE:
-		return []gruid.Point{pos.Add(gruid.Point{-1, 1}), pos.Add(gruid.Point{1, 1})}
-	case SE:
-		return []gruid.Point{pos.Add(gruid.Point{0, 1}), pos.Add(gruid.Point{1, 0})}
-	default:
-		// should not happen
-		return []gruid.Point{}
-	}
 }
 
 func (dir direction) InViewCone(from, to gruid.Point) bool {

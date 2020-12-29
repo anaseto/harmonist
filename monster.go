@@ -526,7 +526,7 @@ func (m *monster) Init() {
 }
 
 func (m *monster) CanPass(g *state, pos gruid.Point) bool {
-	if !pos.valid() {
+	if !valid(pos) {
 		return false
 	}
 	c := g.Dungeon.Cell(pos)
@@ -538,7 +538,7 @@ func (m *monster) CanPass(g *state, pos gruid.Point) bool {
 }
 
 func (m *monster) CanPassDestruct(g *state, pos gruid.Point) bool {
-	if !pos.valid() {
+	if !valid(pos) {
 		return false
 	}
 	c := g.Dungeon.Cell(pos)
@@ -650,7 +650,7 @@ func (m *monster) MoveTo(g *state, pos gruid.Point) {
 }
 
 func (m *monster) PlaceAt(g *state, pos gruid.Point) {
-	if !m.Pos.valid() {
+	if !valid(m.Pos) {
 		m.Pos = pos
 		g.MonstersPosCache[idx(m.Pos)] = m.Index + 1
 		npos := m.RandomFreeNeighbor(g)
@@ -759,7 +759,7 @@ func (m *monster) RandomFreeNeighbor(g *state) gruid.Point {
 	neighbors := [4]gruid.Point{pos.Add(gruid.Point{1, 0}), pos.Add(gruid.Point{-1, 0}), pos.Add(gruid.Point{0, -1}), pos.Add(gruid.Point{0, 1})}
 	fnb := []gruid.Point{}
 	for _, nbpos := range neighbors {
-		if !nbpos.valid() {
+		if !valid(nbpos) {
 			continue
 		}
 		c := g.Dungeon.Cell(nbpos)
@@ -1377,7 +1377,7 @@ func (m *monster) PushPlayer(g *state, dist int) {
 		i++
 		npos = To(dir, npos)
 		path = append(path, npos)
-		if !npos.valid() || g.Dungeon.Cell(npos).BlocksRange() {
+		if !valid(npos) || g.Dungeon.Cell(npos).BlocksRange() {
 			path = path[:len(path)-1]
 			break
 		}
@@ -1705,7 +1705,7 @@ func (m *monster) AbsorbMana(g *state) bool {
 
 func (m *monster) Blink(g *state) {
 	npos := g.BlinkPos(true)
-	if !npos.valid() || npos == g.Player.Pos || npos == m.Pos {
+	if !valid(npos) || npos == g.Player.Pos || npos == m.Pos {
 		return
 	}
 	opos := m.Pos
@@ -1796,7 +1796,7 @@ func (m *monster) GatherBand(g *state) {
 }
 
 func (g *state) MonsterAt(pos gruid.Point) *monster {
-	if !pos.valid() {
+	if !valid(pos) {
 		return nil
 	}
 	i := g.MonstersPosCache[idx(pos)]

@@ -93,7 +93,7 @@ func (g *state) GoToDir(dir direction) error {
 }
 
 func (g *state) MoveToTarget() bool {
-	if !g.AutoTarget.valid() {
+	if !valid(g.AutoTarget) {
 		return false
 	}
 	path := g.PlayerPath(g.Player.Pos, g.AutoTarget)
@@ -118,7 +118,7 @@ func (g *state) MoveToTarget() bool {
 		g.AutoTarget = InvalidPos
 		return false
 	}
-	if g.AutoTarget.valid() && g.Player.Pos == g.AutoTarget {
+	if valid(g.AutoTarget) && g.Player.Pos == g.AutoTarget {
 		g.AutoTarget = InvalidPos
 	}
 	return true
@@ -192,7 +192,7 @@ func (g *state) Teleportation() {
 		break
 
 	}
-	if pos.valid() {
+	if valid(pos) {
 		// should always happen
 		opos := g.Player.Pos
 		g.Print("You teleport away.")
@@ -305,7 +305,7 @@ func (g *state) AbyssJump() error {
 }
 
 func (g *state) PlayerBump(pos gruid.Point) error {
-	if !pos.valid() {
+	if !valid(pos) {
 		return errors.New("You cannot move there.")
 	}
 	c := g.Dungeon.Cell(pos)
@@ -485,7 +485,7 @@ func (g *state) UpdateKnowledge(pos gruid.Point, t terrain) {
 }
 
 func (g *state) PlayerCanPass(pos gruid.Point) bool {
-	if !pos.valid() {
+	if !valid(pos) {
 		return false
 	}
 	c := g.Dungeon.Cell(pos)
@@ -495,7 +495,7 @@ func (g *state) PlayerCanPass(pos gruid.Point) bool {
 }
 
 func (g *state) PlayerCanJumpPass(pos gruid.Point) bool {
-	if !pos.valid() {
+	if !valid(pos) {
 		return false
 	}
 	c := g.Dungeon.Cell(pos)

@@ -706,7 +706,7 @@ func (g *state) AutoPlayer(ev event) bool {
 			}
 		}
 		g.Autoexploring = false
-	} else if g.AutoTarget.valid() {
+	} else if valid(g.AutoTarget) {
 		if !g.ui.ExploreStep() && g.MoveToTarget() {
 			return true
 		} else {

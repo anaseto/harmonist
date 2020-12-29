@@ -12,7 +12,7 @@ type dungeonPath struct {
 
 func (dp *dungeonPath) Neighbors(pos gruid.Point) []gruid.Point {
 	nb := dp.neighbors[:0]
-	return pos.CardinalNeighbors(nb, func(npos gruid.Point) bool { return npos.valid() })
+	return pos.CardinalNeighbors(nb, func(npos gruid.Point) bool { return valid(npos) })
 }
 
 func (dp *dungeonPath) Cost(from, to gruid.Point) int {
@@ -36,7 +36,7 @@ type gridPath struct {
 
 func (gp *gridPath) Neighbors(pos gruid.Point) []gruid.Point {
 	nb := gp.neighbors[:0]
-	return pos.CardinalNeighbors(nb, func(npos gruid.Point) bool { return npos.valid() })
+	return pos.CardinalNeighbors(nb, func(npos gruid.Point) bool { return valid(npos) })
 }
 
 func (gp *gridPath) Cost(from, to gruid.Point) int {
@@ -59,7 +59,7 @@ func (dp *mappingPath) Neighbors(pos gruid.Point) []gruid.Point {
 	}
 	nb := dp.neighbors[:0]
 	keep := func(npos gruid.Point) bool {
-		return npos.valid()
+		return valid(npos)
 	}
 	return pos.CardinalNeighbors(nb, keep)
 }
@@ -80,7 +80,7 @@ type tunnelPath struct {
 
 func (tp *tunnelPath) Neighbors(pos gruid.Point) []gruid.Point {
 	nb := tp.neighbors[:0]
-	return pos.CardinalNeighbors(nb, func(npos gruid.Point) bool { return npos.valid() })
+	return pos.CardinalNeighbors(nb, func(npos gruid.Point) bool { return valid(npos) })
 }
 
 func (tp *tunnelPath) Cost(from, to gruid.Point) int {
@@ -119,7 +119,7 @@ func (pp *playerPath) Neighbors(pos gruid.Point) []gruid.Point {
 		if cld, ok := pp.state.Clouds[npos]; ok && cld == CloudFire && (!okT || t != FoliageCell && t != DoorCell) {
 			return false
 		}
-		return npos.valid() && d.Cell(npos).Explored && (d.Cell(npos).T.IsPlayerPassable() && !okT ||
+		return valid(npos) && d.Cell(npos).Explored && (d.Cell(npos).T.IsPlayerPassable() && !okT ||
 			okT && t.IsPlayerPassable() ||
 			pp.state.Player.HasStatus(StatusLevitation) && (t == BarrierCell || t == ChasmCell) ||
 			pp.state.Player.HasStatus(StatusDig) && (d.Cell(npos).T.IsDiggable() && !okT || (okT && t.IsDiggable())))
@@ -174,7 +174,7 @@ func (fp *noisePath) Neighbors(pos gruid.Point) []gruid.Point {
 	nb := fp.neighbors[:0]
 	d := fp.state.Dungeon
 	keep := func(npos gruid.Point) bool {
-		return npos.valid() && d.Cell(npos).T != WallCell
+		return valid(npos) && d.Cell(npos).T != WallCell
 	}
 	return pos.CardinalNeighbors(nb, keep)
 }
@@ -200,7 +200,7 @@ func (ap *autoexplorePath) Neighbors(pos gruid.Point) []gruid.Point {
 			// XXX little info leak
 			return false
 		}
-		return npos.valid() && (d.Cell(npos).T.IsPlayerPassable() && (!okT || t != WallCell)) &&
+		return valid(npos) && (d.Cell(npos).T.IsPlayerPassable() && (!okT || t != WallCell)) &&
 			!ap.state.ExclusionsMap[npos]
 	}
 	nb = pos.CardinalNeighbors(nb, keep)

@@ -581,7 +581,7 @@ func (ui *model) HandleKey(rka runeKeyAction) (again bool, quit bool, err error)
 
 func (ui *model) ExaminePos(pos gruid.Point) (again, quit bool, err error) {
 	var start *gruid.Point
-	if pos.valid() {
+	if valid(pos) {
 		start = &pos
 	}
 	again, quit, err = ui.Examine(start)
@@ -752,7 +752,7 @@ func (ui *model) CursorKeyAction(targ Targeter, rka runeKeyAction, data *examine
 	case ActionRunW, ActionRunS, ActionRunN, ActionRunE:
 		for i := 0; i < 5; i++ {
 			p := To(KeyToDir(rka.k), data.npos)
-			if !p.valid() {
+			if !valid(p) {
 				break
 			}
 			data.npos = p
@@ -885,10 +885,10 @@ func (ui *model) CursorAction(targ Targeter, start *gruid.Point) (again, quit bo
 	}
 	if _, ok := targ.(*examiner); ok && pos == g.Player.Pos && start == nil {
 		ui.NextObject(InvalidPos, data)
-		if !data.npos.valid() {
+		if !valid(data.npos) {
 			ui.NextStair(data)
 		}
-		if data.npos.valid() && Distance(pos, data.npos) < DefaultLOSRange+5 {
+		if valid(data.npos) && Distance(pos, data.npos) < DefaultLOSRange+5 {
 			pos = data.npos
 		}
 	}
@@ -931,7 +931,7 @@ loop:
 		if err != nil {
 			g.Print(err.Error())
 		}
-		if data.npos.valid() {
+		if valid(data.npos) {
 			pos = data.npos
 		}
 	}

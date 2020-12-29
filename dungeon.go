@@ -34,7 +34,7 @@ func (d *dungeon) Area(area []gruid.Point, pos gruid.Point, radius int) []gruid.
 	for x := pos.X - radius; x <= pos.X+radius; x++ {
 		for y := pos.Y - radius; y <= pos.Y+radius; y++ {
 			pos := gruid.Point{x, y}
-			if pos.valid() {
+			if valid(pos) {
 				area = append(area, pos)
 			}
 		}
@@ -193,7 +193,7 @@ func (d *dungeon) IsAreaFree(pos gruid.Point, h, w int) bool {
 	for i := pos.X; i < pos.X+w; i++ {
 		for j := pos.Y; j < pos.Y+h; j++ {
 			rpos := gruid.Point{i, j}
-			if !rpos.valid() || d.Cell(rpos).IsPassable() {
+			if !valid(rpos) || d.Cell(rpos).IsPassable() {
 				return false
 			}
 		}
@@ -205,7 +205,7 @@ func (d *dungeon) IsAreaWall(pos gruid.Point, h, w int) bool {
 	for i := pos.X; i < pos.X+w; i++ {
 		for j := pos.Y; j < pos.Y+h; j++ {
 			rpos := gruid.Point{i, j}
-			if rpos.valid() && d.Cell(rpos).T != WallCell {
+			if valid(rpos) && d.Cell(rpos).T != WallCell {
 				return false
 			}
 		}
@@ -332,7 +332,7 @@ func (dg *dgen) ConnectRoomsShortestPath(i, j int) bool {
 		return false
 	}
 	for _, pos := range path {
-		if !pos.valid() {
+		if !valid(pos) {
 			panic(fmt.Sprintf("gruid.Point %v from %v to %v", pos, e1pos, e2pos))
 		}
 		t := dg.d.Cell(pos).T
@@ -416,7 +416,7 @@ func (r *room) HasSpace(dg *dgen) bool {
 	for i := r.pos.X - 1; i <= r.pos.X+r.w; i++ {
 		for j := r.pos.Y - 1; j <= r.pos.Y+r.h; j++ {
 			rpos := gruid.Point{i, j}
-			if rpos.valid() && dg.room[rpos] {
+			if valid(rpos) && dg.room[rpos] {
 				return false
 			}
 		}
@@ -434,12 +434,12 @@ func (r *room) Dig(dg *dgen) {
 			continue
 		}
 		pos := gruid.Point{X: r.pos.X + x, Y: r.pos.Y + y}
-		if pos.valid() && c != '?' {
+		if valid(pos) && c != '?' {
 			dg.room[pos] = true
 		}
 		switch c {
 		case '.', '>', '!', 'P', '_', '|', 'G', '-':
-			if pos.valid() {
+			if valid(pos) {
 				dg.d.SetCell(pos, GroundCell)
 			}
 		case 'B':
@@ -465,27 +465,27 @@ func (r *room) Dig(dg *dgen) {
 			case 4, 5:
 				t = GroundCell
 			}
-			if pos.valid() {
+			if valid(pos) {
 				dg.d.SetCell(pos, t)
 			}
 		case '#', '+':
-			if pos.valid() {
+			if valid(pos) {
 				dg.d.SetCell(pos, WallCell)
 			}
 		case 'T':
-			if pos.valid() {
+			if valid(pos) {
 				dg.d.SetCell(pos, TreeCell)
 			}
 		case 'π':
-			if pos.valid() {
+			if valid(pos) {
 				dg.d.SetCell(pos, TableCell)
 			}
 		case 'l':
-			if pos.valid() {
+			if valid(pos) {
 				dg.d.SetCell(pos, LightCell)
 			}
 		case 'W':
-			if pos.valid() {
+			if valid(pos) {
 				dg.d.SetCell(pos, WindowCell)
 			}
 		case '"',
@@ -525,23 +525,23 @@ func (r *room) Dig(dg *dgen) {
 			}
 			r.entries = append(r.entries, e)
 		case '"':
-			if pos.valid() {
+			if valid(pos) {
 				dg.d.SetCell(pos, FoliageCell)
 			}
 		case ',':
-			if pos.valid() {
+			if valid(pos) {
 				dg.d.SetCell(pos, CavernCell)
 			}
 		case '~':
-			if pos.valid() {
+			if valid(pos) {
 				dg.d.SetCell(pos, WaterCell)
 			}
 		case 'c':
-			if pos.valid() {
+			if valid(pos) {
 				dg.d.SetCell(pos, ChasmCell)
 			}
 		case 'q':
-			if pos.valid() {
+			if valid(pos) {
 				dg.d.SetCell(pos, QueenRockCell)
 			}
 		case 'S':
@@ -660,25 +660,25 @@ func (dg *dgen) PutDoors(g *state) {
 
 func (g *state) DoorCandidate(pos gruid.Point) bool {
 	d := g.Dungeon
-	if !pos.valid() || d.Cell(pos).IsPassable() {
+	if !valid(pos) || d.Cell(pos).IsPassable() {
 		return false
 	}
-	return pos.Add(gruid.Point{-1, 0}).valid() && pos.Add(gruid.Point{1, 0}).valid() &&
+	return valid(pos.Add(gruid.Point{-1, 0})) && valid(pos.Add(gruid.Point{1, 0})) &&
 		d.Cell(pos.Add(gruid.Point{-1, 0})).IsGround() && d.Cell(pos.Add(gruid.Point{1, 0})).IsGround() &&
-		(!pos.Add(gruid.Point{0, -1}).valid() || d.Cell(pos.Add(gruid.Point{0, -1})).T == WallCell) &&
-		(!pos.Add(gruid.Point{0, 1}).valid() || d.Cell(pos.Add(gruid.Point{0, 1})).T == WallCell) &&
-		((pos.Add(gruid.Point{-1, -1}).valid() && d.Cell(pos.Add(gruid.Point{-1, -1})).IsPassable()) ||
-			(pos.Add(gruid.Point{-1, 1}).valid() && d.Cell(pos.Add(gruid.Point{-1, 1})).IsPassable()) ||
-			(pos.Add(gruid.Point{1, -1}).valid() && d.Cell(pos.Add(gruid.Point{1, -1})).IsPassable()) ||
-			(pos.Add(gruid.Point{1, 1}).valid() && d.Cell(pos.Add(gruid.Point{1, 1})).IsPassable())) ||
-		pos.Add(gruid.Point{0, -1}).valid() && pos.Add(gruid.Point{0, 1}).valid() &&
+		(!valid(pos.Add(gruid.Point{0, -1})) || d.Cell(pos.Add(gruid.Point{0, -1})).T == WallCell) &&
+		(!valid(pos.Add(gruid.Point{0, 1})) || d.Cell(pos.Add(gruid.Point{0, 1})).T == WallCell) &&
+		((valid(pos.Add(gruid.Point{-1, -1})) && d.Cell(pos.Add(gruid.Point{-1, -1})).IsPassable()) ||
+			(valid(pos.Add(gruid.Point{-1, 1})) && d.Cell(pos.Add(gruid.Point{-1, 1})).IsPassable()) ||
+			(valid(pos.Add(gruid.Point{1, -1})) && d.Cell(pos.Add(gruid.Point{1, -1})).IsPassable()) ||
+			(valid(pos.Add(gruid.Point{1, 1})) && d.Cell(pos.Add(gruid.Point{1, 1})).IsPassable())) ||
+		valid(pos.Add(gruid.Point{0, -1})) && valid(pos.Add(gruid.Point{0, 1})) &&
 			d.Cell(pos.Add(gruid.Point{0, -1})).IsGround() && d.Cell(pos.Add(gruid.Point{0, 1})).IsGround() &&
-			(!pos.Add(gruid.Point{1, 0}).valid() || d.Cell(pos.Add(gruid.Point{1, 0})).T == WallCell) &&
-			(!pos.Add(gruid.Point{-1, 0}).valid() || d.Cell(pos.Add(gruid.Point{-1, 0})).T == WallCell) &&
-			((pos.Add(gruid.Point{-1, -1}).valid() && d.Cell(pos.Add(gruid.Point{-1, -1})).IsPassable()) ||
-				(pos.Add(gruid.Point{-1, 1}).valid() && d.Cell(pos.Add(gruid.Point{-1, 1})).IsPassable()) ||
-				(pos.Add(gruid.Point{1, -1}).valid() && d.Cell(pos.Add(gruid.Point{1, -1})).IsPassable()) ||
-				(pos.Add(gruid.Point{1, 1}).valid() && d.Cell(pos.Add(gruid.Point{1, 1})).IsPassable()))
+			(!valid(pos.Add(gruid.Point{1, 0})) || d.Cell(pos.Add(gruid.Point{1, 0})).T == WallCell) &&
+			(!valid(pos.Add(gruid.Point{-1, 0})) || d.Cell(pos.Add(gruid.Point{-1, 0})).T == WallCell) &&
+			((valid(pos.Add(gruid.Point{-1, -1})) && d.Cell(pos.Add(gruid.Point{-1, -1})).IsPassable()) ||
+				(valid(pos.Add(gruid.Point{-1, 1})) && d.Cell(pos.Add(gruid.Point{-1, 1})).IsPassable()) ||
+				(valid(pos.Add(gruid.Point{1, -1})) && d.Cell(pos.Add(gruid.Point{1, -1})).IsPassable()) ||
+				(valid(pos.Add(gruid.Point{1, 1})) && d.Cell(pos.Add(gruid.Point{1, 1})).IsPassable()))
 }
 
 func (dg *dgen) PutHoledWalls(g *state, n int) {
@@ -717,17 +717,17 @@ func (dg *dgen) PutWindows(g *state, n int) {
 
 func (g *state) HoledWallCandidate(pos gruid.Point) bool {
 	d := g.Dungeon
-	if !pos.valid() || !d.Cell(pos).IsWall() {
+	if !valid(pos) || !d.Cell(pos).IsWall() {
 		return false
 	}
-	return pos.Add(gruid.Point{-1, 0}).valid() && pos.Add(gruid.Point{1, 0}).valid() &&
+	return valid(pos.Add(gruid.Point{-1, 0})) && valid(pos.Add(gruid.Point{1, 0})) &&
 		d.Cell(pos.Add(gruid.Point{-1, 0})).IsWall() && d.Cell(pos.Add(gruid.Point{1, 0})).IsWall() &&
-		pos.Add(gruid.Point{0, -1}).valid() && d.Cell(pos.Add(gruid.Point{0, -1})).IsPassable() &&
-		pos.Add(gruid.Point{0, 1}).valid() && d.Cell(pos.Add(gruid.Point{0, 1})).IsPassable() ||
-		(pos.Add(gruid.Point{-1, 0}).valid() && pos.Add(gruid.Point{1, 0}).valid() &&
+		valid(pos.Add(gruid.Point{0, -1})) && d.Cell(pos.Add(gruid.Point{0, -1})).IsPassable() &&
+		valid(pos.Add(gruid.Point{0, 1})) && d.Cell(pos.Add(gruid.Point{0, 1})).IsPassable() ||
+		(valid(pos.Add(gruid.Point{-1, 0})) && valid(pos.Add(gruid.Point{1, 0})) &&
 			d.Cell(pos.Add(gruid.Point{-1, 0})).IsPassable() && d.Cell(pos.Add(gruid.Point{1, 0})).IsPassable() &&
-			pos.Add(gruid.Point{0, -1}).valid() && d.Cell(pos.Add(gruid.Point{0, -1})).IsWall() &&
-			pos.Add(gruid.Point{0, 1}).valid() && d.Cell(pos.Add(gruid.Point{0, 1})).IsWall())
+			valid(pos.Add(gruid.Point{0, -1})) && d.Cell(pos.Add(gruid.Point{0, -1})).IsWall() &&
+			valid(pos.Add(gruid.Point{0, 1})) && d.Cell(pos.Add(gruid.Point{0, 1})).IsWall())
 }
 
 type placement int
@@ -968,7 +968,7 @@ func (g *state) GenRoomTunnels(ml maplayout) {
 	}
 	dg.AddSpecial(g, ml)
 	dg.ComputeConnectedComponents(func(pos gruid.Point) bool {
-		return pos.valid() && g.Dungeon.Cell(pos).IsPassable()
+		return valid(pos) && g.Dungeon.Cell(pos).IsPassable()
 	})
 	dg.GenMonsters(g)
 	dg.PutCavernCells(g)
@@ -1739,7 +1739,7 @@ func (dg *dgen) GenLake(t terrain) {
 	for {
 		pos := walls[RandInt(len(walls))]
 		_, size := d.Connected(pos, func(npos gruid.Point) bool {
-			return npos.valid() && dg.d.Cell(npos).T == WallCell && !dg.room[npos] && Distance(pos, npos) < 10+RandInt(10)
+			return valid(npos) && dg.d.Cell(npos).T == WallCell && !dg.room[npos] && Distance(pos, npos) < 10+RandInt(10)
 		})
 		count++
 		if Abs(bestsize-90) > Abs(size-90) {
@@ -1751,7 +1751,7 @@ func (dg *dgen) GenLake(t terrain) {
 		}
 	}
 	conn, _ := d.Connected(bestpos, func(npos gruid.Point) bool {
-		return npos.valid() && dg.d.Cell(npos).T == WallCell && !dg.room[npos] && Distance(bestpos, npos) < 10+RandInt(10)
+		return valid(npos) && dg.d.Cell(npos).T == WallCell && !dg.room[npos] && Distance(bestpos, npos) < 10+RandInt(10)
 	})
 	for pos := range conn {
 		d.SetCell(pos, t)
@@ -1773,7 +1773,7 @@ func (dg *dgen) GenQueenRock() {
 	for i := 0; i < 1+RandInt(2); i++ {
 		pos := cavern[RandInt(len(cavern))]
 		conn, _ := dg.d.Connected(pos, func(npos gruid.Point) bool {
-			return npos.valid() && dg.d.Cell(npos).T == CavernCell && Distance(npos, pos) < 15+RandInt(5)
+			return valid(npos) && dg.d.Cell(npos).T == CavernCell && Distance(npos, pos) < 15+RandInt(5)
 		})
 		for pos := range conn {
 			dg.d.SetCell(pos, QueenRockCell)
@@ -1853,12 +1853,12 @@ func (dg *dgen) GenCaveMap(size int) {
 		lastValid := pos
 		for cells < max && curcells < 150 {
 			npos := RandomNeighbor(pos, false)
-			if !pos.valid() && npos.valid() && d.Cell(npos).T == WallCell {
+			if !valid(pos) && valid(npos) && d.Cell(npos).T == WallCell {
 				pos = lastValid
 				continue
 			}
 			pos = npos
-			if pos.valid() {
+			if valid(pos) {
 				if d.Cell(pos).T != GroundCell {
 					d.SetCell(pos, GroundCell)
 					cells++
@@ -1895,12 +1895,12 @@ func (d *dungeon) DigBlock(block []gruid.Point) []gruid.Point {
 			break
 		}
 		pos = RandomNeighbor(pos, false)
-		if !pos.valid() {
+		if !valid(pos) {
 			block = block[:0]
 			pos = d.WallCell()
 			continue
 		}
-		if !pos.valid() {
+		if !valid(pos) {
 			return nil
 		}
 	}

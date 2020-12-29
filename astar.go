@@ -80,7 +80,7 @@ func (nm nodeMap) iter(pos gruid.Point, f func(*node)) {
 	for qstart < qend {
 		pos = idxtopos(iterQueueCache[qstart])
 		qstart++
-		nb = pos.CardinalNeighbors(nb, func(npos gruid.Point) bool { return npos.valid() })
+		nb = pos.CardinalNeighbors(nb, func(npos gruid.Point) bool { return valid(npos) })
 		for _, npos := range nb {
 			n := &nm.Nodes[idx(npos)]
 			if n.CacheIndex == nm.Index && iterVisitedCache[idx(npos)] != nm.Index {
