@@ -265,13 +265,14 @@ func (g *state) ComputeLOS() {
 		} else if c.T == TreeCell && g.Illuminated[idx(pos)] && n.Cost <= TreeRange {
 			if g.Dungeon.Cell(pos).T == WallCell {
 				// this is just an approximation, but ok in practice
-				nb = pos.Neighbors(nb, func(npos gruid.Point) bool {
+				nb = Neighbors(pos, nb, func(npos gruid.Point) bool {
 					if !valid(npos) || !g.Illuminated[idx(npos)] || g.Dungeon.Cell(npos).IsWall() {
 						return false
 					}
 					node, ok := g.Player.Rays[npos]
 					return ok && node.Cost < TreeRange
 				})
+
 				if len(nb) == 0 {
 					continue
 				}

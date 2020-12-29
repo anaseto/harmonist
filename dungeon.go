@@ -148,7 +148,7 @@ func (dg *dgen) ComputeConnectedComponents(nf func(gruid.Point) bool) {
 			pos = stack[len(stack)-1]
 			stack = stack[:len(stack)-1]
 			count++
-			nb = pos.CardinalNeighbors(nb, nf)
+			nb = CardinalNeighbors(pos, nb, nf)
 			for _, npos := range nb {
 				if dg.cc[idx(npos)] != index {
 					dg.cc[idx(npos)] = index
@@ -169,7 +169,7 @@ func (d *dungeon) Connected(pos gruid.Point, nf func(gruid.Point) bool) (map[gru
 		pos = stack[len(stack)-1]
 		stack = stack[:len(stack)-1]
 		count++
-		nb = pos.CardinalNeighbors(nb, nf)
+		nb = CardinalNeighbors(pos, nb, nf)
 		for _, npos := range nb {
 			if !conn[npos] {
 				conn[npos] = true
