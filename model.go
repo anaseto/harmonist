@@ -24,6 +24,10 @@ type model struct {
 }
 
 func (m *model) Update(msg gruid.Msg) gruid.Effect {
+	if _, ok := msg.(gruid.MsgInit); ok {
+		m.st.InitLevel()
+		return nil
+	}
 	var eff gruid.Effect
 	switch m.mode {
 	case modeNormal:
