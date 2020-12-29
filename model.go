@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/anaseto/gruid"
-	"github.com/anaseto/gruid/paths"
 	"github.com/anaseto/gruid/ui"
 )
 

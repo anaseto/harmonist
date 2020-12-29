@@ -1,6 +1,9 @@
 package main
 
-import "strings"
+import (
+	"github.com/anaseto/gruid"
+	"strings"
+)
 
 type cell struct {
 	T        terrain

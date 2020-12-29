@@ -15,6 +15,8 @@
 
 package main
 
+import "github.com/anaseto/gruid"
+
 type raynode struct {
 	Cost int
 }

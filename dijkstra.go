@@ -2,6 +2,8 @@ package main
 
 import (
 	"container/heap"
+
+	"github.com/anaseto/gruid"
 )
 
 type Dijkstrer interface {

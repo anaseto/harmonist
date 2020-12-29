@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+
+	"github.com/anaseto/gruid"
 )
 
 func Distance(from, to gruid.Point) int {

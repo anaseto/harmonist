@@ -4,10 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
-	"strings"
 	"time"
-	"unicode"
-	"unicode/utf8"
+
+	"github.com/anaseto/gruid"
 )
 
 func (ui *model) HideCursor() {

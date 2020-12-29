@@ -1,6 +1,9 @@
 package main
 
-import "errors"
+import (
+	"errors"
+	"github.com/anaseto/gruid"
+)
 
 var DijkstraMapCache [DungeonNCells]int
 

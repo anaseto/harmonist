@@ -1,5 +1,9 @@
 package main
 
+import (
+	"github.com/anaseto/gruid"
+)
+
 type stats struct {
 	Story             []string
 	Killed            int

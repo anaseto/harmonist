@@ -1,6 +1,10 @@
 package main
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/anaseto/gruid"
+)
 
 type Targeter interface {
 	ComputeHighlight(*state, gruid.Point)

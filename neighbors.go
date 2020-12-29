@@ -1,5 +1,7 @@
 package main
 
+import "github.com/anaseto/gruid"
+
 func (pos gruid.Point) Neighbors(nb []gruid.Point, keep func(gruid.Point) bool) []gruid.Point {
 	neighbors := [8]gruid.Point{pos.Add(gruid.Point{1, 0}), pos.Add(gruid.Point{-1, 0}), pos.Add(gruid.Point{0, -1}), pos.Add(gruid.Point{0, 1}), pos.Add(gruid.Point{1, -1}), pos.Add(gruid.Point{-1, -1}), pos.Add(gruid.Point{1, 1}), pos.Add(gruid.Point{-1, 1})}
 	nb = nb[:0]

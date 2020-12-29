@@ -5,6 +5,8 @@ package main
 import (
 	"errors"
 	"fmt"
+
+	"github.com/anaseto/gruid"
 )
 
 func (g *state) DamagePlayer(damage int) {

@@ -351,7 +351,7 @@ type cellDraw struct {
 }
 
 const (
-	AttrText gruid.AttrsMask = iota
+	AttrText gruid.AttrMask = iota
 	AttrInMap
 )
 

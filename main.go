@@ -5,11 +5,9 @@ package main
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/anaseto/gruid"
-	"github.com/anaseto/gruid/ui"
 )
 
 func main() {

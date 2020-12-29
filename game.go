@@ -1,6 +1,10 @@
 package main
 
-import "container/heap"
+import (
+	"container/heap"
+
+	"github.com/anaseto/gruid"
+)
 
 var Version string = "v0.3"
 
