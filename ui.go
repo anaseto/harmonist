@@ -440,7 +440,8 @@ func (ui *model) HandleKey(rka runeKeyAction) (again bool, quit bool, err error)
 		switch c.T {
 		case StairCell:
 			if g.Dungeon.Cell(g.Player.Pos).T == StairCell && g.Objects.Stairs[g.Player.Pos] != BlockedStair {
-				ui.MenuSelectedAnimation(MenuInteract, true)
+				// TODO: animation
+				//ui.MenuSelectedAnimation(MenuInteract, true)
 				strt := g.Objects.Stairs[g.Player.Pos]
 				err = ui.OptionalDescendConfirmation(strt)
 				if err != nil {
@@ -458,19 +459,19 @@ func (ui *model) HandleKey(rka runeKeyAction) (again bool, quit bool, err error)
 				err = errors.New("No stairs here.")
 			}
 		case BarrelCell:
-			ui.MenuSelectedAnimation(MenuInteract, true)
+			//ui.MenuSelectedAnimation(MenuInteract, true)
 			err = g.Rest()
 			if err != nil {
-				ui.MenuSelectedAnimation(MenuInteract, false)
+				//ui.MenuSelectedAnimation(MenuInteract, false)
 			}
 		case MagaraCell:
 			err = ui.EquipMagara()
 			err = ui.CleanError(err)
 		case StoneCell:
-			ui.MenuSelectedAnimation(MenuInteract, true)
+			//ui.MenuSelectedAnimation(MenuInteract, true)
 			err = g.ActivateStone()
 			if err != nil {
-				ui.MenuSelectedAnimation(MenuInteract, false)
+				//ui.MenuSelectedAnimation(MenuInteract, false)
 			}
 		case ScrollCell:
 			err = ui.ReadScroll()

@@ -257,7 +257,8 @@ func (g *state) ActivateQueenStone() {
 		targets = append(targets, m)
 	}
 	g.Print("The stone releases confusing sounds.")
-	g.ui.LOSWavesAnimation(DefaultLOSRange, WaveMagicNoise, g.Player.Pos)
+	// TODO: animation
+	//g.ui.LOSWavesAnimation(DefaultLOSRange, WaveMagicNoise, g.Player.Pos)
 	for _, m := range targets {
 		m.EnterConfusion(g)
 		if m.Search == InvalidPos {
@@ -280,7 +281,8 @@ func (g *state) ActivateNightStone() error {
 		return errors.New("There are no suitable monsters in sight.")
 	}
 	g.Print("The stone releases hypnotic harmonies.")
-	g.ui.LOSWavesAnimation(DefaultLOSRange, WaveSleeping, g.Player.Pos)
+	// TODO: animation
+	//g.ui.LOSWavesAnimation(DefaultLOSRange, WaveSleeping, g.Player.Pos)
 	for _, mons := range targets {
 		g.Printf("%s falls asleep.", mons.Kind.Definite(true))
 		mons.State = Resting
@@ -302,7 +304,8 @@ func (g *state) ActivateTreeStone() error {
 		return errors.New("There are no suitable monsters in sight.")
 	}
 	g.Print("The stone releases magical spores.")
-	g.ui.LOSWavesAnimation(DefaultLOSRange, WaveTree, g.Player.Pos)
+	// TODO: animation
+	//g.ui.LOSWavesAnimation(DefaultLOSRange, WaveTree, g.Player.Pos)
 	for _, mons := range targets {
 		mons.EnterLignification(g)
 		if mons.Search == InvalidPos {
@@ -340,7 +343,8 @@ func (g *state) TeleportToBarrel() {
 	pos := barrels[RandInt(len(barrels))]
 	opos := g.Player.Pos
 	g.Print("You teleport away.")
-	g.ui.TeleportAnimation(opos, pos, true)
+	// TODO: animation
+	//g.ui.TeleportAnimation(opos, pos, true)
 	g.PlacePlayerAt(pos)
 }
 
@@ -357,7 +361,8 @@ func (g *state) MagicMapping(maxdist int) error {
 		dists = append(dists, dist)
 	}
 	sort.Ints(dists)
-	g.ui.DrawDungeonView(NormalMode)
+	// TODO: magic mapping animation
+	//g.ui.DrawDungeonView(NormalMode)
 	for _, d := range dists {
 		if maxdist > 0 && d > maxdist {
 			continue
@@ -372,9 +377,9 @@ func (g *state) MagicMapping(maxdist int) error {
 				draw = true
 			}
 		}
-		if draw {
-			g.ui.MagicMappingAnimation(cdists[d])
-		}
+		//if draw {
+		//g.ui.MagicMappingAnimation(cdists[d])
+		//}
 	}
 	g.Printf("You feel aware of your surroundings..")
 	return nil

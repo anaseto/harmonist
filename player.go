@@ -151,7 +151,8 @@ func (g *state) Rest() error {
 	if g.Player.Bananas <= 0 {
 		return errors.New("You cannot sleep without eating for dinner a banana first.")
 	}
-	g.ui.DrawMessage("Resting...")
+	// TODO: animation
+	//g.ui.DrawMessage("Resting...")
 	g.RenewEvent(DurationTurn)
 	g.Resting = true
 	g.RestingTurns = RandInt(5) // you do not wake up when you want
@@ -196,7 +197,8 @@ func (g *state) Teleportation() {
 		// should always happen
 		opos := g.Player.Pos
 		g.Print("You teleport away.")
-		g.ui.TeleportAnimation(opos, pos, true)
+		// TODO: animation
+		//g.ui.TeleportAnimation(opos, pos, true)
 		g.PlacePlayerAt(pos)
 	} else {
 		// should not happen
@@ -246,7 +248,8 @@ func (g *state) CollectGround() {
 			g.PrintStyled("You stand over fake stairs.", logSpecial)
 			g.PrintStyled("Harmonic illusions!", logSpecial)
 			g.StoryPrint("Found harmonic fake stairs!")
-			g.ui.FoundFakeStairsAnimation()
+			// TODO: animation
+			//g.ui.FoundFakeStairsAnimation()
 		case PotionCell:
 			g.DrinkPotion(pos)
 		default:
@@ -284,8 +287,10 @@ func (g *state) FallAbyss(style descendstyle) {
 
 func (g *state) AbyssJumpConfirmation() bool {
 	g.Print("Do you really want to jump into the abyss? (DANGEROUS) [y/N]")
-	g.ui.DrawDungeonView(NoFlushMode)
-	g.ui.Flush()
+	// TODO: animation
+	//g.ui.DrawDungeonView(NoFlushMode)
+	//g.ui.Flush()
+	// TODO confirmation prompt abyss
 	return g.ui.PromptConfirmation()
 }
 
