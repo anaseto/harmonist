@@ -1852,7 +1852,7 @@ func (dg *dgen) GenCaveMap(size int) {
 		notValid := 0
 		lastValid := pos
 		for cells < max && curcells < 150 {
-			npos := pos.RandomNeighbor(false)
+			npos := RandomNeighbor(pos, false)
 			if !pos.valid() && npos.valid() && d.Cell(npos).T == WallCell {
 				pos = lastValid
 				continue
@@ -1894,7 +1894,7 @@ func (d *dungeon) DigBlock(block []gruid.Point) []gruid.Point {
 		if d.HasFreeNeighbor(pos) {
 			break
 		}
-		pos = pos.RandomNeighbor(false)
+		pos = RandomNeighbor(pos, false)
 		if !pos.valid() {
 			block = block[:0]
 			pos = d.WallCell()

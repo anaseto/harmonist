@@ -26,7 +26,7 @@ func TestDir(t *testing.T) {
 		{gruid.Point{4, 3}, ESE},
 	}
 	for _, test := range table {
-		if test.pos.Dir(gruid.Point{2, 2}) != test.dir {
+		if Dir(gruid.Point{2, 2}, test.pos) != test.dir {
 			t.Errorf("Bad direction for %+v\n", test)
 		}
 	}

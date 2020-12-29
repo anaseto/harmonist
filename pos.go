@@ -128,13 +128,13 @@ func To(dir direction, from gruid.Point) gruid.Point {
 	return to
 }
 
-func (pos gruid.Point) Dir(from gruid.Point) direction {
-	deltaX := Abs(pos.X - from.X)
-	deltaY := Abs(pos.Y - from.Y)
+func Dir(from, to gruid.Point) direction {
+	deltaX := Abs(to.X - from.X)
+	deltaY := Abs(to.Y - from.Y)
 	switch {
-	case pos.X > from.X && pos.Y == from.Y:
+	case to.X > from.X && to.Y == from.Y:
 		return E
-	case pos.X > from.X && pos.Y < from.Y:
+	case to.X > from.X && to.Y < from.Y:
 		switch {
 		case deltaX > deltaY:
 			return ENE
@@ -143,9 +143,9 @@ func (pos gruid.Point) Dir(from gruid.Point) direction {
 		default:
 			return NNE
 		}
-	case pos.X == from.X && pos.Y < from.Y:
+	case to.X == from.X && to.Y < from.Y:
 		return N
-	case pos.X < from.X && pos.Y < from.Y:
+	case to.X < from.X && to.Y < from.Y:
 		switch {
 		case deltaY > deltaX:
 			return NNW
@@ -154,9 +154,9 @@ func (pos gruid.Point) Dir(from gruid.Point) direction {
 		default:
 			return WNW
 		}
-	case pos.X < from.X && pos.Y == from.Y:
+	case to.X < from.X && to.Y == from.Y:
 		return W
-	case pos.X < from.X && pos.Y > from.Y:
+	case to.X < from.X && to.Y > from.Y:
 		switch {
 		case deltaX > deltaY:
 			return WSW
@@ -165,9 +165,9 @@ func (pos gruid.Point) Dir(from gruid.Point) direction {
 		default:
 			return SSW
 		}
-	case pos.X == from.X && pos.Y > from.Y:
+	case to.X == from.X && to.Y > from.Y:
 		return S
-	case pos.X > from.X && pos.Y > from.Y:
+	case to.X > from.X && to.Y > from.Y:
 		switch {
 		case deltaY > deltaX:
 			return SSE
@@ -177,11 +177,11 @@ func (pos gruid.Point) Dir(from gruid.Point) direction {
 			return ESE
 		}
 	default:
-		panic(fmt.Sprintf("internal error: invalid gruid.Point:%+v-%+v", pos, from))
+		panic(fmt.Sprintf("internal error: invalid gruid.Point:%+v-%+v", to, from))
 	}
 }
 
-func (pos gruid.Point) Parents(from gruid.Point, p []gruid.Point) []gruid.Point {
+func Parents(pos, from gruid.Point, p []gruid.Point) []gruid.Point {
 	switch pos.Dir(from) {
 	case E:
 		p = append(p, pos.Add(gruid.Point{-1, 0}))
@@ -219,14 +219,14 @@ func (pos gruid.Point) Parents(from gruid.Point, p []gruid.Point) []gruid.Point 
 	return p
 }
 
-func (pos gruid.Point) RandomNeighbor(diag bool) gruid.Point {
+func RandomNeighbor(pos gruid.Point, diag bool) gruid.Point {
 	if diag {
-		return pos.RandomNeighborDiagonals()
+		return RandomNeighborDiagonals(pos)
 	}
-	return pos.RandomNeighborCardinal()
+	return RandomNeighborCardinal(pos)
 }
 
-func (pos gruid.Point) RandomNeighborDiagonals() gruid.Point {
+func RandomNeighborDiagonals(pos gruid.Point) gruid.Point {
 	neighbors := [8]gruid.Point{pos.Add(gruid.Point{1, 0}), pos.Add(gruid.Point{-1, 0}), pos.Add(gruid.Point{0, -1}), pos.Add(gruid.Point{0, 1}), pos.Add(gruid.Point{1, -1}), pos.Add(gruid.Point{-1, -1}), pos.Add(gruid.Point{1, 1}), pos.Add(gruid.Point{-1, 1})}
 	var r int
 	switch RandInt(8) {
@@ -240,7 +240,7 @@ func (pos gruid.Point) RandomNeighborDiagonals() gruid.Point {
 	return neighbors[r]
 }
 
-func (pos gruid.Point) RandomNeighborCardinal() gruid.Point {
+func RandomNeighborCardinal(pos gruid.Point) gruid.Point {
 	neighbors := [4]gruid.Point{pos.Add(gruid.Point{1, 0}), pos.Add(gruid.Point{-1, 0}), pos.Add(gruid.Point{0, -1}), pos.Add(gruid.Point{0, 1})}
 	var r int
 	switch RandInt(4) {
@@ -256,7 +256,7 @@ func idxtopos(i int) gruid.Point {
 	return gruid.Point{i % DungeonWidth, i / DungeonWidth}
 }
 
-func (pos gruid.Point) idx() int {
+func idx(pos gruid.Point) int {
 	return pos.Y*DungeonWidth + pos.X
 }
 

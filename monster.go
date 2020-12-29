@@ -655,7 +655,7 @@ func (m *monster) PlaceAt(g *state, pos gruid.Point) {
 		g.MonstersPosCache[m.Pos.idx()] = m.Index + 1
 		npos := m.RandomFreeNeighbor(g)
 		if npos != m.Pos {
-			m.Dir = npos.Dir(m.Pos)
+			m.Dir = Dir(m.Pos, npos)
 		} else {
 			m.Dir = E
 		}
@@ -665,7 +665,7 @@ func (m *monster) PlaceAt(g *state, pos gruid.Point) {
 		// should not happen
 		return
 	}
-	m.Dir = pos.Dir(m.Pos)
+	m.Dir = Dir(m.Pos, pos)
 	m.CorrectDir()
 	g.MonstersPosCache[m.Pos.idx()] = 0
 	m.Pos = pos
@@ -687,7 +687,7 @@ func (m *monster) CorrectDir() {
 }
 
 func (m *monster) AttackAction(g *state) {
-	m.Dir = g.Player.Pos.Dir(m.Pos)
+	m.Dir = Dir(m.Pos, g.Player.Pos)
 	m.CorrectDir()
 	switch m.Kind {
 	case MonsExplosiveNadre:
@@ -772,7 +772,7 @@ func (m *monster) RandomFreeNeighbor(g *state) gruid.Point {
 	}
 	samedir := fnb[RandInt(len(fnb))]
 	for _, pos := range fnb {
-		if m.Dir.InViewCone(m.Pos, pos.To(pos.Dir(m.Pos))) {
+		if m.Dir.InViewCone(m.Pos, To(Dir(m.Pos, pos), pos)) {
 			samedir = pos
 			break
 		}
@@ -890,7 +890,7 @@ func (m *monster) HandleMonsSpecifics(g *state) (done bool) {
 		switch m.State {
 		case Hunting:
 			if m.Target != InvalidPos && m.Target != m.Pos {
-				m.Dir = m.Target.Dir(m.Pos)
+				m.Dir = Dir(m.Pos, m.Target)
 			}
 			if !m.SeesPlayer(g) {
 				m.StartWatching()
@@ -1368,14 +1368,14 @@ func (m *monster) PushPlayer(g *state, dist int) {
 	if g.Player.HasStatus(StatusLignification) {
 		return
 	}
-	dir := g.Player.Pos.Dir(m.Pos)
+	dir := Dir(m.Pos, g.Player.Pos)
 	pos := g.Player.Pos
 	npos := pos
 	path := []gruid.Point{pos}
 	i := 0
 	for {
 		i++
-		npos = npos.To(dir)
+		npos = To(dir, npos)
 		path = append(path, npos)
 		if !npos.valid() || g.Dungeon.Cell(npos).BlocksRange() {
 			path = path[:len(path)-1]
@@ -1480,7 +1480,7 @@ func (m *monster) RangeBlocked(g *state) bool {
 
 func (g *state) BarrierCandidates(pos gruid.Point, todir direction) []gruid.Point {
 	candidates := pos.ValidCardinalNeighbors()
-	bestpos := pos.To(todir)
+	bestpos := To(todir, pos)
 	if Distance(bestpos, pos) > 1 {
 		j := 0
 		for i := 0; i < len(candidates); i++ {
@@ -1494,7 +1494,7 @@ func (g *state) BarrierCandidates(pos gruid.Point, todir direction) []gruid.Poin
 		}
 		return candidates
 	}
-	worstpos := pos.To(pos.Dir(bestpos))
+	worstpos := To(Dir(bestpos, pos), pos)
 	for i := 1; i < len(candidates); i++ {
 		if candidates[i] == bestpos {
 			candidates[0], candidates[i] = candidates[i], candidates[0]
@@ -1516,7 +1516,7 @@ func (g *state) BarrierCandidates(pos gruid.Point, todir direction) []gruid.Poin
 
 func (m *monster) CreateBarrier(g *state) bool {
 	// TODO: add noise?
-	dir := g.Player.Pos.Dir(m.Pos)
+	dir := Dir(m.Pos, g.Player.Pos)
 	candidates := g.BarrierCandidates(g.Player.Pos, dir)
 	done := false
 	for _, pos := range candidates {

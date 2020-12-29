@@ -24,7 +24,7 @@ type rayMap map[gruid.Point]raynode
 func (g *state) BestParent(rm rayMap, from, pos gruid.Point, rs raystyle) (gruid.Point, int) {
 	var parents [2]gruid.Point
 	p := parents[:0]
-	p = pos.Parents(from, p)
+	p = Parents(pos, from, p)
 	b := p[0]
 	if len(p) > 1 && rm[p[1]].Cost+g.LOSCost(from, p[1], pos, rs) < rm[b].Cost+g.LOSCost(from, b, pos, rs) {
 		b = p[1]
@@ -39,7 +39,7 @@ func (g *state) DiagonalOpaque(from, to gruid.Point, rs raystyle) bool {
 	// allows diagonals for light rays in normal circumstances.
 	var cache [2]gruid.Point
 	p := cache[:0]
-	switch to.Dir(from) {
+	switch Dir(from, to) {
 	case NE:
 		p = append(p, to.Add(gruid.Point{0, 1}), to.Add(gruid.Point{-1, 0}))
 	case NW:
@@ -77,7 +77,7 @@ func (g *state) DiagonalDifficult(from, to gruid.Point) bool {
 	// should reduce range of line of sight in that diagonal direction.
 	var cache [2]gruid.Point
 	p := cache[:0]
-	switch to.Dir(from) {
+	switch Dir(from, to) {
 	case NE:
 		p = append(p, to.Add(gruid.Point{0, 1}), to.Add(gruid.Point{-1, 0}))
 	case NW:

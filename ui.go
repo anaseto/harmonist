@@ -410,7 +410,7 @@ func (ui *model) HandleKey(rka runeKeyAction) (again bool, quit bool, err error)
 	g := ui.g
 	switch rka.k {
 	case ActionW, ActionS, ActionN, ActionE:
-		err = g.PlayerBump(g.Player.Pos.To(KeyToDir(rka.k)))
+		err = g.PlayerBump(To(KeyToDir(rka.k), g.Player.Pos))
 	case ActionRunW, ActionRunS, ActionRunN, ActionRunE:
 		err = g.GoToDir(KeyToDir(rka.k))
 	case ActionWaitTurn:
@@ -748,10 +748,10 @@ func (ui *model) CursorKeyAction(targ Targeter, rka runeKeyAction, data *examine
 	}
 	switch rka.k {
 	case ActionW, ActionS, ActionN, ActionE:
-		data.npos = pos.To(KeyToDir(rka.k))
+		data.npos = To(KeyToDir(rka.k), pos)
 	case ActionRunW, ActionRunS, ActionRunN, ActionRunE:
 		for i := 0; i < 5; i++ {
-			p := data.npos.To(KeyToDir(rka.k))
+			p := To(KeyToDir(rka.k), data.npos)
 			if !p.valid() {
 				break
 			}

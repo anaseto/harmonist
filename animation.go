@@ -337,7 +337,7 @@ func (ui *model) MonsterJavelinAnimation(ray []gruid.Point, hit bool) {
 	for i := 0; i < len(ray); i++ {
 		pos := ray[i]
 		r, fgColor, bgColor := ui.PositionDrawing(pos)
-		ui.DrawAtPosition(pos, true, ui.ProjectileSymbol(pos.Dir(g.Player.Pos)), ColorFgMonster, bgColor)
+		ui.DrawAtPosition(pos, true, ui.ProjectileSymbol(Dir(g.Player.Pos, pos)), ColorFgMonster, bgColor)
 		ui.Flush()
 		Sleep(AnimDurShort)
 		ui.DrawAtPosition(pos, true, r, fgColor, bgColor)

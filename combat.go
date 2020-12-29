@@ -159,10 +159,10 @@ func (g *state) Jump(mons *monster) error {
 	if g.Player.HasStatus(StatusExhausted) {
 		return errors.New("You cannot jump while exhausted.")
 	}
-	dir := mons.Pos.Dir(g.Player.Pos)
+	dir := Dir(g.Player.Pos, mons.Pos)
 	pos := g.Player.Pos
 	for {
-		pos = pos.To(dir)
+		pos = To(dir, pos)
 		if !g.PlayerCanPass(pos) {
 			break
 		}
@@ -203,13 +203,13 @@ func (g *state) WallJump(pos gruid.Point) error {
 	if g.Player.HasStatus(StatusExhausted) {
 		return errors.New("You cannot jump while exhausted.")
 	}
-	dir := g.Player.Pos.Dir(pos)
+	dir := Dir(pos, g.Player.Pos)
 	pos = g.Player.Pos
 	tpos := pos
 	count := 0
 	path := []gruid.Point{tpos}
 	for count < 4 {
-		pos = pos.To(dir)
+		pos = To(dir, pos)
 		if !g.PlayerCanJumpPass(pos) {
 			break
 		}

@@ -57,9 +57,9 @@ func (p *player) HasStatus(st status) bool {
 
 func (g *state) AutoToDir() bool {
 	if g.MonsterInLOS() == nil {
-		pos := g.Player.Pos.To(g.AutoDir)
+		pos := To(g.AutoDir, g.Player.Pos)
 		if g.PlayerCanPass(pos) {
-			err := g.PlayerBump(g.Player.Pos.To(g.AutoDir))
+			err := g.PlayerBump(To(g.AutoDir, g.Player.Pos))
 			if err != nil {
 				g.Print(err.Error())
 				g.AutoDir = NoDir
@@ -80,7 +80,7 @@ func (g *state) GoToDir(dir direction) error {
 		g.AutoDir = NoDir
 		return errors.New("You cannot travel while there are monsters in view.")
 	}
-	pos := g.Player.Pos.To(dir)
+	pos := To(dir, g.Player.Pos)
 	if !g.PlayerCanPass(pos) {
 		return errors.New("You cannot move in that direction.")
 	}
@@ -407,7 +407,7 @@ func (g *state) PlacePlayerAt(pos gruid.Point) {
 	if pos == g.Player.Pos {
 		return
 	}
-	g.Player.Dir = pos.Dir(g.Player.Pos)
+	g.Player.Dir = Dir(g.Player.Pos, pos)
 	switch g.Player.Dir {
 	case ENE, ESE:
 		g.Player.Dir = E
