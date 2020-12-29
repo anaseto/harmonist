@@ -1,13 +1,11 @@
 package main
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
-	"runtime"
 	"sort"
 	"strings"
-	"time"
+	//"time"
 	"unicode/utf8"
 
 	"github.com/anaseto/gruid"
@@ -19,65 +17,63 @@ var (
 	DisableAnimations bool = false
 )
 
-type uicolor int
-
 const (
-	Color256Base03  uicolor = 234
-	Color256Base02  uicolor = 235
-	Color256Base01  uicolor = 240
-	Color256Base00  uicolor = 241 // for dark on light background
-	Color256Base0   uicolor = 244
-	Color256Base1   uicolor = 245
-	Color256Base2   uicolor = 254
-	Color256Base3   uicolor = 230
-	Color256Yellow  uicolor = 136
-	Color256Orange  uicolor = 166
-	Color256Red     uicolor = 160
-	Color256Magenta uicolor = 125
-	Color256Violet  uicolor = 61
-	Color256Blue    uicolor = 33
-	Color256Cyan    uicolor = 37
-	Color256Green   uicolor = 64
+	Color256Base03  gruid.Color = 234
+	Color256Base02  gruid.Color = 235
+	Color256Base01  gruid.Color = 240
+	Color256Base00  gruid.Color = 241 // for dark on light background
+	Color256Base0   gruid.Color = 244
+	Color256Base1   gruid.Color = 245
+	Color256Base2   gruid.Color = 254
+	Color256Base3   gruid.Color = 230
+	Color256Yellow  gruid.Color = 136
+	Color256Orange  gruid.Color = 166
+	Color256Red     gruid.Color = 160
+	Color256Magenta gruid.Color = 125
+	Color256Violet  gruid.Color = 61
+	Color256Blue    gruid.Color = 33
+	Color256Cyan    gruid.Color = 37
+	Color256Green   gruid.Color = 64
 
-	Color16Base03  uicolor = 8
-	Color16Base02  uicolor = 0
-	Color16Base01  uicolor = 10
-	Color16Base00  uicolor = 11
-	Color16Base0   uicolor = 12
-	Color16Base1   uicolor = 14
-	Color16Base2   uicolor = 7
-	Color16Base3   uicolor = 15
-	Color16Yellow  uicolor = 3
-	Color16Orange  uicolor = 9
-	Color16Red     uicolor = 1
-	Color16Magenta uicolor = 5
-	Color16Violet  uicolor = 13
-	Color16Blue    uicolor = 4
-	Color16Cyan    uicolor = 6
-	Color16Green   uicolor = 2
+	Color16Base03  gruid.Color = 8
+	Color16Base02  gruid.Color = 0
+	Color16Base01  gruid.Color = 10
+	Color16Base00  gruid.Color = 11
+	Color16Base0   gruid.Color = 12
+	Color16Base1   gruid.Color = 14
+	Color16Base2   gruid.Color = 7
+	Color16Base3   gruid.Color = 15
+	Color16Yellow  gruid.Color = 3
+	Color16Orange  gruid.Color = 9
+	Color16Red     gruid.Color = 1
+	Color16Magenta gruid.Color = 5
+	Color16Violet  gruid.Color = 13
+	Color16Blue    gruid.Color = 4
+	Color16Cyan    gruid.Color = 6
+	Color16Green   gruid.Color = 2
 )
 
 // uicolors: http://ethanschoonover.com/solarized
 var (
-	ColorBase03  uicolor = Color256Base03
-	ColorBase02  uicolor = Color256Base02
-	ColorBase01  uicolor = Color256Base01
-	ColorBase00  uicolor = Color256Base00 // for dark on light background
-	ColorBase0   uicolor = Color256Base0
-	ColorBase1   uicolor = Color256Base1
-	ColorBase2   uicolor = Color256Base2
-	ColorBase3   uicolor = Color256Base3
-	ColorYellow  uicolor = Color256Yellow
-	ColorOrange  uicolor = Color256Orange
-	ColorRed     uicolor = Color256Red
-	ColorMagenta uicolor = Color256Magenta
-	ColorViolet  uicolor = Color256Violet
-	ColorBlue    uicolor = Color256Blue
-	ColorCyan    uicolor = Color256Cyan
-	ColorGreen   uicolor = Color256Green
+	ColorBase03  gruid.Color = Color256Base03
+	ColorBase02  gruid.Color = Color256Base02
+	ColorBase01  gruid.Color = Color256Base01
+	ColorBase00  gruid.Color = Color256Base00 // for dark on light background
+	ColorBase0   gruid.Color = Color256Base0
+	ColorBase1   gruid.Color = Color256Base1
+	ColorBase2   gruid.Color = Color256Base2
+	ColorBase3   gruid.Color = Color256Base3
+	ColorYellow  gruid.Color = Color256Yellow
+	ColorOrange  gruid.Color = Color256Orange
+	ColorRed     gruid.Color = Color256Red
+	ColorMagenta gruid.Color = Color256Magenta
+	ColorViolet  gruid.Color = Color256Violet
+	ColorBlue    gruid.Color = Color256Blue
+	ColorCyan    gruid.Color = Color256Cyan
+	ColorGreen   gruid.Color = Color256Green
 )
 
-func (ui *model) Map256ColorTo16(c uicolor) uicolor {
+func (ui *model) Map256ColorTo16(c gruid.Color) gruid.Color {
 	switch c {
 	case Color256Base03:
 		return Color16Base03
@@ -116,7 +112,7 @@ func (ui *model) Map256ColorTo16(c uicolor) uicolor {
 	}
 }
 
-func (ui *model) Map16ColorTo256(c uicolor) uicolor {
+func (ui *model) Map16ColorTo256(c gruid.Color) gruid.Color {
 	switch c {
 	case Color16Base03:
 		return Color256Base03
@@ -190,7 +186,7 @@ var (
 	ColorFgStatusGood,
 	ColorFgStatusExpire,
 	ColorFgStatusOther,
-	ColorFgWanderingMonster uicolor
+	ColorFgWanderingMonster gruid.Color
 )
 
 func LinkColors() {
@@ -284,7 +280,7 @@ func SolarizedPalette() {
 }
 
 const (
-	Black uicolor = iota
+	Black gruid.Color = iota
 	Maroon
 	Green
 	Olive
@@ -294,7 +290,7 @@ const (
 	Silver
 )
 
-func Map16ColorTo8Color(c uicolor) uicolor {
+func Map16ColorTo8Color(c gruid.Color) gruid.Color {
 	switch c {
 	case Color16Base03:
 		return Black
@@ -344,206 +340,28 @@ const (
 	AttrInMap
 )
 
-func (ui *model) SetCell(x, y int, r rune, fg, bg uicolor) {
-	ui.gd.Set(gruid.Point{x, y}, gruid.Cell{Rune: r, Style: gruid.Style{Fg: fg, Bg: bg, Attrs: AttrText}})
-}
-
-func (ui *model) SetMapCell(x, y int, r rune, fg, bg uicolor) {
-	ui.gd.Set(gruid.Point{x, y}, gruid.Cell{Rune: r, Style: gruid.Style{Fg: fg, Bg: bg, Attrs: AttrInMap}})
-}
-
-func (ui *model) DrawWelcomeCommon() int {
-	ui.DrawBufferInit()
-	ui.Clear()
-	col := 10
-	line := 5
-	p := &pencil{ui: ui, line: 4, basecol: 10}
-	p.NewLine()
-	p.DrawText(fmt.Sprintf("    Harmonist %s", Version))
-	p.NewLine()
-	p.DrawText(strings.Repeat("─", 23))
-	p.NewLine()
-	p.DrawDark(" #", ColorFgDark)
-	p.DrawLOS("##", ColorFgLOS)
-	p.DrawDark("###############", ColorViolet)
-	p.DrawDark("### ", ColorFgDark)
-	p.NewLine()
-	p.DrawDark("#.", ColorFgDark)
-	p.DrawLOS("..", ColorFgLOSLight)
-	p.DrawLOS("#", ColorViolet)
-	p.DrawText("  HARMONIST  ")
-	p.DrawDark("#", ColorViolet)
-	p.DrawDark(".", ColorFgDark)
-	p.DrawDark(")", ColorFgBananas)
-	p.DrawDark("t", ColorFgSleepingMonster)
-	p.DrawDark("#", ColorFgDark)
-	p.NewLine()
-	p.DrawDark("#.", ColorFgDark)
-	p.DrawLOS("b", ColorFgPlayer)
-	p.DrawLOS(".", ColorFgLOSLight)
-	p.DrawLOS("####", ColorViolet)
-	p.DrawDark("###########", ColorViolet)
-	p.DrawDark(".## ", ColorFgDark)
-	p.NewLine()
-	p.DrawDark(" #", ColorFgDark)
-	p.DrawLOS("...", ColorFgLOSLight)
-	p.DrawLOS("...", ColorFgWanderingMonster)
-	p.DrawLOS("#", ColorFgLOS)
-	p.DrawDark("#", ColorFgDark)
-	p.DrawDark("π", ColorFgObject)
-	p.DrawDark(".", ColorFgDark)
-	p.DrawDark(">", ColorFgPlace)
-	p.DrawDark("##....", ColorFgDark)
-	p.DrawDark(".#  ", ColorFgDark)
-	p.NewLine()
-	p.DrawDark(" ", ColorFgDark)
-	p.DrawLOS("#", ColorFgLOS)
-	p.DrawLOS("..", ColorFgLOSLight)
-	p.DrawLOS(".", ColorFgWanderingMonster)
-	p.DrawLOS("g", ColorFgWanderingMonster)
-	p.DrawLOS("..+", ColorFgWanderingMonster)
-	p.DrawDark("..", ColorFgDark)
-	p.DrawDark("G", ColorFgWanderingMonster)
-	p.DrawDark("..", ColorFgDark)
-	p.DrawDark("+", ColorFgPlace)
-	p.DrawDark("....", ColorFgDark)
-	p.DrawDark(".#  ", ColorFgDark)
-	p.NewLine()
-	p.DrawLOS("#", ColorFgLOS)
-	p.DrawLOS("@", ColorFgPlayer)
-	p.DrawLOS(".", ColorFgLOSLight)
-	p.DrawLOS("#", ColorFgLOS)
-	p.DrawDark("≈", ColorFgDark)
-	p.DrawDark("♫", ColorFgWanderingMonster)
-	p.DrawDark("..##", ColorFgDark)
-	p.DrawDark("☼", ColorFgObject)
-	p.DrawDark(".", ColorFgDark)
-	p.DrawDark("&", ColorFgObject)
-	p.DrawDark("##..", ColorFgDark)
-	p.DrawDark("♣", ColorFgTree)
-	p.DrawDark(".\".##", ColorFgDark)
-	p.NewLine()
-	p.DrawLOS("#", ColorFgLOS)
-	p.DrawLOS(".", ColorFgLOSLight)
-	p.DrawLOS("#", ColorFgLOS)
-	p.DrawDark("#≈≈≈..##", ColorFgDark)
-	p.DrawDark("+", ColorFgPlace)
-	p.DrawDark("##..", ColorFgDark)
-	p.DrawDark("h", ColorFgWanderingMonster)
-	p.DrawDark(".\"#.", ColorFgDark)
-	p.DrawDark("_", ColorFgMagicPlace)
-	p.DrawDark("#", ColorFgDark)
-	p.NewLine()
-	p.DrawLOS("#", ColorFgLOS)
-	p.DrawLOS("..", ColorFgLOSLight)
-	p.DrawDark("##≈≈≈.........\"\"\"\"##", ColorFgDark)
-	p.NewLine()
-	p.DrawText(strings.Repeat("─", 23))
-	p.NewLine()
-	line = p.line
-	line++
-	if runtime.GOARCH == "wasm" {
-		ui.DrawDark("- (P)lay", col-3, line, ColorFg, false)
-		ui.DrawDark("- (W)atch replay", col-3, line+1, ColorFg, false)
-	} else {
-		ui.DrawDark("───Press any key to continue───", col-3, line, ColorFg, false)
-	}
-	ui.Flush()
-	return line
-}
-
-func (ui *model) DrawWelcome() {
-	ui.DrawWelcomeCommon()
-	ui.PressAnyKey()
-}
-
-func (ui *model) RestartDrawBuffers() {
-	g := ui.st
-	g.DrawBuffer = nil
-	g.drawBackBuffer = nil
-	ui.DrawBufferInit()
-}
-
-func (ui *model) DrawColored(text string, x, y int, fg, bg uicolor) {
-	col := 0
-	for _, r := range text {
-		ui.SetCell(x+col, y, r, fg, bg)
-		col++
-	}
-}
-
-func (ui *model) DrawDark(text string, x, y int, fg uicolor, inmap bool) int {
-	col := 0
-	for _, r := range text {
-		if inmap {
-			ui.SetMapCell(x+col, y, r, fg, ColorBgDark)
-		} else {
-			ui.SetCell(x+col, y, r, fg, ColorBgDark)
-		}
-		col++
-	}
-	return col
-}
-
-type pencil struct {
-	ui      *model
-	line    int
-	col     int
-	basecol int
-}
-
-func (p *pencil) DrawLOS(text string, fg uicolor) {
-	p.col += p.ui.DrawLOS(text, p.col, p.line, fg, true)
-}
-
-func (p *pencil) DrawDark(text string, fg uicolor) {
-	p.col += p.ui.DrawDark(text, p.col, p.line, fg, true)
-}
-
-func (p *pencil) DrawText(text string) {
-	p.col += p.ui.DrawDark(text, p.col, p.line, ColorGreen, false)
-}
-
-func (p *pencil) NewLine() {
-	p.line++
-	p.col = p.basecol
-}
-
-func (ui *model) DrawLOS(text string, x, y int, fg uicolor, inmap bool) int {
-	col := 0
-	for _, r := range text {
-		if inmap {
-			ui.SetMapCell(x+col, y, r, fg, ColorBgLOS)
-		} else {
-			ui.SetCell(x+col, y, r, fg, ColorBgLOS)
-		}
-		col++
-	}
-	return col
-}
-
 func (ui *model) DrawKeysDescription(title string, actions []string) {
-	ui.DrawDungeonView(NoFlushMode)
+	//ui.DrawDungeonView(NoFlushMode)
 
-	if CustomKeys {
-		ui.DrawStyledTextLine(fmt.Sprintf(" Default %s ", title), 0, HeaderLine)
-	} else {
-		ui.DrawStyledTextLine(fmt.Sprintf(" %s ", title), 0, HeaderLine)
-	}
-	for i := 0; i < len(actions)-1; i += 2 {
-		if actions[i+1] != "" {
-			bg := ui.ListItemBG(i / 2)
-			ui.ClearLineWithColor(i/2+1, bg)
-			ui.DrawColoredTextOnBG(fmt.Sprintf(" %-36s %s", actions[i], actions[i+1]), 0, i/2+1, ColorFg, bg)
-		} else {
-			ui.DrawStyledTextLine(fmt.Sprintf(" %s ", actions[i]), i/2+1, HeaderLine)
-		}
-	}
-	lines := 1 + len(actions)/2
-	ui.DrawTextLine(" press (x) to continue ", lines)
-	ui.Flush()
+	//if CustomKeys {
+	//ui.DrawStyledTextLine(fmt.Sprintf(" Default %s ", title), 0, HeaderLine)
+	//} else {
+	//ui.DrawStyledTextLine(fmt.Sprintf(" %s ", title), 0, HeaderLine)
+	//}
+	//for i := 0; i < len(actions)-1; i += 2 {
+	//if actions[i+1] != "" {
+	//bg := ui.ListItemBG(i / 2)
+	//ui.ClearLineWithColor(i/2+1, bg)
+	//ui.DrawColoredTextOnBG(fmt.Sprintf(" %-36s %s", actions[i], actions[i+1]), 0, i/2+1, ColorFg, bg)
+	//} else {
+	//ui.DrawStyledTextLine(fmt.Sprintf(" %s ", actions[i]), i/2+1, HeaderLine)
+	//}
+	//}
+	//lines := 1 + len(actions)/2
+	//ui.DrawTextLine(" press (x) to continue ", lines)
+	//ui.Flush()
 
-	ui.WaitForContinue(lines)
+	//ui.WaitForContinue(lines)
 }
 
 func (ui *model) KeysHelp() {
@@ -582,159 +400,21 @@ const TextWidth = 72
 
 func (ui *model) WizardInfo() {
 	//g := ui.st
-	ui.Clear()
-	b := &bytes.Buffer{}
+	//ui.Clear()
+	//b := &bytes.Buffer{}
 	//fmt.Fprintf(b, "Monsters: %d (%d)\n", len(g.Monsters), g.MaxMonsters())
 	//fmt.Fprintf(b, "Danger: %d (%d)\n", g.Danger(), g.MaxDanger())
-	ui.DrawText(b.String(), 0, 0)
-	ui.Flush()
-	ui.WaitForContinue(-1)
+	//ui.DrawText(b.String(), 0, 0)
+	//ui.Flush()
+	//ui.WaitForContinue(-1)
 }
-
-func (ui *model) AddComma(see, s string) string {
-	if len(s) > 0 {
-		return s + ", "
-	}
-	return fmt.Sprintf("You %s %s", see, s)
-}
-
-func (ui *model) DescribePosition(pos gruid.Point, targ Targeter) {
-	g := ui.st
-	var desc string
-	switch {
-	case !g.Dungeon.Cell(pos).Explored:
-		desc = "You do not know what is in there."
-		if g.Noise[pos] || g.NoiseIllusion[pos] {
-			desc += " Noise."
-		}
-		g.InfoEntry = desc
-		return
-	case !targ.Reachable(g, pos):
-		desc = "This is out of reach."
-		g.InfoEntry = desc
-		return
-	}
-	mons := g.MonsterAt(pos)
-	if pos == g.Player.Pos {
-		desc = "This is you"
-	}
-	see := "see"
-	if !g.Player.Sees(pos) {
-		see = "saw"
-	}
-	c := g.Dungeon.Cell(pos)
-	if t, ok := g.TerrainKnowledge[pos]; ok {
-		c.T = t
-	}
-	if mons.Exists() && g.Player.Sees(pos) {
-		desc = ui.AddComma(see, desc)
-		desc += fmt.Sprintf("%s (%s)", mons.Kind.Indefinite(false), ui.MonsterInfo(mons))
-	}
-	if cld, ok := g.Clouds[pos]; ok && g.Player.Sees(pos) {
-		if cld == CloudFire {
-			desc = ui.AddComma(see, desc)
-			desc += fmt.Sprintf("magic flames")
-		} else if cld == CloudNight {
-			desc = ui.AddComma(see, desc)
-			desc += fmt.Sprintf("night clouds")
-		} else {
-			desc = ui.AddComma(see, desc)
-			desc += fmt.Sprintf("a dense fog")
-		}
-	}
-	desc = ui.AddComma(see, desc)
-	desc += c.ShortDesc(g, pos)
-	if g.MonsterLOS[pos] {
-		desc += " (unhidden)"
-	} else if g.Illuminated[idx(pos)] && c.IsIlluminable() && g.Player.Sees(pos) {
-		desc += " (lighted)"
-	}
-	if g.Noise[pos] || g.NoiseIllusion[pos] {
-		desc += ". Noise"
-	}
-	g.InfoEntry = desc + "."
-}
-
-func (ui *model) ViewPositionDescription(pos gruid.Point) {
-	g := ui.st
-	c := g.Dungeon.Cell(pos)
-	title := "Terrain Description"
-	if !c.Explored {
-		ui.DrawDescription("This place is unknown to you.", "Terrain Description")
-		return
-	}
-	switch c.T {
-	case BananaCell, ScrollCell, ItemCell:
-		title = "Object Description"
-	case StoryCell:
-		title = "Special Description"
-	}
-	mons := g.MonsterAt(pos)
-	if mons.Exists() && g.Player.Sees(mons.Pos) {
-		ui.HideCursor()
-		ui.DrawMonsterDescription(mons)
-		ui.SetCursor(pos)
-	} else {
-		ui.DrawDescription(g.Dungeon.Cell(pos).Desc(g, pos), title)
-	}
-}
-
-func (ui *model) MonsterInfo(m *monster) string {
-	infos := []string{}
-	state := m.State.String()
-	switch m.State {
-	case Watching, Hunting, Wandering:
-		state += " " + m.Dir.String()
-	}
-	infos = append(infos, state)
-	for st, i := range m.Statuses {
-		if i > 0 {
-			infos = append(infos, fmt.Sprintf("%s %d", monsterStatus(st), m.Statuses[monsterStatus(st)]))
-		}
-	}
-	return strings.Join(infos, ", ")
-}
-
-var CenteredCamera bool
 
 func (ui *model) MapWidth() int {
-	if CenteredCamera {
-		//return DefaultLOSRange*2 + 5
-		return 55
-	}
 	return DungeonWidth
 }
 
 func (ui *model) MapHeight() int {
 	return DungeonHeight
-}
-
-func (ui *model) InView(pos gruid.Point, targeting bool) bool {
-	g := ui.st
-	if targeting {
-		return DistanceY(pos, ui.cursor) <= 10 && DistanceX(pos, ui.cursor) <= 39
-	}
-	return DistanceY(pos, g.Player.Pos) <= 10 && DistanceX(pos, g.Player.Pos) <= 39
-}
-
-func (ui *model) CameraOffset(pos gruid.Point, targeting bool) (int, int) {
-	g := ui.st
-	if targeting {
-		return pos.X + ui.MapWidth()/2 - ui.cursor.X, pos.Y + ui.MapHeight()/2 - ui.cursor.Y
-	}
-	return pos.X + ui.MapWidth()/2 - g.Player.Pos.X, pos.Y + ui.MapHeight()/2 - g.Player.Pos.Y
-}
-
-func (ui *model) CameraTargetPosition(x, y int, targeting bool) (pos gruid.Point) {
-	g := ui.st
-	if targeting {
-		pos.X = x - ui.MapWidth()/2 + ui.cursor.X
-		pos.Y = y - ui.MapHeight()/2 + ui.cursor.Y
-		return pos
-	}
-	pos.X = x - ui.MapWidth()/2 + g.Player.Pos.X
-	pos.Y = y - ui.MapHeight()/2 - g.Player.Pos.Y
-	return pos
 }
 
 func (ui *model) InViewBorder(pos gruid.Point, targeting bool) bool {
@@ -745,95 +425,41 @@ func (ui *model) InViewBorder(pos gruid.Point, targeting bool) bool {
 	return DistanceY(pos, g.Player.Pos) != ui.MapHeight()/2 && DistanceX(pos, g.Player.Pos) != ui.MapWidth()
 }
 
-func (ui *model) DrawAtPosition(pos gruid.Point, targeting bool, r rune, fg, bg uicolor) {
-	g := ui.st
-	if g.Highlight[pos] || pos == ui.cursor {
-		bg, fg = fg, bg
-	}
-	if CenteredCamera {
-		if !ui.InView(pos, targeting) {
-			return
-		}
-		x, y := ui.CameraOffset(pos, targeting)
-		ui.SetMapCell(x, y, r, fg, bg)
-		if ui.InViewBorder(pos, targeting) && g.Dungeon.Border(pos) {
-			for _, opos := range pos.OutsideNeighbors() {
-				xo, yo := ui.CameraOffset(opos, targeting)
-				if xo < 0 || xo >= ui.MapWidth() || yo < 0 || yo >= ui.MapHeight() {
-					continue
-				}
-				ui.SetMapCell(xo, yo, '#', ColorFg, ColorBgBorder)
-			}
-		}
-		return
-	}
-	ui.SetMapCell(pos.X, pos.Y, r, fg, bg)
-}
-
 func (ui *model) DrawDungeonView(m uiMode) {
 	// TODO: remove uiMode
-	g := ui.st
-	ui.Clear()
-	d := g.Dungeon
-	for i := 0; i < ui.MapWidth(); i++ {
-		ui.SetCell(i, ui.MapHeight(), '─', ColorFg, ColorBg)
-	}
-	for i := 0; i < ui.MapHeight(); i++ {
-		ui.SetCell(ui.MapWidth(), i, '│', ColorFg, ColorBg)
-	}
-	ui.SetCell(ui.MapWidth(), ui.MapHeight(), '┘', ColorFg, ColorBg)
-	for i := range d.Cells {
-		pos := idxtopos(i)
-		r, fgColor, bgColor := ui.PositionDrawing(pos)
-		ui.DrawAtPosition(pos, m == TargetingMode, r, fgColor, bgColor)
-	}
-	line := 0
-	ui.DrawStatusLine()
-	ui.DrawLog(2)
+	//g := ui.st
+	//ui.Clear()
+	//d := g.Dungeon
+	//for i := 0; i < ui.MapWidth(); i++ {
+	//ui.SetCell(i, ui.MapHeight(), '─', ColorFg, ColorBg)
+	//}
+	//for i := 0; i < ui.MapHeight(); i++ {
+	//ui.SetCell(ui.MapWidth(), i, '│', ColorFg, ColorBg)
+	//}
+	//ui.SetCell(ui.MapWidth(), ui.MapHeight(), '┘', ColorFg, ColorBg)
+	//for i := range d.Cells {
+	//pos := idxtopos(i)
+	//r, fgColor, bgColor := ui.PositionDrawing(pos)
+	//ui.DrawAtPosition(pos, m == TargetingMode, r, fgColor, bgColor)
+	//}
+	//line := 0
+	//ui.DrawStatusLine()
+	//ui.DrawLog(2)
 }
 
 func (ui *model) DrawLoading() {
-	ui.DrawMessage("Loading...")
+	//ui.DrawMessage("Loading...")
 }
 
 func (ui *model) DrawMessage(s string) {
-	ui.DrawDungeonView(NoFlushMode)
-	line := ui.MapHeight() - 2
-	if CenteredCamera {
-		line = ui.MapHeight() - 5
-	}
-	ui.DrawColoredText(s, ui.MapWidth()+2, line+1, ColorCyan)
-	ui.Flush()
-	Sleep(AnimDurShort)
+	//ui.DrawDungeonView(NoFlushMode)
+	//line := ui.MapHeight() - 2
+	//ui.DrawColoredText(s, ui.MapWidth()+2, line+1, ColorCyan)
+	////ui.Flush()
+	//Sleep(AnimDurShort)
 }
 
-func (ui *model) DrawSelectDescBasics() {
-	line := ui.MapHeight() - 2
-	if CenteredCamera {
-		line = ui.MapHeight() - 5
-	}
-	ui.DrawColoredText("[a-z]", ui.MapWidth()+2, line+1, ColorFgPlayer)
-	ui.SetCell(ui.MapWidth()+2, line+2, '?', ColorFgPlayer, ColorBg)
-	ui.SetCell(ui.MapWidth()+2, line+3, 'x', ColorFgPlayer, ColorBg)
-	const margin = 7
-	ui.DrawText("select", ui.MapWidth()+margin, line+1)
-	ui.DrawText("use/desc", ui.MapWidth()+margin, line+2)
-	ui.DrawText("close", ui.MapWidth()+margin, line+3)
-}
-
-func (ui *model) DrawSelectBasics() {
-	line := ui.MapHeight() - 2
-	if CenteredCamera {
-		line = ui.MapHeight() - 5
-	}
-	ui.DrawColoredText("[a-z]", ui.MapWidth()+2, line+1, ColorFgPlayer)
-	ui.SetCell(ui.MapWidth()+2, line+2, 'x', ColorFgPlayer, ColorBg)
-	const margin = 7
-	ui.DrawText("select", ui.MapWidth()+margin, line+1)
-	ui.DrawText("close", ui.MapWidth()+margin, line+2)
-}
-
-func (ui *model) PositionDrawing(pos gruid.Point) (r rune, fgColor, bgColor uicolor) {
+func (ui *model) PositionDrawing(pos gruid.Point) (r rune, fgColor, bgColor gruid.Color) {
 	g := ui.st
 	m := g.Dungeon
 	c := m.Cell(pos)
@@ -886,7 +512,7 @@ func (ui *model) PositionDrawing(pos gruid.Point) (r rune, fgColor, bgColor uico
 	if trkn, okTrkn := g.TerrainKnowledge[pos]; okTrkn && (!g.Wizard || g.WizardMode == WizardNormal) {
 		c.T = trkn
 	}
-	var fgTerrain uicolor
+	var fgTerrain gruid.Color
 	switch {
 	case c.CoversPlayer():
 		r, fgTerrain = c.Style(g, pos)
@@ -970,94 +596,7 @@ func (ui *model) PositionDrawing(pos gruid.Point) (r rune, fgColor, bgColor uico
 	return
 }
 
-func (ui *model) DrawStatusBar(line int) {
-	g := ui.st
-	sts := statusSlice{}
-	if cld, ok := g.Clouds[g.Player.Pos]; ok && cld == CloudFire {
-		g.Player.Statuses[StatusFlames] = 1
-		defer func() {
-			g.Player.Statuses[StatusFlames] = 0
-		}()
-	}
-	for st, c := range g.Player.Statuses {
-		if c > 0 {
-			sts = append(sts, st)
-		}
-	}
-	sort.Sort(sts)
-	hpColor := ui.HPColor()
-	nWounds := g.Player.HPMax() - g.Player.HP - g.Player.HPbonus
-	if nWounds <= 0 {
-		nWounds = 0
-	}
-	BarCol := ui.MapWidth() + 2
-	ui.DrawColoredText("HP: ", BarCol, line, hpColor)
-	hp := g.Player.HP
-	if hp < 0 {
-		hp = 0
-	}
-	if !GameConfig.ShowNumbers {
-		ui.DrawColoredText(strings.Repeat("♥", hp), BarCol+4, line, hpColor)
-		ui.DrawColoredText(strings.Repeat("♥", g.Player.HPbonus), BarCol+4+hp, line, ColorCyan) // TODO: define color variables
-		ui.DrawColoredText(strings.Repeat("♥", nWounds), BarCol+4+hp+g.Player.HPbonus, line, ColorFg)
-	} else {
-		if g.Player.HPbonus > 0 {
-			ui.DrawColoredText(fmt.Sprintf("%d+%d/%d", hp, g.Player.HPbonus, g.Player.HPMax()), BarCol+4, line, hpColor)
-		} else {
-			ui.DrawColoredText(fmt.Sprintf("%d/%d", hp, g.Player.HPMax()), BarCol+4, line, hpColor)
-		}
-	}
-
-	line++
-	mpColor := ui.MPColor()
-	ui.DrawColoredText("MP: ", BarCol, line, mpColor)
-
-	MPspent := g.Player.MPMax() - g.Player.MP
-	if MPspent <= 0 {
-		MPspent = 0
-	}
-	ui.DrawColoredText("MP: ", BarCol, line, mpColor)
-	if !GameConfig.ShowNumbers {
-		ui.DrawColoredText(strings.Repeat("♥", g.Player.MP), BarCol+4, line, mpColor)
-		ui.DrawColoredText(strings.Repeat("♥", MPspent), BarCol+4+g.Player.MP, line, ColorFg)
-	} else {
-		ui.DrawColoredText(fmt.Sprintf("%d/%d", g.Player.MP, g.Player.MPMax()), BarCol+4, line, mpColor)
-	}
-
-	line++
-	line++
-	ui.DrawText(fmt.Sprintf("Bananas: %d/%d", g.Player.Bananas, MaxBananas), BarCol, line)
-	line++
-	if g.Depth == -1 {
-		ui.DrawText("Depth: Out!", BarCol, line)
-	} else {
-		ui.DrawText(fmt.Sprintf("Depth: %d/%d", g.Depth, MaxDepth), BarCol, line)
-	}
-	line++
-	ui.DrawText(fmt.Sprintf("Turns: %d", g.Turn), BarCol, line)
-	line++
-	for _, st := range sts {
-		fg := ColorFgStatusOther
-		if st.Good() {
-			fg = ColorFgStatusGood
-			t := DurationTurn
-			exp, ok := g.Player.Expire[st]
-			if ok && exp >= g.Ev.Rank() && exp-g.Ev.Rank() <= t {
-				fg = ColorFgStatusExpire
-			}
-		} else if st.Bad() {
-			fg = ColorFgStatusBad
-		}
-		if !st.Flag() {
-			ui.DrawColoredText(fmt.Sprintf("%s(%d)", st, g.Player.Statuses[st]/DurationStatusStep), BarCol, line, fg)
-		} else {
-			ui.DrawColoredText(st.String(), BarCol, line, fg)
-		}
-		line++
-	}
-}
-
-func (ui *model) HPColor() uicolor {
+func (ui *model) HPColor() gruid.Color {
 	g := ui.st
 	hpColor := ColorFgHPok
 	switch g.Player.HP + g.Player.HPbonus {
@@ -1069,7 +608,7 @@ func (ui *model) HPColor() uicolor {
 	return hpColor
 }
 
-func (ui *model) MPColor() uicolor {
+func (ui *model) MPColor() gruid.Color {
 	g := ui.st
 	mpColor := ColorFgMPok
 	switch g.Player.MP {
@@ -1082,117 +621,117 @@ func (ui *model) MPColor() uicolor {
 }
 
 func (ui *model) DrawStatusLine() {
-	g := ui.st
-	sts := statusSlice{}
-	if cld, ok := g.Clouds[g.Player.Pos]; ok && cld == CloudFire {
-		g.Player.Statuses[StatusFlames] = 1
-		defer func() {
-			g.Player.Statuses[StatusFlames] = 0
-		}()
-	}
-	for st, c := range g.Player.Statuses {
-		if c > 0 {
-			sts = append(sts, st)
-		}
-	}
-	sort.Sort(sts)
-	line := ui.MapHeight()
-	col := 2
-	ui.DrawText(" ", col, line)
-	col++
-	var depth string
-	if g.Depth == -1 {
-		depth = "D: Out! "
-	} else {
-		depth = fmt.Sprintf("D:%d ", g.Depth)
-	}
-	ui.DrawText(depth, col, line)
-	col += utf8.RuneCountInString(depth)
-	turns := fmt.Sprintf("T:%d ", g.Turn)
-	ui.DrawText(turns, col, line)
-	col += utf8.RuneCountInString(turns)
+	//g := ui.st
+	//sts := statusSlice{}
+	//if cld, ok := g.Clouds[g.Player.Pos]; ok && cld == CloudFire {
+	//g.Player.Statuses[StatusFlames] = 1
+	//defer func() {
+	//g.Player.Statuses[StatusFlames] = 0
+	//}()
+	//}
+	//for st, c := range g.Player.Statuses {
+	//if c > 0 {
+	//sts = append(sts, st)
+	//}
+	//}
+	//sort.Sort(sts)
+	//line := ui.MapHeight()
+	//col := 2
+	//ui.DrawText(" ", col, line)
+	//col++
+	//var depth string
+	//if g.Depth == -1 {
+	//depth = "D: Out! "
+	//} else {
+	//depth = fmt.Sprintf("D:%d ", g.Depth)
+	//}
+	//ui.DrawText(depth, col, line)
+	//col += utf8.RuneCountInString(depth)
+	//turns := fmt.Sprintf("T:%d ", g.Turn)
+	//ui.DrawText(turns, col, line)
+	//col += utf8.RuneCountInString(turns)
 
-	nWounds := g.Player.HPMax() - g.Player.HP - g.Player.HPbonus
-	if nWounds <= 0 {
-		nWounds = 0
-	}
-	hpColor := ui.HPColor()
-	ui.DrawColoredText("HP:", col, line, hpColor)
-	col += 3
-	hp := g.Player.HP
-	if hp < 0 {
-		hp = 0
-	}
-	if !GameConfig.ShowNumbers {
-		ui.DrawColoredText(strings.Repeat("♥", hp), col, line, hpColor)
-		col += hp
-		ui.DrawColoredText(strings.Repeat("♥", g.Player.HPbonus), col, line, ColorCyan) // TODO: define color variables
-		col += g.Player.HPbonus
-		ui.DrawColoredText(strings.Repeat("♥", nWounds), col, line, ColorFg)
-		col += nWounds
-	} else {
-		if g.Player.HPbonus > 0 {
-			ui.DrawColoredText(fmt.Sprintf("%d+%d/%d", hp, g.Player.HPbonus, g.Player.HPMax()), col, line, hpColor)
-			col += 5
-		} else {
-			ui.DrawColoredText(fmt.Sprintf("%d/%d", hp, g.Player.HPMax()), col, line, hpColor)
-			col += 3
-		}
-	}
+	//nWounds := g.Player.HPMax() - g.Player.HP - g.Player.HPbonus
+	//if nWounds <= 0 {
+	//nWounds = 0
+	//}
+	//hpColor := ui.HPColor()
+	//ui.DrawColoredText("HP:", col, line, hpColor)
+	//col += 3
+	//hp := g.Player.HP
+	//if hp < 0 {
+	//hp = 0
+	//}
+	//if !GameConfig.ShowNumbers {
+	//ui.DrawColoredText(strings.Repeat("♥", hp), col, line, hpColor)
+	//col += hp
+	//ui.DrawColoredText(strings.Repeat("♥", g.Player.HPbonus), col, line, ColorCyan) // TODO: define color variables
+	//col += g.Player.HPbonus
+	//ui.DrawColoredText(strings.Repeat("♥", nWounds), col, line, ColorFg)
+	//col += nWounds
+	//} else {
+	//if g.Player.HPbonus > 0 {
+	//ui.DrawColoredText(fmt.Sprintf("%d+%d/%d", hp, g.Player.HPbonus, g.Player.HPMax()), col, line, hpColor)
+	//col += 5
+	//} else {
+	//ui.DrawColoredText(fmt.Sprintf("%d/%d", hp, g.Player.HPMax()), col, line, hpColor)
+	//col += 3
+	//}
+	//}
 
-	MPspent := g.Player.MPMax() - g.Player.MP
-	if MPspent <= 0 {
-		MPspent = 0
-	}
-	mpColor := ui.MPColor()
-	ui.DrawColoredText(" MP:", col, line, mpColor)
-	if !GameConfig.ShowNumbers {
-		col += 4
-		ui.DrawColoredText(strings.Repeat("♥", g.Player.MP), col, line, mpColor)
-		col += g.Player.MP
-		ui.DrawColoredText(strings.Repeat("♥", MPspent), col, line, ColorFg)
-		col += MPspent
-	} else {
-		col += 4
-		ui.DrawColoredText(fmt.Sprintf("%d/%d", g.Player.MP, g.Player.MPMax()), col, line, mpColor)
-		col += 3
-	}
+	//MPspent := g.Player.MPMax() - g.Player.MP
+	//if MPspent <= 0 {
+	//MPspent = 0
+	//}
+	//mpColor := ui.MPColor()
+	//ui.DrawColoredText(" MP:", col, line, mpColor)
+	//if !GameConfig.ShowNumbers {
+	//col += 4
+	//ui.DrawColoredText(strings.Repeat("♥", g.Player.MP), col, line, mpColor)
+	//col += g.Player.MP
+	//ui.DrawColoredText(strings.Repeat("♥", MPspent), col, line, ColorFg)
+	//col += MPspent
+	//} else {
+	//col += 4
+	//ui.DrawColoredText(fmt.Sprintf("%d/%d", g.Player.MP, g.Player.MPMax()), col, line, mpColor)
+	//col += 3
+	//}
 
-	ui.SetMapCell(col, line, ' ', ColorFg, ColorBg)
-	col++
-	ui.SetMapCell(col, line, ')', ColorYellow, ColorBg)
-	col++
-	banana := fmt.Sprintf(":%1d/%1d ", g.Player.Bananas, MaxBananas)
-	ui.DrawColoredText(banana, col, line, ColorFg)
-	col += utf8.RuneCountInString(banana)
+	//ui.SetMapCell(col, line, ' ', ColorFg, ColorBg)
+	//col++
+	//ui.SetMapCell(col, line, ')', ColorYellow, ColorBg)
+	//col++
+	//banana := fmt.Sprintf(":%1d/%1d ", g.Player.Bananas, MaxBananas)
+	//ui.DrawColoredText(banana, col, line, ColorFg)
+	//col += utf8.RuneCountInString(banana)
 
-	if len(sts) > 0 {
-		ui.DrawText("| ", col, line)
-		col += 2
-	}
-	for _, st := range sts {
-		fg := ColorFgStatusOther
-		if st.Good() {
-			fg = ColorFgStatusGood
-			t := DurationTurn
-			if g.Player.Expire[st] >= g.Ev.Rank() && g.Player.Expire[st]-g.Ev.Rank() <= t {
-				fg = ColorFgStatusExpire
-			}
-		} else if st.Bad() {
-			fg = ColorFgStatusBad
-		}
-		var sttext string
-		if !st.Flag() {
-			sttext = fmt.Sprintf("%s(%d) ", st.Short(), g.Player.Statuses[st]/DurationStatusStep)
-		} else {
-			sttext = fmt.Sprintf("%s ", st.Short())
-		}
-		ui.DrawColoredText(sttext, col, line, fg)
-		col += utf8.RuneCountInString(sttext)
-	}
+	//if len(sts) > 0 {
+	//ui.DrawText("| ", col, line)
+	//col += 2
+	//}
+	//for _, st := range sts {
+	//fg := ColorFgStatusOther
+	//if st.Good() {
+	//fg = ColorFgStatusGood
+	//t := DurationTurn
+	//if g.Player.Expire[st] >= g.Ev.Rank() && g.Player.Expire[st]-g.Ev.Rank() <= t {
+	//fg = ColorFgStatusExpire
+	//}
+	//} else if st.Bad() {
+	//fg = ColorFgStatusBad
+	//}
+	//var sttext string
+	//if !st.Flag() {
+	//sttext = fmt.Sprintf("%s(%d) ", st.Short(), g.Player.Statuses[st]/DurationStatusStep)
+	//} else {
+	//sttext = fmt.Sprintf("%s ", st.Short())
+	//}
+	//ui.DrawColoredText(sttext, col, line, fg)
+	//col += utf8.RuneCountInString(sttext)
+	//}
 }
 
-func (ui *model) LogColor(e logEntry) uicolor {
+func (ui *model) LogColor(e logEntry) gruid.Color {
 	fg := ColorFg
 	switch e.Style {
 	case logCritic:
@@ -1212,6 +751,7 @@ func (ui *model) LogColor(e logEntry) uicolor {
 }
 
 func (ui *model) DrawLog(lines int) {
+	// TODO: update to return []string
 	g := ui.st
 	min := len(g.Log) - lines
 	if min < 0 {
@@ -1250,10 +790,10 @@ func (ui *model) DrawLog(lines int) {
 			e := g.Log[ln]
 			fguicolor := ui.LogColor(e)
 			if e.Tick {
-				ui.DrawColoredText("•", 0, ui.MapHeight()+i, ColorYellow)
+				//ui.DrawColoredText("•", 0, ui.MapHeight()+i, ColorYellow)
 				col += 2
 			}
-			ui.DrawColoredText(e.String(), col, ui.MapHeight()+i, fguicolor)
+			//ui.DrawColoredText(e.String(), col, ui.MapHeight()+i, fguicolor)
 			col += utf8.RuneCountInString(e.String()) + 1
 		}
 		l--
@@ -1287,165 +827,6 @@ func (ui *model) RunesForKeyAction(k action) string {
 	return text
 }
 
-type keyConfigAction int
-
-const (
-	NavigateKeys keyConfigAction = iota
-	ChangeKeys
-	ResetKeys
-	QuitKeyConfig
-)
-
-func (ui *model) ChangeKeys() {
-	g := ui.st
-	lines := ui.MapHeight()
-	nmax := len(ConfigurableKeyActions) - lines
-	n := 0
-	s := 0
-loop:
-	for {
-		ui.DrawDungeonView(NoFlushMode)
-		if n >= nmax {
-			n = nmax
-		}
-		if n < 0 {
-			n = 0
-		}
-		to := n + lines
-		if to >= len(ConfigurableKeyActions) {
-			to = len(ConfigurableKeyActions)
-		}
-		for i := n; i < to; i++ {
-			ka := ConfigurableKeyActions[i]
-			desc := ka.NormalModeDescription()
-			if !ka.NormalModeAction() {
-				desc = ka.TargetingModeDescription()
-			}
-			bg := ui.ListItemBG(i)
-			ui.ClearLineWithColor(i-n, bg)
-			desc = fmt.Sprintf(" %-36s %s", desc, ui.RunesForKeyAction(ka))
-			if i == s {
-				ui.DrawColoredTextOnBG(desc, 0, i-n, ColorYellow, bg)
-			} else {
-				ui.DrawColoredTextOnBG(desc, 0, i-n, ColorFg, bg)
-			}
-		}
-		ui.ClearLine(lines)
-		ui.DrawStyledTextLine(" add key (a) up/down (arrows/u/d) reset (R) quit (x) ", lines, FooterLine)
-		ui.Flush()
-
-		var action keyConfigAction
-		s, action = ui.KeyMenuAction(s)
-		if s >= len(ConfigurableKeyActions) {
-			s = len(ConfigurableKeyActions) - 1
-		}
-		if s < 0 {
-			s = 0
-		}
-		if s < n+1 {
-			n -= 12
-		}
-		if s > n+lines-2 {
-			n += 12
-		}
-		switch action {
-		case ChangeKeys:
-			ui.DrawStyledTextLine(" insert new key ", lines, FooterLine)
-			ui.Flush()
-			r := ui.ReadRuneKey()
-			if r == 0 {
-				continue loop
-			}
-			if FixedRuneKey(r) {
-				g.Printf("You cannot rebind “%c”.", r)
-				continue loop
-			}
-			CustomKeys = true
-			ka := ConfigurableKeyActions[s]
-			if ka.NormalModeAction() {
-				GameConfig.RuneNormalModeKeys[r] = ka
-			} else {
-				delete(GameConfig.RuneNormalModeKeys, r)
-			}
-			if ka.TargetingModeAction() {
-				GameConfig.RuneTargetModeKeys[r] = ka
-			} else {
-				delete(GameConfig.RuneTargetModeKeys, r)
-			}
-			err := g.SaveConfig()
-			if err != nil {
-				g.Print(err.Error())
-			}
-		case QuitKeyConfig:
-			break loop
-		case ResetKeys:
-			ApplyDefaultKeyBindings()
-			err := g.SaveConfig()
-			//err := g.RemoveDataFile("config.gob")
-			if err != nil {
-				g.Print(err.Error())
-			}
-		}
-	}
-}
-
-func (ui *model) DrawPreviousLogs() {
-	g := ui.st
-	bottom := 2
-	lines := ui.MapHeight() + bottom
-	nmax := len(g.Log) - lines
-	n := nmax
-loop:
-	for {
-		ui.DrawDungeonView(NoFlushMode)
-		if n >= nmax {
-			n = nmax
-		}
-		if n < 0 {
-			n = 0
-		}
-		to := n + lines
-		if to >= len(g.Log) {
-			to = len(g.Log)
-		}
-		for i := 0; i < bottom; i++ {
-			ui.SetCell(DungeonWidth, ui.MapHeight()+i, '│', ColorFg, ColorBg)
-		}
-		for i := n; i < to; i++ {
-			e := g.Log[i]
-			fguicolor := ui.LogColor(e)
-			ui.ClearLine(i - n)
-			rc := utf8.RuneCountInString(e.String())
-			if e.Tick {
-				rc += 2
-			}
-			if rc >= DungeonWidth {
-				for j := DungeonWidth; j < 103; j++ {
-					ui.SetCell(j, i-n, ' ', ColorFg, ColorBg)
-				}
-			}
-			if e.Tick {
-				ui.DrawColoredText("•", 0, i-n, ColorYellow)
-				ui.DrawColoredText(e.String(), 2, i-n, fguicolor)
-			} else {
-				ui.DrawColoredText(e.String(), 0, i-n, fguicolor)
-			}
-		}
-		for i := len(g.Log); i < ui.MapHeight()+bottom; i++ {
-			ui.ClearLine(i - n)
-		}
-		ui.ClearLine(lines)
-		s := fmt.Sprintf(" half-page up/down (u/d) quit (x) — (%d/%d) \n", len(g.Log)-to, len(g.Log))
-		ui.DrawStyledTextLine(s, lines, FooterLine)
-		ui.Flush()
-		var quit bool
-		n, quit = ui.Scroll(n)
-		if quit {
-			break loop
-		}
-	}
-}
-
 func (ui *model) DrawMonsterDescription(mons *monster) {
 	s := mons.Kind.Desc()
 	var info string
@@ -1477,245 +858,124 @@ func (ui *model) DrawMonsterDescription(mons *monster) {
 	if info != "" {
 		s += "\n\n" + info
 	}
-	ui.DrawDescription(s, "Monster Description")
-}
-
-func (ui *model) DrawDescription(desc string, title string) {
-	ui.DrawDungeonView(NoFlushMode)
-	desc = formatText(strings.TrimSpace(desc), TextWidth)
-	lines := strings.Count(desc, "\n") + 1
-	for i := 0; i <= lines+2; i++ {
-		ui.ClearLine(i)
-	}
-	ui.DrawStyledTextLine(fmt.Sprintf(" %s ", title), 0, HeaderLine)
-	ui.DrawText(desc, (DungeonWidth-TextWidth)/2, 1)
-	ui.DrawTextLine(" press (x) to continue ", lines+2)
-	ui.Flush()
-	ui.WaitForContinue(lines + 2)
-	ui.DrawDungeonView(NoFlushMode)
-}
-
-func (ui *model) DrawText(text string, x, y int) {
-	ui.DrawColoredText(text, x, y, ColorFg)
-}
-
-func (ui *model) DrawColoredText(text string, x, y int, fg uicolor) {
-	ui.DrawColoredTextOnBG(text, x, y, fg, ColorBg)
-}
-
-func (ui *model) DrawColoredTextOnBG(text string, x, y int, fg, bg uicolor) {
-	col := 0
-	for _, r := range text {
-		if r == '\n' {
-			y++
-			col = 0
-			continue
-		}
-		if x+col >= UIWidth {
-			break
-		}
-		ui.SetCell(x+col, y, r, fg, bg)
-		col++
-	}
-}
-
-func (ui *model) DrawLine(lnum int) {
-	for i := 0; i < DungeonWidth; i++ {
-		ui.SetCell(i, lnum, '─', ColorFg, ColorBg)
-	}
-	ui.SetCell(DungeonWidth, lnum, '┤', ColorFg, ColorBg)
-}
-
-func (ui *model) DrawTextLine(text string, lnum int) {
-	ui.DrawStyledTextLine(text, lnum, NormalLine)
-}
-
-type linestyle int
-
-const (
-	NormalLine linestyle = iota
-	HeaderLine
-	FooterLine
-)
-
-func (ui *model) DrawInfoLine(text string) {
-	ui.ClearLineWithColor(ui.MapHeight()+1, ColorBgBorder)
-	ui.DrawColoredTextOnBG(text, 0, ui.MapHeight()+1, ColorBlue, ColorBgBorder)
-}
-
-func (ui *model) DrawStyledTextLine(text string, lnum int, st linestyle) {
-	nchars := utf8.RuneCountInString(text)
-	dist := (DungeonWidth - nchars) / 2
-	for i := 0; i < dist; i++ {
-		ui.SetCell(i, lnum, '─', ColorFg, ColorBg)
-	}
-	switch st {
-	case HeaderLine:
-		ui.DrawColoredText(text, dist, lnum, ColorYellow)
-	case FooterLine:
-		ui.DrawColoredText(text, dist, lnum, ColorCyan)
-	default:
-		ui.DrawColoredText(text, dist, lnum, ColorFg)
-	}
-	for i := dist + nchars; i < DungeonWidth; i++ {
-		ui.SetCell(i, lnum, '─', ColorFg, ColorBg)
-	}
-	switch st {
-	case HeaderLine:
-		if lnum == 0 {
-			ui.SetCell(DungeonWidth, lnum, '┐', ColorFg, ColorBg)
-		} else {
-			ui.SetCell(DungeonWidth, lnum, '┤', ColorFg, ColorBg)
-		}
-	case FooterLine:
-		ui.SetCell(DungeonWidth, lnum, '┘', ColorFg, ColorBg)
-	default:
-		ui.SetCell(DungeonWidth, lnum, '┤', ColorFg, ColorBg)
-	}
-}
-
-func (ui *model) ClearLine(lnum int) {
-	for i := 0; i < DungeonWidth; i++ {
-		ui.SetCell(i, lnum, ' ', ColorFg, ColorBg)
-	}
-	ui.SetCell(DungeonWidth, lnum, '│', ColorFg, ColorBg)
-}
-
-func (ui *model) ClearLineWithColor(lnum int, bg uicolor) {
-	for i := 0; i < DungeonWidth; i++ {
-		ui.SetCell(i, lnum, ' ', ColorFg, bg)
-	}
-	ui.SetCell(DungeonWidth, lnum, '│', ColorFg, ColorBg)
-}
-
-func (ui *model) ListItemBG(i int) uicolor {
-	bg := ColorBg
-	if i%2 == 1 {
-		bg = ColorBgBorder
-	}
-	return bg
-}
-
-func (ui *model) MagaraItem(i, lnum int, c magara, fg uicolor) {
-	bg := ui.ListItemBG(i)
-	ui.ClearLineWithColor(lnum, bg)
-	ui.DrawColoredTextOnBG(fmt.Sprintf("%c - %s (%d charges)", rune(i+97), c, c.Charges), 0, lnum, fg, bg)
+	// TODO
+	//ui.DrawDescription(s, "Monster Description")
 }
 
 func (ui *model) SelectMagara() error {
-	g := ui.st
-	desc := false
-	ui.DrawDungeonView(NoFlushMode)
-	for {
-		magaras := g.Player.Magaras
-		ui.ClearLine(0)
-		if desc {
-			ui.DrawColoredText("Describe", 0, 0, ColorBlue)
-			col := utf8.RuneCountInString("Describe")
-			ui.DrawText(" which magara? (press ? or click here for evocation menu)", col, 0)
-		} else {
-			ui.DrawColoredText("Evoke", 0, 0, ColorCyan)
-			col := utf8.RuneCountInString("Evoke")
-			ui.DrawText(" which magara? (press ? or click here for description menu)", col, 0)
-		}
-		for i, r := range magaras {
-			ui.MagaraItem(i, i+1, r, ColorFg)
-		}
-		ui.DrawTextLine(" press (x) to cancel ", len(magaras)+1)
-		ui.Flush()
-		index, alt, err := ui.Select(len(magaras))
-		if alt {
-			desc = !desc
-			continue
-		}
-		if err == nil {
-			ui.MagaraItem(index, index+1, magaras[index], ColorYellow)
-			ui.Flush()
-			Sleep(AnimDurMedium)
-			if desc {
-				ui.DrawDescription(magaras[index].Desc(g), "Magara Description")
-				continue
-			}
-			err = g.UseMagara(index)
-		}
-		return err
-	}
+	// TODO select
+	return nil
+	//g := ui.st
+	//desc := false
+	//ui.DrawDungeonView(NoFlushMode)
+	//for {
+	//magaras := g.Player.Magaras
+	//ui.ClearLine(0)
+	//if desc {
+	//ui.DrawColoredText("Describe", 0, 0, ColorBlue)
+	//col := utf8.RuneCountInString("Describe")
+	//ui.DrawText(" which magara? (press ? or click here for evocation menu)", col, 0)
+	//} else {
+	//ui.DrawColoredText("Evoke", 0, 0, ColorCyan)
+	//col := utf8.RuneCountInString("Evoke")
+	//ui.DrawText(" which magara? (press ? or click here for description menu)", col, 0)
+	//}
+	//for i, r := range magaras {
+	//ui.MagaraItem(i, i+1, r, ColorFg)
+	//}
+	//ui.DrawTextLine(" press (x) to cancel ", len(magaras)+1)
+	////ui.Flush()
+	//index, alt, err := ui.Select(len(magaras))
+	//if alt {
+	//desc = !desc
+	//continue
+	//}
+	//if err == nil {
+	//ui.MagaraItem(index, index+1, magaras[index], ColorYellow)
+	////ui.Flush()
+	//Sleep(AnimDurMedium)
+	//if desc {
+	//ui.DrawDescription(magaras[index].Desc(g), "Magara Description")
+	//continue
+	//}
+	//err = g.UseMagara(index)
+	//}
+	//return err
+	//}
 }
 
 func (ui *model) EquipMagara() error {
-	g := ui.st
-	desc := false
-	ui.DrawDungeonView(NoFlushMode)
-	for {
-		magaras := g.Player.Magaras
-		ui.ClearLine(0)
-		if desc {
-			ui.DrawColoredText("Describe", 0, 0, ColorBlue)
-			col := utf8.RuneCountInString("Describe")
-			ui.DrawText(" which magara? (press ? or click here for equip menu)", col, 0)
-		} else {
-			ui.DrawColoredText("Equip", 0, 0, ColorCyan)
-			col := utf8.RuneCountInString("Evoke")
-			ui.DrawText(" instead of which magara? (press ? or click here for description menu)", col, 0)
-		}
-		for i, r := range magaras {
-			ui.MagaraItem(i, i+1, r, ColorFg)
-		}
-		ui.DrawTextLine(" press (x) to cancel ", len(magaras)+1)
-		ui.Flush()
-		index, alt, err := ui.Select(len(magaras))
-		if alt {
-			desc = !desc
-			continue
-		}
-		if err == nil {
-			ui.MagaraItem(index, index+1, magaras[index], ColorYellow)
-			ui.Flush()
-			Sleep(AnimDurMedium)
-			if desc {
-				ui.DrawDescription(magaras[index].Desc(g), "Magara Description")
-				continue
-			}
-			err = g.EquipMagara(index)
-		}
-		return err
-	}
-}
-
-func (ui *model) InventoryItem(i, lnum int, it item, fg uicolor, part string) {
-	bg := ui.ListItemBG(i)
-	ui.ClearLineWithColor(lnum, bg)
-	ui.DrawColoredTextOnBG(fmt.Sprintf("%c - %s (%s)", rune(i+97), it.ShortDesc(ui.st), part), 0, lnum, fg, bg)
+	// TODO select
+	return nil
+	//g := ui.st
+	//desc := false
+	//ui.DrawDungeonView(NoFlushMode)
+	//for {
+	//magaras := g.Player.Magaras
+	//ui.ClearLine(0)
+	//if desc {
+	//ui.DrawColoredText("Describe", 0, 0, ColorBlue)
+	//col := utf8.RuneCountInString("Describe")
+	//ui.DrawText(" which magara? (press ? or click here for equip menu)", col, 0)
+	//} else {
+	//ui.DrawColoredText("Equip", 0, 0, ColorCyan)
+	//col := utf8.RuneCountInString("Evoke")
+	//ui.DrawText(" instead of which magara? (press ? or click here for description menu)", col, 0)
+	//}
+	//for i, r := range magaras {
+	//ui.MagaraItem(i, i+1, r, ColorFg)
+	//}
+	//ui.DrawTextLine(" press (x) to cancel ", len(magaras)+1)
+	////ui.Flush()
+	//index, alt, err := ui.Select(len(magaras))
+	//if alt {
+	//desc = !desc
+	//continue
+	//}
+	//if err == nil {
+	//ui.MagaraItem(index, index+1, magaras[index], ColorYellow)
+	////ui.Flush()
+	//Sleep(AnimDurMedium)
+	//if desc {
+	//ui.DrawDescription(magaras[index].Desc(g), "Magara Description")
+	//continue
+	//}
+	//err = g.EquipMagara(index)
+	//}
+	//return err
+	//}
 }
 
 func (ui *model) SelectItem() error {
-	g := ui.st
-	ui.DrawDungeonView(NoFlushMode)
-	items := []item{g.Player.Inventory.Body, g.Player.Inventory.Neck, g.Player.Inventory.Misc}
-	parts := []string{"body", "neck", "backpack"}
-	for {
-		ui.ClearLine(0)
-		ui.DrawColoredText("Inventory", 0, 0, ColorCyan)
-		col := utf8.RuneCountInString("Inventory")
-		ui.DrawText(" (select to see description)", col, 0)
-		for i := 0; i < len(items); i++ {
-			ui.InventoryItem(i, i+1, items[i], ColorFg, parts[i])
-		}
-		ui.DrawTextLine(" press (x) to cancel ", len(items)+1)
-		ui.Flush()
-		index, alt, err := ui.Select(len(items))
-		if alt {
-			continue
-		}
-		if err == nil {
-			ui.InventoryItem(index, index+1, items[index], ColorYellow, parts[index])
-			ui.Flush()
-			Sleep(AnimDurMedium)
-			ui.DrawDescription(items[index].Desc(g), "Item Description")
-			continue
-		}
-		return err
-	}
+	// TODO select
+	return nil
+	//g := ui.st
+	//ui.DrawDungeonView(NoFlushMode)
+	//items := []item{g.Player.Inventory.Body, g.Player.Inventory.Neck, g.Player.Inventory.Misc}
+	//parts := []string{"body", "neck", "backpack"}
+	//for {
+	//ui.ClearLine(0)
+	//ui.DrawColoredText("Inventory", 0, 0, ColorCyan)
+	//col := utf8.RuneCountInString("Inventory")
+	//ui.DrawText(" (select to see description)", col, 0)
+	//for i := 0; i < len(items); i++ {
+	//ui.InventoryItem(i, i+1, items[i], ColorFg, parts[i])
+	//}
+	//ui.DrawTextLine(" press (x) to cancel ", len(items)+1)
+	////ui.Flush()
+	//index, alt, err := ui.Select(len(items))
+	//if alt {
+	//continue
+	//}
+	//if err == nil {
+	//ui.InventoryItem(index, index+1, items[index], ColorYellow, parts[index])
+	////ui.Flush()
+	//Sleep(AnimDurMedium)
+	//ui.DrawDescription(items[index].Desc(g), "Item Description")
+	//continue
+	//}
+	//return err
+	//}
 }
 
 func (ui *model) ReadScroll() error {
@@ -1726,7 +986,7 @@ func (ui *model) ReadScroll() error {
 	ui.st.Print("You read the message.")
 	switch sc {
 	case ScrollLore:
-		ui.DrawDescription(sc.Text(ui.st), "Lore Message")
+		//ui.DrawDescription(sc.Text(ui.st), "Lore Message")
 		if !ui.st.Stats.Lore[ui.st.Depth] {
 			ui.st.StoryPrint("Read lore message")
 		}
@@ -1738,19 +998,9 @@ func (ui *model) ReadScroll() error {
 			AchLoremaster.Get(ui.st)
 		}
 	default:
-		ui.DrawDescription(sc.Text(ui.st), "Story Message")
+		//ui.DrawDescription(sc.Text(ui.st), "Story Message")
 	}
 	return errors.New(DoNothing)
-}
-
-func (ui *model) ActionItem(i, lnum int, ka action, fg uicolor) {
-	bg := ui.ListItemBG(i)
-	ui.ClearLineWithColor(lnum, bg)
-	desc := ka.NormalModeDescription()
-	if !ka.NormalModeAction() {
-		desc = ka.TargetingModeDescription()
-	}
-	ui.DrawColoredTextOnBG(fmt.Sprintf("%c - %s", rune(i+97), desc), 0, lnum, fg, bg)
 }
 
 var menuActions = []action{
@@ -1763,31 +1013,33 @@ var menuActions = []action{
 }
 
 func (ui *model) SelectAction(actions []action) (action, error) {
-	ui.DrawDungeonView(NoFlushMode)
-	for {
-		ui.ClearLine(0)
-		ui.DrawColoredText("Choose", 0, 0, ColorCyan)
-		col := utf8.RuneCountInString("Choose")
-		ui.DrawText(" which action?", col, 0)
-		for i, r := range actions {
-			ui.ActionItem(i, i+1, r, ColorFg)
-		}
-		ui.DrawTextLine(" press (x) to cancel ", len(actions)+1)
-		ui.Flush()
-		index, alt, err := ui.Select(len(actions))
-		if alt {
-			continue
-		}
-		if err != nil {
-			ui.DrawDungeonView(NoFlushMode)
-			return ActionExamine, err
-		}
-		ui.ActionItem(index, index+1, actions[index], ColorYellow)
-		ui.Flush()
-		Sleep(AnimDurMedium)
-		ui.DrawDungeonView(NoFlushMode)
-		return actions[index], nil
-	}
+	// TODO
+	return actions[0], nil
+	//ui.DrawDungeonView(NoFlushMode)
+	//for {
+	//ui.ClearLine(0)
+	//ui.DrawColoredText("Choose", 0, 0, ColorCyan)
+	//col := utf8.RuneCountInString("Choose")
+	//ui.DrawText(" which action?", col, 0)
+	//for i, r := range actions {
+	//ui.ActionItem(i, i+1, r, ColorFg)
+	//}
+	//ui.DrawTextLine(" press (x) to cancel ", len(actions)+1)
+	////ui.Flush()
+	//index, alt, err := ui.Select(len(actions))
+	//if alt {
+	//continue
+	//}
+	//if err != nil {
+	//ui.DrawDungeonView(NoFlushMode)
+	//return ActionExamine, err
+	//}
+	//ui.ActionItem(index, index+1, actions[index], ColorYellow)
+	////ui.Flush()
+	//Sleep(AnimDurMedium)
+	//ui.DrawDungeonView(NoFlushMode)
+	//return actions[index], nil
+	//}
 }
 
 type setting int
@@ -1795,7 +1047,6 @@ type setting int
 const (
 	setKeys setting = iota
 	invertLOS
-	toggleLayout
 	toggleTiles
 	toggleShowNumbers
 )
@@ -1806,8 +1057,6 @@ func (s setting) String() (text string) {
 		text = "Change key bindings"
 	case invertLOS:
 		text = "Toggle dark/light LOS"
-	case toggleLayout:
-		text = "Toggle normal/compact layout"
 	case toggleTiles:
 		text = "Toggle tiles/ascii display"
 	case toggleShowNumbers:
@@ -1819,42 +1068,12 @@ func (s setting) String() (text string) {
 var settingsActions = []setting{
 	setKeys,
 	invertLOS,
-	toggleLayout,
 	toggleShowNumbers,
 }
 
-func (ui *model) ConfItem(i, lnum int, s setting, fg uicolor) {
-	bg := ui.ListItemBG(i)
-	ui.ClearLineWithColor(lnum, bg)
-	ui.DrawColoredTextOnBG(fmt.Sprintf("%c - %s", rune(i+97), s), 0, lnum, fg, bg)
-}
-
 func (ui *model) SelectConfigure(actions []setting) (setting, error) {
-	ui.DrawDungeonView(NoFlushMode)
-	for {
-		ui.ClearLine(0)
-		ui.DrawColoredText("Perform", 0, 0, ColorCyan)
-		col := utf8.RuneCountInString("Perform")
-		ui.DrawText(" which change?", col, 0)
-		for i, r := range actions {
-			ui.ConfItem(i, i+1, r, ColorFg)
-		}
-		ui.DrawTextLine(" press (x) to cancel ", len(actions)+1)
-		ui.Flush()
-		index, alt, err := ui.Select(len(actions))
-		if alt {
-			continue
-		}
-		if err != nil {
-			ui.DrawDungeonView(NoFlushMode)
-			return setKeys, err
-		}
-		ui.ConfItem(index, index+1, actions[index], ColorYellow)
-		ui.Flush()
-		Sleep(AnimDurMedium)
-		ui.DrawDungeonView(NoFlushMode)
-		return actions[index], nil
-	}
+	// TODO
+	return actions[0], nil
 }
 
 func (ui *model) HandleSettingAction() error {
@@ -1865,7 +1084,8 @@ func (ui *model) HandleSettingAction() error {
 	}
 	switch s {
 	case setKeys:
-		ui.ChangeKeys()
+		// TODO
+		//ui.ChangeKeys()
 	case invertLOS:
 		GameConfig.DarkLOS = !GameConfig.DarkLOS
 		err := g.SaveConfig()
@@ -1876,12 +1096,6 @@ func (ui *model) HandleSettingAction() error {
 			ApplyDarkLOS()
 		} else {
 			ApplyLightLOS()
-		}
-	case toggleLayout:
-		ui.ApplyToggleLayout()
-		err := g.SaveConfig()
-		if err != nil {
-			g.Print(err.Error())
 		}
 	case toggleTiles:
 		ui.ApplyToggleTiles()
@@ -1897,61 +1111,4 @@ func (ui *model) HandleSettingAction() error {
 		}
 	}
 	return nil
-}
-
-func (ui *model) WizardItem(i, lnum int, s wizardAction, fg uicolor) {
-	bg := ui.ListItemBG(i)
-	ui.ClearLineWithColor(lnum, bg)
-	ui.DrawColoredTextOnBG(fmt.Sprintf("%c - %s", rune(i+97), s), 0, lnum, fg, bg)
-}
-
-func (ui *model) SelectWizardMagic(actions []wizardAction) (wizardAction, error) {
-	for {
-		ui.ClearLine(0)
-		ui.DrawColoredText("Evoke", 0, 0, ColorCyan)
-		col := utf8.RuneCountInString("Evoke")
-		ui.DrawText(" which magic?", col, 0)
-		for i, r := range actions {
-			ui.WizardItem(i, i+1, r, ColorFg)
-		}
-		ui.DrawTextLine(" press (x) to cancel ", len(actions)+1)
-		ui.Flush()
-		index, alt, err := ui.Select(len(actions))
-		if alt {
-			continue
-		}
-		if err != nil {
-			ui.DrawDungeonView(NoFlushMode)
-			return WizardInfoAction, err
-		}
-		ui.WizardItem(index, index+1, actions[index], ColorYellow)
-		ui.Flush()
-		Sleep(AnimDurMedium)
-		ui.DrawDungeonView(NoFlushMode)
-		return actions[index], nil
-	}
-}
-
-func (ui *model) DrawMenus() {
-	line := ui.MapHeight()
-	for i, cols := range MenuCols[0 : len(MenuCols)-1] {
-		if cols[0] >= 0 {
-			if menu(i) == ui.menuHover {
-				ui.DrawColoredText(menu(i).String(), cols[0], line, ColorBlue)
-			} else {
-				ui.DrawColoredText(menu(i).String(), cols[0], line, ColorViolet)
-			}
-		}
-	}
-	interactMenu := ui.UpdateInteractButton()
-	if interactMenu == "" {
-		return
-	}
-	i := len(MenuCols) - 1
-	cols := MenuCols[i]
-	if menu(i) == ui.menuHover {
-		ui.DrawColoredText(interactMenu, cols[0], line, ColorBlue)
-	} else {
-		ui.DrawColoredText(interactMenu, cols[0], line, ColorViolet)
-	}
 }

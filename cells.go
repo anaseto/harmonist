@@ -381,7 +381,7 @@ func (c cell) Desc(g *state, pos gruid.Point) (desc string) {
 	return desc
 }
 
-func (c cell) Style(g *state, pos gruid.Point) (r rune, fg uicolor) {
+func (c cell) Style(g *state, pos gruid.Point) (r rune, fg gruid.Color) {
 	switch c.T {
 	case WallCell:
 		r, fg = '#', ColorFgLOS

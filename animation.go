@@ -16,6 +16,10 @@ const (
 	AnimDurExtraLong   = 300
 )
 
+func (ui *model) DrawAtPosition(p gruid.Point, targ bool, r rune, fg, bg gruid.Color) {
+	// TODO
+}
+
 func (ui *model) SwappingAnimation(mpos, ppos gruid.Point) {
 	if DisableAnimations {
 		return
@@ -59,7 +63,7 @@ const (
 	AroundWallExplosion
 )
 
-func (ui *model) MonsterProjectileAnimation(ray []gruid.Point, r rune, fg uicolor) {
+func (ui *model) MonsterProjectileAnimation(ray []gruid.Point, r rune, fg gruid.Color) {
 	if DisableAnimations {
 		return
 	}
@@ -75,12 +79,12 @@ func (ui *model) MonsterProjectileAnimation(ray []gruid.Point, r rune, fg uicolo
 	}
 }
 
-func (ui *model) WaveDrawAt(pos gruid.Point, fg uicolor) {
+func (ui *model) WaveDrawAt(pos gruid.Point, fg gruid.Color) {
 	r, _, bgColor := ui.PositionDrawing(pos)
 	ui.DrawAtPosition(pos, true, r, bgColor, fg)
 }
 
-func (ui *model) ExplosionDrawAt(pos gruid.Point, fg uicolor) {
+func (ui *model) ExplosionDrawAt(pos gruid.Point, fg gruid.Color) {
 	g := ui.st
 	_, _, bgColor := ui.PositionDrawing(pos)
 	mons := g.MonsterAt(pos)
@@ -110,7 +114,7 @@ func (ui *model) NoiseAnimation(noises []gruid.Point) {
 		return
 	}
 	ui.LOSWavesAnimation(DefaultLOSRange, WaveMagicNoise, ui.st.Player.Pos)
-	colors := []uicolor{ColorFgSleepingMonster, ColorFgMagicPlace}
+	colors := []gruid.Color{ColorFgSleepingMonster, ColorFgMagicPlace}
 	for i := 0; i < 2; i++ {
 		for _, pos := range noises {
 			r := '♫'
@@ -132,7 +136,7 @@ func (ui *model) ExplosionAnimation(es explosionStyle, pos gruid.Point) {
 	}
 	ui.DrawDungeonView(NormalMode)
 	Sleep(AnimDurShort)
-	colors := [2]uicolor{ColorFgExplosionStart, ColorFgExplosionEnd}
+	colors := [2]gruid.Color{ColorFgExplosionStart, ColorFgExplosionEnd}
 	if es == WallExplosion || es == AroundWallExplosion {
 		colors[0] = ColorFgExplosionWallStart
 		colors[1] = ColorFgExplosionWallEnd
@@ -243,7 +247,7 @@ func (ui *model) WallExplosionAnimation(pos gruid.Point) {
 	if DisableAnimations {
 		return
 	}
-	colors := [2]uicolor{ColorFgExplosionWallStart, ColorFgExplosionWallEnd}
+	colors := [2]gruid.Color{ColorFgExplosionWallStart, ColorFgExplosionWallEnd}
 	for _, fg := range colors {
 		_, _, bgColor := ui.PositionDrawing(pos)
 		//ui.DrawAtPosition(pos, true, '☼', fg, bgColor)
@@ -268,7 +272,7 @@ func (ui *model) BeamsAnimation(ray []gruid.Point, bs beamstyle) {
 	ui.DrawDungeonView(NormalMode)
 	Sleep(AnimDurShort)
 	// change colors depending on effect
-	var fg uicolor
+	var fg gruid.Color
 	switch bs {
 	case BeamSleeping:
 		fg = ColorFgSleepingMonster
@@ -298,7 +302,7 @@ func (ui *model) SlowingMagaraAnimation(ray []gruid.Point) {
 	}
 	ui.DrawDungeonView(NormalMode)
 	Sleep(AnimDurShort)
-	colors := [2]uicolor{ColorFgConfusedMonster, ColorFgMagicPlace}
+	colors := [2]gruid.Color{ColorFgConfusedMonster, ColorFgMagicPlace}
 	for j := 0; j < 3; j++ {
 		for i := len(ray) - 1; i >= 0; i-- {
 			fg := colors[RandInt(2)]

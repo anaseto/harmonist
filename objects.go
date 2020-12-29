@@ -83,7 +83,7 @@ func (st stair) Desc(g *state) (desc string) {
 	return desc
 }
 
-func (st stair) Style(g *state) (r rune, fg uicolor) {
+func (st stair) Style(g *state) (r rune, fg gruid.Color) {
 	r = '>'
 	switch st {
 	case WinStair:
@@ -172,7 +172,7 @@ func (stn stone) ShortDesc(g *state) string {
 	return Indefinite(stn.String(), false)
 }
 
-func (stn stone) Style(g *state) (r rune, fg uicolor) {
+func (stn stone) Style(g *state) (r rune, fg gruid.Color) {
 	r = '∩'
 	switch stn {
 	case InertStone:
@@ -463,7 +463,7 @@ func (sc scroll) Desc(g *state) (desc string) {
 	return desc
 }
 
-func (sc scroll) Style(g *state) (r rune, fg uicolor) {
+func (sc scroll) Style(g *state) (r rune, fg gruid.Color) {
 	r = '?'
 	fg = ColorFgMagicPlace
 	if sc == ScrollLore {
@@ -514,7 +514,7 @@ func (st story) ShortDesc(g *state, pos gruid.Point) (desc string) {
 	return desc
 }
 
-func (st story) Style(g *state) (r rune, fg uicolor) {
+func (st story) Style(g *state) (r rune, fg gruid.Color) {
 	fg = ColorFgPlayer
 	switch st {
 	case NoStory:
@@ -646,7 +646,7 @@ func (it item) Desc(g *state) (desc string) {
 	return "The " + it.ShortDesc(g) + " " + desc
 }
 
-func (it item) Style(g *state) (r rune, fg uicolor) {
+func (it item) Style(g *state) (r rune, fg gruid.Color) {
 	fg = ColorFgObject
 	if it.IsAmulet() {
 		r = '='
@@ -763,7 +763,7 @@ func (p potion) Desc(g *state) (desc string) {
 	return desc
 }
 
-func (p potion) Style(g *state) (r rune, fg uicolor) {
+func (p potion) Style(g *state) (r rune, fg gruid.Color) {
 	r = '!'
 	switch p {
 	case HealthPotion:
