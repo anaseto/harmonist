@@ -372,7 +372,7 @@ func (cev *posEvent) Action(g *state) {
 			if !c.T.IsDiggable() || !g.Dungeon.HasFreeNeighbor(pos) {
 				continue
 			}
-			if cev.Pos.Distance(pos) > RandInt(35) || RandInt(2) == 0 {
+			if Distance(cev.Pos, pos) > RandInt(35) || RandInt(2) == 0 {
 				continue
 			}
 			g.Dungeon.SetCell(pos, RubbleCell)

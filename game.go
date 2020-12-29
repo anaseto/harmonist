@@ -139,7 +139,7 @@ func (g *state) FreeCellForPlayer() gruid.Point {
 	bestpos := g.FreePassableCell()
 	for i := 0; i < 5; i++ {
 		pos := g.FreePassableCell()
-		if pos.Distance(center) > bestpos.Distance(center) {
+		if Distance(pos, center) > Distance(bestpos, center) {
 			bestpos = pos
 		}
 	}
@@ -161,7 +161,7 @@ func (g *state) FreeCellForMonster() gruid.Point {
 		if !c.IsPassable() {
 			continue
 		}
-		if g.Player != nil && g.Player.Pos.Distance(pos) < 8 {
+		if g.Player != nil && Distance(g.Player.Pos, pos) < 8 {
 			continue
 		}
 		mons := g.MonsterAt(pos)
@@ -182,7 +182,7 @@ func (g *state) FreeCellForBandMonster(pos gruid.Point) gruid.Point {
 		neighbors := g.Dungeon.FreeNeighbors(pos)
 		r := RandInt(len(neighbors))
 		pos = neighbors[r]
-		if g.Player != nil && g.Player.Pos.Distance(pos) < 8 {
+		if g.Player != nil && Distance(g.Player.Pos, pos) < 8 {
 			continue
 		}
 		mons := g.MonsterAt(pos)

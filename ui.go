@@ -871,7 +871,7 @@ func (ui *model) CursorAction(targ Targeter, start *gruid.Point) (again, quit bo
 		minDist := 999
 		for _, mons := range g.Monsters {
 			if mons.Exists() && g.Player.LOS[mons.Pos] {
-				dist := mons.Pos.Distance(g.Player.Pos)
+				dist := Distance(mons.Pos, g.Player.Pos)
 				if minDist > dist {
 					minDist = dist
 					pos = mons.Pos
@@ -888,7 +888,7 @@ func (ui *model) CursorAction(targ Targeter, start *gruid.Point) (again, quit bo
 		if !data.npos.valid() {
 			ui.NextStair(data)
 		}
-		if data.npos.valid() && pos.Distance(data.npos) < DefaultLOSRange+5 {
+		if data.npos.valid() && Distance(pos, data.npos) < DefaultLOSRange+5 {
 			pos = data.npos
 		}
 	}

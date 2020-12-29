@@ -126,7 +126,7 @@ func (g *state) LOSCost(from, pos, to gruid.Point, rs raystyle) int {
 		if rs != TreePlayerRay && g.DiagonalDifficult(pos, to) {
 			return wallcost - 1
 		}
-		return to.Distance(pos)
+		return Distance(to, pos)
 	}
 	// pos terrain specific costs
 	c := g.Dungeon.Cell(pos)
@@ -152,20 +152,20 @@ func (g *state) LOSCost(from, pos, to gruid.Point, rs raystyle) int {
 			}
 			fallthrough
 		default:
-			return wallcost + to.Distance(pos) - 3
+			return wallcost + Distance(to, pos) - 3
 		}
 	}
 	if rs != TreePlayerRay && g.DiagonalDifficult(pos, to) {
-		cost := wallcost - pos.Distance(from) - 1
+		cost := wallcost - Distance(pos, from) - 1
 		if cost < 1 {
 			cost = 1
 		}
 		return cost
 	}
-	if rs == TreePlayerRay && c.T == WindowCell && from.Distance(pos) >= DefaultLOSRange {
-		return wallcost - from.Distance(pos) - 1
+	if rs == TreePlayerRay && c.T == WindowCell && Distance(from, pos) >= DefaultLOSRange {
+		return wallcost - Distance(from, pos) - 1
 	}
-	return to.Distance(pos)
+	return Distance(to, pos)
 }
 
 type raystyle int
@@ -411,9 +411,9 @@ func (g *state) SeePosition(pos gruid.Point) {
 	}
 	delete(g.NoiseIllusion, pos)
 	if g.Objects.Story[pos] == StoryShaedra && !g.LiberatedShaedra &&
-		(g.Player.Pos.Distance(pos) <= 1 ||
-			g.Player.Pos.Distance(g.Places.Marevor) <= 1 ||
-			g.Player.Pos.Distance(g.Places.Monolith) <= 1) &&
+		(Distance(g.Player.Pos, pos) <= 1 ||
+			Distance(g.Player.Pos, g.Places.Marevor) <= 1 ||
+			Distance(g.Player.Pos, g.Places.Monolith) <= 1) &&
 		g.Player.Pos != g.Places.Marevor &&
 		g.Player.Pos != g.Places.Monolith && g.Ev != nil {
 		g.PushEvent(&simpleEvent{ERank: g.Ev.Rank(), EAction: ShaedraAnimation})
@@ -533,7 +533,7 @@ func (m *monster) SeesLight(g *state, pos gruid.Point) bool {
 	if !(m.LOS[pos] && m.Dir.InViewCone(m.Pos, pos)) {
 		return false
 	}
-	if m.State == Resting && m.Pos.Distance(pos) > 1 {
+	if m.State == Resting && Distance(m.Pos, pos) > 1 {
 		return false
 	}
 	return true
@@ -554,17 +554,17 @@ func (m *monster) Sees(g *state, pos gruid.Point) bool {
 	if !(m.LOS[pos] && (m.Dir.InViewCone(m.Pos, pos) || m.Kind == MonsSpider)) {
 		return false
 	}
-	if m.State == Resting && m.Pos.Distance(pos) > 1 {
+	if m.State == Resting && Distance(m.Pos, pos) > 1 {
 		return false
 	}
 	c := g.Dungeon.Cell(pos)
-	if (!g.Illuminated[pos.idx()] && !g.Player.HasStatus(StatusIlluminated) || !c.IsIlluminable()) && m.Pos.Distance(pos) > darkRange {
+	if (!g.Illuminated[pos.idx()] && !g.Player.HasStatus(StatusIlluminated) || !c.IsIlluminable()) && Distance(m.Pos, pos) > darkRange {
 		return false
 	}
-	if c.T == TableCell && m.Pos.Distance(pos) > tableRange {
+	if c.T == TableCell && Distance(m.Pos, pos) > tableRange {
 		return false
 	}
-	if g.Player.HasStatus(StatusTransparent) && g.Illuminated[pos.idx()] && m.Pos.Distance(pos) > 1 {
+	if g.Player.HasStatus(StatusTransparent) && g.Illuminated[pos.idx()] && Distance(m.Pos, pos) > 1 {
 		return false
 	}
 	return true
@@ -610,7 +610,7 @@ func (g *state) ComputeLights() {
 		if !on {
 			continue
 		}
-		if lpos.Distance(g.Player.Pos) > DefaultLOSRange+LightRange && g.Dungeon.Cell(g.Player.Pos).T != TreeCell {
+		if Distance(lpos, g.Player.Pos) > DefaultLOSRange+LightRange && g.Dungeon.Cell(g.Player.Pos).T != TreeCell {
 			continue
 		}
 		g.BuildRayMap(lpos, LightRay, g.RaysCache)
@@ -624,7 +624,7 @@ func (g *state) ComputeLights() {
 		if !mons.Exists() || mons.Kind != MonsButterfly || mons.Status(MonsConfused) || mons.Status(MonsParalysed) {
 			continue
 		}
-		if mons.Pos.Distance(g.Player.Pos) > DefaultLOSRange+LightRange && g.Dungeon.Cell(g.Player.Pos).T != TreeCell {
+		if Distance(mons.Pos, g.Player.Pos) > DefaultLOSRange+LightRange && g.Dungeon.Cell(g.Player.Pos).T != TreeCell {
 			continue
 		}
 		g.BuildRayMap(mons.Pos, LightRay, g.RaysCache)

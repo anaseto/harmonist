@@ -95,9 +95,9 @@ func (m *monster) LeaveRoomForPlayer(g *state) gruid.Point {
 		if mons.Exists() {
 			return
 		}
-		if n.Pos.Distance(m.Pos) < dist {
+		if Distance(n.Pos, m.Pos) < dist {
 			free = n.Pos
-			dist = n.Pos.Distance(m.Pos)
+			dist = Distance(n.Pos, m.Pos)
 		}
 	})
 	// free should be valid except in really rare cases
@@ -120,9 +120,9 @@ func (g *state) FindJumpTarget(m *monster) gruid.Point {
 		if mons.Exists() {
 			return
 		}
-		if n.Pos.Distance(m.Pos) < dist {
+		if Distance(n.Pos, m.Pos) < dist {
 			free = n.Pos
-			dist = n.Pos.Distance(m.Pos)
+			dist = Distance(n.Pos, m.Pos)
 		}
 	})
 	// free should be valid except in really rare cases

@@ -4,28 +4,28 @@ import (
 	"fmt"
 )
 
-func (pos gruid.Point) Distance(to gruid.Point) int {
-	deltaX := Abs(to.X - pos.X)
-	deltaY := Abs(to.Y - pos.Y)
-	return deltaX + deltaY
+func Distance(from, to gruid.Point) int {
+	delta := to.Sub(from)
+	return Abs(delta.X) + Abs(delta.Y)
 }
 
-func (pos gruid.Point) MaxCardinalDist(to gruid.Point) int {
-	deltaX := Abs(to.X - pos.X)
-	deltaY := Abs(to.Y - pos.Y)
+func MaxCardinalDist(from, to gruid.Point) int {
+	delta := to.Sub(from)
+	deltaX := Abs(delta.X)
+	deltaY := Abs(delta.Y)
 	if deltaX > deltaY {
 		return deltaX
 	}
 	return deltaY
 }
 
-func (pos gruid.Point) DistanceX(to gruid.Point) int {
-	deltaX := Abs(to.X - pos.X)
+func DistanceX(from, to gruid.Point) int {
+	deltaX := Abs(to.X - from.X)
 	return deltaX
 }
 
-func (pos gruid.Point) DistanceY(to gruid.Point) int {
-	deltaY := Abs(to.Y - pos.Y)
+func DistanceY(from, to gruid.Point) int {
+	deltaY := Abs(to.Y - from.Y)
 	return deltaY
 }
 
@@ -293,7 +293,7 @@ func (dir direction) InViewCone(from, to gruid.Point) bool {
 		return true
 	}
 	d := to.Dir(from)
-	if d == dir || from.Distance(to) <= 1 {
+	if d == dir || Distance(from, to) <= 1 {
 		return true
 	}
 	switch dir {

@@ -26,7 +26,7 @@ func (dp *dungeonPath) Cost(from, to gruid.Point) int {
 }
 
 func (dp *dungeonPath) Estimation(from, to gruid.Point) int {
-	return from.Distance(to)
+	return Distance(from, to)
 }
 
 type gridPath struct {
@@ -44,7 +44,7 @@ func (gp *gridPath) Cost(from, to gruid.Point) int {
 }
 
 func (gp *gridPath) Estimation(from, to gruid.Point) int {
-	return from.Distance(to)
+	return Distance(from, to)
 }
 
 type mappingPath struct {
@@ -69,7 +69,7 @@ func (dp *mappingPath) Cost(from, to gruid.Point) int {
 }
 
 func (dp *mappingPath) Estimation(from, to gruid.Point) int {
-	return from.Distance(to)
+	return Distance(from, to)
 }
 
 type tunnelPath struct {
@@ -102,7 +102,7 @@ func (tp *tunnelPath) Cost(from, to gruid.Point) int {
 }
 
 func (tp *tunnelPath) Estimation(from, to gruid.Point) int {
-	return from.Distance(to)
+	return Distance(from, to)
 }
 
 type playerPath struct {
@@ -126,7 +126,7 @@ func (pp *playerPath) Neighbors(pos gruid.Point) []gruid.Point {
 	}
 	nb = pos.CardinalNeighbors(nb, keep)
 	sort.Slice(nb, func(i, j int) bool {
-		return nb[i].MaxCardinalDist(pp.goal) <= nb[j].MaxCardinalDist(pp.goal)
+		return MaxCardinalDist(nb[i], pp.goal) <= MaxCardinalDist(nb[j], pp.goal)
 	})
 	return nb
 }
@@ -139,7 +139,7 @@ func (pp *playerPath) Cost(from, to gruid.Point) int {
 }
 
 func (pp *playerPath) Estimation(from, to gruid.Point) int {
-	return from.Distance(to)
+	return Distance(from, to)
 }
 
 type jumpPath struct {
@@ -162,7 +162,7 @@ func (jp *jumpPath) Cost(from, to gruid.Point) int {
 }
 
 func (jp *jumpPath) Estimation(from, to gruid.Point) int {
-	return from.Distance(to)
+	return Distance(from, to)
 }
 
 type noisePath struct {
@@ -264,7 +264,7 @@ func (mp *monPath) Cost(from, to gruid.Point) int {
 }
 
 func (mp *monPath) Estimation(from, to gruid.Point) int {
-	return from.Distance(to)
+	return Distance(from, to)
 }
 
 func (m *monster) APath(g *state, from, to gruid.Point) []gruid.Point {

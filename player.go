@@ -185,7 +185,7 @@ func (g *state) Teleportation() {
 			panic("Teleportation")
 		}
 		pos = g.FreePassableCell()
-		if pos.Distance(g.Player.Pos) < 15 && i < 1000 {
+		if Distance(pos, g.Player.Pos) < 15 && i < 1000 {
 			i++
 			continue
 		}

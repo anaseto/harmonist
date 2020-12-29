@@ -723,9 +723,9 @@ func (ui *model) MapHeight() int {
 func (ui *model) InView(pos gruid.Point, targeting bool) bool {
 	g := ui.g
 	if targeting {
-		return pos.DistanceY(ui.cursor) <= 10 && pos.DistanceX(ui.cursor) <= 39
+		return DistanceY(pos, ui.cursor) <= 10 && DistanceX(pos, ui.cursor) <= 39
 	}
-	return pos.DistanceY(g.Player.Pos) <= 10 && pos.DistanceX(g.Player.Pos) <= 39
+	return DistanceY(pos, g.Player.Pos) <= 10 && DistanceX(pos, g.Player.Pos) <= 39
 }
 
 func (ui *model) CameraOffset(pos gruid.Point, targeting bool) (int, int) {
@@ -751,9 +751,9 @@ func (ui *model) CameraTargetPosition(x, y int, targeting bool) (pos gruid.Point
 func (ui *model) InViewBorder(pos gruid.Point, targeting bool) bool {
 	g := ui.g
 	if targeting {
-		return pos.DistanceY(ui.cursor) != ui.MapHeight()/2 && pos.DistanceX(ui.cursor) != ui.MapWidth()
+		return DistanceY(pos, ui.cursor) != ui.MapHeight()/2 && DistanceX(pos, ui.cursor) != ui.MapWidth()
 	}
-	return pos.DistanceY(g.Player.Pos) != ui.MapHeight()/2 && pos.DistanceX(g.Player.Pos) != ui.MapWidth()
+	return DistanceY(pos, g.Player.Pos) != ui.MapHeight()/2 && DistanceX(pos, g.Player.Pos) != ui.MapWidth()
 }
 
 func (ui *model) DrawAtPosition(pos gruid.Point, targeting bool, r rune, fg, bg uicolor) {

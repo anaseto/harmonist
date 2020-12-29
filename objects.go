@@ -382,7 +382,7 @@ func (g *state) MagicMapping(maxdist int) error {
 
 func (g *state) Sensing() error {
 	for _, mons := range g.Monsters {
-		if mons.Exists() && !g.Player.Sees(mons.Pos) && mons.Pos.Distance(g.Player.Pos) <= MappingDistance {
+		if mons.Exists() && !g.Player.Sees(mons.Pos) && Distance(mons.Pos, g.Player.Pos) <= MappingDistance {
 			mons.UpdateKnowledge(g, mons.Pos)
 		}
 	}
