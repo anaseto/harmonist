@@ -20,7 +20,7 @@ func init() {
 // styler implements the tcell.StyleManager interface.
 type styler struct{}
 
-func (sty styler) GetStyle(st gruid.Style) tc.Style {
+func (sty styler) GetStyle(cst gruid.Style) tc.Style {
 	st := tc.StyleDefault
 	st = st.Foreground(tc.ColorValid + tc.Color(cst.Fg)).Background(tc.ColorValid + tc.Color(cst.Bg))
 	return st
