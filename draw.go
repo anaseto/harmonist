@@ -339,17 +339,6 @@ func Simple8ColorPalette() {
 	Only8Colors = true
 }
 
-type drawFrame struct {
-	Draws []cellDraw
-	Time  time.Time
-}
-
-type cellDraw struct {
-	Cell UICell
-	X    int
-	Y    int
-}
-
 const (
 	AttrText gruid.AttrMask = iota
 	AttrInMap
@@ -469,7 +458,7 @@ func (ui *model) DrawWelcome() {
 }
 
 func (ui *model) RestartDrawBuffers() {
-	g := ui.g
+	g := ui.st
 	g.DrawBuffer = nil
 	g.drawBackBuffer = nil
 	ui.DrawBufferInit()
@@ -592,7 +581,7 @@ func (ui *model) ExamineHelp() {
 const TextWidth = 72
 
 func (ui *model) WizardInfo() {
-	//g := ui.g
+	//g := ui.st
 	ui.Clear()
 	b := &bytes.Buffer{}
 	//fmt.Fprintf(b, "Monsters: %d (%d)\n", len(g.Monsters), g.MaxMonsters())
@@ -610,7 +599,7 @@ func (ui *model) AddComma(see, s string) string {
 }
 
 func (ui *model) DescribePosition(pos gruid.Point, targ Targeter) {
-	g := ui.g
+	g := ui.st
 	var desc string
 	switch {
 	case !g.Dungeon.Cell(pos).Explored:
@@ -667,7 +656,7 @@ func (ui *model) DescribePosition(pos gruid.Point, targ Targeter) {
 }
 
 func (ui *model) ViewPositionDescription(pos gruid.Point) {
-	g := ui.g
+	g := ui.st
 	c := g.Dungeon.Cell(pos)
 	title := "Terrain Description"
 	if !c.Explored {
@@ -721,7 +710,7 @@ func (ui *model) MapHeight() int {
 }
 
 func (ui *model) InView(pos gruid.Point, targeting bool) bool {
-	g := ui.g
+	g := ui.st
 	if targeting {
 		return DistanceY(pos, ui.cursor) <= 10 && DistanceX(pos, ui.cursor) <= 39
 	}
@@ -729,7 +718,7 @@ func (ui *model) InView(pos gruid.Point, targeting bool) bool {
 }
 
 func (ui *model) CameraOffset(pos gruid.Point, targeting bool) (int, int) {
-	g := ui.g
+	g := ui.st
 	if targeting {
 		return pos.X + ui.MapWidth()/2 - ui.cursor.X, pos.Y + ui.MapHeight()/2 - ui.cursor.Y
 	}
@@ -737,7 +726,7 @@ func (ui *model) CameraOffset(pos gruid.Point, targeting bool) (int, int) {
 }
 
 func (ui *model) CameraTargetPosition(x, y int, targeting bool) (pos gruid.Point) {
-	g := ui.g
+	g := ui.st
 	if targeting {
 		pos.X = x - ui.MapWidth()/2 + ui.cursor.X
 		pos.Y = y - ui.MapHeight()/2 + ui.cursor.Y
@@ -749,7 +738,7 @@ func (ui *model) CameraTargetPosition(x, y int, targeting bool) (pos gruid.Point
 }
 
 func (ui *model) InViewBorder(pos gruid.Point, targeting bool) bool {
-	g := ui.g
+	g := ui.st
 	if targeting {
 		return DistanceY(pos, ui.cursor) != ui.MapHeight()/2 && DistanceX(pos, ui.cursor) != ui.MapWidth()
 	}
@@ -757,7 +746,7 @@ func (ui *model) InViewBorder(pos gruid.Point, targeting bool) bool {
 }
 
 func (ui *model) DrawAtPosition(pos gruid.Point, targeting bool, r rune, fg, bg uicolor) {
-	g := ui.g
+	g := ui.st
 	if g.Highlight[pos] || pos == ui.cursor {
 		bg, fg = fg, bg
 	}
@@ -783,7 +772,7 @@ func (ui *model) DrawAtPosition(pos gruid.Point, targeting bool, r rune, fg, bg 
 
 func (ui *model) DrawDungeonView(m uiMode) {
 	// TODO: remove uiMode
-	g := ui.g
+	g := ui.st
 	ui.Clear()
 	d := g.Dungeon
 	for i := 0; i < ui.MapWidth(); i++ {
@@ -845,7 +834,7 @@ func (ui *model) DrawSelectBasics() {
 }
 
 func (ui *model) PositionDrawing(pos gruid.Point) (r rune, fgColor, bgColor uicolor) {
-	g := ui.g
+	g := ui.st
 	m := g.Dungeon
 	c := m.Cell(pos)
 	fgColor = ColorFg
@@ -982,7 +971,7 @@ func (ui *model) PositionDrawing(pos gruid.Point) (r rune, fgColor, bgColor uico
 }
 
 func (ui *model) DrawStatusBar(line int) {
-	g := ui.g
+	g := ui.st
 	sts := statusSlice{}
 	if cld, ok := g.Clouds[g.Player.Pos]; ok && cld == CloudFire {
 		g.Player.Statuses[StatusFlames] = 1
@@ -1069,7 +1058,7 @@ func (ui *model) DrawStatusBar(line int) {
 }
 
 func (ui *model) HPColor() uicolor {
-	g := ui.g
+	g := ui.st
 	hpColor := ColorFgHPok
 	switch g.Player.HP + g.Player.HPbonus {
 	case 1, 2:
@@ -1081,7 +1070,7 @@ func (ui *model) HPColor() uicolor {
 }
 
 func (ui *model) MPColor() uicolor {
-	g := ui.g
+	g := ui.st
 	mpColor := ColorFgMPok
 	switch g.Player.MP {
 	case 1, 2:
@@ -1093,7 +1082,7 @@ func (ui *model) MPColor() uicolor {
 }
 
 func (ui *model) DrawStatusLine() {
-	g := ui.g
+	g := ui.st
 	sts := statusSlice{}
 	if cld, ok := g.Clouds[g.Player.Pos]; ok && cld == CloudFire {
 		g.Player.Statuses[StatusFlames] = 1
@@ -1223,7 +1212,7 @@ func (ui *model) LogColor(e logEntry) uicolor {
 }
 
 func (ui *model) DrawLog(lines int) {
-	g := ui.g
+	g := ui.st
 	min := len(g.Log) - lines
 	if min < 0 {
 		min = 0
@@ -1308,7 +1297,7 @@ const (
 )
 
 func (ui *model) ChangeKeys() {
-	g := ui.g
+	g := ui.st
 	lines := ui.MapHeight()
 	nmax := len(ConfigurableKeyActions) - lines
 	n := 0
@@ -1401,7 +1390,7 @@ loop:
 }
 
 func (ui *model) DrawPreviousLogs() {
-	g := ui.g
+	g := ui.st
 	bottom := 2
 	lines := ui.MapHeight() + bottom
 	nmax := len(g.Log) - lines
@@ -1614,7 +1603,7 @@ func (ui *model) MagaraItem(i, lnum int, c magara, fg uicolor) {
 }
 
 func (ui *model) SelectMagara() error {
-	g := ui.g
+	g := ui.st
 	desc := false
 	ui.DrawDungeonView(NoFlushMode)
 	for {
@@ -1654,7 +1643,7 @@ func (ui *model) SelectMagara() error {
 }
 
 func (ui *model) EquipMagara() error {
-	g := ui.g
+	g := ui.st
 	desc := false
 	ui.DrawDungeonView(NoFlushMode)
 	for {
@@ -1696,11 +1685,11 @@ func (ui *model) EquipMagara() error {
 func (ui *model) InventoryItem(i, lnum int, it item, fg uicolor, part string) {
 	bg := ui.ListItemBG(i)
 	ui.ClearLineWithColor(lnum, bg)
-	ui.DrawColoredTextOnBG(fmt.Sprintf("%c - %s (%s)", rune(i+97), it.ShortDesc(ui.g), part), 0, lnum, fg, bg)
+	ui.DrawColoredTextOnBG(fmt.Sprintf("%c - %s (%s)", rune(i+97), it.ShortDesc(ui.st), part), 0, lnum, fg, bg)
 }
 
 func (ui *model) SelectItem() error {
-	g := ui.g
+	g := ui.st
 	ui.DrawDungeonView(NoFlushMode)
 	items := []item{g.Player.Inventory.Body, g.Player.Inventory.Neck, g.Player.Inventory.Misc}
 	parts := []string{"body", "neck", "backpack"}
@@ -1730,26 +1719,26 @@ func (ui *model) SelectItem() error {
 }
 
 func (ui *model) ReadScroll() error {
-	sc, ok := ui.g.Objects.Scrolls[ui.g.Player.Pos]
+	sc, ok := ui.st.Objects.Scrolls[ui.st.Player.Pos]
 	if !ok {
 		return errors.New("Internal error: no scroll found")
 	}
-	ui.g.Print("You read the message.")
+	ui.st.Print("You read the message.")
 	switch sc {
 	case ScrollLore:
-		ui.DrawDescription(sc.Text(ui.g), "Lore Message")
-		if !ui.g.Stats.Lore[ui.g.Depth] {
-			ui.g.StoryPrint("Read lore message")
+		ui.DrawDescription(sc.Text(ui.st), "Lore Message")
+		if !ui.st.Stats.Lore[ui.st.Depth] {
+			ui.st.StoryPrint("Read lore message")
 		}
-		ui.g.Stats.Lore[ui.g.Depth] = true
-		if len(ui.g.Stats.Lore) == 4 {
-			AchLoreStudent.Get(ui.g)
+		ui.st.Stats.Lore[ui.st.Depth] = true
+		if len(ui.st.Stats.Lore) == 4 {
+			AchLoreStudent.Get(ui.st)
 		}
-		if len(ui.g.Stats.Lore) == len(ui.g.Params.Lore) {
-			AchLoremaster.Get(ui.g)
+		if len(ui.st.Stats.Lore) == len(ui.st.Params.Lore) {
+			AchLoremaster.Get(ui.st)
 		}
 	default:
-		ui.DrawDescription(sc.Text(ui.g), "Story Message")
+		ui.DrawDescription(sc.Text(ui.st), "Story Message")
 	}
 	return errors.New(DoNothing)
 }
@@ -1869,7 +1858,7 @@ func (ui *model) SelectConfigure(actions []setting) (setting, error) {
 }
 
 func (ui *model) HandleSettingAction() error {
-	g := ui.g
+	g := ui.st
 	s, err := ui.SelectConfigure(settingsActions)
 	if err != nil {
 		return err

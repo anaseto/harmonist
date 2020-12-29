@@ -2,7 +2,7 @@ package main
 
 import (
 	"sort"
-	"time"
+	//"time"
 
 	"github.com/anaseto/gruid"
 )
@@ -81,7 +81,7 @@ func (ui *model) WaveDrawAt(pos gruid.Point, fg uicolor) {
 }
 
 func (ui *model) ExplosionDrawAt(pos gruid.Point, fg uicolor) {
-	g := ui.g
+	g := ui.st
 	_, _, bgColor := ui.PositionDrawing(pos)
 	mons := g.MonsterAt(pos)
 	r := ';'
@@ -109,7 +109,7 @@ func (ui *model) NoiseAnimation(noises []gruid.Point) {
 	if DisableAnimations {
 		return
 	}
-	ui.LOSWavesAnimation(DefaultLOSRange, WaveMagicNoise, ui.g.Player.Pos)
+	ui.LOSWavesAnimation(DefaultLOSRange, WaveMagicNoise, ui.st.Player.Pos)
 	colors := []uicolor{ColorFgSleepingMonster, ColorFgMagicPlace}
 	for i := 0; i < 2; i++ {
 		for _, pos := range noises {
@@ -117,8 +117,8 @@ func (ui *model) NoiseAnimation(noises []gruid.Point) {
 			_, _, bgColor := ui.PositionDrawing(pos)
 			ui.DrawAtPosition(pos, false, r, bgColor, colors[i])
 		}
-		_, _, bgColor := ui.PositionDrawing(ui.g.Player.Pos)
-		ui.DrawAtPosition(ui.g.Player.Pos, false, '@', bgColor, colors[i])
+		_, _, bgColor := ui.PositionDrawing(ui.st.Player.Pos)
+		ui.DrawAtPosition(ui.st.Player.Pos, false, '@', bgColor, colors[i])
 		//ui.Flush()
 		Sleep(AnimDurShortMedium)
 	}
@@ -126,7 +126,7 @@ func (ui *model) NoiseAnimation(noises []gruid.Point) {
 }
 
 func (ui *model) ExplosionAnimation(es explosionStyle, pos gruid.Point) {
-	g := ui.g
+	g := ui.st
 	if DisableAnimations {
 		return
 	}
@@ -176,7 +176,7 @@ func (g *state) Waves(maxCost int, ws wavestyle, center gruid.Point) (dists []in
 }
 
 func (ui *model) LOSWavesAnimation(r int, ws wavestyle, center gruid.Point) {
-	dists, cdists := ui.g.Waves(r, ws, center)
+	dists, cdists := ui.st.Waves(r, ws, center)
 	for _, d := range dists {
 		wave := cdists[d]
 		if len(wave) == 0 {
@@ -207,27 +207,27 @@ func (ui *model) WaveAnimation(wave []int, ws wavestyle) {
 		switch ws {
 		case WaveConfusion:
 			fg := ColorFgConfusedMonster
-			if ui.g.Player.Sees(pos) {
+			if ui.st.Player.Sees(pos) {
 				ui.WaveDrawAt(pos, fg)
 			}
 		case WaveSleeping:
 			fg := ColorFgSleepingMonster
-			if ui.g.Player.Sees(pos) {
+			if ui.st.Player.Sees(pos) {
 				ui.WaveDrawAt(pos, fg)
 			}
 		case WaveSlowing:
 			fg := ColorFgParalysedMonster
-			if ui.g.Player.Sees(pos) {
+			if ui.st.Player.Sees(pos) {
 				ui.WaveDrawAt(pos, fg)
 			}
 		case WaveTree:
 			fg := ColorFgLignifiedMonster
-			if ui.g.Player.Sees(pos) {
+			if ui.st.Player.Sees(pos) {
 				ui.WaveDrawAt(pos, fg)
 			}
 		case WaveNoise:
 			fg := ColorFgWanderingMonster
-			if ui.g.Player.Sees(pos) {
+			if ui.st.Player.Sees(pos) {
 				ui.WaveDrawAt(pos, fg)
 			}
 		case WaveMagicNoise:
@@ -330,7 +330,7 @@ func (ui *model) ProjectileSymbol(dir direction) (r rune) {
 }
 
 func (ui *model) MonsterJavelinAnimation(ray []gruid.Point, hit bool) {
-	g := ui.g
+	g := ui.st
 	if DisableAnimations {
 		return
 	}
@@ -348,7 +348,7 @@ func (ui *model) MonsterJavelinAnimation(ray []gruid.Point, hit bool) {
 }
 
 func (ui *model) WoundedAnimation() {
-	g := ui.g
+	g := ui.st
 	if DisableAnimations {
 		return
 	}
@@ -365,7 +365,7 @@ func (ui *model) WoundedAnimation() {
 }
 
 func (ui *model) PlayerGoodEffectAnimation() {
-	g := ui.g
+	g := ui.st
 	if DisableAnimations {
 		return
 	}
@@ -383,7 +383,7 @@ func (ui *model) PlayerGoodEffectAnimation() {
 }
 
 func (ui *model) StatusEndAnimation() {
-	g := ui.g
+	g := ui.st
 	if DisableAnimations {
 		return
 	}
@@ -395,7 +395,7 @@ func (ui *model) StatusEndAnimation() {
 }
 
 func (ui *model) FoundFakeStairsAnimation() {
-	g := ui.g
+	g := ui.st
 	if DisableAnimations {
 		return
 	}
@@ -434,37 +434,8 @@ func (ui *model) PushAnimation(path []gruid.Point) {
 		ui.DrawAtPosition(pos, false, '×', ColorFgPlayer, bg)
 	}
 	ui.DrawAtPosition(path[len(path)-1], false, '@', ColorFgPlayer, bg)
-	ui.Flush()
+	//ui.Flush()
 	Sleep(AnimDurMediumLong)
-}
-
-func (ui *model) MenuSelectedAnimation(m menu, ok bool) {
-	if DisableAnimations {
-		return
-	}
-	if !ui.Small() {
-		var message string
-		if m == MenuInteract {
-			message = ui.UpdateInteractButton()
-		} else {
-			message = m.String()
-		}
-		if message == "" {
-			return
-		}
-		if ok {
-			ui.DrawColoredText(message, MenuCols[m][0], DungeonHeight, ColorCyan)
-		} else {
-			ui.DrawColoredText(message, MenuCols[m][0], DungeonHeight, ColorMagenta)
-		}
-		//ui.Flush()
-		var t time.Duration = 25
-		if !ok {
-			t += 25
-		}
-		Sleep(t)
-		ui.DrawColoredText(message, MenuCols[m][0], DungeonHeight, ColorViolet)
-	}
 }
 
 func (ui *model) MagicMappingAnimation(border []int) {
@@ -480,7 +451,7 @@ func (ui *model) MagicMappingAnimation(border []int) {
 }
 
 func (ui *model) FreeingShaedraAnimation() {
-	g := ui.g
+	g := ui.st
 	//if DisableAnimations {
 	// TODO this animation cannot be disabled as-is, because code is mixed with it...
 	//return
@@ -490,7 +461,7 @@ func (ui *model) FreeingShaedraAnimation() {
 	g.Print("[(x) to continue]")
 	//ui.DrawDungeonView(NoFlushMode)
 	//ui.Flush()
-	ui.WaitForContinue(-1)
+	//ui.WaitForContinue(-1)
 	_, _, bg := ui.PositionDrawing(g.Places.Monolith)
 	ui.DrawAtPosition(g.Places.Monolith, false, 'Φ', ColorFgMagicPlace, bg)
 	//ui.Flush()
@@ -510,7 +481,7 @@ func (ui *model) FreeingShaedraAnimation() {
 	g.Print("[(x) to continue]")
 	//ui.DrawDungeonView(NoFlushMode)
 	//ui.Flush()
-	ui.WaitForContinue(-1)
+	//ui.WaitForContinue(-1)
 	//ui.DrawDungeonView(NoFlushMode)
 	ui.DrawAtPosition(g.Places.Marevor, false, 'Φ', ColorFgMagicPlace, bg)
 	ui.DrawAtPosition(g.Places.Shaedra, false, 'Φ', ColorFgMagicPlace, bg)
@@ -537,7 +508,7 @@ func (g *state) RescuedShaedra() {
 }
 
 func (ui *model) TakingArtifactAnimation() {
-	g := ui.g
+	g := ui.st
 	//if DisableAnimations {
 	// TODO this animation cannot be disabled as-is, because code is mixed with it...
 	//return
@@ -546,7 +517,7 @@ func (ui *model) TakingArtifactAnimation() {
 	g.Print("[(x) to continue].")
 	//ui.DrawDungeonView(NoFlushMode)
 	//ui.Flush()
-	ui.WaitForContinue(-1)
+	//ui.WaitForContinue(-1)
 	g.Dungeon.SetCell(g.Places.Artifact, GroundCell)
 	_, _, bg := ui.PositionDrawing(g.Places.Monolith)
 	ui.DrawAtPosition(g.Places.Monolith, false, 'Φ', ColorFgMagicPlace, bg)
@@ -567,7 +538,7 @@ func (ui *model) TakingArtifactAnimation() {
 	g.Print("[(x) to continue]")
 	//ui.DrawDungeonView(NoFlushMode)
 	//ui.Flush()
-	ui.WaitForContinue(-1)
+	//ui.WaitForContinue(-1)
 	//ui.DrawDungeonView(NoFlushMode)
 	ui.DrawAtPosition(g.Places.Marevor, false, 'Φ', ColorFgMagicPlace, bg)
 	//ui.Flush()

@@ -33,7 +33,7 @@ const (
 const DoNothing = "Do nothing, then."
 
 func (ui *model) EnterWizard() {
-	g := ui.g
+	g := ui.st
 	if ui.Wizard() {
 		g.EnterWizardMode()
 		ui.DrawDungeonView(NoFlushMode)
@@ -397,7 +397,7 @@ func (ui *model) HandleKeyAction(rka runeKeyAction) (again bool, quit bool, err 
 }
 
 func (ui *model) OptionalDescendConfirmation(st stair) (err error) {
-	g := ui.g
+	g := ui.st
 	if g.Depth == WinDepth && st == NormalStair && g.Dungeon.Cell(g.Places.Shaedra).T == StoryCell {
 		err = errors.New("You have to rescue Shaedra first!")
 	}
@@ -406,7 +406,7 @@ func (ui *model) OptionalDescendConfirmation(st stair) (err error) {
 }
 
 func (ui *model) HandleKey(rka runeKeyAction) (again bool, quit bool, err error) {
-	g := ui.g
+	g := ui.st
 	switch rka.k {
 	case ActionW, ActionS, ActionN, ActionE:
 		err = g.PlayerBump(To(KeyToDir(rka.k), g.Player.Pos))
@@ -476,7 +476,7 @@ func (ui *model) HandleKey(rka runeKeyAction) (again bool, quit bool, err error)
 			err = ui.ReadScroll()
 			err = ui.CleanError(err)
 		case ItemCell:
-			err = ui.g.EquipItem()
+			err = ui.st.EquipItem()
 		case LightCell:
 			err = g.ExtinguishFire()
 		case StoryCell:
@@ -608,7 +608,7 @@ func (ui *model) ChooseTarget(targ Targeter) error {
 }
 
 func (ui *model) NextMonster(r rune, pos gruid.Point, data *examineData) {
-	g := ui.g
+	g := ui.st
 	nmonster := data.nmonster
 	for i := 0; i < len(g.Monsters); i++ {
 		if r == '+' {
@@ -632,7 +632,7 @@ func (ui *model) NextMonster(r rune, pos gruid.Point, data *examineData) {
 }
 
 func (ui *model) NextStair(data *examineData) {
-	g := ui.g
+	g := ui.st
 	if data.sortedStairs == nil {
 		stairs := g.StairsSlice()
 		data.sortedStairs = g.SortedNearestTo(stairs, g.Player.Pos)
@@ -647,7 +647,7 @@ func (ui *model) NextStair(data *examineData) {
 }
 
 func (ui *model) NextObject(pos gruid.Point, data *examineData) {
-	g := ui.g
+	g := ui.st
 	nobject := data.nobject
 	if len(data.objects) == 0 {
 		for p := range g.Objects.Stairs {
@@ -695,7 +695,7 @@ func (ui *model) NextObject(pos gruid.Point, data *examineData) {
 }
 
 func (ui *model) ExcludeZone(pos gruid.Point) {
-	g := ui.g
+	g := ui.st
 	if !g.Dungeon.Cell(pos).Explored {
 		g.Print("You cannot choose an unexplored cell for exclusion.")
 	} else {
@@ -706,7 +706,7 @@ func (ui *model) ExcludeZone(pos gruid.Point) {
 
 func (ui *model) CursorMouseLeft(targ Targeter, pos gruid.Point, data *examineData) (again, notarg bool) {
 	// TODO: rewrite
-	g := ui.g
+	g := ui.st
 	again = true
 	if data.npos == pos {
 		err := targ.Action(g, pos)
@@ -728,7 +728,7 @@ func (ui *model) CursorMouseLeft(targ Targeter, pos gruid.Point, data *examineDa
 
 func (ui *model) CursorKeyAction(targ Targeter, rka runeKeyAction, data *examineData) (again, quit, notarg bool, err error) {
 	// TODO: rewrite
-	g := ui.g
+	g := ui.st
 	pos := data.npos
 	again = true
 	if rka.r != 0 {
@@ -863,7 +863,7 @@ var InvalidPos = gruid.Point{-1, -1}
 
 func (ui *model) CursorAction(targ Targeter, start *gruid.Point) (again, quit bool, err error) {
 	// TODO: rewrite
-	g := ui.g
+	g := ui.st
 	pos := g.Player.Pos
 	if start != nil {
 		pos = *start
@@ -984,7 +984,7 @@ func (m menu) Key(g *state) (key action) {
 }
 
 //func (ui *model) UpdateInteractButton() string {
-//g := ui.g
+//g := ui.st
 //var interactMenu string
 //var show bool
 //switch g.Dungeon.Cell(g.Player.Pos).T {
@@ -1051,7 +1051,7 @@ var WizardActions = []wizardAction{
 
 func (ui *model) HandleWizardAction() error {
 	// TODO: rewrite
-	g := ui.g
+	g := ui.st
 	s, err := ui.SelectWizardMagic(WizardActions)
 	if err != nil {
 		return err
@@ -1075,7 +1075,7 @@ func (ui *model) HandleWizardAction() error {
 }
 
 func (ui *model) Death() {
-	g := ui.g
+	g := ui.st
 	if len(g.Stats.Achievements) == 0 {
 		NoAchievement.Get(g)
 	}
@@ -1089,7 +1089,7 @@ func (ui *model) Death() {
 
 func (ui *model) Win() {
 	// TODO: rewrite
-	g := ui.g
+	g := ui.st
 	err := g.RemoveSaveFile()
 	if err != nil {
 		g.PrintfStyled("Error removing save file: %v", logError, err)
@@ -1107,13 +1107,13 @@ func (ui *model) Win() {
 }
 
 func (ui *model) Dump(err error) {
-	g := ui.g
+	g := ui.st
 	ui.DrawText(g.SimplifedDump(err), 0, 0)
 }
 
 func (ui *model) CriticalHPWarning() {
 	// TODO
-	//g := ui.g
+	//g := ui.st
 	//g.PrintStyled("*** CRITICAL HP WARNING *** [(x) to continue]", logCritic)
 	//ui.DrawDungeonView(NormalMode)
 	//ui.WaitForContinue(ui.MapHeight())
@@ -1121,7 +1121,7 @@ func (ui *model) CriticalHPWarning() {
 }
 
 //func (ui *model) Quit() bool {
-//g := ui.g
+//g := ui.st
 //g.Print("Do you really want to quit without saving? [y/N]")
 //ui.DrawDungeonView(NormalMode)
 //quit := ui.PromptConfirmation()

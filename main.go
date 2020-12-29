@@ -68,7 +68,7 @@ func main() {
 
 //ui := &model{}
 //g := &state{}
-//ui.g = g
+//ui.st = g
 //if CenteredCamera {
 //UIWidth = 80
 //}
