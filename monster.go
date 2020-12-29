@@ -709,7 +709,7 @@ func (m *monster) AttackAction(g *state) {
 
 func (m *monster) Explode(g *state) {
 	m.Dead = true
-	neighbors := m.Pos.ValidCardinalNeighbors()
+	neighbors := ValidCardinalNeighbors(m.Pos)
 	g.Printf("%s %s explodes with a loud boom.", g.ExplosionSound(), m.Kind.Definite(true))
 	// TODO: animation
 	//g.ui.ExplosionAnimation(FireExplosion, m.Pos)
@@ -1485,7 +1485,7 @@ func (m *monster) RangeBlocked(g *state) bool {
 }
 
 func (g *state) BarrierCandidates(pos gruid.Point, todir direction) []gruid.Point {
-	candidates := pos.ValidCardinalNeighbors()
+	candidates := ValidCardinalNeighbors(pos)
 	bestpos := To(todir, pos)
 	if Distance(bestpos, pos) > 1 {
 		j := 0

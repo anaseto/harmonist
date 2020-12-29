@@ -96,7 +96,7 @@ func (d *dungeon) WallCell() gruid.Point {
 }
 
 func (d *dungeon) HasFreeNeighbor(pos gruid.Point) bool {
-	neighbors := pos.ValidCardinalNeighbors()
+	neighbors := ValidCardinalNeighbors(pos)
 	for _, pos := range neighbors {
 		if d.Cell(pos).IsPassable() {
 			return true
@@ -106,7 +106,7 @@ func (d *dungeon) HasFreeNeighbor(pos gruid.Point) bool {
 }
 
 func (d *dungeon) HasTooManyWallNeighbors(pos gruid.Point) bool {
-	neighbors := pos.ValidNeighbors()
+	neighbors := ValidNeighbors(pos)
 	count := 8 - len(neighbors)
 	for _, pos := range neighbors {
 		if !d.Cell(pos).IsPassable() {
@@ -118,7 +118,7 @@ func (d *dungeon) HasTooManyWallNeighbors(pos gruid.Point) bool {
 
 func (g *state) HasNonWallExploredNeighbor(pos gruid.Point) bool {
 	d := g.Dungeon
-	neighbors := pos.ValidCardinalNeighbors()
+	neighbors := ValidCardinalNeighbors(pos)
 	for _, pos := range neighbors {
 		c := d.Cell(pos)
 		if t, ok := g.TerrainKnowledge[pos]; ok {
