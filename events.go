@@ -169,10 +169,10 @@ func (sev *simpleEvent) Action(g *state) {
 			g.TurnStats()
 			return
 		}
-		g.Quit = g.ui.HandlePlayerTurn()
-		if g.Quit {
-			return
-		}
+		//g.Quit = g.ui.HandlePlayerTurn()
+		//if g.Quit {
+		//return
+		//}
 		g.TurnStats()
 	case ShaedraAnimation:
 		g.ComputeLOS()

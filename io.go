@@ -152,9 +152,5 @@ func (g *state) WriteDump() error {
 	if err != nil {
 		return fmt.Errorf("writing state statistics: %v", err)
 	}
-	err = g.SaveReplay()
-	if err != nil {
-		return fmt.Errorf("writing replay: %v", err)
-	}
 	return nil
 }

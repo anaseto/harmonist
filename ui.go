@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/anaseto/gruid"
@@ -33,13 +34,13 @@ const (
 const DoNothing = "Do nothing, then."
 
 func (ui *model) EnterWizard() {
-	g := ui.st
-	if ui.Wizard() {
-		g.EnterWizardMode()
-		ui.DrawDungeonView(NoFlushMode)
-	} else {
-		g.Print(DoNothing)
-	}
+	//g := ui.st
+	//if ui.Wizard() {
+	//g.EnterWizardMode()
+	//ui.DrawDungeonView(NoFlushMode)
+	//} else {
+	//g.Print(DoNothing)
+	//}
 }
 
 func (ui *model) CleanError(err error) error {
@@ -451,7 +452,7 @@ func (ui *model) HandleKey(rka runeKeyAction) (again bool, quit bool, err error)
 					quit = true
 					return again, quit, err
 				}
-				ui.DrawDungeonView(NormalMode)
+				//ui.DrawDungeonView(NormalMode)
 			} else if g.Dungeon.Cell(g.Player.Pos).T == StairCell && g.Objects.Stairs[g.Player.Pos] == BlockedStair {
 				err = errors.New("The stairs are blocked by a magical stone barrier energies.")
 			} else {
@@ -509,7 +510,7 @@ func (ui *model) HandleKey(rka runeKeyAction) (again bool, quit bool, err error)
 		ui.ExamineHelp()
 		again = true
 	case ActionLogs:
-		ui.DrawPreviousLogs()
+		//ui.DrawPreviousLogs()
 		again = true
 	case ActionSave:
 		g.Ev.Renew(g, 0)
@@ -558,9 +559,9 @@ func (ui *model) HandleKey(rka runeKeyAction) (again bool, quit bool, err error)
 		ui.EnterWizard()
 		return true, false, nil
 	case ActionQuit:
-		if ui.Quit() {
-			return false, true, nil
-		}
+		//if ui.Quit() {
+		//return false, true, nil
+		//}
 		return true, false, nil
 	case ActionConfigure:
 		err = ui.HandleSettingAction()
@@ -761,7 +762,7 @@ func (ui *model) CursorKeyAction(targ Targeter, rka runeKeyAction, data *examine
 		ui.NextStair(data)
 	case ActionDescend:
 		if g.Dungeon.Cell(g.Player.Pos).T == StairCell && g.Objects.Stairs[g.Player.Pos] != BlockedStair {
-			ui.MenuSelectedAnimation(MenuInteract, true)
+			//ui.MenuSelectedAnimation(MenuInteract, true)
 			strt := g.Objects.Stairs[g.Player.Pos]
 			err = ui.OptionalDescendConfirmation(strt)
 			if err != nil {
@@ -806,7 +807,7 @@ func (ui *model) CursorKeyAction(targ Targeter, rka runeKeyAction, data *examine
 		}
 	case ActionDescription:
 		ui.HideCursor()
-		ui.ViewPositionDescription(pos)
+		//ui.ViewPositionDescription(pos)
 		ui.SetCursor(pos)
 	case ActionExclude:
 		ui.ExcludeZone(pos)
@@ -840,10 +841,10 @@ func (ui *model) CursorKeyAction(targ Targeter, rka runeKeyAction, data *examine
 			quit = true
 		}
 	case ActionQuit:
-		if ui.Quit() {
-			quit = true
-			again = false
-		}
+		//if ui.Quit() {
+		//quit = true
+		//again = false
+		//}
 	default:
 		err = fmt.Errorf("Invalid targeting mode key '%c'. Type ? for help.", rka.r)
 	}
@@ -897,7 +898,7 @@ loop:
 	for {
 		err = nil
 		if pos != opos {
-			ui.DescribePosition(pos, targ)
+			//ui.DescribePosition(pos, targ)
 		}
 		opos = pos
 		targ.ComputeHighlight(g, pos)
@@ -908,20 +909,13 @@ loop:
 		} else {
 			g.MonsterTargLOS = nil
 		}
-		ui.DrawDungeonView(TargetingMode)
-		ui.DrawInfoLine(g.InfoEntry)
-		if !ui.Small() {
-			st := " Examine/Travel mode "
-			if _, ok := targ.(*examiner); !ok {
-				st = " Targeting mode "
-			}
-			ui.DrawStyledTextLine(st, ui.MapHeight()+2, FooterLine)
-		}
-		ui.SetCell(DungeonWidth, ui.MapHeight(), '┤', ColorFg, ColorBg)
-		ui.Flush()
+		//ui.DrawDungeonView(TargetingMode)
+		//ui.DrawInfoLine(g.InfoEntry)
+		//ui.SetCell(DungeonWidth, ui.MapHeight(), '┤', ColorFg, ColorBg)
+		//ui.Flush()
 		data.npos = pos
 		var notarg bool
-		again, quit, notarg, err = ui.TargetModeEvent(targ, data)
+		//again, quit, notarg, err = ui.TargetModeEvent(targ, data)
 		if err != nil {
 			err = ui.CleanError(err)
 		}
@@ -1051,26 +1045,26 @@ var WizardActions = []wizardAction{
 
 func (ui *model) HandleWizardAction() error {
 	// TODO: rewrite
-	g := ui.st
-	s, err := ui.SelectWizardMagic(WizardActions)
-	if err != nil {
-		return err
-	}
-	switch s {
-	case WizardInfoAction:
-		ui.WizardInfo()
-	case WizardToggleMode:
-		switch g.WizardMode {
-		case WizardNormal:
-			g.WizardMode = WizardMap
-		case WizardMap:
-			g.WizardMode = WizardSeeAll
-		case WizardSeeAll:
-			g.WizardMode = WizardNormal
-		}
-		g.StoryPrint("Toggle wizard mode.")
-		ui.DrawDungeonView(NoFlushMode)
-	}
+	//g := ui.st
+	//s, err := ui.SelectWizardMagic(WizardActions)
+	//if err != nil {
+	//return err
+	//}
+	//switch s {
+	//case WizardInfoAction:
+	//ui.WizardInfo()
+	//case WizardToggleMode:
+	//switch g.WizardMode {
+	//case WizardNormal:
+	//g.WizardMode = WizardMap
+	//case WizardMap:
+	//g.WizardMode = WizardSeeAll
+	//case WizardSeeAll:
+	//g.WizardMode = WizardNormal
+	//}
+	//g.StoryPrint("Toggle wizard mode.")
+	////ui.DrawDungeonView(NoFlushMode)
+	//}
 	return nil
 }
 
@@ -1080,7 +1074,7 @@ func (ui *model) Death() {
 		NoAchievement.Get(g)
 	}
 	g.Print("You die... [(x) to continue]")
-	ui.DrawDungeonView(NormalMode)
+	//ui.DrawDungeonView(NormalMode)
 	//ui.WaitForContinue(-1)
 	err := g.WriteDump()
 	ui.Dump(err)
@@ -1099,7 +1093,7 @@ func (ui *model) Win() {
 	} else {
 		g.Print("You escape by the magic portal! [(x) to continue]")
 	}
-	ui.DrawDungeonView(NormalMode)
+	//ui.DrawDungeonView(NormalMode)
 	//ui.WaitForContinue(-1)
 	err = g.WriteDump()
 	ui.Dump(err)
@@ -1107,8 +1101,8 @@ func (ui *model) Win() {
 }
 
 func (ui *model) Dump(err error) {
-	g := ui.st
-	ui.DrawText(g.SimplifedDump(err), 0, 0)
+	//g := ui.st
+	//ui.DrawText(g.SimplifedDump(err), 0, 0)
 }
 
 func (ui *model) CriticalHPWarning() {
@@ -1175,20 +1169,22 @@ type posInfo struct {
 }
 
 func (pi *posInfo) Draw(ui *model) {
-	ui.DrawDungeonView(TargetingMode)
-	g := ui.g
+	//ui.DrawDungeonView(TargetingMode)
+	g := ui.st
 	ie := pi // XXX
 	y := 3
-	var x int
-	if ui.cursor.X > DungeonWidth/2 {
-		x = 2
-	} else {
-		x = DungeonWidth/2 + 3
-	}
-	width := 35
+	//var x int
+	//if ui.cursor.X > DungeonWidth/2 {
+	//x = 2
+	//} else {
+	//x = DungeonWidth/2 + 3
+	//}
+	//width := 35
 
-	formatBox := func(title, s string, fg Color) {
-		h := ui.DrawLabel(title, s, x, y, width, fg)
+	// TODO: replace this with ui.Label
+	formatBox := func(title, s string, fg gruid.Color) {
+		//h := ui.DrawLabel(title, s, x, y, width, fg)
+		h := 1 // TODO
 		y += h + 2
 	}
 
@@ -1231,18 +1227,77 @@ func (pi *posInfo) Draw(ui *model) {
 	if mons == nil {
 		return
 	}
-	title := fmt.Sprintf(" %s %s (HP %d/%d, %s) ", mons.Kind, mons.HP, mons.Kind.HP(), mons.State)
+	title := fmt.Sprintf(" %s %s (%s %s) ", mons.Kind, mons.State, mons.Dir.String())
 	fg = mons.Color(g)
 	var mdesc []string
-	mdesc = append(mdesc, "Looking %s", mons.Dir.String())
 
-	statuses := ui.MonsterStatuses(mons)
+	statuses := mons.StatusesText()
 	if statuses != "" {
 		mdesc = append(mdesc, "Statuses: %s", statuses)
 	}
 	mdesc = append(mdesc, "Traits: "+mons.Traits())
 	// TODO
 	formatBox(title, strings.Join(mdesc, "\n"), fg)
+}
+
+func (m *monster) Color(gs *state) gruid.Color {
+	var fg gruid.Color
+	if m.Status(MonsLignified) {
+		fg = ColorFgLignifiedMonster
+	} else if m.Status(MonsConfused) {
+		fg = ColorFgConfusedMonster
+	} else if m.Status(MonsParalysed) {
+		fg = ColorFgParalysedMonster
+	} else if m.State == Resting {
+		fg = ColorFgSleepingMonster
+	} else if m.State == Hunting {
+		fg = ColorFgMonster
+	} else if m.Peaceful(gs) {
+		fg = ColorFgPlayer
+	} else {
+		fg = ColorFgWanderingMonster
+	}
+	return fg
+}
+
+func (m *monster) StatusesText() string {
+	infos := []string{}
+	for st, i := range m.Statuses {
+		if i > 0 {
+			infos = append(infos, fmt.Sprintf("%s %d", monsterStatus(st), m.Statuses[monsterStatus(st)]))
+		}
+	}
+	return strings.Join(infos, ", ")
+}
+
+func (m *monster) Traits() string {
+	var info string
+	info += fmt.Sprintf("Their size is %s.", m.Kind.Size())
+	if m.Kind.Peaceful() {
+		info += " " + fmt.Sprint("They are peaceful.")
+	}
+	if m.Kind.CanOpenDoors() {
+		info += " " + fmt.Sprint("They can open doors.")
+	}
+	if m.Kind.CanFly() {
+		info += " " + fmt.Sprint("They can fly.")
+	}
+	if m.Kind.CanSwim() {
+		info += " " + fmt.Sprint("They can swim.")
+	}
+	if m.Kind.ShallowSleep() {
+		info += " " + fmt.Sprint("They have very shallow sleep.")
+	}
+	if m.Kind.ResistsLignification() {
+		info += " " + fmt.Sprint("They are unaffected by lignification.")
+	}
+	if m.Kind.ReflectsTeleport() {
+		info += " " + fmt.Sprint("They partially reflect back oric teleport magic.")
+	}
+	if m.Kind.GoodFlair() {
+		info += " " + fmt.Sprint("They have good flair.")
+	}
+	return info
 }
 
 func (pi *posInfo) Update(g *state, pos gruid.Point, targ Targeter) {
@@ -1263,21 +1318,21 @@ func (pi *posInfo) Update(g *state, pos gruid.Point, targ Targeter) {
 	if pos == g.Player.Pos {
 		pi.Player = true
 	}
-	if g.Player.Sees(g, pos) {
+	if g.Player.Sees(pos) {
 		pi.Sees = true
 	}
 	c := g.Dungeon.Cell(pos)
 	if t, ok := g.TerrainKnowledge[pos]; ok {
 		c.T = t
 	}
-	if mons.Exists() && g.Player.Sees(g, pos) {
+	if mons.Exists() && g.Player.Sees(pos) {
 		pi.Monster = mons
 	}
-	if cld, ok := g.Clouds[pos]; ok && g.Player.Sees(g, pos) {
+	if cld, ok := g.Clouds[pos]; ok && g.Player.Sees(pos) {
 		pi.Cloud = cld.String()
 	}
 	pi.Cell = c.ShortDesc(g, pos)
-	if g.Illuminated[idx(pos)] && c.IsIlluminable() && g.Player.Sees(g, pos) {
+	if g.Illuminated[idx(pos)] && c.IsIlluminable() && g.Player.Sees(pos) {
 		pi.Lighted = true
 	}
 	if g.Noise[pos] || g.NoiseIllusion[pos] {

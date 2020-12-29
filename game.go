@@ -661,6 +661,7 @@ func (g *state) ApplyRest() {
 }
 
 func (g *state) AutoPlayer(ev event) bool {
+	// TODO: update this
 	if g.Resting {
 		const enoughRestTurns = 25
 		if g.RestingTurns < enoughRestTurns {
@@ -673,10 +674,10 @@ func (g *state) AutoPlayer(ev event) bool {
 		}
 		g.Resting = false
 	} else if g.Autoexploring {
-		if g.ui.ExploreStep() {
-			g.AutoHalt = true
-			g.Print("Stopping, then.")
-		}
+		//if g.ui.ExploreStep() {
+		//g.AutoHalt = true
+		//g.Print("Stopping, then.")
+		//}
 		switch {
 		case g.AutoHalt:
 			// stop exploring
@@ -711,17 +712,17 @@ func (g *state) AutoPlayer(ev event) bool {
 		}
 		g.Autoexploring = false
 	} else if valid(g.AutoTarget) {
-		if !g.ui.ExploreStep() && g.MoveToTarget() {
-			return true
-		} else {
-			g.AutoTarget = InvalidPos
-		}
+		//if !g.ui.ExploreStep() && g.MoveToTarget() {
+		//return true
+		//} else {
+		//g.AutoTarget = InvalidPos
+		//}
 	} else if g.AutoDir != NoDir {
-		if !g.ui.ExploreStep() && g.AutoToDir() {
-			return true
-		} else {
-			g.AutoDir = NoDir
-		}
+		//if !g.ui.ExploreStep() && g.AutoToDir() {
+		//return true
+		//} else {
+		//g.AutoDir = NoDir
+		//}
 	}
 	return false
 }

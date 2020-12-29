@@ -36,6 +36,11 @@ func (m *model) Update(msg gruid.Msg) gruid.Effect {
 	return eff
 }
 
+func (m *model) updateNormal(msg gruid.Msg) gruid.Effect {
+	return nil
+	// TODO
+}
+
 func (m *model) updatePager(msg gruid.Msg) gruid.Effect {
 	return nil
 	// TODO

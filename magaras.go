@@ -615,6 +615,18 @@ const (
 	CloudNight
 )
 
+func (cl cloud) String() (s string) {
+	switch cl {
+	case CloudFog:
+		s = "fog"
+	case CloudFire:
+		s = "fire"
+	case CloudNight:
+		s = "purple fog"
+	}
+	return s
+}
+
 func (g *state) EvokeFog() error {
 	g.Fog(g.Player.Pos, 3)
 	g.Print("You are surrounded by a dense fog.")

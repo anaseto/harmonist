@@ -1718,7 +1718,7 @@ func (m *monster) Blink(g *state) {
 	if !valid(npos) || npos == g.Player.Pos || npos == m.Pos {
 		return
 	}
-	opos := m.Pos
+	//opos := m.Pos
 	g.Printf("The %s blinks away.", m.Kind)
 	// TODO: animation
 	//g.ui.TeleportAnimation(opos, npos, true)

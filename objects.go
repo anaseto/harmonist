@@ -343,7 +343,7 @@ func (g *state) TeleportToBarrel() {
 		barrels = append(barrels, pos)
 	}
 	pos := barrels[RandInt(len(barrels))]
-	opos := g.Player.Pos
+	//opos := g.Player.Pos
 	g.Print("You teleport away.")
 	// TODO: animation
 	//g.ui.TeleportAnimation(opos, pos, true)
@@ -369,14 +369,14 @@ func (g *state) MagicMapping(maxdist int) error {
 		if maxdist > 0 && d > maxdist {
 			continue
 		}
-		draw := false
+		//draw := false
 		for _, i := range cdists[d] {
 			pos := idxtopos(i)
 			c := g.Dungeon.Cell(pos)
 			if !c.Explored {
 				g.Dungeon.SetExplored(pos)
 				g.SeeNotable(c, pos)
-				draw = true
+				//draw = true
 			}
 		}
 		//if draw {

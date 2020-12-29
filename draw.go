@@ -2,7 +2,7 @@ package main
 
 import (
 	"errors"
-	"fmt"
+	//"fmt"
 	"sort"
 	"strings"
 	//"time"
@@ -552,21 +552,7 @@ func (ui *model) PositionDrawing(pos gruid.Point) (r rune, fgColor, bgColor grui
 			m := g.MonsterAt(pos)
 			if m.Exists() {
 				r = m.Kind.Letter()
-				if m.Status(MonsLignified) {
-					fgColor = ColorFgLignifiedMonster
-				} else if m.Status(MonsConfused) {
-					fgColor = ColorFgConfusedMonster
-				} else if m.Status(MonsParalysed) {
-					fgColor = ColorFgParalysedMonster
-				} else if m.State == Resting {
-					fgColor = ColorFgSleepingMonster
-				} else if m.State == Hunting {
-					fgColor = ColorFgMonster
-				} else if m.Peaceful(g) {
-					fgColor = ColorFgPlayer
-				} else {
-					fgColor = ColorFgWanderingMonster
-				}
+				fgColor = m.Color(g)
 			}
 		} else if (!g.Wizard || g.WizardMode == WizardNormal) && g.Noise[pos] {
 			r = '♫'
@@ -788,7 +774,7 @@ func (ui *model) DrawLog(lines int) {
 		col := 0
 		for ln := l; ln <= to; ln++ {
 			e := g.Log[ln]
-			fguicolor := ui.LogColor(e)
+			//fguicolor := ui.LogColor(e)
 			if e.Tick {
 				//ui.DrawColoredText("•", 0, ui.MapHeight()+i, ColorYellow)
 				col += 2
@@ -825,41 +811,6 @@ func (ui *model) RunesForKeyAction(k action) string {
 	sort.Strings(chars)
 	text := strings.Join(chars, " or ")
 	return text
-}
-
-func (ui *model) DrawMonsterDescription(mons *monster) {
-	s := mons.Kind.Desc()
-	var info string
-	info += fmt.Sprintf("Their size is %s.", mons.Kind.Size())
-	if mons.Kind.Peaceful() {
-		info += " " + fmt.Sprint("They are peaceful.")
-	}
-	if mons.Kind.CanOpenDoors() {
-		info += " " + fmt.Sprint("They can open doors.")
-	}
-	if mons.Kind.CanFly() {
-		info += " " + fmt.Sprint("They can fly.")
-	}
-	if mons.Kind.CanSwim() {
-		info += " " + fmt.Sprint("They can swim.")
-	}
-	if mons.Kind.ShallowSleep() {
-		info += " " + fmt.Sprint("They have very shallow sleep.")
-	}
-	if mons.Kind.ResistsLignification() {
-		info += " " + fmt.Sprint("They are unaffected by lignification.")
-	}
-	if mons.Kind.ReflectsTeleport() {
-		info += " " + fmt.Sprint("They partially reflect back oric teleport magic.")
-	}
-	if mons.Kind.GoodFlair() {
-		info += " " + fmt.Sprint("They have good flair.")
-	}
-	if info != "" {
-		s += "\n\n" + info
-	}
-	// TODO
-	//ui.DrawDescription(s, "Monster Description")
 }
 
 func (ui *model) SelectMagara() error {

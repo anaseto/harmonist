@@ -197,7 +197,7 @@ func (g *state) Teleportation() {
 	}
 	if valid(pos) {
 		// should always happen
-		opos := g.Player.Pos
+		//opos := g.Player.Pos
 		g.Print("You teleport away.")
 		// TODO: animation
 		//g.ui.TeleportAnimation(opos, pos, true)
@@ -293,7 +293,8 @@ func (g *state) AbyssJumpConfirmation() bool {
 	//g.ui.DrawDungeonView(NoFlushMode)
 	//g.ui.Flush()
 	// TODO confirmation prompt abyss
-	return g.ui.PromptConfirmation()
+	//return g.ui.PromptConfirmation()
+	return false
 }
 
 func (g *state) DeepChasmDepth() bool {

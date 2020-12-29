@@ -111,7 +111,7 @@ func To(dir direction, from gruid.Point) gruid.Point {
 	to := from
 	switch dir {
 	case E, ENE, ESE:
-		to = pos.Add(gruid.Point{1, 0})
+		to = from.Add(gruid.Point{1, 0})
 	case NE:
 		to = from.Add(gruid.Point{1, -1})
 	case NNE, N, NNW:
@@ -184,7 +184,7 @@ func Dir(from, to gruid.Point) direction {
 }
 
 func Parents(pos, from gruid.Point, p []gruid.Point) []gruid.Point {
-	switch pos.Dir(from) {
+	switch Dir(from, pos) {
 	case E:
 		p = append(p, pos.Add(gruid.Point{-1, 0}))
 	case ENE:
@@ -270,7 +270,7 @@ func (dir direction) InViewCone(from, to gruid.Point) bool {
 	if to == from {
 		return true
 	}
-	d := to.Dir(from)
+	d := Dir(from, to)
 	if d == dir || Distance(from, to) <= 1 {
 		return true
 	}
