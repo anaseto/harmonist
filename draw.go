@@ -6,14 +6,14 @@ import (
 	"sort"
 	"strings"
 	//"time"
-	"unicode/utf8"
 
 	"github.com/anaseto/gruid"
+	"github.com/anaseto/gruid/ui"
 )
 
 var (
-	UIWidth                = 100
-	UIHeight               = 26
+	UIWidth                = 80
+	UIHeight               = 24
 	DisableAnimations bool = false
 )
 
@@ -736,54 +736,26 @@ func (ui *model) LogColor(e logEntry) gruid.Color {
 	return fg
 }
 
-func (ui *model) DrawLog(lines int) {
-	// TODO: update to return []string
-	g := ui.st
-	min := len(g.Log) - lines
-	if min < 0 {
-		min = 0
-	}
-	l := len(g.Log) - 1
-	if l < lines {
-		lines = l + 1
-	}
-	for i := lines; i > 0 && l >= 0; i-- {
-		cols := 0
-		first := true
-		to := l
-		for l >= 0 {
-			e := g.Log[l]
-			el := utf8.RuneCountInString(e.String())
-			if e.Tick {
-				el += 2
-			}
-			cols += el + 1
-			if !first && cols > DungeonWidth {
-				l++
-				break
-			}
-			if e.Tick || l <= i {
-				break
-			}
-			first = false
-			l--
+func (m *model) DrawLog() string {
+	// TODO: use LogColor
+	g := m.st
+	stt := ui.StyledText{}
+	for i := len(g.Log) - 1; i >= 0; i-- {
+		var s string
+		e := g.Log[i]
+		if e.Tick {
+			s = "@t•@N "
 		}
-		if l < 0 {
-			l = 0
+		s += e.String()
+		if e.Tick && stt.Text() != "" {
+			s = s + "\n"
 		}
-		col := 0
-		for ln := l; ln <= to; ln++ {
-			e := g.Log[ln]
-			//fguicolor := ui.LogColor(e)
-			if e.Tick {
-				//ui.DrawColoredText("•", 0, ui.MapHeight()+i, ColorYellow)
-				col += 2
-			}
-			//ui.DrawColoredText(e.String(), col, ui.MapHeight()+i, fguicolor)
-			col += utf8.RuneCountInString(e.String()) + 1
+		if stt.WithText(s+stt.Text()).Size().Y > 2 {
+			break
 		}
-		l--
+		stt = stt.WithText(s + stt.Text())
 	}
+	return stt.Text()
 }
 
 func InRuneSlice(r rune, s []rune) bool {

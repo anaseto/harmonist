@@ -10,48 +10,50 @@ import (
 	"image/draw"
 	"image/png"
 	"log"
+
+	"github.com/anaseto/gruid"
 )
 
-func (c uicolor) String() string {
-	color := "#002b36"
-	switch c {
-	case 0:
-		color = "#073642"
-	case 1:
-		color = "#dc322f"
-	case 2:
-		color = "#859900"
-	case 3:
-		color = "#b58900"
-	case 4:
-		color = "#268bd2"
-	case 5:
-		color = "#d33682"
-	case 6:
-		color = "#2aa198"
-	case 7:
-		color = "#eee8d5"
-	case 8:
-		color = "#002b36"
-	case 9:
-		color = "#cb4b16"
-	case 10:
-		color = "#586e75"
-	case 11:
-		color = "#657b83"
-	case 12:
-		color = "#839496"
-	case 13:
-		color = "#6c71c4"
-	case 14:
-		color = "#93a1a1"
-	case 15:
-		color = "#fdf6e3"
-	}
-	return color
-}
+//func (c gruid.Color) String() string {
+//color := "#002b36"
+//switch c {
+//case 0:
+//color = "#073642"
+//case 1:
+//color = "#dc322f"
+//case 2:
+//color = "#859900"
+//case 3:
+//color = "#b58900"
+//case 4:
+//color = "#268bd2"
+//case 5:
+//color = "#d33682"
+//case 6:
+//color = "#2aa198"
+//case 7:
+//color = "#eee8d5"
+//case 8:
+//color = "#002b36"
+//case 9:
+//color = "#cb4b16"
+//case 10:
+//color = "#586e75"
+//case 11:
+//color = "#657b83"
+//case 12:
+//color = "#839496"
+//case 13:
+//color = "#6c71c4"
+//case 14:
+//color = "#93a1a1"
+//case 15:
+//color = "#fdf6e3"
+//}
+//return color
+//}
 
-func (c uicolor) Color() color.Color {
+func ColorToRGBA(c gruid.Color) color.Color {
 	cl := color.RGBA{}
 	opaque := uint8(255)
 	switch c {
@@ -222,14 +224,14 @@ var LetterNames = map[rune]string{
 
 type monochromeTileManager struct{}
 
-func (tm *monochromeTileManager) TileSize() (int, int) {
-	return 16, 24
+func (tm *monochromeTileManager) TileSize() gruid.Point {
+	return gruid.Point{16, 24}
 }
 
 func (tm *monochromeTileManager) GetImage(gc gruid.Cell) *image.RGBA {
 	var pngImg []byte
 	hastile := false
-	if gc.Style.Attrs == StyleMap && GameConfig.Tiles {
+	if gc.Style.Attrs == AttrInMap && GameConfig.Tiles {
 		pngImg = TileImgs["map-notile"]
 		if im, ok := TileImgs["map-"+string(gc.Rune)]; ok {
 			pngImg = im
