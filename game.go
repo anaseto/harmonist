@@ -760,3 +760,42 @@ loop:
 		}
 	}
 }
+
+func (g *state) EndTurn() {
+	for {
+		if g.Player.HP <= 0 {
+			if g.Wizard {
+				g.Player.HP = g.Player.HPMax()
+				g.PrintStyled("You died.", logSpecial)
+				g.StoryPrint("You died (wizard mode)")
+			} else {
+				g.LevelStats()
+				err := g.RemoveSaveFile()
+				if err != nil {
+					g.PrintfStyled("Error removing save file: %v", logError, err.Error())
+				}
+				g.ui.Death()
+				return
+			}
+		}
+		if g.Events.Len() == 0 {
+			return
+		}
+		ev := g.PopIEvent().Event
+		g.Turn = ev.Rank()
+		g.Ev = ev
+		ev.Action(g)
+		switch ev := ev.(type) {
+		case *simpleEvent:
+			if ev.EAction == PlayerTurn {
+				return
+			}
+		}
+		//if g.AutoNext {
+		//continue loop
+		//}
+		if g.Quit {
+			return
+		}
+	}
+}

@@ -149,6 +149,20 @@ func (m *model) updateKeyDown(msg gruid.MsgKeyDown) gruid.Effect {
 	switch msg.Key {
 	case gruid.KeyEscape:
 		return gruid.End()
+	default:
+		m.st.Ev = &simpleEvent{EAction: PlayerTurn, ERank: m.st.Turn}
+		again, quit, err := m.normalModeKeyDown(msg.Key)
+		if again {
+			break
+		}
+		if quit {
+			// TODO: cancel
+			break
+		}
+		if err != nil {
+			break
+		}
+		m.st.EndTurn()
 	}
 	return nil
 }
@@ -171,6 +185,7 @@ func (m *model) Draw() gruid.Grid {
 		r, fg, bg := m.PositionDrawing(p)
 		dgd.Set(p, gruid.Cell{Rune: r, Style: gruid.Style{Fg: fg, Bg: bg}})
 	}
+	m.label.AdjustWidth = false
 	m.label.SetText(m.DrawLog())
 	m.label.Draw(m.gd.Slice(m.gd.Range().Lines(0, 2)))
 

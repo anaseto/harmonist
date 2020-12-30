@@ -190,7 +190,7 @@ func (sev *simpleEvent) Action(g *state) {
 		if g.Player.Statuses[st] <= 0 {
 			g.Player.Statuses[st] = 0
 			g.PrintStyled(StatusEndMsgs[sev.EAction], logStatusEnd)
-			g.ui.StatusEndAnimation()
+			//g.ui.StatusEndAnimation()
 			switch sev.EAction {
 			case LevitationEnd:
 				if g.Dungeon.Cell(g.Player.Pos).T == ChasmCell {

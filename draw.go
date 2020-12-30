@@ -749,11 +749,13 @@ func (m *model) DrawLog() string {
 		s += e.String()
 		if e.Tick && stt.Text() != "" {
 			s = s + "\n"
+		} else if stt.Text() != "" {
+			s = s + " "
 		}
-		if stt.WithText(s+stt.Text()).Size().Y > 2 {
+		if stt.WithText(s+stt.Text()).Format(80).Size().Y > 2 {
 			break
 		}
-		stt = stt.WithText(s + stt.Text())
+		stt = stt.WithText(s + stt.Text()).Format(80)
 	}
 	return stt.Text()
 }
