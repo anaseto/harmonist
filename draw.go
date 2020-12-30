@@ -3,8 +3,8 @@ package main
 import (
 	"errors"
 	//"fmt"
-	"sort"
-	"strings"
+	//"sort"
+	//"strings"
 	//"time"
 
 	"github.com/anaseto/gruid"
@@ -35,11 +35,11 @@ const (
 	Color256Cyan    gruid.Color = 37
 	Color256Green   gruid.Color = 64
 
-	Color16Base03  gruid.Color = 8
-	Color16Base02  gruid.Color = 0
+	Color16Base03  gruid.Color = 0
+	Color16Base02  gruid.Color = 8
 	Color16Base01  gruid.Color = 10
 	Color16Base00  gruid.Color = 11
-	Color16Base0   gruid.Color = 12
+	Color16Base0   gruid.Color = 0
 	Color16Base1   gruid.Color = 14
 	Color16Base2   gruid.Color = 7
 	Color16Base3   gruid.Color = 15
@@ -122,8 +122,6 @@ func (ui *model) Map16ColorTo256(c gruid.Color) gruid.Color {
 		return Color256Base01
 	case Color16Base00:
 		return Color256Base00
-	case Color16Base0:
-		return Color256Base0
 	case Color16Base1:
 		return Color256Base1
 	case Color16Base2:
@@ -300,8 +298,6 @@ func Map16ColorTo8Color(c gruid.Color) gruid.Color {
 		return Silver
 	case Color16Base00:
 		return Black
-	case Color16Base0:
-		return Silver
 	case Color16Base1:
 		return Silver
 	case Color16Base2:
@@ -758,33 +754,6 @@ func (m *model) DrawLog() string {
 		stt = stt.WithText(s + stt.Text()).Format(80)
 	}
 	return stt.Text()
-}
-
-func InRuneSlice(r rune, s []rune) bool {
-	for _, rr := range s {
-		if r == rr {
-			return true
-		}
-	}
-	return false
-}
-
-func (ui *model) RunesForKeyAction(k action) string {
-	runes := []rune{}
-	for r, ka := range GameConfig.RuneNormalModeKeys {
-		if k == ka && !InRuneSlice(r, runes) {
-			runes = append(runes, r)
-		}
-	}
-	for r, ka := range GameConfig.RuneTargetModeKeys {
-		if k == ka && !InRuneSlice(r, runes) {
-			runes = append(runes, r)
-		}
-	}
-	chars := strings.Split(string(runes), "")
-	sort.Strings(chars)
-	text := strings.Join(chars, " or ")
-	return text
 }
 
 func (ui *model) SelectMagara() error {

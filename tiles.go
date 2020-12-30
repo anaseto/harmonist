@@ -53,41 +53,42 @@ import (
 //return color
 //}
 
-func ColorToRGBA(c gruid.Color) color.Color {
+func ColorToRGBA(c gruid.Color, fg bool) color.Color {
 	cl := color.RGBA{}
 	opaque := uint8(255)
 	switch c {
-	case 0:
+	case Color16Base02:
 		cl = color.RGBA{7, 54, 66, opaque}
-	case 1:
+	case Color16Red:
 		cl = color.RGBA{220, 50, 47, opaque}
-	case 2:
+	case Color16Green:
 		cl = color.RGBA{133, 153, 0, opaque}
-	case 3:
+	case Color16Yellow:
 		cl = color.RGBA{181, 137, 0, opaque}
-	case 4:
+	case Color16Blue:
 		cl = color.RGBA{38, 139, 210, opaque}
-	case 5:
+	case Color16Magenta:
 		cl = color.RGBA{211, 54, 130, opaque}
-	case 6:
+	case Color16Cyan:
 		cl = color.RGBA{42, 161, 152, opaque}
-	case 7:
+	case Color16Base2:
 		cl = color.RGBA{238, 232, 213, opaque}
-	case 8:
+	case Color16Base03:
 		cl = color.RGBA{0, 43, 54, opaque}
-	case 9:
+		if fg {
+			cl = color.RGBA{131, 148, 150, opaque}
+		}
+	case Color16Orange:
 		cl = color.RGBA{203, 75, 22, opaque}
-	case 10:
+	case Color16Base01:
 		cl = color.RGBA{88, 110, 117, opaque}
-	case 11:
+	case Color16Base00:
 		cl = color.RGBA{101, 123, 131, opaque}
-	case 12:
-		cl = color.RGBA{131, 148, 150, opaque}
-	case 13:
+	case Color16Violet:
 		cl = color.RGBA{108, 113, 196, opaque}
-	case 14:
+	case Color16Base1:
 		cl = color.RGBA{147, 161, 161, opaque}
-	case 15:
+	case Color16Base3:
 		cl = color.RGBA{253, 246, 227, opaque}
 	}
 	return cl
@@ -259,8 +260,8 @@ func (tm *monochromeTileManager) GetImage(gc gruid.Cell) *image.RGBA {
 	rect := img.Bounds()
 	rgbaimg := image.NewRGBA(rect)
 	draw.Draw(rgbaimg, rect, img, rect.Min, draw.Src)
-	bgc := ColorToRGBA(gc.Style.Bg)
-	fgc := ColorToRGBA(gc.Style.Fg)
+	bgc := ColorToRGBA(gc.Style.Bg, false)
+	fgc := ColorToRGBA(gc.Style.Fg, true)
 	for y := 0; y < rect.Max.Y; y++ {
 		for x := 0; x < rect.Max.X; x++ {
 			c := rgbaimg.At(x, y)
