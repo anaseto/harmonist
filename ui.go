@@ -400,7 +400,6 @@ func (ui *model) normalModeKeyDown(key gruid.Key) (again bool, err error) {
 	g := ui.st
 	action := ui.keysNormal[key]
 	if ui.mp.targeting {
-		again = true
 		action = ui.keysTarget[key]
 	}
 	switch action {
@@ -412,6 +411,7 @@ func (ui *model) normalModeKeyDown(key gruid.Key) (again bool, err error) {
 			if valid(p) {
 				ui.Examine(p)
 			}
+			again = true
 		}
 	case ActionRunW, ActionRunS, ActionRunN, ActionRunE:
 		if !ui.mp.targeting {
@@ -428,14 +428,19 @@ func (ui *model) normalModeKeyDown(key gruid.Key) (again bool, err error) {
 			if q != InvalidPos {
 				ui.Examine(q)
 			}
+			again = true
 		}
 	case ActionExclude:
+		again = true
 		ui.ExcludeZone(ui.mp.ex.pos)
 	case ActionPreviousMonster, ActionNextMonster:
+		again = true
 		ui.NextMonster(key, ui.mp.ex.pos, ui.mp.ex)
 	case ActionNextObject:
+		again = true
 		ui.NextObject(ui.mp.ex.pos, ui.mp.ex)
 	case ActionTarget:
+		again = true
 		err = ui.Target()
 		if err != nil {
 			break
@@ -445,10 +450,12 @@ func (ui *model) normalModeKeyDown(key gruid.Key) (again bool, err error) {
 			again = false
 		}
 	case ActionEscape:
+		again = true
 		ui.CancelExamine()
 	case ActionWaitTurn:
 		g.WaitTurn()
 	case ActionGoToStairs:
+		again = true
 		stairs := g.StairsSlice()
 		sortedStairs := g.SortedNearestTo(stairs, g.Player.Pos)
 		if len(sortedStairs) > 0 {
@@ -543,6 +550,12 @@ func (ui *model) normalModeKeyDown(key gruid.Key) (again bool, err error) {
 		ui.ExamineHelp()
 		again = true
 	case ActionLogs:
+		logs := []string{} // TODO improve this
+		for _, e := range g.Log {
+			logs = append(logs, e.Text)
+		}
+		ui.pager.SetLines(logs)
+		ui.mode = modePager
 		//ui.DrawPreviousLogs()
 		again = true
 	case ActionSave:
@@ -601,6 +614,7 @@ func (ui *model) normalModeKeyDown(key gruid.Key) (again bool, err error) {
 		err = ui.HandleSettingAction()
 		again = true
 	case ActionDescription:
+		again = true
 		//ui.MenuSelectedAnimation(MenuView, false)
 		err = fmt.Errorf("You must choose a target to describe.")
 	default:

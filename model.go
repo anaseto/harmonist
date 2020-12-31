@@ -132,6 +132,9 @@ func (m *model) Update(msg gruid.Msg) gruid.Effect {
 		m.initKeys()
 		m.initWidgets()
 		m.st.InitLevel()
+		m.st.ComputeNoise()
+		m.st.ComputeLOS()
+		m.st.ComputeMonsterLOS()
 		return nil
 	}
 	var eff gruid.Effect
@@ -156,9 +159,6 @@ func (m *model) updateNormal(msg gruid.Msg) gruid.Effect {
 }
 
 func (m *model) updateKeyDown(msg gruid.MsgKeyDown) gruid.Effect {
-	m.st.ComputeNoise()
-	m.st.ComputeLOS()
-	m.st.ComputeMonsterLOS()
 	switch msg.Key {
 	case gruid.KeyEscape:
 		return gruid.End()
@@ -173,17 +173,26 @@ func (m *model) updateKeyDown(msg gruid.MsgKeyDown) gruid.Effect {
 			break
 		}
 		m.st.EndTurn()
+		m.st.ComputeNoise()
+		m.st.ComputeLOS()
+		m.st.ComputeMonsterLOS()
 	}
 	return nil
 }
 
 func (m *model) updatePager(msg gruid.Msg) gruid.Effect {
 	m.pager.Update(msg)
+	if m.pager.Action() == ui.PagerQuit {
+		m.mode = modeNormal
+	}
 	return nil
 }
 
 func (m *model) updateMenu(msg gruid.Msg) gruid.Effect {
 	m.menu.Update(msg)
+	if m.menu.Action() == ui.MenuQuit {
+		m.mode = modeNormal
+	}
 	return nil
 }
 

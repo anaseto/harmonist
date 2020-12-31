@@ -30,6 +30,9 @@ func (ui *model) CancelExamine() {
 }
 
 func (ui *model) Examine(pos gruid.Point) {
+	if !valid(pos) {
+		return
+	}
 	if ui.mp.ex == nil {
 		ui.mp.ex = &examination{
 			pos:     pos,
@@ -312,8 +315,8 @@ func (ui *model) NextMonster(key gruid.Key, pos gruid.Point, data *examination) 
 			break
 		}
 	}
-	data.pos = pos
 	data.nmonster = nmonster
+	ui.Examine(pos)
 }
 
 func (ui *model) NextStair(data *examination) {
@@ -326,7 +329,7 @@ func (ui *model) NextStair(data *examination) {
 		data.stairIndex = 0
 	}
 	if len(data.sortedStairs) > 0 {
-		data.pos = data.sortedStairs[data.stairIndex]
+		ui.Examine(data.sortedStairs[data.stairIndex])
 		data.stairIndex++
 	}
 }
@@ -375,8 +378,8 @@ func (ui *model) NextObject(pos gruid.Point, data *examination) {
 			break
 		}
 	}
-	data.pos = pos
 	data.nobject = nobject
+	ui.Examine(pos)
 }
 
 func (ui *model) ExcludeZone(pos gruid.Point) {
