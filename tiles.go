@@ -232,7 +232,7 @@ func (tm *monochromeTileManager) TileSize() gruid.Point {
 func (tm *monochromeTileManager) GetImage(gc gruid.Cell) *image.RGBA {
 	var pngImg []byte
 	hastile := false
-	if gc.Style.Attrs == AttrInMap && GameConfig.Tiles {
+	if gc.Style.Attrs&AttrInMap != 0 && GameConfig.Tiles {
 		pngImg = TileImgs["map-notile"]
 		if im, ok := TileImgs["map-"+string(gc.Rune)]; ok {
 			pngImg = im
@@ -260,8 +260,11 @@ func (tm *monochromeTileManager) GetImage(gc gruid.Cell) *image.RGBA {
 	rect := img.Bounds()
 	rgbaimg := image.NewRGBA(rect)
 	draw.Draw(rgbaimg, rect, img, rect.Min, draw.Src)
-	bgc := ColorToRGBA(gc.Style.Bg, gc.Style.Attrs&AttrReverse != 0)
-	fgc := ColorToRGBA(gc.Style.Fg, gc.Style.Attrs&AttrReverse == 0)
+	bgc := ColorToRGBA(gc.Style.Bg, false)
+	fgc := ColorToRGBA(gc.Style.Fg, true)
+	if gc.Style.Attrs&AttrReverse != 0 {
+		fgc, bgc = bgc, fgc
+	}
 	for y := 0; y < rect.Max.Y; y++ {
 		for x := 0; x < rect.Max.X; x++ {
 			c := rgbaimg.At(x, y)

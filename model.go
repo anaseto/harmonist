@@ -29,6 +29,7 @@ type model struct {
 type mapUI struct {
 	cursor    gruid.Point
 	targeting bool
+	ex        *examination
 }
 
 func (m *model) initKeys() {
@@ -164,15 +165,12 @@ func (m *model) updateKeyDown(msg gruid.MsgKeyDown) gruid.Effect {
 		return gruid.End()
 	default:
 		m.st.Ev = &simpleEvent{EAction: PlayerTurn, ERank: m.st.Turn}
-		again, quit, err := m.normalModeKeyDown(msg.Key)
+		again, err := m.normalModeKeyDown(msg.Key)
 		if again {
 			break
 		}
-		if quit {
-			// TODO: cancel
-			break
-		}
 		if err != nil {
+			m.st.Print(err.Error())
 			break
 		}
 		m.st.EndTurn()

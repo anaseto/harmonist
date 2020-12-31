@@ -397,14 +397,56 @@ func (ui *model) OptionalDescendConfirmation(st stair) (err error) {
 
 }
 
-func (ui *model) normalModeKeyDown(key gruid.Key) (again bool, quit bool, err error) {
+func (ui *model) normalModeKeyDown(key gruid.Key) (again bool, err error) {
 	g := ui.st
 	action := ui.keysNormal[key]
+	if ui.mp.targeting {
+		again = true
+		action = ui.keysTarget[key]
+	}
 	switch action {
 	case ActionW, ActionS, ActionN, ActionE:
-		err = g.PlayerBump(To(KeyToDir(action), g.Player.Pos))
+		if !ui.mp.targeting {
+			err = g.PlayerBump(To(KeyToDir(action), g.Player.Pos))
+		} else {
+			p := To(KeyToDir(action), ui.mp.ex.pos)
+			if valid(p) {
+				ui.Examine(p)
+			}
+		}
 	case ActionRunW, ActionRunS, ActionRunN, ActionRunE:
-		err = g.GoToDir(KeyToDir(action))
+		if !ui.mp.targeting {
+			err = g.GoToDir(KeyToDir(action))
+		} else {
+			q := InvalidPos
+			for i := 0; i < 5; i++ {
+				p := To(KeyToDir(action), ui.mp.ex.pos)
+				if !valid(p) {
+					break
+				}
+				q = p
+			}
+			if q != InvalidPos {
+				ui.Examine(q)
+			}
+		}
+	case ActionExclude:
+		ui.ExcludeZone(ui.mp.ex.pos)
+	case ActionPreviousMonster, ActionNextMonster:
+		ui.NextMonster(key, ui.mp.ex.pos, ui.mp.ex)
+	case ActionNextObject:
+		ui.NextObject(ui.mp.ex.pos, ui.mp.ex)
+	case ActionTarget:
+		err = ui.Target()
+		if err != nil {
+			break
+		}
+		g.Targeting = InvalidPos
+		if g.MoveToTarget() {
+			again = false
+		}
+	case ActionEscape:
+		ui.CancelExamine()
 	case ActionWaitTurn:
 		g.WaitTurn()
 	case ActionGoToStairs:
@@ -416,13 +458,12 @@ func (ui *model) normalModeKeyDown(key gruid.Key) (again bool, quit bool, err er
 				err = errors.New("You are already on the stairs.")
 				break
 			}
-			ex := &examiner{stairs: true}
-			err = ex.Action(g, stair)
-			if err == nil && !g.MoveToTarget() {
+			ui.mp.ex.pos = stair
+			err = ui.Target()
+			if err != nil {
+				err = errors.New("There is no safe path to the nearest stairs.")
+			} else if !g.MoveToTarget() {
 				err = errors.New("You could not move toward stairs.")
-			}
-			if ex.Done() {
-				g.Targeting = InvalidPos
 			}
 		} else {
 			err = errors.New("You cannot go to any stairs.")
@@ -441,8 +482,8 @@ func (ui *model) normalModeKeyDown(key gruid.Key) (again bool, quit bool, err er
 				}
 				if g.Descend(DescendNormal) {
 					ui.Win()
-					quit = true
-					return again, quit, err
+					// TODO: win
+					return again, err
 				}
 				//ui.DrawDungeonView(NormalMode)
 			} else if g.Dungeon.Cell(g.Player.Pos).T == StairCell && g.Objects.Stairs[g.Player.Pos] == BlockedStair {
@@ -494,7 +535,8 @@ func (ui *model) normalModeKeyDown(key gruid.Key) (again bool, quit bool, err er
 	case ActionExplore:
 		err = g.Autoexplore()
 	case ActionExamine:
-		again, quit, err = ui.Examine(nil)
+		again = true
+		ui.StartExamine()
 	case ActionHelp, ActionMenuCommandHelp:
 		ui.KeysHelp()
 		again = true
@@ -511,7 +553,8 @@ func (ui *model) normalModeKeyDown(key gruid.Key) (again bool, quit bool, err er
 			g.PrintfStyled("Error: %v", logError, errsave)
 			g.PrintStyled("Could not save state.", logError)
 		} else {
-			quit = true
+			// TODO quit on save
+			again = true
 		}
 	case ActionDump:
 		errdump := g.WriteDump()
@@ -540,36 +583,34 @@ func (ui *model) normalModeKeyDown(key gruid.Key) (again bool, quit bool, err er
 		if g.Wizard && g.Depth < MaxDepth {
 			g.StoryPrint("Descended wizardly")
 			if g.Descend(DescendNormal) {
-				ui.Win()
-				quit = true
-				return again, quit, err
+				ui.Win() // TODO: win
+				//quit = true
+				return again, err
 			}
 		} else {
 			err = errors.New("Unknown key. Type ? for help.")
 		}
 	case ActionWizard:
 		ui.EnterWizard()
-		return true, false, nil
+		return true, nil
 	case ActionQuit:
 		//if ui.Quit() {
 		//return false, true, nil
 		//}
-		return true, false, nil
+		return true, nil
 	case ActionConfigure:
 		err = ui.HandleSettingAction()
 		again = true
 	case ActionDescription:
 		//ui.MenuSelectedAnimation(MenuView, false)
 		err = fmt.Errorf("You must choose a target to describe.")
-	case ActionExclude:
-		err = fmt.Errorf("You must choose a target for exclusion.")
 	default:
 		err = fmt.Errorf("Unknown key '%s'. Type ? for help.", key)
 	}
 	if err != nil {
 		again = true
 	}
-	return again, quit, err
+	return again, err
 }
 
 //func (ui *model) HandleKey(rka runeKeyAction) (again bool, quit bool, err error) {
@@ -746,152 +787,24 @@ func (ui *model) normalModeKeyDown(key gruid.Key) (again bool, quit bool, err er
 //return again, quit, err
 //}
 
-func (ui *model) ExaminePos(pos gruid.Point) (again, quit bool, err error) {
-	var start *gruid.Point
-	if valid(pos) {
-		start = &pos
-	}
-	again, quit, err = ui.Examine(start)
-	return again, quit, err
-}
-
-func (ui *model) Examine(start *gruid.Point) (again, quit bool, err error) {
-	// TODO: rewrite
-	ex := &examiner{}
-	again, quit, err = ui.CursorAction(ex, start)
-	return again, quit, err
-}
-
-func (ui *model) ChooseTarget(targ Targeter) error {
-	// TODO: rewrite
-	_, _, err := ui.CursorAction(targ, nil)
-	if err != nil {
-		return err
-	}
-	if !targ.Done() {
-		return errors.New(DoNothing)
-	}
-	return nil
-}
-
-func (ui *model) NextMonster(r rune, pos gruid.Point, data *examineData) {
-	g := ui.st
-	nmonster := data.nmonster
-	for i := 0; i < len(g.Monsters); i++ {
-		if r == '+' {
-			nmonster++
-		} else {
-			nmonster--
-		}
-		if nmonster > len(g.Monsters)-1 {
-			nmonster = 0
-		} else if nmonster < 0 {
-			nmonster = len(g.Monsters) - 1
-		}
-		mons := g.Monsters[nmonster]
-		if mons.Exists() && g.Player.LOS[mons.Pos] && pos != mons.Pos {
-			pos = mons.Pos
-			break
-		}
-	}
-	data.npos = pos
-	data.nmonster = nmonster
-}
-
-func (ui *model) NextStair(data *examineData) {
-	g := ui.st
-	if data.sortedStairs == nil {
-		stairs := g.StairsSlice()
-		data.sortedStairs = g.SortedNearestTo(stairs, g.Player.Pos)
-	}
-	if data.stairIndex >= len(data.sortedStairs) {
-		data.stairIndex = 0
-	}
-	if len(data.sortedStairs) > 0 {
-		data.npos = data.sortedStairs[data.stairIndex]
-		data.stairIndex++
-	}
-}
-
-func (ui *model) NextObject(pos gruid.Point, data *examineData) {
-	g := ui.st
-	nobject := data.nobject
-	if len(data.objects) == 0 {
-		for p := range g.Objects.Stairs {
-			data.objects = append(data.objects, p)
-		}
-		for p := range g.Objects.FakeStairs {
-			data.objects = append(data.objects, p)
-		}
-		for p := range g.Objects.Stones {
-			data.objects = append(data.objects, p)
-		}
-		for p := range g.Objects.Barrels {
-			data.objects = append(data.objects, p)
-		}
-		for p := range g.Objects.Magaras {
-			data.objects = append(data.objects, p)
-		}
-		for p := range g.Objects.Bananas {
-			data.objects = append(data.objects, p)
-		}
-		for p := range g.Objects.Items {
-			data.objects = append(data.objects, p)
-		}
-		for p := range g.Objects.Scrolls {
-			data.objects = append(data.objects, p)
-		}
-		for p := range g.Objects.Potions {
-			data.objects = append(data.objects, p)
-		}
-		data.objects = g.SortedNearestTo(data.objects, g.Player.Pos)
-	}
-	for i := 0; i < len(data.objects); i++ {
-		p := data.objects[nobject]
-		nobject++
-		if nobject > len(data.objects)-1 {
-			nobject = 0
-		}
-		if g.Dungeon.Cell(p).Explored {
-			pos = p
-			break
-		}
-	}
-	data.npos = pos
-	data.nobject = nobject
-}
-
-func (ui *model) ExcludeZone(pos gruid.Point) {
-	g := ui.st
-	if !g.Dungeon.Cell(pos).Explored {
-		g.Print("You cannot choose an unexplored cell for exclusion.")
-	} else {
-		toggle := !g.ExclusionsMap[pos]
-		g.ComputeExclusion(pos, toggle)
-	}
-}
-
-func (ui *model) CursorMouseLeft(targ Targeter, pos gruid.Point, data *examineData) (again, notarg bool) {
-	// TODO: rewrite
-	g := ui.st
-	again = true
-	if data.npos == pos {
-		err := targ.Action(g, pos)
-		if err != nil {
-			g.Print(err.Error())
-		} else {
-			if g.MoveToTarget() {
-				again = false
-			}
-			if targ.Done() {
-				notarg = true
-			}
-		}
-	} else {
-		data.npos = pos
-	}
-	return again, notarg
-}
+//func (ui *model) CursorMouseLeft(targ Targeter, pos gruid.Point, data *examineData) (again, notarg bool) {
+//// TODO: rewrite
+//g := ui.st
+//again = true
+//if data.pos == pos {
+//err := targ.Action(g, pos)
+//if err != nil {
+//g.Print(err.Error())
+//} else {
+//if g.MoveToTarget() {
+//again = false
+//}
+//}
+//} else {
+//data.pos = pos
+//}
+//return again, notarg
+//}
 
 //func (ui *model) CursorKeyAction(targ Targeter, rka runeKeyAction, data *examineData) (again, quit, notarg bool, err error) {
 //// TODO: rewrite
@@ -1017,89 +930,78 @@ func (ui *model) CursorMouseLeft(targ Targeter, pos gruid.Point, data *examineDa
 //return again, quit, notarg, err
 //}
 
-type examineData struct {
-	npos         gruid.Point
-	nmonster     int
-	objects      []gruid.Point
-	nobject      int
-	sortedStairs []gruid.Point
-	stairIndex   int
-}
-
-var InvalidPos = gruid.Point{-1, -1}
-
-func (ui *model) CursorAction(targ Targeter, start *gruid.Point) (again, quit bool, err error) {
-	// TODO: rewrite
-	g := ui.st
-	pos := g.Player.Pos
-	if start != nil {
-		pos = *start
-	} else {
-		minDist := 999
-		for _, mons := range g.Monsters {
-			if mons.Exists() && g.Player.LOS[mons.Pos] {
-				dist := Distance(mons.Pos, g.Player.Pos)
-				if minDist > dist {
-					minDist = dist
-					pos = mons.Pos
-				}
-			}
-		}
-	}
-	data := &examineData{
-		npos:    pos,
-		objects: []gruid.Point{},
-	}
-	if _, ok := targ.(*examiner); ok && pos == g.Player.Pos && start == nil {
-		ui.NextObject(InvalidPos, data)
-		if !valid(data.npos) {
-			ui.NextStair(data)
-		}
-		if valid(data.npos) && Distance(pos, data.npos) < DefaultLOSRange+5 {
-			pos = data.npos
-		}
-	}
-	opos := InvalidPos
-loop:
-	for {
-		err = nil
-		if pos != opos {
-			//ui.DescribePosition(pos, targ)
-		}
-		opos = pos
-		targ.ComputeHighlight(g, pos)
-		ui.SetCursor(pos)
-		m := g.MonsterAt(pos)
-		if m.Exists() && g.Player.Sees(pos) {
-			g.ComputeMonsterCone(m)
-		} else {
-			g.MonsterTargLOS = nil
-		}
-		//ui.DrawDungeonView(TargetingMode)
-		//ui.DrawInfoLine(g.InfoEntry)
-		//ui.SetCell(DungeonWidth, ui.MapHeight(), '┤', ColorFg, ColorBg)
-		//ui.Flush()
-		data.npos = pos
-		var notarg bool
-		//again, quit, notarg, err = ui.TargetModeEvent(targ, data)
-		if err != nil {
-			err = ui.CleanError(err)
-		}
-		if !again || notarg {
-			break loop
-		}
-		if err != nil {
-			g.Print(err.Error())
-		}
-		if valid(data.npos) {
-			pos = data.npos
-		}
-	}
-	g.Highlight = nil
-	g.MonsterTargLOS = nil
-	ui.HideCursor()
-	return again, quit, err
-}
+//func (ui *model) CursorAction(targ Targeter, start *gruid.Point) (again, quit bool, err error) {
+//// TODO: rewrite
+//g := ui.st
+//pos := g.Player.Pos
+//if start != nil {
+//pos = *start
+//} else {
+//minDist := 999
+//for _, mons := range g.Monsters {
+//if mons.Exists() && g.Player.LOS[mons.Pos] {
+//dist := Distance(mons.Pos, g.Player.Pos)
+//if minDist > dist {
+//minDist = dist
+//pos = mons.Pos
+//}
+//}
+//}
+//}
+//data := &examineData{
+//pos:     pos,
+//objects: []gruid.Point{},
+//}
+//if _, ok := targ.(*examiner); ok && pos == g.Player.Pos && start == nil {
+//ui.NextObject(InvalidPos, data)
+//if !valid(data.pos) {
+//ui.NextStair(data)
+//}
+//if valid(data.pos) && Distance(pos, data.pos) < DefaultLOSRange+5 {
+//pos = data.pos
+//}
+//}
+//opos := InvalidPos
+//loop:
+//for {
+//err = nil
+//if pos != opos {
+////ui.DescribePosition(pos, targ)
+//}
+//opos = pos
+////targ.ComputeHighlight(g, pos)
+//ui.SetCursor(pos)
+//m := g.MonsterAt(pos)
+//if m.Exists() && g.Player.Sees(pos) {
+//g.ComputeMonsterCone(m)
+//} else {
+//g.MonsterTargLOS = nil
+//}
+////ui.DrawDungeonView(TargetingMode)
+////ui.DrawInfoLine(g.InfoEntry)
+////ui.SetCell(DungeonWidth, ui.MapHeight(), '┤', ColorFg, ColorBg)
+////ui.Flush()
+//data.pos = pos
+//var notarg bool
+////again, quit, notarg, err = ui.TargetModeEvent(targ, data)
+//if err != nil {
+//err = ui.CleanError(err)
+//}
+//if !again || notarg {
+//break loop
+//}
+//if err != nil {
+//g.Print(err.Error())
+//}
+//if valid(data.pos) {
+//pos = data.pos
+//}
+//}
+//g.Highlight = nil
+//g.MonsterTargLOS = nil
+//ui.HideCursor()
+//return again, quit, err
+//}
 
 type menu int
 
@@ -1466,7 +1368,7 @@ func (m *monster) Traits() string {
 	return info
 }
 
-func (pi *posInfo) Update(g *state, pos gruid.Point, targ Targeter) {
+func (pi *posInfo) Update(g *state, pos gruid.Point) {
 	*pi = posInfo{}
 	pi.Pos = pos
 	switch {
@@ -1476,9 +1378,9 @@ func (pi *posInfo) Update(g *state, pos gruid.Point, targ Targeter) {
 			pi.Noise = true
 		}
 		return
-	case !targ.Reachable(g, pos):
-		pi.Unreachable = true
-		return
+		//case !targ.Reachable(g, pos):
+		//pi.Unreachable = true
+		//return
 	}
 	mons := g.MonsterAt(pos)
 	if pos == g.Player.Pos {
