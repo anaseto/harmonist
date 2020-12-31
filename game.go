@@ -482,7 +482,7 @@ func (g *state) InitLevel() {
 		g.StoryPrintf("Started with %s", g.Player.Magaras[0])
 		g.Events = &eventQueue{}
 		heap.Init(g.Events)
-		g.PushEvent(&simpleEvent{ERank: 0, EAction: PlayerTurn})
+		//g.PushEvent(&simpleEvent{ERank: 0, EAction: PlayerTurn})
 	} else {
 		g.CleanEvents()
 		for st := range g.Player.Statuses {

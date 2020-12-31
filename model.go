@@ -112,11 +112,15 @@ func (m *model) initKeys() {
 func (m *model) initWidgets() {
 	m.label = ui.NewLabel(ui.StyledText{}.WithStyle(gruid.Style{}).WithMarkup('t', gruid.Style{Fg: ColorYellow}))
 	m.pager = ui.NewPager(ui.PagerConfig{
-		Grid: m.gd,
+		Grid: gruid.NewGrid(UIWidth, UIHeight),
 		Box:  &ui.Box{},
 	})
 	m.menu = ui.NewMenu(ui.MenuConfig{
-		Grid: m.gd.Slice(gruid.NewRange(0, 0, UIWidth/2, DungeonWidth+2)),
+		Grid: gruid.NewGrid(UIWidth/2, UIHeight-1),
+		Box:  &ui.Box{},
+	})
+	m.status = ui.NewMenu(ui.MenuConfig{
+		Grid: m.gd.Slice(gruid.NewRange(0, DungeonHeight, UIWidth, UIHeight)),
 		Box:  &ui.Box{},
 	})
 }
@@ -216,9 +220,9 @@ func (m *model) Draw() gruid.Grid {
 	}
 	switch m.mode {
 	case modePager:
-		m.pager.Draw()
+		m.gd.Copy(m.pager.Draw())
 	case modeMenu:
-		m.menu.Draw()
+		m.gd.Copy(m.menu.Draw())
 	}
 	return m.gd
 }
