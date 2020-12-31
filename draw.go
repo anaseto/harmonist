@@ -334,6 +334,7 @@ func Simple8ColorPalette() {
 const (
 	AttrText gruid.AttrMask = iota
 	AttrInMap
+	AttrReverse
 )
 
 func (ui *model) DrawKeysDescription(title string, actions []string) {
@@ -416,7 +417,7 @@ func (ui *model) MapHeight() int {
 func (ui *model) InViewBorder(pos gruid.Point, targeting bool) bool {
 	g := ui.st
 	if targeting {
-		return DistanceY(pos, ui.cursor) != ui.MapHeight()/2 && DistanceX(pos, ui.cursor) != ui.MapWidth()
+		return DistanceY(pos, ui.mp.cursor) != ui.MapHeight()/2 && DistanceX(pos, ui.mp.cursor) != ui.MapWidth()
 	}
 	return DistanceY(pos, g.Player.Pos) != ui.MapHeight()/2 && DistanceX(pos, g.Player.Pos) != ui.MapWidth()
 }

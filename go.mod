@@ -1,4 +1,4 @@
-module rl
+module harmonist
 
 go 1.13
 

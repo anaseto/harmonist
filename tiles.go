@@ -73,7 +73,7 @@ func ColorToRGBA(c gruid.Color, fg bool) color.Color {
 		cl = color.RGBA{42, 161, 152, opaque}
 	case Color16Base2:
 		cl = color.RGBA{238, 232, 213, opaque}
-	case Color16Base03:
+	case Color16Base03: // DefaultColor (TODO: improve this code)
 		cl = color.RGBA{0, 43, 54, opaque}
 		if fg {
 			cl = color.RGBA{131, 148, 150, opaque}
@@ -260,8 +260,8 @@ func (tm *monochromeTileManager) GetImage(gc gruid.Cell) *image.RGBA {
 	rect := img.Bounds()
 	rgbaimg := image.NewRGBA(rect)
 	draw.Draw(rgbaimg, rect, img, rect.Min, draw.Src)
-	bgc := ColorToRGBA(gc.Style.Bg, false)
-	fgc := ColorToRGBA(gc.Style.Fg, true)
+	bgc := ColorToRGBA(gc.Style.Bg, gc.Style.Attrs&AttrReverse != 0)
+	fgc := ColorToRGBA(gc.Style.Fg, gc.Style.Attrs&AttrReverse == 0)
 	for y := 0; y < rect.Max.Y; y++ {
 		for x := 0; x < rect.Max.X; x++ {
 			c := rgbaimg.At(x, y)

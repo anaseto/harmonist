@@ -17,14 +17,18 @@ type model struct {
 	st         *state // game state
 	gd         gruid.Grid
 	mode       mode
-	cursor     gruid.Point
 	menu       *ui.Menu
 	status     *ui.Menu
 	label      *ui.Label
 	pager      *ui.Pager
-	targeting  bool // whether currently targeting in modeNormal
+	mp         mapUI
 	keysNormal map[gruid.Key]action
 	keysTarget map[gruid.Key]action
+}
+
+type mapUI struct {
+	cursor    gruid.Point
+	targeting bool
 }
 
 func (m *model) initKeys() {
@@ -122,6 +126,7 @@ func (m *model) Update(msg gruid.Msg) gruid.Effect {
 		SolarizedPalette()
 		GameConfig.DarkLOS = true
 		GameConfig.Version = Version
+		GameConfig.Tiles = true
 		LinkColors()
 		ApplyConfig()
 		m.initKeys()
@@ -186,12 +191,15 @@ func (m *model) updateMenu(msg gruid.Msg) gruid.Effect {
 }
 
 func (m *model) Draw() gruid.Grid {
-	//m.DrawDungeonView(NoFlushMode)
 	dgd := m.gd.Slice(m.gd.Range().Shift(0, 2, 0, -1))
 	for i := range m.st.Dungeon.Cells {
 		p := idxtopos(i)
 		r, fg, bg := m.PositionDrawing(p)
-		dgd.Set(p, gruid.Cell{Rune: r, Style: gruid.Style{Fg: fg, Bg: bg}})
+		attrs := AttrInMap
+		if m.st.Highlight[p] {
+			attrs |= AttrReverse
+		}
+		dgd.Set(p, gruid.Cell{Rune: r, Style: gruid.Style{Fg: fg, Bg: bg, Attrs: attrs}})
 	}
 	m.label.AdjustWidth = false
 	m.label.SetText(m.DrawLog())

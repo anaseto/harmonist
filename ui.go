@@ -11,11 +11,11 @@ import (
 )
 
 func (ui *model) HideCursor() {
-	ui.cursor = InvalidPos
+	ui.mp.cursor = InvalidPos
 }
 
 func (ui *model) SetCursor(pos gruid.Point) {
-	ui.cursor = pos
+	ui.mp.cursor = pos
 }
 
 func (ui *model) GetPos(i int) (int, int) {
@@ -124,15 +124,6 @@ var ConfigurableKeyActions = [...]action{
 	ActionExclude}
 
 var CustomKeys bool
-
-func FixedRuneKey(r rune) bool {
-	switch r {
-	case ' ', '?', '=', '2', '4', '8', '6', '.', '5', '\x1b', 'x', 'X':
-		return true
-	default:
-		return false
-	}
-}
 
 func (k action) NormalModeAction() bool {
 	switch k {
@@ -366,36 +357,36 @@ func ApplyDefaultKeyBindings() {
 	CustomKeys = false
 }
 
-type runeKeyAction struct {
-	r rune
-	k action
-}
+//type runeKeyAction struct {
+//r rune
+//k action
+//}
 
-func (ui *model) HandleKeyAction(rka runeKeyAction) (again bool, quit bool, err error) {
-	if rka.r != 0 {
-		var ok bool
-		rka.k, ok = GameConfig.RuneNormalModeKeys[rka.r]
-		if !ok {
-			switch rka.r {
-			case 's':
-				err = errors.New("Unknown key. Did you mean capital S for save and quit?")
-			case 'q':
-				err = errors.New("Unknown key. Did you mean capital Q for quit without saving?")
-			default:
-				err = fmt.Errorf("Unknown key '%c'. Type ? for help.", rka.r)
-			}
-			return again, quit, err
-		}
-	}
-	if rka.k == ActionMenu {
-		rka.k, err = ui.SelectAction(menuActions)
-		if err != nil {
-			err = ui.CleanError(err)
-			return again, quit, err
-		}
-	}
-	return ui.HandleKey(rka)
-}
+//func (ui *model) HandleKeyAction(rka runeKeyAction) (again bool, quit bool, err error) {
+//if rka.r != 0 {
+//var ok bool
+//rka.k, ok = GameConfig.RuneNormalModeKeys[rka.r]
+//if !ok {
+//switch rka.r {
+//case 's':
+//err = errors.New("Unknown key. Did you mean capital S for save and quit?")
+//case 'q':
+//err = errors.New("Unknown key. Did you mean capital Q for quit without saving?")
+//default:
+//err = fmt.Errorf("Unknown key '%c'. Type ? for help.", rka.r)
+//}
+//return again, quit, err
+//}
+//}
+//if rka.k == ActionMenu {
+//rka.k, err = ui.SelectAction(menuActions)
+//if err != nil {
+//err = ui.CleanError(err)
+//return again, quit, err
+//}
+//}
+//return ui.HandleKey(rka)
+//}
 
 func (ui *model) OptionalDescendConfirmation(st stair) (err error) {
 	g := ui.st
@@ -581,179 +572,179 @@ func (ui *model) normalModeKeyDown(key gruid.Key) (again bool, quit bool, err er
 	return again, quit, err
 }
 
-func (ui *model) HandleKey(rka runeKeyAction) (again bool, quit bool, err error) {
-	g := ui.st
-	switch rka.k {
-	case ActionW, ActionS, ActionN, ActionE:
-		err = g.PlayerBump(To(KeyToDir(rka.k), g.Player.Pos))
-	case ActionRunW, ActionRunS, ActionRunN, ActionRunE:
-		err = g.GoToDir(KeyToDir(rka.k))
-	case ActionWaitTurn:
-		g.WaitTurn()
-	case ActionGoToStairs:
-		stairs := g.StairsSlice()
-		sortedStairs := g.SortedNearestTo(stairs, g.Player.Pos)
-		if len(sortedStairs) > 0 {
-			stair := sortedStairs[0]
-			if g.Player.Pos == stair {
-				err = errors.New("You are already on the stairs.")
-				break
-			}
-			ex := &examiner{stairs: true}
-			err = ex.Action(g, stair)
-			if err == nil && !g.MoveToTarget() {
-				err = errors.New("You could not move toward stairs.")
-			}
-			if ex.Done() {
-				g.Targeting = InvalidPos
-			}
-		} else {
-			err = errors.New("You cannot go to any stairs.")
-		}
-	case ActionInteract:
-		c := g.Dungeon.Cell(g.Player.Pos)
-		switch c.T {
-		case StairCell:
-			if g.Dungeon.Cell(g.Player.Pos).T == StairCell && g.Objects.Stairs[g.Player.Pos] != BlockedStair {
-				// TODO: animation
-				//ui.MenuSelectedAnimation(MenuInteract, true)
-				strt := g.Objects.Stairs[g.Player.Pos]
-				err = ui.OptionalDescendConfirmation(strt)
-				if err != nil {
-					break
-				}
-				if g.Descend(DescendNormal) {
-					ui.Win()
-					quit = true
-					return again, quit, err
-				}
-				//ui.DrawDungeonView(NormalMode)
-			} else if g.Dungeon.Cell(g.Player.Pos).T == StairCell && g.Objects.Stairs[g.Player.Pos] == BlockedStair {
-				err = errors.New("The stairs are blocked by a magical stone barrier energies.")
-			} else {
-				err = errors.New("No stairs here.")
-			}
-		case BarrelCell:
-			//ui.MenuSelectedAnimation(MenuInteract, true)
-			err = g.Rest()
-			if err != nil {
-				//ui.MenuSelectedAnimation(MenuInteract, false)
-			}
-		case MagaraCell:
-			err = ui.EquipMagara()
-			err = ui.CleanError(err)
-		case StoneCell:
-			//ui.MenuSelectedAnimation(MenuInteract, true)
-			err = g.ActivateStone()
-			if err != nil {
-				//ui.MenuSelectedAnimation(MenuInteract, false)
-			}
-		case ScrollCell:
-			err = ui.ReadScroll()
-			err = ui.CleanError(err)
-		case ItemCell:
-			err = ui.st.EquipItem()
-		case LightCell:
-			err = g.ExtinguishFire()
-		case StoryCell:
-			if g.Objects.Story[g.Player.Pos] == StoryArtifact && !g.LiberatedArtifact {
-				g.PushEvent(&simpleEvent{ERank: g.Ev.Rank(), EAction: ArtifactAnimation})
-				g.LiberatedArtifact = true
-				g.Ev.Renew(g, DurationTurn)
-			} else if g.Objects.Story[g.Player.Pos] == StoryArtifactSealed {
-				err = errors.New("The artifact is protected by a magical stone barrier.")
-			} else {
-				err = errors.New("You cannot interact with anything here.")
-			}
-		default:
-			err = errors.New("You cannot interact with anything here.")
-		}
-	case ActionEvoke:
-		err = ui.SelectMagara()
-		err = ui.CleanError(err)
-	case ActionInventory:
-		err = ui.SelectItem()
-		err = ui.CleanError(err)
-	case ActionExplore:
-		err = g.Autoexplore()
-	case ActionExamine:
-		again, quit, err = ui.Examine(nil)
-	case ActionHelp, ActionMenuCommandHelp:
-		ui.KeysHelp()
-		again = true
-	case ActionMenuTargetingHelp:
-		ui.ExamineHelp()
-		again = true
-	case ActionLogs:
-		//ui.DrawPreviousLogs()
-		again = true
-	case ActionSave:
-		g.Ev.Renew(g, 0)
-		errsave := g.Save()
-		if errsave != nil {
-			g.PrintfStyled("Error: %v", logError, errsave)
-			g.PrintStyled("Could not save state.", logError)
-		} else {
-			quit = true
-		}
-	case ActionDump:
-		errdump := g.WriteDump()
-		if errdump != nil {
-			g.PrintfStyled("Error: %v", logError, errdump)
-		} else {
-			dataDir, _ := g.DataDir()
-			if dataDir != "" {
-				g.Printf("Game statistics written to %s.", filepath.Join(dataDir, "dump"))
-			} else {
-				g.Print("Game statistics written.")
-			}
-		}
-		again = true
-	case ActionWizardInfo:
-		if g.Wizard {
-			err = ui.HandleWizardAction()
-			again = true
-		} else {
-			err = errors.New("Unknown key. Type ? for help.")
-		}
-	case ActionWizardDescend:
-		if g.Wizard && g.Depth == WinDepth {
-			g.RescuedShaedra()
-		}
-		if g.Wizard && g.Depth < MaxDepth {
-			g.StoryPrint("Descended wizardly")
-			if g.Descend(DescendNormal) {
-				ui.Win()
-				quit = true
-				return again, quit, err
-			}
-		} else {
-			err = errors.New("Unknown key. Type ? for help.")
-		}
-	case ActionWizard:
-		ui.EnterWizard()
-		return true, false, nil
-	case ActionQuit:
-		//if ui.Quit() {
-		//return false, true, nil
-		//}
-		return true, false, nil
-	case ActionConfigure:
-		err = ui.HandleSettingAction()
-		again = true
-	case ActionDescription:
-		//ui.MenuSelectedAnimation(MenuView, false)
-		err = fmt.Errorf("You must choose a target to describe.")
-	case ActionExclude:
-		err = fmt.Errorf("You must choose a target for exclusion.")
-	default:
-		err = fmt.Errorf("Unknown key '%c'. Type ? for help.", rka.r)
-	}
-	if err != nil {
-		again = true
-	}
-	return again, quit, err
-}
+//func (ui *model) HandleKey(rka runeKeyAction) (again bool, quit bool, err error) {
+//g := ui.st
+//switch rka.k {
+//case ActionW, ActionS, ActionN, ActionE:
+//err = g.PlayerBump(To(KeyToDir(rka.k), g.Player.Pos))
+//case ActionRunW, ActionRunS, ActionRunN, ActionRunE:
+//err = g.GoToDir(KeyToDir(rka.k))
+//case ActionWaitTurn:
+//g.WaitTurn()
+//case ActionGoToStairs:
+//stairs := g.StairsSlice()
+//sortedStairs := g.SortedNearestTo(stairs, g.Player.Pos)
+//if len(sortedStairs) > 0 {
+//stair := sortedStairs[0]
+//if g.Player.Pos == stair {
+//err = errors.New("You are already on the stairs.")
+//break
+//}
+//ex := &examiner{stairs: true}
+//err = ex.Action(g, stair)
+//if err == nil && !g.MoveToTarget() {
+//err = errors.New("You could not move toward stairs.")
+//}
+//if ex.Done() {
+//g.Targeting = InvalidPos
+//}
+//} else {
+//err = errors.New("You cannot go to any stairs.")
+//}
+//case ActionInteract:
+//c := g.Dungeon.Cell(g.Player.Pos)
+//switch c.T {
+//case StairCell:
+//if g.Dungeon.Cell(g.Player.Pos).T == StairCell && g.Objects.Stairs[g.Player.Pos] != BlockedStair {
+//// TODO: animation
+////ui.MenuSelectedAnimation(MenuInteract, true)
+//strt := g.Objects.Stairs[g.Player.Pos]
+//err = ui.OptionalDescendConfirmation(strt)
+//if err != nil {
+//break
+//}
+//if g.Descend(DescendNormal) {
+//ui.Win()
+//quit = true
+//return again, quit, err
+//}
+////ui.DrawDungeonView(NormalMode)
+//} else if g.Dungeon.Cell(g.Player.Pos).T == StairCell && g.Objects.Stairs[g.Player.Pos] == BlockedStair {
+//err = errors.New("The stairs are blocked by a magical stone barrier energies.")
+//} else {
+//err = errors.New("No stairs here.")
+//}
+//case BarrelCell:
+////ui.MenuSelectedAnimation(MenuInteract, true)
+//err = g.Rest()
+//if err != nil {
+////ui.MenuSelectedAnimation(MenuInteract, false)
+//}
+//case MagaraCell:
+//err = ui.EquipMagara()
+//err = ui.CleanError(err)
+//case StoneCell:
+////ui.MenuSelectedAnimation(MenuInteract, true)
+//err = g.ActivateStone()
+//if err != nil {
+////ui.MenuSelectedAnimation(MenuInteract, false)
+//}
+//case ScrollCell:
+//err = ui.ReadScroll()
+//err = ui.CleanError(err)
+//case ItemCell:
+//err = ui.st.EquipItem()
+//case LightCell:
+//err = g.ExtinguishFire()
+//case StoryCell:
+//if g.Objects.Story[g.Player.Pos] == StoryArtifact && !g.LiberatedArtifact {
+//g.PushEvent(&simpleEvent{ERank: g.Ev.Rank(), EAction: ArtifactAnimation})
+//g.LiberatedArtifact = true
+//g.Ev.Renew(g, DurationTurn)
+//} else if g.Objects.Story[g.Player.Pos] == StoryArtifactSealed {
+//err = errors.New("The artifact is protected by a magical stone barrier.")
+//} else {
+//err = errors.New("You cannot interact with anything here.")
+//}
+//default:
+//err = errors.New("You cannot interact with anything here.")
+//}
+//case ActionEvoke:
+//err = ui.SelectMagara()
+//err = ui.CleanError(err)
+//case ActionInventory:
+//err = ui.SelectItem()
+//err = ui.CleanError(err)
+//case ActionExplore:
+//err = g.Autoexplore()
+//case ActionExamine:
+//again, quit, err = ui.Examine(nil)
+//case ActionHelp, ActionMenuCommandHelp:
+//ui.KeysHelp()
+//again = true
+//case ActionMenuTargetingHelp:
+//ui.ExamineHelp()
+//again = true
+//case ActionLogs:
+////ui.DrawPreviousLogs()
+//again = true
+//case ActionSave:
+//g.Ev.Renew(g, 0)
+//errsave := g.Save()
+//if errsave != nil {
+//g.PrintfStyled("Error: %v", logError, errsave)
+//g.PrintStyled("Could not save state.", logError)
+//} else {
+//quit = true
+//}
+//case ActionDump:
+//errdump := g.WriteDump()
+//if errdump != nil {
+//g.PrintfStyled("Error: %v", logError, errdump)
+//} else {
+//dataDir, _ := g.DataDir()
+//if dataDir != "" {
+//g.Printf("Game statistics written to %s.", filepath.Join(dataDir, "dump"))
+//} else {
+//g.Print("Game statistics written.")
+//}
+//}
+//again = true
+//case ActionWizardInfo:
+//if g.Wizard {
+//err = ui.HandleWizardAction()
+//again = true
+//} else {
+//err = errors.New("Unknown key. Type ? for help.")
+//}
+//case ActionWizardDescend:
+//if g.Wizard && g.Depth == WinDepth {
+//g.RescuedShaedra()
+//}
+//if g.Wizard && g.Depth < MaxDepth {
+//g.StoryPrint("Descended wizardly")
+//if g.Descend(DescendNormal) {
+//ui.Win()
+//quit = true
+//return again, quit, err
+//}
+//} else {
+//err = errors.New("Unknown key. Type ? for help.")
+//}
+//case ActionWizard:
+//ui.EnterWizard()
+//return true, false, nil
+//case ActionQuit:
+////if ui.Quit() {
+////return false, true, nil
+////}
+//return true, false, nil
+//case ActionConfigure:
+//err = ui.HandleSettingAction()
+//again = true
+//case ActionDescription:
+////ui.MenuSelectedAnimation(MenuView, false)
+//err = fmt.Errorf("You must choose a target to describe.")
+//case ActionExclude:
+//err = fmt.Errorf("You must choose a target for exclusion.")
+//default:
+//err = fmt.Errorf("Unknown key '%c'. Type ? for help.", rka.r)
+//}
+//if err != nil {
+//again = true
+//}
+//return again, quit, err
+//}
 
 func (ui *model) ExaminePos(pos gruid.Point) (again, quit bool, err error) {
 	var start *gruid.Point
@@ -902,129 +893,129 @@ func (ui *model) CursorMouseLeft(targ Targeter, pos gruid.Point, data *examineDa
 	return again, notarg
 }
 
-func (ui *model) CursorKeyAction(targ Targeter, rka runeKeyAction, data *examineData) (again, quit, notarg bool, err error) {
-	// TODO: rewrite
-	g := ui.st
-	pos := data.npos
-	again = true
-	if rka.r != 0 {
-		var ok bool
-		rka.k, ok = GameConfig.RuneTargetModeKeys[rka.r]
-		if !ok {
-			err = fmt.Errorf("Invalid targeting mode key '%c'. Type ? for help.", rka.r)
-			return again, quit, notarg, err
-		}
-	}
-	if rka.k == ActionMenu {
-		rka.k, err = ui.SelectAction(menuActions)
-		if err != nil {
-			err = ui.CleanError(err)
-			return again, quit, notarg, err
-		}
-	}
-	switch rka.k {
-	case ActionW, ActionS, ActionN, ActionE:
-		data.npos = To(KeyToDir(rka.k), pos)
-	case ActionRunW, ActionRunS, ActionRunN, ActionRunE:
-		for i := 0; i < 5; i++ {
-			p := To(KeyToDir(rka.k), data.npos)
-			if !valid(p) {
-				break
-			}
-			data.npos = p
-		}
-	case ActionNextStairs:
-		ui.NextStair(data)
-	case ActionDescend:
-		if g.Dungeon.Cell(g.Player.Pos).T == StairCell && g.Objects.Stairs[g.Player.Pos] != BlockedStair {
-			//ui.MenuSelectedAnimation(MenuInteract, true)
-			strt := g.Objects.Stairs[g.Player.Pos]
-			err = ui.OptionalDescendConfirmation(strt)
-			if err != nil {
-				break
-			}
-			again = false
-			g.Targeting = InvalidPos
-			notarg = true
-			if g.Descend(DescendNormal) {
-				ui.Win()
-				quit = true
-				return again, quit, notarg, err
-			}
-		} else if g.Dungeon.Cell(g.Player.Pos).T == StairCell && g.Objects.Stairs[g.Player.Pos] == BlockedStair {
-			err = errors.New("The stairs are blocked by a magical stone barrier energies.")
-		} else {
-			err = errors.New("No stairs here.")
-		}
-	case ActionPreviousMonster, ActionNextMonster:
-		ui.NextMonster(rka.r, pos, data)
-	case ActionNextObject:
-		ui.NextObject(pos, data)
-	case ActionHelp, ActionMenuTargetingHelp:
-		ui.HideCursor()
-		ui.ExamineHelp()
-		ui.SetCursor(pos)
-	case ActionMenuCommandHelp:
-		ui.HideCursor()
-		ui.KeysHelp()
-		ui.SetCursor(pos)
-	case ActionTarget:
-		err = targ.Action(g, pos)
-		if err != nil {
-			break
-		}
-		g.Targeting = InvalidPos
-		if g.MoveToTarget() {
-			again = false
-		}
-		if targ.Done() {
-			notarg = true
-		}
-	case ActionDescription:
-		ui.HideCursor()
-		//ui.ViewPositionDescription(pos)
-		ui.SetCursor(pos)
-	case ActionExclude:
-		ui.ExcludeZone(pos)
-	case ActionEscape:
-		g.Targeting = InvalidPos
-		notarg = true
-		err = errors.New(DoNothing)
-	case ActionExplore, ActionLogs, ActionEvoke, ActionInventory:
-		// XXX: hm, this is only useful with mouse in terminal, rarely tested.
-		if _, ok := targ.(*examiner); !ok {
-			break
-		}
-		again, quit, err = ui.HandleKey(rka)
-		if err != nil {
-			notarg = true
-		}
-		g.Targeting = InvalidPos
-	case ActionConfigure:
-		err = ui.HandleSettingAction()
-	case ActionSave:
-		g.Ev.Renew(g, 0)
-		g.Highlight = nil
-		g.Targeting = InvalidPos
-		errsave := g.Save()
-		if errsave != nil {
-			g.PrintfStyled("Error: %v", logError, errsave)
-			g.PrintStyled("Could not save state.", logError)
-		} else {
-			notarg = true
-			again = false
-			quit = true
-		}
-	case ActionQuit:
-		//if ui.Quit() {
-		//quit = true
-		//again = false
-		//}
-	default:
-		err = fmt.Errorf("Invalid targeting mode key '%c'. Type ? for help.", rka.r)
-	}
-	return again, quit, notarg, err
-}
+//func (ui *model) CursorKeyAction(targ Targeter, rka runeKeyAction, data *examineData) (again, quit, notarg bool, err error) {
+//// TODO: rewrite
+//g := ui.st
+//pos := data.npos
+//again = true
+//if rka.r != 0 {
+//var ok bool
+//rka.k, ok = GameConfig.RuneTargetModeKeys[rka.r]
+//if !ok {
+//err = fmt.Errorf("Invalid targeting mode key '%c'. Type ? for help.", rka.r)
+//return again, quit, notarg, err
+//}
+//}
+//if rka.k == ActionMenu {
+//rka.k, err = ui.SelectAction(menuActions)
+//if err != nil {
+//err = ui.CleanError(err)
+//return again, quit, notarg, err
+//}
+//}
+//switch rka.k {
+//case ActionW, ActionS, ActionN, ActionE:
+//data.npos = To(KeyToDir(rka.k), pos)
+//case ActionRunW, ActionRunS, ActionRunN, ActionRunE:
+//for i := 0; i < 5; i++ {
+//p := To(KeyToDir(rka.k), data.npos)
+//if !valid(p) {
+//break
+//}
+//data.npos = p
+//}
+//case ActionNextStairs:
+//ui.NextStair(data)
+//case ActionDescend:
+//if g.Dungeon.Cell(g.Player.Pos).T == StairCell && g.Objects.Stairs[g.Player.Pos] != BlockedStair {
+////ui.MenuSelectedAnimation(MenuInteract, true)
+//strt := g.Objects.Stairs[g.Player.Pos]
+//err = ui.OptionalDescendConfirmation(strt)
+//if err != nil {
+//break
+//}
+//again = false
+//g.Targeting = InvalidPos
+//notarg = true
+//if g.Descend(DescendNormal) {
+//ui.Win()
+//quit = true
+//return again, quit, notarg, err
+//}
+//} else if g.Dungeon.Cell(g.Player.Pos).T == StairCell && g.Objects.Stairs[g.Player.Pos] == BlockedStair {
+//err = errors.New("The stairs are blocked by a magical stone barrier energies.")
+//} else {
+//err = errors.New("No stairs here.")
+//}
+//case ActionPreviousMonster, ActionNextMonster:
+//ui.NextMonster(rka.r, pos, data)
+//case ActionNextObject:
+//ui.NextObject(pos, data)
+//case ActionHelp, ActionMenuTargetingHelp:
+//ui.HideCursor()
+//ui.ExamineHelp()
+//ui.SetCursor(pos)
+//case ActionMenuCommandHelp:
+//ui.HideCursor()
+//ui.KeysHelp()
+//ui.SetCursor(pos)
+//case ActionTarget:
+//err = targ.Action(g, pos)
+//if err != nil {
+//break
+//}
+//g.Targeting = InvalidPos
+//if g.MoveToTarget() {
+//again = false
+//}
+//if targ.Done() {
+//notarg = true
+//}
+//case ActionDescription:
+//ui.HideCursor()
+////ui.ViewPositionDescription(pos)
+//ui.SetCursor(pos)
+//case ActionExclude:
+//ui.ExcludeZone(pos)
+//case ActionEscape:
+//g.Targeting = InvalidPos
+//notarg = true
+//err = errors.New(DoNothing)
+//case ActionExplore, ActionLogs, ActionEvoke, ActionInventory:
+//// XXX: hm, this is only useful with mouse in terminal, rarely tested.
+//if _, ok := targ.(*examiner); !ok {
+//break
+//}
+//again, quit, err = ui.HandleKey(rka)
+//if err != nil {
+//notarg = true
+//}
+//g.Targeting = InvalidPos
+//case ActionConfigure:
+//err = ui.HandleSettingAction()
+//case ActionSave:
+//g.Ev.Renew(g, 0)
+//g.Highlight = nil
+//g.Targeting = InvalidPos
+//errsave := g.Save()
+//if errsave != nil {
+//g.PrintfStyled("Error: %v", logError, errsave)
+//g.PrintStyled("Could not save state.", logError)
+//} else {
+//notarg = true
+//again = false
+//quit = true
+//}
+//case ActionQuit:
+////if ui.Quit() {
+////quit = true
+////again = false
+////}
+//default:
+//err = fmt.Errorf("Invalid targeting mode key '%c'. Type ? for help.", rka.r)
+//}
+//return again, quit, notarg, err
+//}
 
 type examineData struct {
 	npos         gruid.Point
