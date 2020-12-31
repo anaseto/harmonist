@@ -2,8 +2,11 @@ package main
 
 import (
 	"errors"
+	"fmt"
+	"strings"
 
 	"github.com/anaseto/gruid"
+	"github.com/anaseto/gruid/ui"
 )
 
 var InvalidPos = gruid.Point{-1, -1}
@@ -15,6 +18,7 @@ type examination struct {
 	nobject      int
 	sortedStairs []gruid.Point
 	stairIndex   int
+	info         posInfo
 }
 
 func (ui *model) CancelExamine() {
@@ -32,15 +36,15 @@ func (ui *model) Examine(pos gruid.Point) {
 			objects: []gruid.Point{},
 		}
 	}
-	ui.mp.ex.pos = pos
-	ui.ComputeHighlight()
 	ui.SetCursor(pos)
+	ui.ComputeHighlight()
 	m := ui.st.MonsterAt(pos)
 	if m.Exists() && ui.st.Player.Sees(pos) {
 		ui.st.ComputeMonsterCone(m)
 	} else {
 		ui.st.MonsterTargLOS = nil
 	}
+	ui.updatePosInfo()
 }
 
 func (ui *model) StartExamine() {
@@ -71,6 +75,188 @@ func (ui *model) StartExamine() {
 		}
 	}
 	ui.Examine(pos)
+}
+
+type posInfo struct {
+	Pos         gruid.Point
+	Unknown     bool
+	Noise       bool
+	Unreachable bool
+	Sees        bool
+	Player      bool
+	Monster     *monster
+	Cell        string
+	Cloud       string
+	Lighted     bool
+}
+
+func (m *model) DrawPosInfo() {
+	g := m.st
+	p := gruid.Point{}
+	if m.mp.ex.pos.X <= DungeonWidth/2 {
+		p.X += DungeonWidth + 1
+	}
+	info := m.mp.ex.info
+
+	y := 2
+	formatBox := func(title, s string, fg gruid.Color) {
+		m.label.Box = &ui.Box{Title: ui.NewStyledText(title).WithStyle(gruid.Style{}.WithFg(fg))}
+		m.label.SetText(s)
+		y += m.label.Draw(m.gd.Slice(gruid.NewRange(0, y, DungeonWidth/2, 2+DungeonHeight).Add(p))).Size().Y
+	}
+
+	features := []string{}
+	if !info.Unknown {
+		features = append(features, info.Cell)
+		if info.Cloud != "" && info.Sees {
+			features = append(features, info.Cloud)
+		}
+		if info.Lighted && info.Sees {
+			features = append(features, "(lighted)")
+		}
+	} else {
+		features = append(features, "unknown place")
+	}
+	if info.Noise {
+		features = append(features, "noise")
+	}
+	if info.Unreachable {
+		features = append(features, "unreachable")
+	}
+	t := " Terrain Features"
+	if !info.Sees && !info.Unknown {
+		t += " (seen)"
+	} else if info.Unknown {
+		t += " (unknown)"
+	}
+	fg := ColorFg
+	if info.Unreachable {
+		t += " - Unreachable"
+		fg = ColorOrange
+	}
+	formatBox(t+" ", strings.Join(features, ", "), fg)
+
+	if info.Player {
+		formatBox("Player", "This is you.", ColorBlue)
+	}
+
+	mons := info.Monster
+	if !mons.Exists() {
+		return
+	}
+	title := fmt.Sprintf(" %s %s (%s %s) ", mons.Kind, mons.State, mons.Dir.String())
+	fg = mons.Color(g)
+	var mdesc []string
+
+	statuses := mons.StatusesText()
+	if statuses != "" {
+		mdesc = append(mdesc, "Statuses: %s", statuses)
+	}
+	mdesc = append(mdesc, "Traits: "+mons.Traits())
+	formatBox(title, strings.Join(mdesc, "\n"), fg)
+}
+
+func (m *monster) Color(gs *state) gruid.Color {
+	var fg gruid.Color
+	if m.Status(MonsLignified) {
+		fg = ColorFgLignifiedMonster
+	} else if m.Status(MonsConfused) {
+		fg = ColorFgConfusedMonster
+	} else if m.Status(MonsParalysed) {
+		fg = ColorFgParalysedMonster
+	} else if m.State == Resting {
+		fg = ColorFgSleepingMonster
+	} else if m.State == Hunting {
+		fg = ColorFgMonster
+	} else if m.Peaceful(gs) {
+		fg = ColorFgPlayer
+	} else {
+		fg = ColorFgWanderingMonster
+	}
+	return fg
+}
+
+func (m *monster) StatusesText() string {
+	infos := []string{}
+	for st, i := range m.Statuses {
+		if i > 0 {
+			infos = append(infos, fmt.Sprintf("%s %d", monsterStatus(st), m.Statuses[monsterStatus(st)]))
+		}
+	}
+	return strings.Join(infos, ", ")
+}
+
+func (m *monster) Traits() string {
+	var info string
+	info += fmt.Sprintf("Their size is %s.", m.Kind.Size())
+	if m.Kind.Peaceful() {
+		info += " " + fmt.Sprint("They are peaceful.")
+	}
+	if m.Kind.CanOpenDoors() {
+		info += " " + fmt.Sprint("They can open doors.")
+	}
+	if m.Kind.CanFly() {
+		info += " " + fmt.Sprint("They can fly.")
+	}
+	if m.Kind.CanSwim() {
+		info += " " + fmt.Sprint("They can swim.")
+	}
+	if m.Kind.ShallowSleep() {
+		info += " " + fmt.Sprint("They have very shallow sleep.")
+	}
+	if m.Kind.ResistsLignification() {
+		info += " " + fmt.Sprint("They are unaffected by lignification.")
+	}
+	if m.Kind.ReflectsTeleport() {
+		info += " " + fmt.Sprint("They partially reflect back oric teleport magic.")
+	}
+	if m.Kind.GoodFlair() {
+		info += " " + fmt.Sprint("They have good flair.")
+	}
+	return info
+}
+
+func (m *model) updatePosInfo() {
+	g := m.st
+	pi := posInfo{}
+	pos := m.mp.ex.pos
+	pi.Pos = pos
+	switch {
+	case !g.Dungeon.Cell(pos).Explored:
+		pi.Unknown = true
+		if g.Noise[pos] || g.NoiseIllusion[pos] {
+			pi.Noise = true
+		}
+		return
+		//case !targ.Reachable(g, pos):
+		//pi.Unreachable = true
+		//return
+	}
+	mons := g.MonsterAt(pos)
+	if pos == g.Player.Pos {
+		pi.Player = true
+	}
+	if g.Player.Sees(pos) {
+		pi.Sees = true
+	}
+	c := g.Dungeon.Cell(pos)
+	if t, ok := g.TerrainKnowledge[pos]; ok {
+		c.T = t
+	}
+	if mons.Exists() && g.Player.Sees(pos) {
+		pi.Monster = mons
+	}
+	if cld, ok := g.Clouds[pos]; ok && g.Player.Sees(pos) {
+		pi.Cloud = cld.String()
+	}
+	pi.Cell = c.ShortDesc(g, pos)
+	if g.Illuminated[idx(pos)] && c.IsIlluminable() && g.Player.Sees(pos) {
+		pi.Lighted = true
+	}
+	if g.Noise[pos] || g.NoiseIllusion[pos] {
+		pi.Noise = true
+	}
+	m.mp.ex.info = pi
 }
 
 func (m *model) ComputeHighlight() {

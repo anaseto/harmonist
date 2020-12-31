@@ -27,7 +27,6 @@ type model struct {
 }
 
 type mapUI struct {
-	cursor    gruid.Point
 	targeting bool
 	ex        *examination
 }
@@ -200,8 +199,12 @@ func (m *model) Draw() gruid.Grid {
 		dgd.Set(p, gruid.Cell{Rune: r, Style: gruid.Style{Fg: fg, Bg: bg, Attrs: attrs}})
 	}
 	m.label.AdjustWidth = false
+	m.label.Box = nil
 	m.label.SetText(m.DrawLog())
 	m.label.Draw(m.gd.Slice(m.gd.Range().Lines(0, 2)))
+	if m.mp.targeting {
+		m.DrawPosInfo()
+	}
 	switch m.mode {
 	case modePager:
 		m.pager.Draw()

@@ -414,14 +414,6 @@ func (ui *model) MapHeight() int {
 	return DungeonHeight
 }
 
-func (ui *model) InViewBorder(pos gruid.Point, targeting bool) bool {
-	g := ui.st
-	if targeting {
-		return DistanceY(pos, ui.mp.cursor) != ui.MapHeight()/2 && DistanceX(pos, ui.mp.cursor) != ui.MapWidth()
-	}
-	return DistanceY(pos, g.Player.Pos) != ui.MapHeight()/2 && DistanceX(pos, g.Player.Pos) != ui.MapWidth()
-}
-
 func (ui *model) DrawDungeonView(m uiMode) {
 	// TODO: remove uiMode
 	//g := ui.st
