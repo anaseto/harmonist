@@ -14,7 +14,7 @@ const (
 )
 
 type model struct {
-	g         *game // game state
+	g          *game // game state
 	gd         gruid.Grid
 	mode       mode
 	menu       *ui.Menu
@@ -31,8 +31,8 @@ type mapUI struct {
 	ex        *examination
 }
 
-func (m *model) initKeys() {
-	m.keysNormal = map[gruid.Key]action{
+func (md *model) initKeys() {
+	md.keysNormal = map[gruid.Key]action{
 		"h": ActionW,
 		"j": ActionS,
 		"k": ActionN,
@@ -69,7 +69,7 @@ func (m *model) initKeys() {
 		">": ActionWizardDescend,
 		"=": ActionConfigure,
 	}
-	m.keysTarget = map[gruid.Key]action{
+	md.keysTarget = map[gruid.Key]action{
 		"h":             ActionW,
 		"j":             ActionS,
 		"k":             ActionN,
@@ -109,23 +109,23 @@ func (m *model) initKeys() {
 	}
 }
 
-func (m *model) initWidgets() {
-	m.label = ui.NewLabel(ui.StyledText{}.WithStyle(gruid.Style{}).WithMarkup('t', gruid.Style{Fg: ColorYellow}))
-	m.pager = ui.NewPager(ui.PagerConfig{
+func (md *model) initWidgets() {
+	md.label = ui.NewLabel(ui.StyledText{}.WithStyle(gruid.Style{}).WithMarkup('t', gruid.Style{Fg: ColorYellow}))
+	md.pager = ui.NewPager(ui.PagerConfig{
 		Grid: gruid.NewGrid(UIWidth, UIHeight),
 		Box:  &ui.Box{},
 	})
-	m.menu = ui.NewMenu(ui.MenuConfig{
+	md.menu = ui.NewMenu(ui.MenuConfig{
 		Grid: gruid.NewGrid(UIWidth/2, UIHeight-1),
 		Box:  &ui.Box{},
 	})
-	m.status = ui.NewMenu(ui.MenuConfig{
-		Grid: m.gd.Slice(gruid.NewRange(0, DungeonHeight, UIWidth, UIHeight)),
+	md.status = ui.NewMenu(ui.MenuConfig{
+		Grid: md.gd.Slice(gruid.NewRange(0, DungeonHeight, UIWidth, UIHeight)),
 		Box:  &ui.Box{},
 	})
 }
 
-func (m *model) Update(msg gruid.Msg) gruid.Effect {
+func (md *model) Update(msg gruid.Msg) gruid.Effect {
 	if _, ok := msg.(gruid.MsgInit); ok {
 		SolarizedPalette()
 		GameConfig.DarkLOS = true
@@ -133,96 +133,96 @@ func (m *model) Update(msg gruid.Msg) gruid.Effect {
 		GameConfig.Tiles = true
 		LinkColors()
 		ApplyConfig()
-		m.initKeys()
-		m.initWidgets()
-		m.g.InitLevel()
-		m.g.ComputeNoise()
-		m.g.ComputeLOS()
-		m.g.ComputeMonsterLOS()
+		md.initKeys()
+		md.initWidgets()
+		md.g.InitLevel()
+		md.g.ComputeNoise()
+		md.g.ComputeLOS()
+		md.g.ComputeMonsterLOS()
 		return nil
 	}
 	var eff gruid.Effect
-	switch m.mode {
+	switch md.mode {
 	case modeNormal:
-		eff = m.updateNormal(msg)
+		eff = md.updateNormal(msg)
 	case modePager:
-		eff = m.updatePager(msg)
+		eff = md.updatePager(msg)
 	case modeMenu:
-		eff = m.updateMenu(msg)
+		eff = md.updateMenu(msg)
 	}
 	return eff
 }
 
-func (m *model) updateNormal(msg gruid.Msg) gruid.Effect {
+func (md *model) updateNormal(msg gruid.Msg) gruid.Effect {
 	var eff gruid.Effect
 	switch msg := msg.(type) {
 	case gruid.MsgKeyDown:
-		eff = m.updateKeyDown(msg)
+		eff = md.updateKeyDown(msg)
 	}
 	return eff
 }
 
-func (m *model) updateKeyDown(msg gruid.MsgKeyDown) gruid.Effect {
+func (md *model) updateKeyDown(msg gruid.MsgKeyDown) gruid.Effect {
 	switch msg.Key {
 	case gruid.KeyEscape:
 		return gruid.End()
 	default:
-		m.g.Ev = &simpleEvent{EAction: PlayerTurn, ERank: m.g.Turn}
-		again, err := m.normalModeKeyDown(msg.Key)
+		md.g.Ev = &simpleEvent{EAction: PlayerTurn, ERank: md.g.Turn}
+		again, err := md.normalModeKeyDown(msg.Key)
 		if again {
 			break
 		}
 		if err != nil {
-			m.g.Print(err.Error())
+			md.g.Print(err.Error())
 			break
 		}
-		m.g.EndTurn()
-		m.g.ComputeNoise()
-		m.g.ComputeLOS()
-		m.g.ComputeMonsterLOS()
+		md.g.EndTurn()
+		md.g.ComputeNoise()
+		md.g.ComputeLOS()
+		md.g.ComputeMonsterLOS()
 	}
 	return nil
 }
 
-func (m *model) updatePager(msg gruid.Msg) gruid.Effect {
-	m.pager.Update(msg)
-	if m.pager.Action() == ui.PagerQuit {
-		m.mode = modeNormal
+func (md *model) updatePager(msg gruid.Msg) gruid.Effect {
+	md.pager.Update(msg)
+	if md.pager.Action() == ui.PagerQuit {
+		md.mode = modeNormal
 	}
 	return nil
 }
 
-func (m *model) updateMenu(msg gruid.Msg) gruid.Effect {
-	m.menu.Update(msg)
-	if m.menu.Action() == ui.MenuQuit {
-		m.mode = modeNormal
+func (md *model) updateMenu(msg gruid.Msg) gruid.Effect {
+	md.menu.Update(msg)
+	if md.menu.Action() == ui.MenuQuit {
+		md.mode = modeNormal
 	}
 	return nil
 }
 
-func (m *model) Draw() gruid.Grid {
-	dgd := m.gd.Slice(m.gd.Range().Shift(0, 2, 0, -1))
-	for i := range m.g.Dungeon.Cells {
+func (md *model) Draw() gruid.Grid {
+	dgd := md.gd.Slice(md.gd.Range().Shift(0, 2, 0, -1))
+	for i := range md.g.Dungeon.Cells {
 		p := idxtopos(i)
-		r, fg, bg := m.PositionDrawing(p)
+		r, fg, bg := md.PositionDrawing(p)
 		attrs := AttrInMap
-		if m.g.Highlight[p] {
+		if md.g.Highlight[p] {
 			attrs |= AttrReverse
 		}
 		dgd.Set(p, gruid.Cell{Rune: r, Style: gruid.Style{Fg: fg, Bg: bg, Attrs: attrs}})
 	}
-	m.label.AdjustWidth = false
-	m.label.Box = nil
-	m.label.SetText(m.DrawLog())
-	m.label.Draw(m.gd.Slice(m.gd.Range().Lines(0, 2)))
-	if m.mp.targeting {
-		m.DrawPosInfo()
+	md.label.AdjustWidth = false
+	md.label.Box = nil
+	md.label.SetText(md.DrawLog())
+	md.label.Draw(md.gd.Slice(md.gd.Range().Lines(0, 2)))
+	if md.mp.targeting {
+		md.DrawPosInfo()
 	}
-	switch m.mode {
+	switch md.mode {
 	case modePager:
-		m.gd.Copy(m.pager.Draw())
+		md.gd.Copy(md.pager.Draw())
 	case modeMenu:
-		m.gd.Copy(m.menu.Draw())
+		md.gd.Copy(md.menu.Draw())
 	}
-	return m.gd
+	return md.gd
 }

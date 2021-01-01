@@ -16,40 +16,40 @@ const (
 	AnimDurExtraLong   = 300
 )
 
-func (ui *model) DrawAtPosition(p gruid.Point, targ bool, r rune, fg, bg gruid.Color) {
+func (md *model) DrawAtPosition(p gruid.Point, targ bool, r rune, fg, bg gruid.Color) {
 	// TODO
 }
 
-func (ui *model) SwappingAnimation(mpos, ppos gruid.Point) {
+func (md *model) SwappingAnimation(mpos, ppos gruid.Point) {
 	if DisableAnimations {
 		return
 	}
-	ui.DrawDungeonView(NormalMode)
+	md.DrawDungeonView(NormalMode)
 	Sleep(AnimDurShort)
-	_, fgm, bgColorm := ui.PositionDrawing(mpos)
-	_, _, bgColorp := ui.PositionDrawing(ppos)
-	ui.DrawAtPosition(mpos, true, 'Φ', fgm, bgColorp)
-	ui.DrawAtPosition(ppos, true, 'Φ', ColorFgPlayer, bgColorm)
+	_, fgm, bgColorm := md.PositionDrawing(mpos)
+	_, _, bgColorp := md.PositionDrawing(ppos)
+	md.DrawAtPosition(mpos, true, 'Φ', fgm, bgColorp)
+	md.DrawAtPosition(ppos, true, 'Φ', ColorFgPlayer, bgColorm)
 	//ui.Flush()
 	Sleep(AnimDurMedium)
-	ui.DrawAtPosition(mpos, true, 'Φ', ColorFgPlayer, bgColorp)
-	ui.DrawAtPosition(ppos, true, 'Φ', fgm, bgColorm)
+	md.DrawAtPosition(mpos, true, 'Φ', ColorFgPlayer, bgColorp)
+	md.DrawAtPosition(ppos, true, 'Φ', fgm, bgColorm)
 	//ui.Flush()
 	Sleep(AnimDurMedium)
 }
 
-func (ui *model) TeleportAnimation(from, to gruid.Point, showto bool) {
+func (md *model) TeleportAnimation(from, to gruid.Point, showto bool) {
 	if DisableAnimations {
 		return
 	}
-	_, _, bgColorf := ui.PositionDrawing(from)
-	_, _, bgColort := ui.PositionDrawing(to)
-	ui.DrawAtPosition(from, true, 'Φ', ColorCyan, bgColorf)
+	_, _, bgColorf := md.PositionDrawing(from)
+	_, _, bgColort := md.PositionDrawing(to)
+	md.DrawAtPosition(from, true, 'Φ', ColorCyan, bgColorf)
 	//ui.Flush()
 	Sleep(AnimDurMediumLong)
 	if showto {
-		ui.DrawAtPosition(from, true, 'Φ', ColorBlue, bgColorf)
-		ui.DrawAtPosition(to, true, 'Φ', ColorCyan, bgColort)
+		md.DrawAtPosition(from, true, 'Φ', ColorBlue, bgColorf)
+		md.DrawAtPosition(to, true, 'Φ', ColorCyan, bgColort)
 		//ui.Flush()
 		Sleep(AnimDurMedium)
 	}
@@ -63,30 +63,30 @@ const (
 	AroundWallExplosion
 )
 
-func (ui *model) MonsterProjectileAnimation(ray []gruid.Point, r rune, fg gruid.Color) {
+func (md *model) MonsterProjectileAnimation(ray []gruid.Point, r rune, fg gruid.Color) {
 	if DisableAnimations {
 		return
 	}
-	ui.DrawDungeonView(NormalMode)
+	md.DrawDungeonView(NormalMode)
 	Sleep(AnimDurShort)
 	for i := 0; i < len(ray); i++ {
 		pos := ray[i]
-		or, fgColor, bgColor := ui.PositionDrawing(pos)
-		ui.DrawAtPosition(pos, true, r, fg, bgColor)
+		or, fgColor, bgColor := md.PositionDrawing(pos)
+		md.DrawAtPosition(pos, true, r, fg, bgColor)
 		//ui.Flush()
 		Sleep(AnimDurShort)
-		ui.DrawAtPosition(pos, true, or, fgColor, bgColor)
+		md.DrawAtPosition(pos, true, or, fgColor, bgColor)
 	}
 }
 
-func (ui *model) WaveDrawAt(pos gruid.Point, fg gruid.Color) {
-	r, _, bgColor := ui.PositionDrawing(pos)
-	ui.DrawAtPosition(pos, true, r, bgColor, fg)
+func (md *model) WaveDrawAt(pos gruid.Point, fg gruid.Color) {
+	r, _, bgColor := md.PositionDrawing(pos)
+	md.DrawAtPosition(pos, true, r, bgColor, fg)
 }
 
-func (ui *model) ExplosionDrawAt(pos gruid.Point, fg gruid.Color) {
-	g := ui.g
-	_, _, bgColor := ui.PositionDrawing(pos)
+func (md *model) ExplosionDrawAt(pos gruid.Point, fg gruid.Color) {
+	g := md.g
+	_, _, bgColor := md.PositionDrawing(pos)
 	mons := g.MonsterAt(pos)
 	r := ';'
 	switch RandInt(9) {
@@ -106,35 +106,35 @@ func (ui *model) ExplosionDrawAt(pos gruid.Point, fg gruid.Color) {
 	if mons.Exists() || g.Player.Pos == pos {
 		r = '√'
 	}
-	ui.DrawAtPosition(pos, true, r, bgColor, fg)
+	md.DrawAtPosition(pos, true, r, bgColor, fg)
 }
 
-func (ui *model) NoiseAnimation(noises []gruid.Point) {
+func (md *model) NoiseAnimation(noises []gruid.Point) {
 	if DisableAnimations {
 		return
 	}
-	ui.LOSWavesAnimation(DefaultLOSRange, WaveMagicNoise, ui.g.Player.Pos)
+	md.LOSWavesAnimation(DefaultLOSRange, WaveMagicNoise, md.g.Player.Pos)
 	colors := []gruid.Color{ColorFgSleepingMonster, ColorFgMagicPlace}
 	for i := 0; i < 2; i++ {
 		for _, pos := range noises {
 			r := '♫'
-			_, _, bgColor := ui.PositionDrawing(pos)
-			ui.DrawAtPosition(pos, false, r, bgColor, colors[i])
+			_, _, bgColor := md.PositionDrawing(pos)
+			md.DrawAtPosition(pos, false, r, bgColor, colors[i])
 		}
-		_, _, bgColor := ui.PositionDrawing(ui.g.Player.Pos)
-		ui.DrawAtPosition(ui.g.Player.Pos, false, '@', bgColor, colors[i])
+		_, _, bgColor := md.PositionDrawing(md.g.Player.Pos)
+		md.DrawAtPosition(md.g.Player.Pos, false, '@', bgColor, colors[i])
 		//ui.Flush()
 		Sleep(AnimDurShortMedium)
 	}
 
 }
 
-func (ui *model) ExplosionAnimation(es explosionStyle, pos gruid.Point) {
-	g := ui.g
+func (md *model) ExplosionAnimation(es explosionStyle, pos gruid.Point) {
+	g := md.g
 	if DisableAnimations {
 		return
 	}
-	ui.DrawDungeonView(NormalMode)
+	md.DrawDungeonView(NormalMode)
 	Sleep(AnimDurShort)
 	colors := [2]gruid.Color{ColorFgExplosionStart, ColorFgExplosionEnd}
 	if es == WallExplosion || es == AroundWallExplosion {
@@ -151,7 +151,7 @@ func (ui *model) ExplosionAnimation(es explosionStyle, pos gruid.Point) {
 			if !g.Player.LOS[npos] {
 				continue
 			}
-			ui.ExplosionDrawAt(npos, fg)
+			md.ExplosionDrawAt(npos, fg)
 		}
 		//ui.Flush()
 		Sleep(AnimDurMediumLong)
@@ -179,14 +179,14 @@ func (g *game) Waves(maxCost int, ws wavestyle, center gruid.Point) (dists []int
 	return dists, cdists
 }
 
-func (ui *model) LOSWavesAnimation(r int, ws wavestyle, center gruid.Point) {
-	dists, cdists := ui.g.Waves(r, ws, center)
+func (md *model) LOSWavesAnimation(r int, ws wavestyle, center gruid.Point) {
+	dists, cdists := md.g.Waves(r, ws, center)
 	for _, d := range dists {
 		wave := cdists[d]
 		if len(wave) == 0 {
 			break
 		}
-		ui.WaveAnimation(wave, ws)
+		md.WaveAnimation(wave, ws)
 	}
 }
 
@@ -201,57 +201,57 @@ const (
 	WaveSleeping
 )
 
-func (ui *model) WaveAnimation(wave []int, ws wavestyle) {
+func (md *model) WaveAnimation(wave []int, ws wavestyle) {
 	if DisableAnimations {
 		return
 	}
-	ui.DrawDungeonView(NormalMode)
+	md.DrawDungeonView(NormalMode)
 	for _, i := range wave {
 		pos := idxtopos(i)
 		switch ws {
 		case WaveConfusion:
 			fg := ColorFgConfusedMonster
-			if ui.g.Player.Sees(pos) {
-				ui.WaveDrawAt(pos, fg)
+			if md.g.Player.Sees(pos) {
+				md.WaveDrawAt(pos, fg)
 			}
 		case WaveSleeping:
 			fg := ColorFgSleepingMonster
-			if ui.g.Player.Sees(pos) {
-				ui.WaveDrawAt(pos, fg)
+			if md.g.Player.Sees(pos) {
+				md.WaveDrawAt(pos, fg)
 			}
 		case WaveSlowing:
 			fg := ColorFgParalysedMonster
-			if ui.g.Player.Sees(pos) {
-				ui.WaveDrawAt(pos, fg)
+			if md.g.Player.Sees(pos) {
+				md.WaveDrawAt(pos, fg)
 			}
 		case WaveTree:
 			fg := ColorFgLignifiedMonster
-			if ui.g.Player.Sees(pos) {
-				ui.WaveDrawAt(pos, fg)
+			if md.g.Player.Sees(pos) {
+				md.WaveDrawAt(pos, fg)
 			}
 		case WaveNoise:
 			fg := ColorFgWanderingMonster
-			if ui.g.Player.Sees(pos) {
-				ui.WaveDrawAt(pos, fg)
+			if md.g.Player.Sees(pos) {
+				md.WaveDrawAt(pos, fg)
 			}
 		case WaveMagicNoise:
 			fg := ColorFgMagicPlace
-			ui.WaveDrawAt(pos, fg)
+			md.WaveDrawAt(pos, fg)
 		}
 	}
 	//ui.Flush()
 	Sleep(AnimDurShort)
 }
 
-func (ui *model) WallExplosionAnimation(pos gruid.Point) {
+func (md *model) WallExplosionAnimation(pos gruid.Point) {
 	if DisableAnimations {
 		return
 	}
 	colors := [2]gruid.Color{ColorFgExplosionWallStart, ColorFgExplosionWallEnd}
 	for _, fg := range colors {
-		_, _, bgColor := ui.PositionDrawing(pos)
+		_, _, bgColor := md.PositionDrawing(pos)
 		//ui.DrawAtPosition(pos, true, '☼', fg, bgColor)
-		ui.DrawAtPosition(pos, true, '%', bgColor, fg)
+		md.DrawAtPosition(pos, true, '%', bgColor, fg)
 		//ui.Flush()
 		Sleep(AnimDurShort)
 	}
@@ -265,11 +265,11 @@ const (
 	BeamObstruction
 )
 
-func (ui *model) BeamsAnimation(ray []gruid.Point, bs beamstyle) {
+func (md *model) BeamsAnimation(ray []gruid.Point, bs beamstyle) {
 	if DisableAnimations {
 		return
 	}
-	ui.DrawDungeonView(NormalMode)
+	md.DrawDungeonView(NormalMode)
 	Sleep(AnimDurShort)
 	// change colors depending on effect
 	var fg gruid.Color
@@ -284,42 +284,42 @@ func (ui *model) BeamsAnimation(ray []gruid.Point, bs beamstyle) {
 	for j := 0; j < 3; j++ {
 		for i := len(ray) - 1; i >= 0; i-- {
 			pos := ray[i]
-			_, _, bgColor := ui.PositionDrawing(pos)
+			_, _, bgColor := md.PositionDrawing(pos)
 			r := '*'
 			if RandInt(2) == 0 {
 				r = '×'
 			}
-			ui.DrawAtPosition(pos, true, r, bgColor, fg)
+			md.DrawAtPosition(pos, true, r, bgColor, fg)
 		}
 		//ui.Flush()
 		Sleep(AnimDurShortMedium)
 	}
 }
 
-func (ui *model) SlowingMagaraAnimation(ray []gruid.Point) {
+func (md *model) SlowingMagaraAnimation(ray []gruid.Point) {
 	if DisableAnimations {
 		return
 	}
-	ui.DrawDungeonView(NormalMode)
+	md.DrawDungeonView(NormalMode)
 	Sleep(AnimDurShort)
 	colors := [2]gruid.Color{ColorFgConfusedMonster, ColorFgMagicPlace}
 	for j := 0; j < 3; j++ {
 		for i := len(ray) - 1; i >= 0; i-- {
 			fg := colors[RandInt(2)]
 			pos := ray[i]
-			_, _, bgColor := ui.PositionDrawing(pos)
+			_, _, bgColor := md.PositionDrawing(pos)
 			r := '*'
 			if RandInt(2) == 0 {
 				r = '×'
 			}
-			ui.DrawAtPosition(pos, true, r, bgColor, fg)
+			md.DrawAtPosition(pos, true, r, bgColor, fg)
 		}
 		//ui.Flush()
 		Sleep(AnimDurShortMedium)
 	}
 }
 
-func (ui *model) ProjectileSymbol(dir direction) (r rune) {
+func (md *model) ProjectileSymbol(dir direction) (r rune) {
 	switch dir {
 	case E, ENE, ESE, WNW, W, WSW:
 		r = '—'
@@ -333,85 +333,85 @@ func (ui *model) ProjectileSymbol(dir direction) (r rune) {
 	return r
 }
 
-func (ui *model) MonsterJavelinAnimation(ray []gruid.Point, hit bool) {
-	g := ui.g
+func (md *model) MonsterJavelinAnimation(ray []gruid.Point, hit bool) {
+	g := md.g
 	if DisableAnimations {
 		return
 	}
-	ui.DrawDungeonView(NormalMode)
+	md.DrawDungeonView(NormalMode)
 	Sleep(AnimDurShort)
 	for i := 0; i < len(ray); i++ {
 		pos := ray[i]
-		r, fgColor, bgColor := ui.PositionDrawing(pos)
-		ui.DrawAtPosition(pos, true, ui.ProjectileSymbol(Dir(g.Player.Pos, pos)), ColorFgMonster, bgColor)
+		r, fgColor, bgColor := md.PositionDrawing(pos)
+		md.DrawAtPosition(pos, true, md.ProjectileSymbol(Dir(g.Player.Pos, pos)), ColorFgMonster, bgColor)
 		//ui.Flush()
 		Sleep(AnimDurShort)
-		ui.DrawAtPosition(pos, true, r, fgColor, bgColor)
+		md.DrawAtPosition(pos, true, r, fgColor, bgColor)
 	}
 	Sleep(AnimDurShort)
 }
 
-func (ui *model) WoundedAnimation() {
-	g := ui.g
+func (md *model) WoundedAnimation() {
+	g := md.g
 	if DisableAnimations {
 		return
 	}
-	ui.DrawDungeonView(AnimationMode)
-	r, _, bg := ui.PositionDrawing(g.Player.Pos)
-	ui.DrawAtPosition(g.Player.Pos, false, r, ColorFgHPwounded, bg)
+	md.DrawDungeonView(AnimationMode)
+	r, _, bg := md.PositionDrawing(g.Player.Pos)
+	md.DrawAtPosition(g.Player.Pos, false, r, ColorFgHPwounded, bg)
 	//ui.Flush()
 	Sleep(AnimDurShortMedium)
 	if g.Player.HP <= 15 {
-		ui.DrawAtPosition(g.Player.Pos, false, r, ColorFgHPcritical, bg)
+		md.DrawAtPosition(g.Player.Pos, false, r, ColorFgHPcritical, bg)
 		//ui.Flush()
 		Sleep(AnimDurShortMedium)
 	}
 }
 
-func (ui *model) PlayerGoodEffectAnimation() {
-	g := ui.g
+func (md *model) PlayerGoodEffectAnimation() {
+	g := md.g
 	if DisableAnimations {
 		return
 	}
-	ui.DrawDungeonView(AnimationMode)
+	md.DrawDungeonView(AnimationMode)
 	Sleep(AnimDurShort)
-	r, fg, bg := ui.PositionDrawing(g.Player.Pos)
-	ui.DrawAtPosition(g.Player.Pos, false, r, ColorGreen, bg)
+	r, fg, bg := md.PositionDrawing(g.Player.Pos)
+	md.DrawAtPosition(g.Player.Pos, false, r, ColorGreen, bg)
 	//ui.Flush()
 	Sleep(AnimDurShortMedium)
-	ui.DrawAtPosition(g.Player.Pos, false, r, ColorYellow, bg)
+	md.DrawAtPosition(g.Player.Pos, false, r, ColorYellow, bg)
 	//ui.Flush()
 	Sleep(AnimDurShortMedium)
-	ui.DrawAtPosition(g.Player.Pos, false, r, fg, bg)
+	md.DrawAtPosition(g.Player.Pos, false, r, fg, bg)
 	//ui.Flush()
 }
 
-func (ui *model) StatusEndAnimation() {
-	g := ui.g
+func (md *model) StatusEndAnimation() {
+	g := md.g
 	if DisableAnimations {
 		return
 	}
-	ui.DrawDungeonView(AnimationMode)
-	r, _, bg := ui.PositionDrawing(g.Player.Pos)
-	ui.DrawAtPosition(g.Player.Pos, false, r, ColorViolet, bg)
+	md.DrawDungeonView(AnimationMode)
+	r, _, bg := md.PositionDrawing(g.Player.Pos)
+	md.DrawAtPosition(g.Player.Pos, false, r, ColorViolet, bg)
 	//ui.Flush()
 	Sleep(AnimDurShortMedium)
 }
 
-func (ui *model) FoundFakeStairsAnimation() {
-	g := ui.g
+func (md *model) FoundFakeStairsAnimation() {
+	g := md.g
 	if DisableAnimations {
 		return
 	}
-	r, fg, bg := ui.PositionDrawing(g.Player.Pos)
-	ui.DrawAtPosition(g.Player.Pos, false, r, ColorMagenta, bg)
+	r, fg, bg := md.PositionDrawing(g.Player.Pos)
+	md.DrawAtPosition(g.Player.Pos, false, r, ColorMagenta, bg)
 	//ui.Flush()
 	Sleep(AnimDurMediumLong)
-	ui.DrawAtPosition(g.Player.Pos, false, r, fg, bg)
+	md.DrawAtPosition(g.Player.Pos, false, r, fg, bg)
 	//ui.Flush()
 }
 
-func (ui *model) MusicAnimation(pos gruid.Point) {
+func (md *model) MusicAnimation(pos gruid.Point) {
 	if DisableAnimations {
 		return
 	}
@@ -424,7 +424,7 @@ func (ui *model) MusicAnimation(pos gruid.Point) {
 	//ui.Flush()
 }
 
-func (ui *model) PushAnimation(path []gruid.Point) {
+func (md *model) PushAnimation(path []gruid.Point) {
 	if DisableAnimations {
 		return
 	}
@@ -432,30 +432,30 @@ func (ui *model) PushAnimation(path []gruid.Point) {
 		// should not happen
 		return
 	}
-	ui.DrawDungeonView(AnimationMode)
-	_, _, bg := ui.PositionDrawing(path[0])
+	md.DrawDungeonView(AnimationMode)
+	_, _, bg := md.PositionDrawing(path[0])
 	for _, pos := range path[:len(path)-1] {
-		ui.DrawAtPosition(pos, false, '×', ColorFgPlayer, bg)
+		md.DrawAtPosition(pos, false, '×', ColorFgPlayer, bg)
 	}
-	ui.DrawAtPosition(path[len(path)-1], false, '@', ColorFgPlayer, bg)
+	md.DrawAtPosition(path[len(path)-1], false, '@', ColorFgPlayer, bg)
 	//ui.Flush()
 	Sleep(AnimDurMediumLong)
 }
 
-func (ui *model) MagicMappingAnimation(border []int) {
+func (md *model) MagicMappingAnimation(border []int) {
 	if DisableAnimations {
 		return
 	}
 	for _, i := range border {
 		pos := idxtopos(i)
-		r, fg, bg := ui.PositionDrawing(pos)
-		ui.DrawAtPosition(pos, false, r, fg, bg)
+		r, fg, bg := md.PositionDrawing(pos)
+		md.DrawAtPosition(pos, false, r, fg, bg)
 	}
 	//ui.Flush()
 }
 
-func (ui *model) FreeingShaedraAnimation() {
-	g := ui.g
+func (md *model) FreeingShaedraAnimation() {
+	g := md.g
 	//if DisableAnimations {
 	// TODO this animation cannot be disabled as-is, because code is mixed with it...
 	//return
@@ -466,8 +466,8 @@ func (ui *model) FreeingShaedraAnimation() {
 	//ui.DrawDungeonView(NoFlushMode)
 	//ui.Flush()
 	//ui.WaitForContinue(-1)
-	_, _, bg := ui.PositionDrawing(g.Places.Monolith)
-	ui.DrawAtPosition(g.Places.Monolith, false, 'Φ', ColorFgMagicPlace, bg)
+	_, _, bg := md.PositionDrawing(g.Places.Monolith)
+	md.DrawAtPosition(g.Places.Monolith, false, 'Φ', ColorFgMagicPlace, bg)
 	//ui.Flush()
 	Sleep(AnimDurMediumLong)
 	g.Objects.Stairs[g.Places.Monolith] = WinStair
@@ -475,8 +475,8 @@ func (ui *model) FreeingShaedraAnimation() {
 	//ui.DrawDungeonView(NoFlushMode)
 	//ui.Flush()
 	Sleep(AnimDurLong)
-	_, _, bg = ui.PositionDrawing(g.Places.Marevor)
-	ui.DrawAtPosition(g.Places.Marevor, false, 'Φ', ColorFgMagicPlace, bg)
+	_, _, bg = md.PositionDrawing(g.Places.Marevor)
+	md.DrawAtPosition(g.Places.Marevor, false, 'Φ', ColorFgMagicPlace, bg)
 	//ui.Flush()
 	Sleep(AnimDurMediumLong)
 	g.Objects.Story[g.Places.Marevor] = StoryMarevor
@@ -487,8 +487,8 @@ func (ui *model) FreeingShaedraAnimation() {
 	//ui.Flush()
 	//ui.WaitForContinue(-1)
 	//ui.DrawDungeonView(NoFlushMode)
-	ui.DrawAtPosition(g.Places.Marevor, false, 'Φ', ColorFgMagicPlace, bg)
-	ui.DrawAtPosition(g.Places.Shaedra, false, 'Φ', ColorFgMagicPlace, bg)
+	md.DrawAtPosition(g.Places.Marevor, false, 'Φ', ColorFgMagicPlace, bg)
+	md.DrawAtPosition(g.Places.Shaedra, false, 'Φ', ColorFgMagicPlace, bg)
 	//ui.Flush()
 	Sleep(AnimDurMediumLong)
 	g.Dungeon.SetCell(g.Places.Shaedra, GroundCell)
@@ -511,8 +511,8 @@ func (g *game) RescuedShaedra() {
 	AchRescuedShaedra.Get(g)
 }
 
-func (ui *model) TakingArtifactAnimation() {
-	g := ui.g
+func (md *model) TakingArtifactAnimation() {
+	g := md.g
 	//if DisableAnimations {
 	// TODO this animation cannot be disabled as-is, because code is mixed with it...
 	//return
@@ -523,8 +523,8 @@ func (ui *model) TakingArtifactAnimation() {
 	//ui.Flush()
 	//ui.WaitForContinue(-1)
 	g.Dungeon.SetCell(g.Places.Artifact, GroundCell)
-	_, _, bg := ui.PositionDrawing(g.Places.Monolith)
-	ui.DrawAtPosition(g.Places.Monolith, false, 'Φ', ColorFgMagicPlace, bg)
+	_, _, bg := md.PositionDrawing(g.Places.Monolith)
+	md.DrawAtPosition(g.Places.Monolith, false, 'Φ', ColorFgMagicPlace, bg)
 	//ui.Flush()
 	Sleep(AnimDurMediumLong)
 	g.Objects.Stairs[g.Places.Monolith] = WinStair
@@ -532,8 +532,8 @@ func (ui *model) TakingArtifactAnimation() {
 	//ui.DrawDungeonView(NoFlushMode)
 	//ui.Flush()
 	Sleep(AnimDurLong)
-	_, _, bg = ui.PositionDrawing(g.Places.Marevor)
-	ui.DrawAtPosition(g.Places.Marevor, false, 'Φ', ColorFgMagicPlace, bg)
+	_, _, bg = md.PositionDrawing(g.Places.Marevor)
+	md.DrawAtPosition(g.Places.Marevor, false, 'Φ', ColorFgMagicPlace, bg)
 	//ui.Flush()
 	Sleep(AnimDurMediumLong)
 	g.Objects.Story[g.Places.Marevor] = StoryMarevor
@@ -544,7 +544,7 @@ func (ui *model) TakingArtifactAnimation() {
 	//ui.Flush()
 	//ui.WaitForContinue(-1)
 	//ui.DrawDungeonView(NoFlushMode)
-	ui.DrawAtPosition(g.Places.Marevor, false, 'Φ', ColorFgMagicPlace, bg)
+	md.DrawAtPosition(g.Places.Marevor, false, 'Φ', ColorFgMagicPlace, bg)
 	//ui.Flush()
 	Sleep(AnimDurMediumLong)
 	g.Dungeon.SetCell(g.Places.Marevor, GroundCell)

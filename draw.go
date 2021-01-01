@@ -73,7 +73,7 @@ var (
 	ColorGreen   gruid.Color = Color256Green
 )
 
-func (ui *model) Map256ColorTo16(c gruid.Color) gruid.Color {
+func (md *model) Map256ColorTo16(c gruid.Color) gruid.Color {
 	switch c {
 	case Color256Base03:
 		return Color16Base03
@@ -112,7 +112,7 @@ func (ui *model) Map256ColorTo16(c gruid.Color) gruid.Color {
 	}
 }
 
-func (ui *model) Map16ColorTo256(c gruid.Color) gruid.Color {
+func (md *model) Map16ColorTo256(c gruid.Color) gruid.Color {
 	switch c {
 	case Color16Base03:
 		return Color256Base03
@@ -337,7 +337,7 @@ const (
 	AttrReverse
 )
 
-func (ui *model) DrawKeysDescription(title string, actions []string) {
+func (md *model) DrawKeysDescription(title string, actions []string) {
 	//ui.DrawDungeonView(NoFlushMode)
 
 	//if CustomKeys {
@@ -361,8 +361,8 @@ func (ui *model) DrawKeysDescription(title string, actions []string) {
 	//ui.WaitForContinue(lines)
 }
 
-func (ui *model) KeysHelp() {
-	ui.DrawKeysDescription("Basic Commands", []string{
+func (md *model) KeysHelp() {
+	md.DrawKeysDescription("Basic Commands", []string{
 		"Move/Jump", "arrows or wasd or hjkl or mouse left",
 		"Wait a turn", "“.” or 5 or enter or mouse left on @",
 		"Interact (Equip/Descend/Rest...)", "e",
@@ -381,8 +381,8 @@ func (ui *model) KeysHelp() {
 	})
 }
 
-func (ui *model) ExamineHelp() {
-	ui.DrawKeysDescription("Examine/Travel Commands", []string{
+func (md *model) ExamineHelp() {
+	md.DrawKeysDescription("Examine/Travel Commands", []string{
 		"Move cursor", "arrows or wasd or hjkl or mouse hover",
 		"Go to/select target", "“.” or enter or mouse left",
 		"View target description", "v or mouse right",
@@ -395,7 +395,7 @@ func (ui *model) ExamineHelp() {
 
 const TextWidth = 72
 
-func (ui *model) WizardInfo() {
+func (md *model) WizardInfo() {
 	//g := ui.st
 	//ui.Clear()
 	//b := &bytes.Buffer{}
@@ -406,15 +406,15 @@ func (ui *model) WizardInfo() {
 	//ui.WaitForContinue(-1)
 }
 
-func (ui *model) MapWidth() int {
+func (md *model) MapWidth() int {
 	return DungeonWidth
 }
 
-func (ui *model) MapHeight() int {
+func (md *model) MapHeight() int {
 	return DungeonHeight
 }
 
-func (ui *model) DrawDungeonView(m uiMode) {
+func (md *model) DrawDungeonView(m uiMode) {
 	// TODO: remove uiMode
 	//g := ui.st
 	//ui.Clear()
@@ -436,11 +436,11 @@ func (ui *model) DrawDungeonView(m uiMode) {
 	//ui.DrawLog(2)
 }
 
-func (ui *model) DrawLoading() {
+func (md *model) DrawLoading() {
 	//ui.DrawMessage("Loading...")
 }
 
-func (ui *model) DrawMessage(s string) {
+func (md *model) DrawMessage(s string) {
 	//ui.DrawDungeonView(NoFlushMode)
 	//line := ui.MapHeight() - 2
 	//ui.DrawColoredText(s, ui.MapWidth()+2, line+1, ColorCyan)
@@ -448,8 +448,8 @@ func (ui *model) DrawMessage(s string) {
 	//Sleep(AnimDurShort)
 }
 
-func (ui *model) PositionDrawing(pos gruid.Point) (r rune, fgColor, bgColor gruid.Color) {
-	g := ui.g
+func (md *model) PositionDrawing(pos gruid.Point) (r rune, fgColor, bgColor gruid.Color) {
+	g := md.g
 	m := g.Dungeon
 	c := m.Cell(pos)
 	fgColor = ColorFg
@@ -571,8 +571,8 @@ func (ui *model) PositionDrawing(pos gruid.Point) (r rune, fgColor, bgColor grui
 	return
 }
 
-func (ui *model) HPColor() gruid.Color {
-	g := ui.g
+func (md *model) HPColor() gruid.Color {
+	g := md.g
 	hpColor := ColorFgHPok
 	switch g.Player.HP + g.Player.HPbonus {
 	case 1, 2:
@@ -583,8 +583,8 @@ func (ui *model) HPColor() gruid.Color {
 	return hpColor
 }
 
-func (ui *model) MPColor() gruid.Color {
-	g := ui.g
+func (md *model) MPColor() gruid.Color {
+	g := md.g
 	mpColor := ColorFgMPok
 	switch g.Player.MP {
 	case 1, 2:
@@ -595,7 +595,7 @@ func (ui *model) MPColor() gruid.Color {
 	return mpColor
 }
 
-func (ui *model) DrawStatusLine() {
+func (md *model) DrawStatusLine() {
 	//g := ui.st
 	//sts := statusSlice{}
 	//if cld, ok := g.Clouds[g.Player.Pos]; ok && cld == CloudFire {
@@ -706,7 +706,7 @@ func (ui *model) DrawStatusLine() {
 	//}
 }
 
-func (ui *model) LogColor(e logEntry) gruid.Color {
+func (md *model) LogColor(e logEntry) gruid.Color {
 	fg := ColorFg
 	switch e.Style {
 	case logCritic:
@@ -725,9 +725,9 @@ func (ui *model) LogColor(e logEntry) gruid.Color {
 	return fg
 }
 
-func (m *model) DrawLog() string {
+func (md *model) DrawLog() string {
 	// TODO: use LogColor
-	g := m.g
+	g := md.g
 	stt := ui.StyledText{}
 	for i := len(g.Log) - 1; i >= 0; i-- {
 		var s string
@@ -749,7 +749,7 @@ func (m *model) DrawLog() string {
 	return stt.Text()
 }
 
-func (ui *model) SelectMagara() error {
+func (md *model) SelectMagara() error {
 	// TODO select
 	return nil
 	//g := ui.st
@@ -791,7 +791,7 @@ func (ui *model) SelectMagara() error {
 	//}
 }
 
-func (ui *model) EquipMagara() error {
+func (md *model) EquipMagara() error {
 	// TODO select
 	return nil
 	//g := ui.st
@@ -833,7 +833,7 @@ func (ui *model) EquipMagara() error {
 	//}
 }
 
-func (ui *model) SelectItem() error {
+func (md *model) SelectItem() error {
 	// TODO select
 	return nil
 	//g := ui.st
@@ -865,24 +865,24 @@ func (ui *model) SelectItem() error {
 	//}
 }
 
-func (ui *model) ReadScroll() error {
-	sc, ok := ui.g.Objects.Scrolls[ui.g.Player.Pos]
+func (md *model) ReadScroll() error {
+	sc, ok := md.g.Objects.Scrolls[md.g.Player.Pos]
 	if !ok {
 		return errors.New("Internal error: no scroll found")
 	}
-	ui.g.Print("You read the message.")
+	md.g.Print("You read the message.")
 	switch sc {
 	case ScrollLore:
 		//ui.DrawDescription(sc.Text(ui.st), "Lore Message")
-		if !ui.g.Stats.Lore[ui.g.Depth] {
-			ui.g.StoryPrint("Read lore message")
+		if !md.g.Stats.Lore[md.g.Depth] {
+			md.g.StoryPrint("Read lore message")
 		}
-		ui.g.Stats.Lore[ui.g.Depth] = true
-		if len(ui.g.Stats.Lore) == 4 {
-			AchLoreStudent.Get(ui.g)
+		md.g.Stats.Lore[md.g.Depth] = true
+		if len(md.g.Stats.Lore) == 4 {
+			AchLoreStudent.Get(md.g)
 		}
-		if len(ui.g.Stats.Lore) == len(ui.g.Params.Lore) {
-			AchLoremaster.Get(ui.g)
+		if len(md.g.Stats.Lore) == len(md.g.Params.Lore) {
+			AchLoremaster.Get(md.g)
 		}
 	default:
 		//ui.DrawDescription(sc.Text(ui.st), "Story Message")
@@ -899,7 +899,7 @@ var menuActions = []action{
 	ActionQuit,
 }
 
-func (ui *model) SelectAction(actions []action) (action, error) {
+func (md *model) SelectAction(actions []action) (action, error) {
 	// TODO
 	return actions[0], nil
 	//ui.DrawDungeonView(NoFlushMode)
@@ -958,14 +958,14 @@ var settingsActions = []setting{
 	toggleShowNumbers,
 }
 
-func (ui *model) SelectConfigure(actions []setting) (setting, error) {
+func (md *model) SelectConfigure(actions []setting) (setting, error) {
 	// TODO
 	return actions[0], nil
 }
 
-func (ui *model) HandleSettingAction() error {
-	g := ui.g
-	s, err := ui.SelectConfigure(settingsActions)
+func (md *model) HandleSettingAction() error {
+	g := md.g
+	s, err := md.SelectConfigure(settingsActions)
 	if err != nil {
 		return err
 	}
@@ -985,7 +985,7 @@ func (ui *model) HandleSettingAction() error {
 			ApplyLightLOS()
 		}
 	case toggleTiles:
-		ui.ApplyToggleTiles()
+		md.ApplyToggleTiles()
 		err := g.SaveConfig()
 		if err != nil {
 			g.Print(err.Error())

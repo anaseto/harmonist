@@ -9,15 +9,15 @@ import (
 	"github.com/anaseto/gruid"
 )
 
-func (ui *model) HideCursor() {
-	ui.mp.ex.pos = InvalidPos
+func (md *model) HideCursor() {
+	md.mp.ex.pos = InvalidPos
 }
 
-func (ui *model) SetCursor(pos gruid.Point) {
-	ui.mp.ex.pos = pos
+func (md *model) SetCursor(pos gruid.Point) {
+	md.mp.ex.pos = pos
 }
 
-func (ui *model) GetPos(i int) (int, int) {
+func (md *model) GetPos(i int) (int, int) {
 	return i - (i/UIWidth)*UIWidth, i / UIWidth
 }
 
@@ -32,7 +32,7 @@ const (
 
 const DoNothing = "Do nothing, then."
 
-func (ui *model) EnterWizard() {
+func (md *model) EnterWizard() {
 	//g := ui.st
 	//if ui.Wizard() {
 	//g.EnterWizardMode()
@@ -42,7 +42,7 @@ func (ui *model) EnterWizard() {
 	//}
 }
 
-func (ui *model) CleanError(err error) error {
+func (md *model) CleanError(err error) error {
 	if err != nil && err.Error() == DoNothing {
 		err = errors.New("")
 	}
@@ -387,8 +387,8 @@ func ApplyDefaultKeyBindings() {
 //return ui.HandleKey(rka)
 //}
 
-func (ui *model) OptionalDescendConfirmation(st stair) (err error) {
-	g := ui.g
+func (md *model) OptionalDescendConfirmation(st stair) (err error) {
+	g := md.g
 	if g.Depth == WinDepth && st == NormalStair && g.Dungeon.Cell(g.Places.Shaedra).T == StoryCell {
 		err = errors.New("You have to rescue Shaedra first!")
 	}
@@ -396,52 +396,52 @@ func (ui *model) OptionalDescendConfirmation(st stair) (err error) {
 
 }
 
-func (ui *model) normalModeKeyDown(key gruid.Key) (again bool, err error) {
-	g := ui.g
-	action := ui.keysNormal[key]
-	if ui.mp.targeting {
-		action = ui.keysTarget[key]
+func (md *model) normalModeKeyDown(key gruid.Key) (again bool, err error) {
+	g := md.g
+	action := md.keysNormal[key]
+	if md.mp.targeting {
+		action = md.keysTarget[key]
 	}
 	switch action {
 	case ActionW, ActionS, ActionN, ActionE:
-		if !ui.mp.targeting {
+		if !md.mp.targeting {
 			err = g.PlayerBump(To(KeyToDir(action), g.Player.Pos))
 		} else {
-			p := To(KeyToDir(action), ui.mp.ex.pos)
+			p := To(KeyToDir(action), md.mp.ex.pos)
 			if valid(p) {
-				ui.Examine(p)
+				md.Examine(p)
 			}
 			again = true
 		}
 	case ActionRunW, ActionRunS, ActionRunN, ActionRunE:
-		if !ui.mp.targeting {
+		if !md.mp.targeting {
 			err = g.GoToDir(KeyToDir(action))
 		} else {
 			q := InvalidPos
 			for i := 0; i < 5; i++ {
-				p := To(KeyToDir(action), ui.mp.ex.pos)
+				p := To(KeyToDir(action), md.mp.ex.pos)
 				if !valid(p) {
 					break
 				}
 				q = p
 			}
 			if q != InvalidPos {
-				ui.Examine(q)
+				md.Examine(q)
 			}
 			again = true
 		}
 	case ActionExclude:
 		again = true
-		ui.ExcludeZone(ui.mp.ex.pos)
+		md.ExcludeZone(md.mp.ex.pos)
 	case ActionPreviousMonster, ActionNextMonster:
 		again = true
-		ui.NextMonster(key, ui.mp.ex.pos, ui.mp.ex)
+		md.NextMonster(key, md.mp.ex.pos, md.mp.ex)
 	case ActionNextObject:
 		again = true
-		ui.NextObject(ui.mp.ex.pos, ui.mp.ex)
+		md.NextObject(md.mp.ex.pos, md.mp.ex)
 	case ActionTarget:
 		again = true
-		err = ui.Target()
+		err = md.Target()
 		if err != nil {
 			break
 		}
@@ -451,7 +451,7 @@ func (ui *model) normalModeKeyDown(key gruid.Key) (again bool, err error) {
 		}
 	case ActionEscape:
 		again = true
-		ui.CancelExamine()
+		md.CancelExamine()
 	case ActionWaitTurn:
 		g.WaitTurn()
 	case ActionGoToStairs:
@@ -464,8 +464,8 @@ func (ui *model) normalModeKeyDown(key gruid.Key) (again bool, err error) {
 				err = errors.New("You are already on the stairs.")
 				break
 			}
-			ui.mp.ex.pos = stair
-			err = ui.Target()
+			md.mp.ex.pos = stair
+			err = md.Target()
 			if err != nil {
 				err = errors.New("There is no safe path to the nearest stairs.")
 			} else if !g.MoveToTarget() {
@@ -482,12 +482,12 @@ func (ui *model) normalModeKeyDown(key gruid.Key) (again bool, err error) {
 				// TODO: animation
 				//ui.MenuSelectedAnimation(MenuInteract, true)
 				strt := g.Objects.Stairs[g.Player.Pos]
-				err = ui.OptionalDescendConfirmation(strt)
+				err = md.OptionalDescendConfirmation(strt)
 				if err != nil {
 					break
 				}
 				if g.Descend(DescendNormal) {
-					ui.Win()
+					md.Win()
 					// TODO: win
 					return again, err
 				}
@@ -504,8 +504,8 @@ func (ui *model) normalModeKeyDown(key gruid.Key) (again bool, err error) {
 				//ui.MenuSelectedAnimation(MenuInteract, false)
 			}
 		case MagaraCell:
-			err = ui.EquipMagara()
-			err = ui.CleanError(err)
+			err = md.EquipMagara()
+			err = md.CleanError(err)
 		case StoneCell:
 			//ui.MenuSelectedAnimation(MenuInteract, true)
 			err = g.ActivateStone()
@@ -513,10 +513,10 @@ func (ui *model) normalModeKeyDown(key gruid.Key) (again bool, err error) {
 				//ui.MenuSelectedAnimation(MenuInteract, false)
 			}
 		case ScrollCell:
-			err = ui.ReadScroll()
-			err = ui.CleanError(err)
+			err = md.ReadScroll()
+			err = md.CleanError(err)
 		case ItemCell:
-			err = ui.g.EquipItem()
+			err = md.g.EquipItem()
 		case LightCell:
 			err = g.ExtinguishFire()
 		case StoryCell:
@@ -533,29 +533,29 @@ func (ui *model) normalModeKeyDown(key gruid.Key) (again bool, err error) {
 			err = errors.New("You cannot interact with anything here.")
 		}
 	case ActionEvoke:
-		err = ui.SelectMagara()
-		err = ui.CleanError(err)
+		err = md.SelectMagara()
+		err = md.CleanError(err)
 	case ActionInventory:
-		err = ui.SelectItem()
-		err = ui.CleanError(err)
+		err = md.SelectItem()
+		err = md.CleanError(err)
 	case ActionExplore:
 		err = g.Autoexplore()
 	case ActionExamine:
 		again = true
-		ui.StartExamine()
+		md.StartExamine()
 	case ActionHelp, ActionMenuCommandHelp:
-		ui.KeysHelp()
+		md.KeysHelp()
 		again = true
 	case ActionMenuTargetingHelp:
-		ui.ExamineHelp()
+		md.ExamineHelp()
 		again = true
 	case ActionLogs:
 		logs := []string{} // TODO improve this
 		for _, e := range g.Log {
 			logs = append(logs, e.Text)
 		}
-		ui.pager.SetLines(logs)
-		ui.mode = modePager
+		md.pager.SetLines(logs)
+		md.mode = modePager
 		//ui.DrawPreviousLogs()
 		again = true
 	case ActionSave:
@@ -583,7 +583,7 @@ func (ui *model) normalModeKeyDown(key gruid.Key) (again bool, err error) {
 		again = true
 	case ActionWizardInfo:
 		if g.Wizard {
-			err = ui.HandleWizardAction()
+			err = md.HandleWizardAction()
 			again = true
 		} else {
 			err = errors.New("Unknown key. Type ? for help.")
@@ -595,7 +595,7 @@ func (ui *model) normalModeKeyDown(key gruid.Key) (again bool, err error) {
 		if g.Wizard && g.Depth < MaxDepth {
 			g.StoryPrint("Descended wizardly")
 			if g.Descend(DescendNormal) {
-				ui.Win() // TODO: win
+				md.Win() // TODO: win
 				//quit = true
 				return again, err
 			}
@@ -603,7 +603,7 @@ func (ui *model) normalModeKeyDown(key gruid.Key) (again bool, err error) {
 			err = errors.New("Unknown key. Type ? for help.")
 		}
 	case ActionWizard:
-		ui.EnterWizard()
+		md.EnterWizard()
 		return true, nil
 	case ActionQuit:
 		//if ui.Quit() {
@@ -611,7 +611,7 @@ func (ui *model) normalModeKeyDown(key gruid.Key) (again bool, err error) {
 		//}
 		return true, nil
 	case ActionConfigure:
-		err = ui.HandleSettingAction()
+		err = md.HandleSettingAction()
 		again = true
 	case ActionDescription:
 		again = true
@@ -1124,7 +1124,7 @@ var WizardActions = []wizardAction{
 	WizardToggleMode,
 }
 
-func (ui *model) HandleWizardAction() error {
+func (md *model) HandleWizardAction() error {
 	// TODO: rewrite
 	//g := ui.st
 	//s, err := ui.SelectWizardMagic(WizardActions)
@@ -1149,8 +1149,8 @@ func (ui *model) HandleWizardAction() error {
 	return nil
 }
 
-func (ui *model) Death() {
-	g := ui.g
+func (md *model) Death() {
+	g := md.g
 	if len(g.Stats.Achievements) == 0 {
 		NoAchievement.Get(g)
 	}
@@ -1158,13 +1158,13 @@ func (ui *model) Death() {
 	//ui.DrawDungeonView(NormalMode)
 	//ui.WaitForContinue(-1)
 	err := g.WriteDump()
-	ui.Dump(err)
+	md.Dump(err)
 	//ui.WaitForContinue(-1)
 }
 
-func (ui *model) Win() {
+func (md *model) Win() {
 	// TODO: rewrite
-	g := ui.g
+	g := md.g
 	err := g.RemoveSaveFile()
 	if err != nil {
 		g.PrintfStyled("Error removing save file: %v", logError, err)
@@ -1177,16 +1177,16 @@ func (ui *model) Win() {
 	//ui.DrawDungeonView(NormalMode)
 	//ui.WaitForContinue(-1)
 	err = g.WriteDump()
-	ui.Dump(err)
+	md.Dump(err)
 	//ui.WaitForContinue(-1)
 }
 
-func (ui *model) Dump(err error) {
+func (md *model) Dump(err error) {
 	//g := ui.st
 	//ui.DrawText(g.SimplifedDump(err), 0, 0)
 }
 
-func (ui *model) CriticalHPWarning() {
+func (md *model) CriticalHPWarning() {
 	// TODO
 	//g := ui.st
 	//g.PrintStyled("*** CRITICAL HP WARNING *** [(x) to continue]", logCritic)
@@ -1213,11 +1213,11 @@ func (ui *model) CriticalHPWarning() {
 //return quit
 //}
 
-func (ui *model) Clear() {
+func (md *model) Clear() {
 	c := gruid.Cell{}
 	c.Rune = ' '
 	c.Style = gruid.Style{Fg: ColorFg, Bg: ColorBg}
-	ui.gd.Fill(c)
+	md.gd.Fill(c)
 }
 
 func ApplyConfig() {
