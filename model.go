@@ -112,8 +112,9 @@ func (md *model) initKeys() {
 func (md *model) initWidgets() {
 	md.label = ui.NewLabel(ui.StyledText{}.WithStyle(gruid.Style{}).WithMarkup('t', gruid.Style{Fg: ColorYellow}))
 	md.pager = ui.NewPager(ui.PagerConfig{
-		Grid: gruid.NewGrid(UIWidth, UIHeight),
-		Box:  &ui.Box{},
+		Grid:       gruid.NewGrid(UIWidth, UIHeight),
+		Box:        &ui.Box{},
+		StyledText: ui.StyledText{}.WithMarkups(logStyles),
 	})
 	md.menu = ui.NewMenu(ui.MenuConfig{
 		Grid: gruid.NewGrid(UIWidth/2, UIHeight-1),
@@ -216,6 +217,7 @@ func (md *model) updateMenu(msg gruid.Msg) gruid.Effect {
 }
 
 func (md *model) Draw() gruid.Grid {
+	md.gd.Fill(gruid.Cell{Rune: ' '})
 	dgd := md.gd.Slice(md.gd.Range().Shift(0, 2, 0, -1))
 	for i := range md.g.Dungeon.Cells {
 		p := idxtopos(i)
@@ -228,7 +230,7 @@ func (md *model) Draw() gruid.Grid {
 	}
 	md.label.AdjustWidth = false
 	md.label.Box = nil
-	md.label.SetText(md.DrawLog())
+	md.label.StyledText = md.DrawLog()
 	md.label.Draw(md.gd.Slice(md.gd.Range().Lines(0, 2)))
 	if md.mp.targeting {
 		md.DrawPosInfo()

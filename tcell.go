@@ -23,5 +23,11 @@ type styler struct{}
 func (sty styler) GetStyle(cst gruid.Style) tc.Style {
 	st := tc.StyleDefault
 	st = st.Foreground(tc.ColorValid + tc.Color(cst.Fg)).Background(tc.ColorValid + tc.Color(cst.Bg))
+	if cst.Bg == Color16Base03 {
+		st = st.Background(tc.ColorDefault)
+	}
+	if cst.Fg == Color16Base03 {
+		st = st.Foreground(tc.ColorDefault)
+	}
 	return st
 }

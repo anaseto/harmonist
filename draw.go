@@ -816,36 +816,49 @@ func (md *model) DrawStatusLine() {
 	//}
 }
 
-func (md *model) LogColor(e logEntry) gruid.Color {
-	fg := ColorFg
+func (e logEntry) StyleRune() rune {
+	var r rune
 	switch e.Style {
 	case logCritic:
-		fg = ColorRed
+		r = 'r'
 	case logPlayerHit:
-		fg = ColorGreen
+		r = 'g'
 	case logMonsterHit:
-		fg = ColorOrange
+		r = 'o'
 	case logSpecial:
-		fg = ColorMagenta
+		r = 'm'
 	case logStatusEnd:
-		fg = ColorViolet
+		r = 'v'
 	case logError:
-		fg = ColorRed
+		r = 'e'
 	}
-	return fg
+	return r
 }
 
-func (md *model) DrawLog() string {
-	// TODO: use LogColor
+var logStyles = map[rune]gruid.Style{
+	'r': gruid.Style{}.WithFg(ColorRed),
+	'g': gruid.Style{}.WithFg(ColorGreen),
+	'o': gruid.Style{}.WithFg(ColorOrange),
+	'm': gruid.Style{}.WithFg(ColorMagenta),
+	'v': gruid.Style{}.WithFg(ColorViolet),
+	'e': gruid.Style{}.WithFg(ColorRed),
+}
+
+func (md *model) DrawLog() ui.StyledText {
 	g := md.g
-	stt := ui.StyledText{}
+	stt := ui.StyledText{}.WithMarkups(logStyles)
 	for i := len(g.Log) - 1; i >= 0; i-- {
 		var s string
 		e := g.Log[i]
 		if e.Tick {
 			s = "@t•@N "
 		}
-		s += e.String()
+		r := e.StyleRune()
+		if r != 0 {
+			s += fmt.Sprintf("@%s%s@N", string(r), e.String())
+		} else {
+			s += e.String()
+		}
 		if e.Tick && stt.Text() != "" {
 			s = s + "\n"
 		} else if stt.Text() != "" {
@@ -856,7 +869,7 @@ func (md *model) DrawLog() string {
 		}
 		stt = stt.WithText(s + stt.Text()).Format(80)
 	}
-	return stt.Text()
+	return stt
 }
 
 func (md *model) SelectMagara() error {

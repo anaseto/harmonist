@@ -552,7 +552,17 @@ func (md *model) normalModeKeyDown(key gruid.Key) (again bool, err error) {
 	case ActionLogs:
 		logs := []string{} // TODO improve this
 		for _, e := range g.Log {
-			logs = append(logs, e.Text)
+			var s string
+			if e.Tick {
+				s = "@t•@N "
+			}
+			r := e.StyleRune()
+			if r != 0 {
+				s += fmt.Sprintf("@%s%s@N", string(r), e.String())
+			} else {
+				s += e.String()
+			}
+			logs = append(logs, s)
 		}
 		md.pager.SetLines(logs)
 		md.mode = modePager
