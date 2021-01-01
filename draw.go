@@ -2,9 +2,9 @@ package main
 
 import (
 	"errors"
-	//"fmt"
-	//"sort"
-	//"strings"
+	"fmt"
+	"sort"
+	"strings"
 	//"time"
 
 	"github.com/anaseto/gruid"
@@ -571,28 +571,138 @@ func (md *model) PositionDrawing(pos gruid.Point) (r rune, fgColor, bgColor grui
 	return
 }
 
-func (md *model) HPColor() gruid.Color {
+func (md *model) HPColor() rune {
 	g := md.g
-	hpColor := ColorFgHPok
+	hpColor := 'G'
 	switch g.Player.HP + g.Player.HPbonus {
 	case 1, 2:
-		hpColor = ColorFgHPcritical
+		hpColor = 'C'
 	case 3, 4:
-		hpColor = ColorFgHPwounded
+		hpColor = 'W'
 	}
 	return hpColor
 }
 
-func (md *model) MPColor() gruid.Color {
+func (md *model) MPColor() rune {
 	g := md.g
-	mpColor := ColorFgMPok
+	mpColor := 'g'
 	switch g.Player.MP {
 	case 1, 2:
-		mpColor = ColorFgMPcritical
+		mpColor = 'c'
 	case 3, 4:
-		mpColor = ColorFgMPpartial
+		mpColor = 'w'
 	}
 	return mpColor
+}
+
+func (md *model) updateStatus() {
+	g := md.g
+	var entries []ui.MenuEntry
+
+	// depth
+	var depth string
+	if g.Depth == -1 {
+		depth = "D: Out! "
+	} else {
+		depth = fmt.Sprintf(" D:%d ", g.Depth)
+	}
+	entries = append(entries, ui.MenuEntry{Text: depth, Disabled: true})
+
+	// turns
+	entries = append(entries, ui.MenuEntry{Text: fmt.Sprintf("T: %d ", g.Turn), Disabled: true})
+
+	// HP
+	nWounds := g.Player.HPMax() - g.Player.HP - g.Player.HPbonus
+	if nWounds <= 0 {
+		nWounds = 0
+	}
+	hpColor := md.HPColor()
+	hps := "HP:"
+	hp := g.Player.HP
+	if hp < 0 {
+		hp = 0
+	}
+	if !GameConfig.ShowNumbers {
+		hps = fmt.Sprintf("%s@%c%s@B%s@N%s ",
+			hps,
+			hpColor,
+			strings.Repeat("♥", hp),
+			strings.Repeat("♥", g.Player.HPbonus),
+			strings.Repeat("♥", nWounds),
+		)
+	} else {
+		if g.Player.HPbonus > 0 {
+			hps = fmt.Sprintf("@%c%d+%d/%d@N", hpColor, hp, g.Player.HPbonus, g.Player.HPMax())
+		} else {
+			hps = fmt.Sprintf("@%c%d/%d@N", hpColor, hp, g.Player.HPMax())
+		}
+	}
+	entries = append(entries, ui.MenuEntry{Text: hps, Disabled: true})
+
+	// MP
+	MPspent := g.Player.MPMax() - g.Player.MP
+	if MPspent <= 0 {
+		MPspent = 0
+	}
+	mpColor := md.MPColor()
+	mps := "MP:"
+	if !GameConfig.ShowNumbers {
+		mps = fmt.Sprintf("%s@%c%s@N%s ",
+			mps,
+			mpColor,
+			strings.Repeat("♥", g.Player.MP),
+			strings.Repeat("♥", MPspent),
+		)
+	} else {
+		mps = fmt.Sprintf("@%c%d/%d@N ", mpColor, g.Player.MP, g.Player.MPMax())
+	}
+	entries = append(entries, ui.MenuEntry{Text: mps, Disabled: true})
+
+	// bananas
+	bananas := fmt.Sprintf("@M)@N:%1d/%1d ", g.Player.Bananas, MaxBananas)
+	entries = append(entries, ui.MenuEntry{Text: bananas, Disabled: true})
+
+	// statuses TODO
+	sts := statusSlice{}
+	if cld, ok := g.Clouds[g.Player.Pos]; ok && cld == CloudFire {
+		g.Player.Statuses[StatusFlames] = 1
+		defer func() {
+			g.Player.Statuses[StatusFlames] = 0
+		}()
+	}
+	for st, c := range g.Player.Statuses {
+		if c > 0 {
+			sts = append(sts, st)
+		}
+	}
+	sort.Sort(sts)
+
+	//if len(sts) > 0 {
+	//ui.DrawText("| ", col, line)
+	//col += 2
+	//}
+	//for _, st := range sts {
+	//fg := ColorFgStatusOther
+	//if st.Good() {
+	//fg = ColorFgStatusGood
+	//t := DurationTurn
+	//if g.Player.Expire[st] >= g.Ev.Rank() && g.Player.Expire[st]-g.Ev.Rank() <= t {
+	//fg = ColorFgStatusExpire
+	//}
+	//} else if st.Bad() {
+	//fg = ColorFgStatusBad
+	//}
+	//var sttext string
+	//if !st.Flag() {
+	//sttext = fmt.Sprintf("%s(%d) ", st.Short(), g.Player.Statuses[st]/DurationStatusStep)
+	//} else {
+	//sttext = fmt.Sprintf("%s ", st.Short())
+	//}
+	//ui.DrawColoredText(sttext, col, line, fg)
+	//col += utf8.RuneCountInString(sttext)
+	//}
+
+	md.status.SetEntries(entries)
 }
 
 func (md *model) DrawStatusLine() {

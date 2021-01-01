@@ -119,9 +119,22 @@ func (md *model) initWidgets() {
 		Grid: gruid.NewGrid(UIWidth/2, UIHeight-1),
 		Box:  &ui.Box{},
 	})
+	st := gruid.Style{}
 	md.status = ui.NewMenu(ui.MenuConfig{
-		Grid: md.gd.Slice(gruid.NewRange(0, DungeonHeight, UIWidth, UIHeight)),
-		Box:  &ui.Box{},
+		Grid: md.gd.Slice(gruid.NewRange(0, UIHeight-1, UIWidth, UIHeight)),
+		//Grid: md.gd,
+		//Box:  &ui.Box{},
+		StyledText: ui.StyledText{}.WithMarkups(map[rune]gruid.Style{
+			'G': st.WithFg(ColorFgHPok),
+			'g': st.WithFg(ColorFgMPok),
+			'W': st.WithFg(ColorFgHPwounded),
+			'w': st.WithFg(ColorFgMPpartial),
+			'C': st.WithFg(ColorFgHPcritical),
+			'c': st.WithFg(ColorFgMPcritical),
+			'B': st.WithFg(ColorCyan),
+			'M': st.WithFg(ColorYellow).WithAttrs(AttrInMap),
+		}),
+		Style: ui.MenuStyle{Layout: gruid.Point{0, 1}},
 	})
 }
 
@@ -139,6 +152,7 @@ func (md *model) Update(msg gruid.Msg) gruid.Effect {
 		md.g.ComputeNoise()
 		md.g.ComputeLOS()
 		md.g.ComputeMonsterLOS()
+		md.updateStatus()
 		return nil
 	}
 	var eff gruid.Effect
@@ -180,6 +194,7 @@ func (md *model) updateKeyDown(msg gruid.MsgKeyDown) gruid.Effect {
 		md.g.ComputeNoise()
 		md.g.ComputeLOS()
 		md.g.ComputeMonsterLOS()
+		md.updateStatus()
 	}
 	return nil
 }
@@ -224,5 +239,6 @@ func (md *model) Draw() gruid.Grid {
 	case modeMenu:
 		md.gd.Copy(md.menu.Draw())
 	}
+	md.status.Draw()
 	return md.gd
 }
