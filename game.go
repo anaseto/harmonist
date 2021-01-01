@@ -8,7 +8,7 @@ import (
 
 var Version string = "v0.3"
 
-type state struct {
+type game struct {
 	Dungeon            *dungeon
 	Player             *player
 	Monsters           []*monster
@@ -111,7 +111,7 @@ const (
 	WizardSeeAll
 )
 
-func (g *state) FreePassableCell() gruid.Point {
+func (g *game) FreePassableCell() gruid.Point {
 	d := g.Dungeon
 	count := 0
 	for {
@@ -137,7 +137,7 @@ func (g *state) FreePassableCell() gruid.Point {
 	}
 }
 
-func (g *state) FreeCellForPlayer() gruid.Point {
+func (g *game) FreeCellForPlayer() gruid.Point {
 	// TODO: not used now, but could be for cases when you fall into the abyss
 	center := gruid.Point{DungeonWidth / 2, DungeonHeight / 2}
 	bestpos := g.FreePassableCell()
@@ -150,7 +150,7 @@ func (g *state) FreeCellForPlayer() gruid.Point {
 	return bestpos
 }
 
-func (g *state) FreeCellForMonster() gruid.Point {
+func (g *game) FreeCellForMonster() gruid.Point {
 	d := g.Dungeon
 	count := 0
 	for {
@@ -176,7 +176,7 @@ func (g *state) FreeCellForMonster() gruid.Point {
 	}
 }
 
-func (g *state) FreeCellForBandMonster(pos gruid.Point) gruid.Point {
+func (g *game) FreeCellForBandMonster(pos gruid.Point) gruid.Point {
 	count := 0
 	for {
 		count++
@@ -206,7 +206,7 @@ const (
 	DungeonNCells = DungeonWidth * DungeonHeight
 )
 
-func (g *state) GenDungeon() {
+func (g *game) GenDungeon() {
 	ml := AutomataCave
 	switch g.Depth {
 	case 2, 6, 7:
@@ -238,7 +238,7 @@ func (g *state) GenDungeon() {
 	g.GenRoomTunnels(ml)
 }
 
-func (g *state) InitPlayer() {
+func (g *game) InitPlayer() {
 	g.Player = &player{
 		HP:      DefaultHealth,
 		MP:      DefaultMPmax,
@@ -284,7 +284,7 @@ func PutRandomLevels(m map[int]bool, n int) {
 	}
 }
 
-func (g *state) InitFirstLevel() {
+func (g *game) InitFirstLevel() {
 	g.Version = Version
 	g.Depth++ // start at 1
 	g.InitPlayer()
@@ -439,7 +439,7 @@ func (g *state) InitFirstLevel() {
 	g.Params.CrazyImp = 2 + RandInt(MaxDepth-2)
 }
 
-func (g *state) InitLevelStructures() {
+func (g *game) InitLevelStructures() {
 	g.MonstersPosCache = make([]int, DungeonNCells)
 	g.Noise = map[gruid.Point]bool{}
 	g.TerrainKnowledge = map[gruid.Point]terrain{}
@@ -464,7 +464,7 @@ func (g *state) InitLevelStructures() {
 
 var Testing = false
 
-func (g *state) InitLevel() {
+func (g *game) InitLevel() {
 	// Starting data
 	if g.Depth == 0 {
 		g.InitFirstLevel()
@@ -530,7 +530,7 @@ func (g *state) InitLevel() {
 	g.MakeMonstersAware()
 }
 
-func (g *state) CleanEvents() {
+func (g *game) CleanEvents() {
 	evq := &eventQueue{}
 	for g.Events.Len() > 0 {
 		iev := g.PopIEvent()
@@ -544,7 +544,7 @@ func (g *state) CleanEvents() {
 	g.Events = evq
 }
 
-func (g *state) StairsSlice() []gruid.Point {
+func (g *game) StairsSlice() []gruid.Point {
 	// TODO: use cache?
 	stairs := []gruid.Point{}
 	for i, c := range g.Dungeon.Cells {
@@ -565,7 +565,7 @@ const (
 	DescendFall
 )
 
-func (g *state) Descend(style descendstyle) bool {
+func (g *game) Descend(style descendstyle) bool {
 	g.LevelStats()
 	if g.Stats.DUSpotted[g.Depth] < 3 {
 		AchStealthNovice.Get(g)
@@ -641,13 +641,13 @@ func (g *state) Descend(style descendstyle) bool {
 	return false
 }
 
-func (g *state) EnterWizardMode() {
+func (g *game) EnterWizardMode() {
 	g.Wizard = true
 	g.PrintStyled("You are now in wizard mode and cannot obtain winner status.", logSpecial)
 	g.StoryPrint("Entered wizard mode.")
 }
 
-func (g *state) ApplyRest() {
+func (g *game) ApplyRest() {
 	g.Player.HP = g.Player.HPMax()
 	g.Player.HPbonus = 0
 	g.Player.MP = g.Player.MPMax()
@@ -660,7 +660,7 @@ func (g *state) ApplyRest() {
 	}
 }
 
-func (g *state) AutoPlayer(ev event) bool {
+func (g *game) AutoPlayer(ev event) bool {
 	// TODO: update this
 	if g.Resting {
 		const enoughRestTurns = 25
@@ -727,7 +727,7 @@ func (g *state) AutoPlayer(ev event) bool {
 	return false
 }
 
-func (g *state) EventLoop() {
+func (g *game) EventLoop() {
 loop:
 	for {
 		if g.Player.HP <= 0 {
@@ -761,7 +761,7 @@ loop:
 	}
 }
 
-func (g *state) EndTurn() {
+func (g *game) EndTurn() {
 	for {
 		if g.Player.HP <= 0 {
 			if g.Wizard {

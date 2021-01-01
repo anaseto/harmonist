@@ -12,7 +12,7 @@ import (
 
 func main() {
 	gd := gruid.NewGrid(80, 24)
-	m := &model{gd: gd, st: &state{}}
+	m := &model{gd: gd, g: &game{}}
 	framebuf := &bytes.Buffer{} // for compressed recording
 
 	// define new application

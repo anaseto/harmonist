@@ -449,7 +449,7 @@ func (ui *model) DrawMessage(s string) {
 }
 
 func (ui *model) PositionDrawing(pos gruid.Point) (r rune, fgColor, bgColor gruid.Color) {
-	g := ui.st
+	g := ui.g
 	m := g.Dungeon
 	c := m.Cell(pos)
 	fgColor = ColorFg
@@ -572,7 +572,7 @@ func (ui *model) PositionDrawing(pos gruid.Point) (r rune, fgColor, bgColor grui
 }
 
 func (ui *model) HPColor() gruid.Color {
-	g := ui.st
+	g := ui.g
 	hpColor := ColorFgHPok
 	switch g.Player.HP + g.Player.HPbonus {
 	case 1, 2:
@@ -584,7 +584,7 @@ func (ui *model) HPColor() gruid.Color {
 }
 
 func (ui *model) MPColor() gruid.Color {
-	g := ui.st
+	g := ui.g
 	mpColor := ColorFgMPok
 	switch g.Player.MP {
 	case 1, 2:
@@ -727,7 +727,7 @@ func (ui *model) LogColor(e logEntry) gruid.Color {
 
 func (m *model) DrawLog() string {
 	// TODO: use LogColor
-	g := m.st
+	g := m.g
 	stt := ui.StyledText{}
 	for i := len(g.Log) - 1; i >= 0; i-- {
 		var s string
@@ -866,23 +866,23 @@ func (ui *model) SelectItem() error {
 }
 
 func (ui *model) ReadScroll() error {
-	sc, ok := ui.st.Objects.Scrolls[ui.st.Player.Pos]
+	sc, ok := ui.g.Objects.Scrolls[ui.g.Player.Pos]
 	if !ok {
 		return errors.New("Internal error: no scroll found")
 	}
-	ui.st.Print("You read the message.")
+	ui.g.Print("You read the message.")
 	switch sc {
 	case ScrollLore:
 		//ui.DrawDescription(sc.Text(ui.st), "Lore Message")
-		if !ui.st.Stats.Lore[ui.st.Depth] {
-			ui.st.StoryPrint("Read lore message")
+		if !ui.g.Stats.Lore[ui.g.Depth] {
+			ui.g.StoryPrint("Read lore message")
 		}
-		ui.st.Stats.Lore[ui.st.Depth] = true
-		if len(ui.st.Stats.Lore) == 4 {
-			AchLoreStudent.Get(ui.st)
+		ui.g.Stats.Lore[ui.g.Depth] = true
+		if len(ui.g.Stats.Lore) == 4 {
+			AchLoreStudent.Get(ui.g)
 		}
-		if len(ui.st.Stats.Lore) == len(ui.st.Params.Lore) {
-			AchLoremaster.Get(ui.st)
+		if len(ui.g.Stats.Lore) == len(ui.g.Params.Lore) {
+			AchLoremaster.Get(ui.g)
 		}
 	default:
 		//ui.DrawDescription(sc.Text(ui.st), "Story Message")
@@ -964,7 +964,7 @@ func (ui *model) SelectConfigure(actions []setting) (setting, error) {
 }
 
 func (ui *model) HandleSettingAction() error {
-	g := ui.st
+	g := ui.g
 	s, err := ui.SelectConfigure(settingsActions)
 	if err != nil {
 		return err

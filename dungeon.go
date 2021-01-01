@@ -116,7 +116,7 @@ func (d *dungeon) HasTooManyWallNeighbors(pos gruid.Point) bool {
 	return count > 1
 }
 
-func (g *state) HasNonWallExploredNeighbor(pos gruid.Point) bool {
+func (g *game) HasNonWallExploredNeighbor(pos gruid.Point) bool {
 	d := g.Dungeon
 	neighbors := ValidCardinalNeighbors(pos)
 	for _, pos := range neighbors {
@@ -642,7 +642,7 @@ func (dg *dgen) nearRoom(i int) (k int) {
 	return k
 }
 
-func (dg *dgen) PutDoors(g *state) {
+func (dg *dgen) PutDoors(g *game) {
 	for _, r := range dg.rooms {
 		for _, e := range r.entries {
 			//if e.used && g.DoorCandidate(e.pos) {
@@ -660,7 +660,7 @@ func (dg *dgen) PutDoors(g *state) {
 	}
 }
 
-func (g *state) DoorCandidate(pos gruid.Point) bool {
+func (g *game) DoorCandidate(pos gruid.Point) bool {
 	d := g.Dungeon
 	if !valid(pos) || d.Cell(pos).IsPassable() {
 		return false
@@ -683,7 +683,7 @@ func (g *state) DoorCandidate(pos gruid.Point) bool {
 				(valid(pos.Add(gruid.Point{1, 1})) && d.Cell(pos.Add(gruid.Point{1, 1})).IsPassable()))
 }
 
-func (dg *dgen) PutHoledWalls(g *state, n int) {
+func (dg *dgen) PutHoledWalls(g *game, n int) {
 	candidates := []gruid.Point{}
 	for i := range g.Dungeon.Cells {
 		pos := idxtopos(i)
@@ -700,7 +700,7 @@ func (dg *dgen) PutHoledWalls(g *state, n int) {
 	}
 }
 
-func (dg *dgen) PutWindows(g *state, n int) {
+func (dg *dgen) PutWindows(g *game, n int) {
 	candidates := []gruid.Point{}
 	for i := range g.Dungeon.Cells {
 		pos := idxtopos(i)
@@ -717,7 +717,7 @@ func (dg *dgen) PutWindows(g *state, n int) {
 	}
 }
 
-func (g *state) HoledWallCandidate(pos gruid.Point) bool {
+func (g *game) HoledWallCandidate(pos gruid.Point) bool {
 	d := g.Dungeon
 	if !valid(pos) || !d.Cell(pos).IsWall() {
 		return false
@@ -836,7 +836,7 @@ const (
 	NaturalCave
 )
 
-func (dg *dgen) GenShaedraCell(g *state) {
+func (dg *dgen) GenShaedraCell(g *game) {
 	g.Objects.Story = map[gruid.Point]story{}
 	g.Places.Shaedra = dg.spl.Shaedra
 	g.Objects.Story[g.Places.Shaedra] = StoryShaedra
@@ -846,7 +846,7 @@ func (dg *dgen) GenShaedraCell(g *state) {
 	g.Objects.Story[g.Places.Marevor] = NoStory
 }
 
-func (dg *dgen) GenArtifactPlace(g *state) {
+func (dg *dgen) GenArtifactPlace(g *game) {
 	g.Objects.Story = map[gruid.Point]story{}
 	g.Places.Artifact = dg.spl.Artifact
 	g.Objects.Story[g.Places.Artifact] = StoryArtifactSealed
@@ -856,7 +856,7 @@ func (dg *dgen) GenArtifactPlace(g *state) {
 	g.Objects.Story[g.Places.Marevor] = NoStory
 }
 
-func (g *state) GenRoomTunnels(ml maplayout) {
+func (g *game) GenRoomTunnels(ml maplayout) {
 	dg := dgen{}
 	dg.layout = ml
 	d := &dungeon{}
@@ -979,7 +979,7 @@ func (g *state) GenRoomTunnels(ml maplayout) {
 	}
 }
 
-func (dg *dgen) PutCavernCells(g *state) {
+func (dg *dgen) PutCavernCells(g *game) {
 	d := dg.d
 	// TODO: improve handling and placement of this
 	for i, c := range d.Cells {
@@ -990,7 +990,7 @@ func (dg *dgen) PutCavernCells(g *state) {
 	}
 }
 
-func (dg *dgen) ClearUnconnected(g *state) {
+func (dg *dgen) ClearUnconnected(g *game) {
 	d := dg.d
 	conn, _ := d.Connected(g.Player.Pos, d.IsFreeCell)
 	for i, c := range d.Cells {
@@ -1001,7 +1001,7 @@ func (dg *dgen) ClearUnconnected(g *state) {
 	}
 }
 
-func (dg *dgen) AddSpecial(g *state, ml maplayout) {
+func (dg *dgen) AddSpecial(g *game, ml maplayout) {
 	g.Objects.Stones = map[gruid.Point]stone{}
 	if g.Params.Blocked[g.Depth] || g.Depth == MaxDepth {
 		dg.GenBarrierStone(g)
@@ -1112,7 +1112,7 @@ func (dg *dgen) AddSpecial(g *state, ml maplayout) {
 	}
 }
 
-func (dg *dgen) PutLore(g *state) {
+func (dg *dgen) PutLore(g *game) {
 	pos := InvalidPos
 	count := 0
 	for pos == InvalidPos {
@@ -1140,7 +1140,7 @@ func (dg *dgen) PutLore(g *state) {
 	}
 }
 
-func (dg *dgen) GenLight(g *state) {
+func (dg *dgen) GenLight(g *game) {
 	lights := []gruid.Point{}
 	no := 2
 	ni := 8
@@ -1207,7 +1207,7 @@ func (r *room) RandomPlaces(kinds []placeKind) gruid.Point {
 	return pos
 }
 
-func (dg *dgen) PlayerStartCell(g *state, places []gruid.Point) {
+func (dg *dgen) PlayerStartCell(g *game, places []gruid.Point) {
 	const far = 30
 	r := dg.rooms[len(dg.rooms)-1]
 loop:
@@ -1263,7 +1263,7 @@ loopnb:
 	}
 }
 
-func (dg *dgen) GenBanana(g *state) {
+func (dg *dgen) GenBanana(g *game) {
 	count := 0
 	for {
 		count++
@@ -1282,7 +1282,7 @@ func (dg *dgen) GenBanana(g *state) {
 	}
 }
 
-func (dg *dgen) GenPotion(g *state, p potion) {
+func (dg *dgen) GenPotion(g *game, p potion) {
 	count := 0
 	pos := InvalidPos
 	for pos == InvalidPos {
@@ -1296,7 +1296,7 @@ func (dg *dgen) GenPotion(g *state, p potion) {
 	g.Objects.Potions[pos] = p
 }
 
-func (dg *dgen) OutsideGroundCell(g *state) gruid.Point {
+func (dg *dgen) OutsideGroundCell(g *game) gruid.Point {
 	count := 0
 	for {
 		count++
@@ -1317,7 +1317,7 @@ func (dg *dgen) OutsideGroundCell(g *state) gruid.Point {
 	}
 }
 
-func (dg *dgen) OutsideCavernMiddleCell(g *state) gruid.Point {
+func (dg *dgen) OutsideCavernMiddleCell(g *game) gruid.Point {
 	count := 0
 	for {
 		count++
@@ -1341,7 +1341,7 @@ func (dg *dgen) OutsideCavernMiddleCell(g *state) gruid.Point {
 	}
 }
 
-func (dg *dgen) SatowalgaCell(g *state) gruid.Point {
+func (dg *dgen) SatowalgaCell(g *game) gruid.Point {
 	count := 0
 	for {
 		count++
@@ -1365,7 +1365,7 @@ func (dg *dgen) SatowalgaCell(g *state) gruid.Point {
 	}
 }
 
-func (dg *dgen) FoliageCell(g *state) gruid.Point {
+func (dg *dgen) FoliageCell(g *game) gruid.Point {
 	count := 0
 	for {
 		count++
@@ -1389,7 +1389,7 @@ func (dg *dgen) FoliageCell(g *state) gruid.Point {
 	}
 }
 
-func (dg *dgen) OutsideCell(g *state) gruid.Point {
+func (dg *dgen) OutsideCell(g *game) gruid.Point {
 	count := 0
 	for {
 		count++
@@ -1410,7 +1410,7 @@ func (dg *dgen) OutsideCell(g *state) gruid.Point {
 	}
 }
 
-func (dg *dgen) InsideCell(g *state) gruid.Point {
+func (dg *dgen) InsideCell(g *game) gruid.Point {
 	count := 0
 	for {
 		count++
@@ -1434,7 +1434,7 @@ func (dg *dgen) InsideCell(g *state) gruid.Point {
 	}
 }
 
-func (dg *dgen) GenItem(g *state) {
+func (dg *dgen) GenItem(g *game) {
 	plan := g.GenPlan[g.Depth]
 	if plan != GenAmulet && plan != GenCloak {
 		return
@@ -1461,7 +1461,7 @@ func (dg *dgen) GenItem(g *state) {
 	g.Objects.Items[pos] = it
 }
 
-func (dg *dgen) GenBarrierStone(g *state) {
+func (dg *dgen) GenBarrierStone(g *game) {
 	pos := InvalidPos
 	count := 0
 	for pos == InvalidPos {
@@ -1475,7 +1475,7 @@ func (dg *dgen) GenBarrierStone(g *state) {
 	g.Objects.Stones[pos] = SealStone
 }
 
-func (dg *dgen) GenMagara(g *state) {
+func (dg *dgen) GenMagara(g *game) {
 	pos := InvalidPos
 	count := 0
 	for pos == InvalidPos {
@@ -1491,7 +1491,7 @@ func (dg *dgen) GenMagara(g *state) {
 	g.GeneratedMagaras = append(g.GeneratedMagaras, mag.Kind)
 }
 
-func (dg *dgen) GenStairs(g *state, st stair) {
+func (dg *dgen) GenStairs(g *game, st stair) {
 	var ri, pj int
 	best := 0
 	for i, r := range dg.rooms {
@@ -1512,7 +1512,7 @@ func (dg *dgen) GenStairs(g *state, st stair) {
 	g.Objects.Stairs[pos] = st
 }
 
-func (dg *dgen) GenFakeStairs(g *state) {
+func (dg *dgen) GenFakeStairs(g *game) {
 	if !g.Params.FakeStair[g.Depth] {
 		return
 	}
@@ -1542,7 +1542,7 @@ loop:
 	g.Objects.FakeStairs[pos] = true
 }
 
-func (dg *dgen) GenBarrel(g *state) {
+func (dg *dgen) GenBarrel(g *game) {
 	pos := InvalidPos
 	count := 0
 	for pos == InvalidPos {
@@ -1556,7 +1556,7 @@ func (dg *dgen) GenBarrel(g *state) {
 	g.Objects.Barrels[pos] = true
 }
 
-func (dg *dgen) GenTable(g *state) {
+func (dg *dgen) GenTable(g *game) {
 	pos := InvalidPos
 	count := 0
 	for pos == InvalidPos {
@@ -1569,14 +1569,14 @@ func (dg *dgen) GenTable(g *state) {
 	g.Dungeon.SetCell(pos, TableCell)
 }
 
-func (dg *dgen) GenTree(g *state) {
+func (dg *dgen) GenTree(g *game) {
 	pos := dg.OutsideCavernMiddleCell(g)
 	if pos != InvalidPos {
 		g.Dungeon.SetCell(pos, TreeCell)
 	}
 }
 
-func (dg *dgen) CaveGroundCell(g *state) gruid.Point {
+func (dg *dgen) CaveGroundCell(g *game) gruid.Point {
 	count := 0
 	for {
 		count++
@@ -1593,7 +1593,7 @@ func (dg *dgen) CaveGroundCell(g *state) gruid.Point {
 	}
 }
 
-func (dg *dgen) RandomInStone(g *state) stone {
+func (dg *dgen) RandomInStone(g *game) stone {
 	if g.Params.MappingStone[g.Depth] {
 		g.Params.MappingStone[g.Depth] = false
 		return MappingStone
@@ -1612,7 +1612,7 @@ func (dg *dgen) RandomInStone(g *state) stone {
 	return instones[RandInt(len(instones))]
 }
 
-func (dg *dgen) RandomOutStone(g *state) stone {
+func (dg *dgen) RandomOutStone(g *game) stone {
 	instones := []stone{
 		BarrelStone,
 		FogStone,
@@ -1628,7 +1628,7 @@ func (dg *dgen) RandomOutStone(g *state) stone {
 	return instones[RandInt(len(instones))]
 }
 
-func (dg *dgen) GenStones(g *state) {
+func (dg *dgen) GenStones(g *game) {
 	// Magical Stones
 	// TODO: move into dungeon generation
 	nstones := 3
@@ -1942,7 +1942,7 @@ loop:
 
 // monster generation
 
-func (g *state) GenBand(band monsterBand) []monsterKind {
+func (g *game) GenBand(band monsterBand) []monsterKind {
 	mbd := MonsBands[band]
 	if !mbd.Band {
 		return []monsterKind{mbd.Monster}
@@ -1956,7 +1956,7 @@ func (g *state) GenBand(band monsterBand) []monsterKind {
 	return bandMonsters
 }
 
-func (dg *dgen) BandInfoGuard(g *state, band monsterBand, pl placeKind) bandInfo {
+func (dg *dgen) BandInfoGuard(g *game, band monsterBand, pl placeKind) bandInfo {
 	bandinfo := bandInfo{Kind: monsterBand(band)}
 	pos := InvalidPos
 	count := 0
@@ -1987,7 +1987,7 @@ loop:
 	return bandinfo
 }
 
-func (dg *dgen) BandInfoGuardSpecial(g *state, band monsterBand) bandInfo {
+func (dg *dgen) BandInfoGuardSpecial(g *game, band monsterBand) bandInfo {
 	bandinfo := bandInfo{Kind: monsterBand(band)}
 	pos := InvalidPos
 	count := 0
@@ -2006,7 +2006,7 @@ func (dg *dgen) BandInfoGuardSpecial(g *state, band monsterBand) bandInfo {
 	return bandinfo
 }
 
-func (dg *dgen) BandInfoPatrol(g *state, band monsterBand, pl placeKind) bandInfo {
+func (dg *dgen) BandInfoPatrol(g *game, band monsterBand, pl placeKind) bandInfo {
 	bandinfo := bandInfo{Kind: monsterBand(band)}
 	pos := InvalidPos
 	count := 0
@@ -2035,7 +2035,7 @@ func (dg *dgen) BandInfoPatrol(g *state, band monsterBand, pl placeKind) bandInf
 	return bandinfo
 }
 
-func (dg *dgen) BandInfoPatrolSpecial(g *state, band monsterBand) bandInfo {
+func (dg *dgen) BandInfoPatrolSpecial(g *game, band monsterBand) bandInfo {
 	bandinfo := bandInfo{Kind: monsterBand(band)}
 	pos := InvalidPos
 	count := 0
@@ -2067,28 +2067,28 @@ func (dg *dgen) BandInfoPatrolSpecial(g *state, band monsterBand) bandInfo {
 	return bandinfo
 }
 
-func (dg *dgen) BandInfoOutsideGround(g *state, band monsterBand) bandInfo {
+func (dg *dgen) BandInfoOutsideGround(g *game, band monsterBand) bandInfo {
 	bandinfo := bandInfo{Kind: monsterBand(band)}
 	bandinfo.Path = append(bandinfo.Path, dg.OutsideGroundCell(g))
 	bandinfo.Beh = BehWander
 	return bandinfo
 }
 
-func (dg *dgen) BandInfoSatowalga(g *state, band monsterBand) bandInfo {
+func (dg *dgen) BandInfoSatowalga(g *game, band monsterBand) bandInfo {
 	bandinfo := bandInfo{Kind: monsterBand(band)}
 	bandinfo.Path = append(bandinfo.Path, dg.SatowalgaCell(g))
 	bandinfo.Beh = BehWander
 	return bandinfo
 }
 
-func (dg *dgen) BandInfoOutside(g *state, band monsterBand) bandInfo {
+func (dg *dgen) BandInfoOutside(g *game, band monsterBand) bandInfo {
 	bandinfo := bandInfo{Kind: monsterBand(band)}
 	bandinfo.Path = append(bandinfo.Path, dg.OutsideCell(g))
 	bandinfo.Beh = BehWander
 	return bandinfo
 }
 
-func (dg *dgen) BandInfoOutsideExplore(g *state, band monsterBand) bandInfo {
+func (dg *dgen) BandInfoOutsideExplore(g *game, band monsterBand) bandInfo {
 	bandinfo := bandInfo{Kind: monsterBand(band)}
 	bandinfo.Path = append(bandinfo.Path, dg.OutsideCell(g))
 	for i := 0; i < 4; i++ {
@@ -2104,7 +2104,7 @@ func (dg *dgen) BandInfoOutsideExplore(g *state, band monsterBand) bandInfo {
 	return bandinfo
 }
 
-func (dg *dgen) BandInfoOutsideExploreButterfly(g *state, band monsterBand) bandInfo {
+func (dg *dgen) BandInfoOutsideExploreButterfly(g *game, band monsterBand) bandInfo {
 	bandinfo := bandInfo{Kind: monsterBand(band)}
 	bandinfo.Path = append(bandinfo.Path, dg.OutsideCell(g))
 	for i := 0; i < 9; i++ {
@@ -2120,14 +2120,14 @@ func (dg *dgen) BandInfoOutsideExploreButterfly(g *state, band monsterBand) band
 	return bandinfo
 }
 
-func (dg *dgen) BandInfoFoliage(g *state, band monsterBand) bandInfo {
+func (dg *dgen) BandInfoFoliage(g *game, band monsterBand) bandInfo {
 	bandinfo := bandInfo{Kind: monsterBand(band)}
 	bandinfo.Path = append(bandinfo.Path, dg.FoliageCell(g))
 	bandinfo.Beh = BehWander
 	return bandinfo
 }
 
-func (dg *dgen) PutMonsterBand(g *state, band monsterBand) bool {
+func (dg *dgen) PutMonsterBand(g *game, band monsterBand) bool {
 	monsters := g.GenBand(band)
 	if monsters == nil {
 		return false
@@ -2191,17 +2191,17 @@ func (dg *dgen) PutMonsterBand(g *state, band monsterBand) bool {
 	return true
 }
 
-func (dg *dgen) PutRandomBand(g *state, bands []monsterBand) bool {
+func (dg *dgen) PutRandomBand(g *game, bands []monsterBand) bool {
 	return dg.PutMonsterBand(g, bands[RandInt(len(bands))])
 }
 
-func (dg *dgen) PutRandomBandN(g *state, bands []monsterBand, n int) {
+func (dg *dgen) PutRandomBandN(g *game, bands []monsterBand, n int) {
 	for i := 0; i < n; i++ {
 		dg.PutMonsterBand(g, bands[RandInt(len(bands))])
 	}
 }
 
-func (dg *dgen) GenMonsters(g *state) {
+func (dg *dgen) GenMonsters(g *game) {
 	g.Monsters = []*monster{}
 	g.Bands = []bandInfo{}
 	// common bands

@@ -23,7 +23,7 @@ type raynode struct {
 
 type rayMap map[gruid.Point]raynode
 
-func (g *state) BestParent(rm rayMap, from, pos gruid.Point, rs raystyle) (gruid.Point, int) {
+func (g *game) BestParent(rm rayMap, from, pos gruid.Point, rs raystyle) (gruid.Point, int) {
 	var parents [2]gruid.Point
 	p := parents[:0]
 	p = Parents(pos, from, p)
@@ -34,7 +34,7 @@ func (g *state) BestParent(rm rayMap, from, pos gruid.Point, rs raystyle) (gruid
 	return b, rm[b].Cost + g.LOSCost(from, b, pos, rs)
 }
 
-func (g *state) DiagonalOpaque(from, to gruid.Point, rs raystyle) bool {
+func (g *game) DiagonalOpaque(from, to gruid.Point, rs raystyle) bool {
 	// The state uses cardinal movement only, so two diagonal walls should,
 	// for example, block line of sight. This is in contrast with the main
 	// mechanics of the line of sight algorithm, which for gameplay reasons
@@ -74,7 +74,7 @@ func (g *state) DiagonalOpaque(from, to gruid.Point, rs raystyle) bool {
 	return count > 1
 }
 
-func (g *state) DiagonalDifficult(from, to gruid.Point) bool {
+func (g *game) DiagonalDifficult(from, to gruid.Point) bool {
 	// For reasons similar as in DiagonalOpaque, two diagonal foliage cells
 	// should reduce range of line of sight in that diagonal direction.
 	var cache [2]gruid.Point
@@ -109,7 +109,7 @@ func (g *state) DiagonalDifficult(from, to gruid.Point) bool {
 
 // LOSCost gives cost of expanding from 'pos' to 'to' light ray originated at
 // 'from', for particular circumstances rs of light ray.
-func (g *state) LOSCost(from, pos, to gruid.Point, rs raystyle) int {
+func (g *game) LOSCost(from, pos, to gruid.Point, rs raystyle) int {
 	var wallcost int
 	switch rs {
 	case TreePlayerRay:
@@ -182,7 +182,7 @@ const (
 
 const LightRange = 6
 
-func (g *state) BuildRayMap(from gruid.Point, rs raystyle, rm rayMap) {
+func (g *game) BuildRayMap(from gruid.Point, rs raystyle, rm rayMap) {
 	var wallcost int
 	switch rs {
 	case TreePlayerRay:
@@ -228,11 +228,11 @@ func (g *state) BuildRayMap(from gruid.Point, rs raystyle, rm rayMap) {
 const DefaultLOSRange = 12
 const DefaultMonsterLOSRange = 12
 
-func (g *state) LosRange() int {
+func (g *game) LosRange() int {
 	return DefaultLOSRange
 }
 
-func (g *state) StopAuto() {
+func (g *game) StopAuto() {
 	if g.Autoexploring && !g.AutoHalt {
 		g.Print("You stop exploring.")
 	} else if g.AutoDir != NoDir {
@@ -247,7 +247,7 @@ func (g *state) StopAuto() {
 
 const TreeRange = 50
 
-func (g *state) ComputeLOS() {
+func (g *game) ComputeLOS() {
 	g.ComputeLights()
 	for k := range g.Player.LOS {
 		delete(g.Player.LOS, k)
@@ -303,7 +303,7 @@ func (g *state) ComputeLOS() {
 	}
 }
 
-func (m *monster) ComputeLOS(g *state) {
+func (m *monster) ComputeLOS(g *game) {
 	if m.Kind.Peaceful() {
 		return
 	}
@@ -326,7 +326,7 @@ func (m *monster) ComputeLOS(g *state) {
 	}
 }
 
-func (g *state) SeeNotable(c cell, pos gruid.Point) {
+func (g *game) SeeNotable(c cell, pos gruid.Point) {
 	switch c.T {
 	case MagaraCell:
 		mag := g.Objects.Magaras[pos]
@@ -377,7 +377,7 @@ func (g *state) SeeNotable(c cell, pos gruid.Point) {
 	}
 }
 
-func (g *state) SeePosition(pos gruid.Point) {
+func (g *game) SeePosition(pos gruid.Point) {
 	c := g.Dungeon.Cell(pos)
 	t, okT := g.TerrainKnowledge[pos]
 	if !c.Explored {
@@ -424,7 +424,7 @@ func (g *state) SeePosition(pos gruid.Point) {
 	}
 }
 
-func (g *state) ComputeExclusion(pos gruid.Point, toggle bool) {
+func (g *game) ComputeExclusion(pos gruid.Point, toggle bool) {
 	exclusionRange := g.LosRange()
 	g.ExclusionsMap[pos] = toggle
 	for d := 1; d <= exclusionRange; d++ {
@@ -447,7 +447,7 @@ func (g *state) ComputeExclusion(pos gruid.Point, toggle bool) {
 	}
 }
 
-func (g *state) Ray(pos gruid.Point) []gruid.Point {
+func (g *game) Ray(pos gruid.Point) []gruid.Point {
 	if !g.Player.LOS[pos] {
 		return nil
 	}
@@ -459,7 +459,7 @@ func (g *state) Ray(pos gruid.Point) []gruid.Point {
 	return ray
 }
 
-func (g *state) ComputeRayHighlight(pos gruid.Point) {
+func (g *game) ComputeRayHighlight(pos gruid.Point) {
 	g.Highlight = map[gruid.Point]bool{}
 	ray := g.Ray(pos)
 	for _, p := range ray {
@@ -467,7 +467,7 @@ func (g *state) ComputeRayHighlight(pos gruid.Point) {
 	}
 }
 
-func (g *state) ComputeNoise() {
+func (g *game) ComputeNoise() {
 	dij := &noisePath{state: g}
 	rg := DefaultLOSRange
 	nm := Dijkstra(dij, []gruid.Point{g.Player.Pos}, rg)
@@ -528,11 +528,11 @@ func (p *player) Sees(pos gruid.Point) bool {
 	return p.LOS[pos]
 }
 
-func (m *monster) SeesPlayer(g *state) bool {
+func (m *monster) SeesPlayer(g *game) bool {
 	return m.Sees(g, g.Player.Pos) && g.Player.Sees(m.Pos)
 }
 
-func (m *monster) SeesLight(g *state, pos gruid.Point) bool {
+func (m *monster) SeesLight(g *game, pos gruid.Point) bool {
 	if !(m.LOS[pos] && m.Dir.InViewCone(m.Pos, pos)) {
 		return false
 	}
@@ -542,7 +542,7 @@ func (m *monster) SeesLight(g *state, pos gruid.Point) bool {
 	return true
 }
 
-func (m *monster) Sees(g *state, pos gruid.Point) bool {
+func (m *monster) Sees(g *game, pos gruid.Point) bool {
 	var darkRange = 4
 	if m.Kind == MonsHazeCat {
 		darkRange = DefaultMonsterLOSRange
@@ -573,7 +573,7 @@ func (m *monster) Sees(g *state, pos gruid.Point) bool {
 	return true
 }
 
-func (g *state) ComputeMonsterLOS() {
+func (g *game) ComputeMonsterLOS() {
 	for k := range g.MonsterLOS {
 		delete(g.MonsterLOS, k)
 	}
@@ -604,7 +604,7 @@ func (g *state) ComputeMonsterLOS() {
 	}
 }
 
-func (g *state) ComputeLights() {
+func (g *game) ComputeLights() {
 	// XXX: could be optimized further to avoid unnecessary recalculations
 	for i := 0; i < DungeonNCells; i++ {
 		g.Illuminated[i] = false
@@ -639,7 +639,7 @@ func (g *state) ComputeLights() {
 	}
 }
 
-func (g *state) ComputeMonsterCone(m *monster) {
+func (g *game) ComputeMonsterCone(m *monster) {
 	g.MonsterTargLOS = make(map[gruid.Point]bool)
 	for pos := range g.Player.LOS {
 		if !g.Player.Sees(pos) {
@@ -651,7 +651,7 @@ func (g *state) ComputeMonsterCone(m *monster) {
 	}
 }
 
-func (m *monster) UpdateKnowledge(g *state, pos gruid.Point) {
+func (m *monster) UpdateKnowledge(g *game, pos gruid.Point) {
 	if mons, ok := g.LastMonsterKnownAt[pos]; ok {
 		mons.LastKnownPos = InvalidPos
 	}

@@ -388,7 +388,7 @@ func ApplyDefaultKeyBindings() {
 //}
 
 func (ui *model) OptionalDescendConfirmation(st stair) (err error) {
-	g := ui.st
+	g := ui.g
 	if g.Depth == WinDepth && st == NormalStair && g.Dungeon.Cell(g.Places.Shaedra).T == StoryCell {
 		err = errors.New("You have to rescue Shaedra first!")
 	}
@@ -397,7 +397,7 @@ func (ui *model) OptionalDescendConfirmation(st stair) (err error) {
 }
 
 func (ui *model) normalModeKeyDown(key gruid.Key) (again bool, err error) {
-	g := ui.st
+	g := ui.g
 	action := ui.keysNormal[key]
 	if ui.mp.targeting {
 		action = ui.keysTarget[key]
@@ -516,7 +516,7 @@ func (ui *model) normalModeKeyDown(key gruid.Key) (again bool, err error) {
 			err = ui.ReadScroll()
 			err = ui.CleanError(err)
 		case ItemCell:
-			err = ui.st.EquipItem()
+			err = ui.g.EquipItem()
 		case LightCell:
 			err = g.ExtinguishFire()
 		case StoryCell:
@@ -1042,7 +1042,7 @@ func (m menu) String() (text string) {
 	return "[" + text + "]"
 }
 
-func (m menu) Key(g *state) (key action) {
+func (m menu) Key(g *game) (key action) {
 	switch m {
 	//case MenuExplore:
 	//key = KeyExplore
@@ -1150,7 +1150,7 @@ func (ui *model) HandleWizardAction() error {
 }
 
 func (ui *model) Death() {
-	g := ui.st
+	g := ui.g
 	if len(g.Stats.Achievements) == 0 {
 		NoAchievement.Get(g)
 	}
@@ -1164,7 +1164,7 @@ func (ui *model) Death() {
 
 func (ui *model) Win() {
 	// TODO: rewrite
-	g := ui.st
+	g := ui.g
 	err := g.RemoveSaveFile()
 	if err != nil {
 		g.PrintfStyled("Error removing save file: %v", logError, err)

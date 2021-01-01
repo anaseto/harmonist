@@ -50,7 +50,7 @@ func (gp *gridPath) Estimation(from, to gruid.Point) int {
 }
 
 type mappingPath struct {
-	state     *state
+	state     *game
 	neighbors [8]gruid.Point
 }
 
@@ -108,7 +108,7 @@ func (tp *tunnelPath) Estimation(from, to gruid.Point) int {
 }
 
 type playerPath struct {
-	state     *state
+	state     *game
 	neighbors [8]gruid.Point
 	goal      gruid.Point
 }
@@ -145,7 +145,7 @@ func (pp *playerPath) Estimation(from, to gruid.Point) int {
 }
 
 type jumpPath struct {
-	state     *state
+	state     *game
 	neighbors [8]gruid.Point
 }
 
@@ -168,7 +168,7 @@ func (jp *jumpPath) Estimation(from, to gruid.Point) int {
 }
 
 type noisePath struct {
-	state     *state
+	state     *game
 	neighbors [8]gruid.Point
 }
 
@@ -186,7 +186,7 @@ func (fp *noisePath) Cost(from, to gruid.Point) int {
 }
 
 type autoexplorePath struct {
-	state     *state
+	state     *game
 	neighbors [8]gruid.Point
 }
 
@@ -214,7 +214,7 @@ func (ap *autoexplorePath) Cost(from, to gruid.Point) int {
 }
 
 type monPath struct {
-	state     *state
+	state     *game
 	monster   *monster
 	neighbors [8]gruid.Point
 }
@@ -269,7 +269,7 @@ func (mp *monPath) Estimation(from, to gruid.Point) int {
 	return Distance(from, to)
 }
 
-func (m *monster) APath(g *state, from, to gruid.Point) []gruid.Point {
+func (m *monster) APath(g *game, from, to gruid.Point) []gruid.Point {
 	mp := &monPath{state: g, monster: m}
 	path, _, found := AstarPath(mp, from, to)
 	if !found {
@@ -278,7 +278,7 @@ func (m *monster) APath(g *state, from, to gruid.Point) []gruid.Point {
 	return path
 }
 
-func (g *state) PlayerPath(from, to gruid.Point) []gruid.Point {
+func (g *game) PlayerPath(from, to gruid.Point) []gruid.Point {
 	pp := &playerPath{state: g, goal: to}
 	path, _, found := AstarPath(pp, from, to)
 	if !found {
@@ -287,7 +287,7 @@ func (g *state) PlayerPath(from, to gruid.Point) []gruid.Point {
 	return path
 }
 
-func (g *state) SortedNearestTo(cells []gruid.Point, to gruid.Point) []gruid.Point {
+func (g *game) SortedNearestTo(cells []gruid.Point, to gruid.Point) []gruid.Point {
 	ps := posSlice{}
 	for _, pos := range cells {
 		pp := &dungeonPath{dungeon: g.Dungeon, wcost: unreachable}

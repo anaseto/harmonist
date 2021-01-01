@@ -23,7 +23,7 @@ func (ms monsSlice) Less(i, j int) bool {
 	return ms[i].Dangerousness() > ms[j].Dangerousness()
 }
 
-func (g *state) DumpStatuses() string {
+func (g *game) DumpStatuses() string {
 	sts := sort.StringSlice{}
 	for st, c := range g.Player.Statuses {
 		if c > 0 {
@@ -37,7 +37,7 @@ func (g *state) DumpStatuses() string {
 	return "Statuses:\n" + strings.Join(sts, "\n")
 }
 
-func (g *state) SortedKilledMonsters() monsSlice {
+func (g *game) SortedKilledMonsters() monsSlice {
 	var ms monsSlice
 	for mk, p := range g.Stats.KilledMons {
 		if p == 0 {
@@ -49,7 +49,7 @@ func (g *state) SortedKilledMonsters() monsSlice {
 	return ms
 }
 
-func (g *state) Dump() string {
+func (g *game) Dump() string {
 	buf := &bytes.Buffer{}
 	fmt.Fprintf(buf, " -- Harmonist version %s character file --\n\n", Version)
 	if g.Wizard {
@@ -129,7 +129,7 @@ func (g *state) Dump() string {
 	return buf.String()
 }
 
-func (g *state) DetailedStatistics(w io.Writer) {
+func (g *game) DetailedStatistics(w io.Writer) {
 	fmt.Fprintf(w, "\n")
 	fmt.Fprintf(w, "Statistics:\n")
 	fmt.Fprintf(w, "You evoked magaras %d times (%d oric magaras, %d harmonic, %d others).\n",
@@ -282,11 +282,11 @@ func (g *state) DetailedStatistics(w io.Writer) {
 	}
 }
 
-func (g *state) DumpStory() string {
+func (g *game) DumpStory() string {
 	return strings.Join(g.Stats.Story, "\n")
 }
 
-func (g *state) DumpDungeon() string {
+func (g *game) DumpDungeon() string {
 	buf := bytes.Buffer{}
 	for i, c := range g.Dungeon.Cells {
 		if i%DungeonWidth == 0 {
@@ -332,7 +332,7 @@ func (g *state) DumpDungeon() string {
 	return buf.String()
 }
 
-func (g *state) DumpedKilledMonsters() string {
+func (g *game) DumpedKilledMonsters() string {
 	buf := &bytes.Buffer{}
 	fmt.Fprint(buf, "Killed Monsters:\n")
 	ms := g.SortedKilledMonsters()
@@ -342,7 +342,7 @@ func (g *state) DumpedKilledMonsters() string {
 	return buf.String()
 }
 
-func (g *state) SimplifedDump(err error) string {
+func (g *game) SimplifedDump(err error) string {
 	buf := &bytes.Buffer{}
 	fmt.Fprintf(buf, " ♣ Harmonist version %s play summary ♣\n\n", Version)
 	if g.Wizard {

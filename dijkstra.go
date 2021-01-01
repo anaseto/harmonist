@@ -55,7 +55,7 @@ const unreachable = 9999
 
 // AutoExploreDijkstra is an optimized version of the dijkstra algorithm for
 // auto-exploration.
-func (g *state) AutoExploreDijkstra(dij Dijkstrer, sources []int) {
+func (g *game) AutoExploreDijkstra(dij Dijkstrer, sources []int) {
 	d := g.Dungeon
 	dmap := DijkstraMapCache[:]
 	var visited [DungeonNCells]bool

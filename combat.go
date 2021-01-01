@@ -9,7 +9,7 @@ import (
 	"github.com/anaseto/gruid"
 )
 
-func (g *state) DamagePlayer(damage int) {
+func (g *game) DamagePlayer(damage int) {
 	g.Stats.Damage += damage
 	g.Stats.DDamage[g.Depth] += damage
 	g.Player.HPbonus -= damage
@@ -19,7 +19,7 @@ func (g *state) DamagePlayer(damage int) {
 	}
 }
 
-func (m *monster) InflictDamage(g *state, damage, max int) {
+func (m *monster) InflictDamage(g *game, damage, max int) {
 	g.Stats.ReceivedHits++
 	oldHP := g.Player.HP
 	g.DamagePlayer(damage)
@@ -39,7 +39,7 @@ func (m *monster) InflictDamage(g *state, damage, max int) {
 	}
 }
 
-func (g *state) MakeMonstersAware() {
+func (g *game) MakeMonstersAware() {
 	for _, m := range g.Monsters {
 		if m.Dead {
 			continue
@@ -53,7 +53,7 @@ func (g *state) MakeMonstersAware() {
 	}
 }
 
-func (g *state) MakeNoise(noise int, at gruid.Point) {
+func (g *game) MakeNoise(noise int, at gruid.Point) {
 	dij := &noisePath{state: g}
 	nm := Dijkstra(dij, []gruid.Point{at}, noise)
 	//if at.Distance(g.Player.Pos)-noise < DefaultLOSRange && noise > 4 {
@@ -83,7 +83,7 @@ func (g *state) MakeNoise(noise int, at gruid.Point) {
 	}
 }
 
-func (m *monster) LeaveRoomForPlayer(g *state) gruid.Point {
+func (m *monster) LeaveRoomForPlayer(g *game) gruid.Point {
 	dij := &monPath{state: g, monster: m}
 	nm := Dijkstra(dij, []gruid.Point{m.Pos}, 10)
 	free := InvalidPos
@@ -108,7 +108,7 @@ func (m *monster) LeaveRoomForPlayer(g *state) gruid.Point {
 	return free
 }
 
-func (g *state) FindJumpTarget(m *monster) gruid.Point {
+func (g *game) FindJumpTarget(m *monster) gruid.Point {
 	dij := &jumpPath{state: g}
 	nm := Dijkstra(dij, []gruid.Point{m.Pos}, 10)
 	free := InvalidPos
@@ -133,7 +133,7 @@ func (g *state) FindJumpTarget(m *monster) gruid.Point {
 	return free
 }
 
-func (g *state) Jump(mons *monster) error {
+func (g *game) Jump(mons *monster) error {
 	if mons.Peaceful(g) && mons.Kind != MonsEarthDragon {
 		ompos := mons.Pos
 		if g.Dungeon.Cell(ompos).T == ChasmCell && !g.Player.HasStatus(StatusLevitation) {
@@ -199,7 +199,7 @@ func (g *state) Jump(mons *monster) error {
 	return nil
 }
 
-func (g *state) WallJump(pos gruid.Point) error {
+func (g *game) WallJump(pos gruid.Point) error {
 	c := g.Dungeon.Cell(g.Player.Pos)
 	if c.IsEnclosing() {
 		return fmt.Errorf("You cannot jump from %s.", c.ShortDesc(g, g.Player.Pos))
@@ -254,7 +254,7 @@ func (g *state) WallJump(pos gruid.Point) error {
 	return nil
 }
 
-func (g *state) HitNoise(clang bool) int {
+func (g *game) HitNoise(clang bool) int {
 	noise := BaseHitNoise
 	if clang {
 		noise += 5
@@ -266,7 +266,7 @@ const (
 	DmgNormal = 1
 )
 
-func (g *state) HandleKill(mons *monster) {
+func (g *game) HandleKill(mons *monster) {
 	g.Stats.Killed++
 	g.Stats.KilledMons[mons.Kind]++
 	if g.Player.Sees(mons.Pos) {
@@ -295,6 +295,6 @@ const (
 	OricExplosionNoise     = 20
 )
 
-func (g *state) ClangMsg() (sclang string) {
+func (g *game) ClangMsg() (sclang string) {
 	return " Smash!"
 }

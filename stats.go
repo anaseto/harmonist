@@ -57,7 +57,7 @@ type stats struct {
 	TimesBlocked      int
 }
 
-func (g *state) TurnStats() {
+func (g *game) TurnStats() {
 	g.Stats.Turns++
 	g.DepthPlayerTurn++
 	if g.Player.HP < g.Player.HPMax() {
@@ -71,7 +71,7 @@ func (g *state) TurnStats() {
 	}
 }
 
-func (g *state) LevelStats() {
+func (g *game) LevelStats() {
 	free := 0
 	exp := 0
 	for _, c := range g.Dungeon.Cells {
@@ -161,7 +161,7 @@ const (
 	AchAntimagicMaster     achievement = "Antimagic Master"
 )
 
-func (ach achievement) Get(g *state) {
+func (ach achievement) Get(g *game) {
 	if g.Stats.Achievements[ach] == 0 {
 		g.Stats.Achievements[ach] = g.Turn
 		g.PrintfStyled("Achievement: %s.", logSpecial, ach)
@@ -178,7 +178,7 @@ func (t terrain) ReachNotable() bool {
 	}
 }
 
-func (g *state) Reach(pos gruid.Point) {
+func (g *game) Reach(pos gruid.Point) {
 	if g.Stats.AtNotablePos[pos] {
 		return
 	}

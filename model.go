@@ -14,7 +14,7 @@ const (
 )
 
 type model struct {
-	st         *state // game state
+	g         *game // game state
 	gd         gruid.Grid
 	mode       mode
 	menu       *ui.Menu
@@ -135,10 +135,10 @@ func (m *model) Update(msg gruid.Msg) gruid.Effect {
 		ApplyConfig()
 		m.initKeys()
 		m.initWidgets()
-		m.st.InitLevel()
-		m.st.ComputeNoise()
-		m.st.ComputeLOS()
-		m.st.ComputeMonsterLOS()
+		m.g.InitLevel()
+		m.g.ComputeNoise()
+		m.g.ComputeLOS()
+		m.g.ComputeMonsterLOS()
 		return nil
 	}
 	var eff gruid.Effect
@@ -167,19 +167,19 @@ func (m *model) updateKeyDown(msg gruid.MsgKeyDown) gruid.Effect {
 	case gruid.KeyEscape:
 		return gruid.End()
 	default:
-		m.st.Ev = &simpleEvent{EAction: PlayerTurn, ERank: m.st.Turn}
+		m.g.Ev = &simpleEvent{EAction: PlayerTurn, ERank: m.g.Turn}
 		again, err := m.normalModeKeyDown(msg.Key)
 		if again {
 			break
 		}
 		if err != nil {
-			m.st.Print(err.Error())
+			m.g.Print(err.Error())
 			break
 		}
-		m.st.EndTurn()
-		m.st.ComputeNoise()
-		m.st.ComputeLOS()
-		m.st.ComputeMonsterLOS()
+		m.g.EndTurn()
+		m.g.ComputeNoise()
+		m.g.ComputeLOS()
+		m.g.ComputeMonsterLOS()
 	}
 	return nil
 }
@@ -202,11 +202,11 @@ func (m *model) updateMenu(msg gruid.Msg) gruid.Effect {
 
 func (m *model) Draw() gruid.Grid {
 	dgd := m.gd.Slice(m.gd.Range().Shift(0, 2, 0, -1))
-	for i := range m.st.Dungeon.Cells {
+	for i := range m.g.Dungeon.Cells {
 		p := idxtopos(i)
 		r, fg, bg := m.PositionDrawing(p)
 		attrs := AttrInMap
-		if m.st.Highlight[p] {
+		if m.g.Highlight[p] {
 			attrs |= AttrReverse
 		}
 		dgd.Set(p, gruid.Cell{Rune: r, Style: gruid.Style{Fg: fg, Bg: bg, Attrs: attrs}})

@@ -12,7 +12,7 @@ func init() {
 	gob.Register(&posEvent{})
 }
 
-func (g *state) GameSave() ([]byte, error) {
+func (g *game) GameSave() ([]byte, error) {
 	data := bytes.Buffer{}
 	enc := gob.NewEncoder(&data)
 	err := enc.Encode(g)
@@ -46,14 +46,14 @@ func (c *config) ConfigSave() ([]byte, error) {
 	return data.Bytes(), nil
 }
 
-func (g *state) DecodeGameSave(data []byte) (*state, error) {
+func (g *game) DecodeGameSave(data []byte) (*game, error) {
 	buf := bytes.NewReader(data)
 	r, err := zlib.NewReader(buf)
 	if err != nil {
 		return nil, err
 	}
 	dec := gob.NewDecoder(r)
-	lg := &state{}
+	lg := &game{}
 	err = dec.Decode(lg)
 	if err != nil {
 		return nil, err
@@ -62,7 +62,7 @@ func (g *state) DecodeGameSave(data []byte) (*state, error) {
 	return lg, nil
 }
 
-func (g *state) DecodeConfigSave(data []byte) (*config, error) {
+func (g *game) DecodeConfigSave(data []byte) (*config, error) {
 	buf := bytes.NewBuffer(data)
 	dec := gob.NewDecoder(buf)
 	c := &config{}

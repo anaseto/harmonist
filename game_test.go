@@ -5,7 +5,7 @@ import "testing"
 func TestInitLevel(t *testing.T) {
 	Testing = true
 	for i := 0; i < 50; i++ {
-		g := &state{}
+		g := &game{}
 		for depth := 0; depth < MaxDepth; depth++ {
 			g.InitLevel()
 			if g.Player.Pos == InvalidPos {

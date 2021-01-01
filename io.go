@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 )
 
-func (g *state) DataDir() (string, error) {
+func (g *game) DataDir() (string, error) {
 	var xdg string
 	if os.Getenv("GOOS") == "windows" {
 		xdg = os.Getenv("LOCALAPPDATA")
@@ -31,7 +31,7 @@ func (g *state) DataDir() (string, error) {
 	return dataDir, nil
 }
 
-func (g *state) Save() error {
+func (g *game) Save() error {
 	dataDir, err := g.DataDir()
 	if err != nil {
 		g.Print(err.Error())
@@ -51,11 +51,11 @@ func (g *state) Save() error {
 	return nil
 }
 
-func (g *state) RemoveSaveFile() error {
+func (g *game) RemoveSaveFile() error {
 	return g.RemoveDataFile("save")
 }
 
-func (g *state) Load() (bool, error) {
+func (g *game) Load() (bool, error) {
 	dataDir, err := g.DataDir()
 	if err != nil {
 		return false, err
@@ -81,7 +81,7 @@ func (g *state) Load() (bool, error) {
 	return true, nil
 }
 
-func (g *state) SaveConfig() error {
+func (g *game) SaveConfig() error {
 	dataDir, err := g.DataDir()
 	if err != nil {
 		g.Print(err.Error())
@@ -101,7 +101,7 @@ func (g *state) SaveConfig() error {
 	return nil
 }
 
-func (g *state) LoadConfig() (bool, error) {
+func (g *game) LoadConfig() (bool, error) {
 	dataDir, err := g.DataDir()
 	if err != nil {
 		return false, err
@@ -127,7 +127,7 @@ func (g *state) LoadConfig() (bool, error) {
 	return true, nil
 }
 
-func (g *state) RemoveDataFile(file string) error {
+func (g *game) RemoveDataFile(file string) error {
 	dataDir, err := g.DataDir()
 	if err != nil {
 		return err
@@ -143,7 +143,7 @@ func (g *state) RemoveDataFile(file string) error {
 	return nil
 }
 
-func (g *state) WriteDump() error {
+func (g *game) WriteDump() error {
 	dataDir, err := g.DataDir()
 	if err != nil {
 		return err

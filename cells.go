@@ -221,7 +221,7 @@ func (c cell) IsNotable() bool {
 	}
 }
 
-func (c cell) ShortDesc(g *state, pos gruid.Point) (desc string) {
+func (c cell) ShortDesc(g *game, pos gruid.Point) (desc string) {
 	switch c.T {
 	case WallCell:
 		desc = "a wall"
@@ -287,7 +287,7 @@ func (c cell) ShortDesc(g *state, pos gruid.Point) (desc string) {
 	return desc
 }
 
-func (c cell) Desc(g *state, pos gruid.Point) (desc string) {
+func (c cell) Desc(g *game, pos gruid.Point) (desc string) {
 	switch c.T {
 	case WallCell:
 		desc = "A wall is a pile of rocks."
@@ -381,7 +381,7 @@ func (c cell) Desc(g *state, pos gruid.Point) (desc string) {
 	return desc
 }
 
-func (c cell) Style(g *state, pos gruid.Point) (r rune, fg gruid.Color) {
+func (c cell) Style(g *game, pos gruid.Point) (r rune, fg gruid.Color) {
 	switch c.T {
 	case WallCell:
 		r, fg = '#', ColorFgLOS
