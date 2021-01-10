@@ -13,10 +13,19 @@ const (
 	modeMenu
 )
 
+type menuMode int
+
+const (
+	modeInventory menuMode = iota
+	modeSettings
+	modeGameMenu
+)
+
 type model struct {
 	g          *game // game state
 	gd         gruid.Grid
 	mode       mode
+	menuMode   menuMode
 	menu       *ui.Menu
 	status     *ui.Menu
 	label      *ui.Label
@@ -116,9 +125,14 @@ func (md *model) initWidgets() {
 		Box:        &ui.Box{},
 		StyledText: ui.StyledText{}.WithMarkups(logStyles),
 	})
+	style := ui.MenuStyle{
+		BgAlt:  ColorBgLOS,
+		Active: ColorYellow,
+	}
 	md.menu = ui.NewMenu(ui.MenuConfig{
-		Grid: gruid.NewGrid(UIWidth/2, UIHeight-1),
-		Box:  &ui.Box{},
+		Grid:  gruid.NewGrid(UIWidth/2, UIHeight-1),
+		Box:   &ui.Box{},
+		Style: style,
 	})
 	st := gruid.Style{}
 	md.status = ui.NewMenu(ui.MenuConfig{

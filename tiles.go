@@ -90,6 +90,8 @@ func ColorToRGBA(c gruid.Color, fg bool) color.Color {
 		cl = color.RGBA{147, 161, 161, opaque}
 	case Color16Base3:
 		cl = color.RGBA{253, 246, 227, opaque}
+	default:
+		log.Print(c)
 	}
 	return cl
 }

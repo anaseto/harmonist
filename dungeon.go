@@ -33,8 +33,8 @@ func (d *dungeon) SetExplored(pos gruid.Point) {
 
 func (d *dungeon) Area(area []gruid.Point, pos gruid.Point, radius int) []gruid.Point {
 	area = area[:0]
-	for x := pos.X - radius; x <= pos.X+radius; x++ {
-		for y := pos.Y - radius; y <= pos.Y+radius; y++ {
+	for y := pos.Y - radius; y <= pos.Y+radius; y++ {
+		for x := pos.X - radius; x <= pos.X+radius; x++ {
 			pos := gruid.Point{x, y}
 			if valid(pos) {
 				area = append(area, pos)

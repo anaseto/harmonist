@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/anaseto/gruid"
+	"github.com/anaseto/gruid/ui"
 )
 
 func (md *model) HideCursor() {
@@ -536,8 +537,8 @@ func (md *model) normalModeKeyDown(key gruid.Key) (again bool, err error) {
 		err = md.SelectMagara()
 		err = md.CleanError(err)
 	case ActionInventory:
-		err = md.SelectItem()
-		err = md.CleanError(err)
+		again = true
+		md.OpenIventory()
 	case ActionExplore:
 		err = g.Autoexplore()
 	case ActionExamine:
@@ -634,6 +635,24 @@ func (md *model) normalModeKeyDown(key gruid.Key) (again bool, err error) {
 		again = true
 	}
 	return again, err
+}
+
+func (md *model) OpenIventory() {
+	entries := []ui.MenuEntry{}
+	items := []item{md.g.Player.Inventory.Body, md.g.Player.Inventory.Neck, md.g.Player.Inventory.Misc}
+	parts := []string{"body", "neck", "backpack"}
+	r := 'a'
+	for i, it := range items {
+		entries = append(entries, ui.MenuEntry{
+			Text: fmt.Sprintf("%c - %s (%s)", r, it.ShortDesc(md.g), parts[i]),
+			Keys: []gruid.Key{gruid.Key(r)},
+		})
+		r++
+	}
+	md.menu.SetBox(&ui.Box{Title: ui.NewStyledText("Inventory").WithStyle(gruid.Style{}.WithFg(ColorYellow))})
+	md.menu.SetEntries(entries)
+	md.mode = modeMenu
+	md.menuMode = modeInventory
 }
 
 //func (ui *model) HandleKey(rka runeKeyAction) (again bool, quit bool, err error) {
@@ -1160,6 +1179,7 @@ func (md *model) HandleWizardAction() error {
 }
 
 func (md *model) Death() {
+	// TODO: fix this
 	g := md.g
 	if len(g.Stats.Achievements) == 0 {
 		NoAchievement.Get(g)

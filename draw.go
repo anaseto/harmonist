@@ -55,22 +55,22 @@ const (
 
 // uicolors: http://ethanschoonover.com/solarized
 var (
-	ColorBase03  gruid.Color = Color256Base03
-	ColorBase02  gruid.Color = Color256Base02
-	ColorBase01  gruid.Color = Color256Base01
-	ColorBase00  gruid.Color = Color256Base00 // for dark on light background
-	ColorBase0   gruid.Color = Color256Base0
-	ColorBase1   gruid.Color = Color256Base1
-	ColorBase2   gruid.Color = Color256Base2
-	ColorBase3   gruid.Color = Color256Base3
-	ColorYellow  gruid.Color = Color256Yellow
-	ColorOrange  gruid.Color = Color256Orange
-	ColorRed     gruid.Color = Color256Red
-	ColorMagenta gruid.Color = Color256Magenta
-	ColorViolet  gruid.Color = Color256Violet
-	ColorBlue    gruid.Color = Color256Blue
-	ColorCyan    gruid.Color = Color256Cyan
-	ColorGreen   gruid.Color = Color256Green
+	ColorBase03  gruid.Color = Color16Base03
+	ColorBase02  gruid.Color = Color16Base02
+	ColorBase01  gruid.Color = Color16Base01
+	ColorBase00  gruid.Color = Color16Base00
+	ColorBase0   gruid.Color = Color16Base0
+	ColorBase1   gruid.Color = Color16Base1
+	ColorBase2   gruid.Color = Color16Base2
+	ColorBase3   gruid.Color = Color16Base3
+	ColorYellow  gruid.Color = Color16Yellow
+	ColorOrange  gruid.Color = Color16Orange
+	ColorRed     gruid.Color = Color16Red
+	ColorMagenta gruid.Color = Color16Magenta
+	ColorViolet  gruid.Color = Color16Violet
+	ColorBlue    gruid.Color = Color16Blue
+	ColorCyan    gruid.Color = Color16Cyan
+	ColorGreen   gruid.Color = Color16Green
 )
 
 func (md *model) Map256ColorTo16(c gruid.Color) gruid.Color {

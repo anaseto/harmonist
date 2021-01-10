@@ -774,7 +774,7 @@ func (g *game) EndTurn() {
 				if err != nil {
 					g.PrintfStyled("Error removing save file: %v", logError, err.Error())
 				}
-				g.ui.Death()
+				//g.ui.Death()
 				return
 			}
 		}
