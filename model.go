@@ -22,17 +22,18 @@ const (
 )
 
 type model struct {
-	g          *game // game state
-	gd         gruid.Grid
-	mode       mode
-	menuMode   menuMode
-	menu       *ui.Menu
-	status     *ui.Menu
-	label      *ui.Label
-	pager      *ui.Pager
-	mp         mapUI
-	keysNormal map[gruid.Key]action
-	keysTarget map[gruid.Key]action
+	g           *game // game state
+	gd          gruid.Grid
+	mode        mode
+	menuMode    menuMode
+	menu        *ui.Menu
+	status      *ui.Menu
+	log         *ui.Label
+	description *ui.Label
+	pager       *ui.Pager
+	mp          mapUI
+	keysNormal  map[gruid.Key]action
+	keysTarget  map[gruid.Key]action
 }
 
 type mapUI struct {
@@ -119,7 +120,10 @@ func (md *model) initKeys() {
 }
 
 func (md *model) initWidgets() {
-	md.label = ui.NewLabel(ui.StyledText{}.WithStyle(gruid.Style{}).WithMarkup('t', gruid.Style{Fg: ColorYellow}))
+	md.log = ui.NewLabel(ui.StyledText{}.WithStyle(gruid.Style{}).WithMarkup('t', gruid.Style{Fg: ColorYellow}))
+	md.description = ui.NewLabel(ui.StyledText{}.WithStyle(gruid.Style{}).WithMarkup('t', gruid.Style{Fg: ColorYellow}))
+	md.description.Box = &ui.Box{Title: ui.NewStyledText("Description")}
+	md.description.AdjustWidth = false
 	md.pager = ui.NewPager(ui.PagerConfig{
 		Grid:       gruid.NewGrid(UIWidth, UIHeight),
 		Box:        &ui.Box{},
@@ -224,8 +228,16 @@ func (md *model) updatePager(msg gruid.Msg) gruid.Effect {
 
 func (md *model) updateMenu(msg gruid.Msg) gruid.Effect {
 	md.menu.Update(msg)
-	if md.menu.Action() == ui.MenuQuit {
+	switch md.menu.Action() {
+	case ui.MenuQuit:
 		md.mode = modeNormal
+	case ui.MenuMove:
+		switch md.menuMode {
+		case modeInventory:
+			items := []item{md.g.Player.Inventory.Body, md.g.Player.Inventory.Neck, md.g.Player.Inventory.Misc}
+			it := items[md.menu.Active()]
+			md.description.StyledText = ui.NewStyledText(it.Desc(md.g)).Format(UIWidth/2 - 1 - 2)
+		}
 	}
 	return nil
 }
@@ -242,10 +254,8 @@ func (md *model) Draw() gruid.Grid {
 		}
 		dgd.Set(p, gruid.Cell{Rune: r, Style: gruid.Style{Fg: fg, Bg: bg, Attrs: attrs}})
 	}
-	md.label.AdjustWidth = false
-	md.label.Box = nil
-	md.label.StyledText = md.DrawLog()
-	md.label.Draw(md.gd.Slice(md.gd.Range().Lines(0, 2)))
+	md.log.StyledText = md.DrawLog()
+	md.log.Draw(md.gd.Slice(md.gd.Range().Lines(0, 2)))
 	if md.mp.targeting {
 		md.DrawPosInfo()
 	}
@@ -254,6 +264,10 @@ func (md *model) Draw() gruid.Grid {
 		md.gd.Copy(md.pager.Draw())
 	case modeMenu:
 		md.gd.Copy(md.menu.Draw())
+		switch md.menuMode {
+		case modeInventory:
+			md.description.Draw(md.gd.Slice(md.gd.Range().Columns(UIWidth/2+1, UIWidth)))
+		}
 	}
 	md.status.Draw()
 	return md.gd
