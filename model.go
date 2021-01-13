@@ -19,6 +19,7 @@ const (
 	modeInventory menuMode = iota
 	modeSettings
 	modeGameMenu
+	modeHelpKeys
 )
 
 type model struct {
@@ -27,6 +28,7 @@ type model struct {
 	mode        mode
 	menuMode    menuMode
 	menu        *ui.Menu
+	help        *ui.Menu
 	status      *ui.Menu
 	log         *ui.Label
 	description *ui.Label
@@ -133,12 +135,19 @@ func (md *model) initWidgets() {
 		BgAlt:  ColorBgLOS,
 		Active: ColorYellow,
 	}
-	md.menu = ui.NewMenu(ui.MenuConfig{
-		Grid:  gruid.NewGrid(UIWidth/2, UIHeight-1),
-		Box:   &ui.Box{},
-		Style: style,
-	})
 	st := gruid.Style{}
+	md.menu = ui.NewMenu(ui.MenuConfig{
+		Grid:       gruid.NewGrid(UIWidth/2, UIHeight-1),
+		Box:        &ui.Box{},
+		StyledText: ui.StyledText{}.WithMarkup('h', st.WithFg(ColorCyan)),
+		Style:      style,
+	})
+	md.help = ui.NewMenu(ui.MenuConfig{
+		Grid:       gruid.NewGrid(UIWidth, UIHeight-1),
+		Box:        &ui.Box{},
+		StyledText: ui.StyledText{}.WithMarkup('h', st.WithFg(ColorCyan)),
+		Style:      style,
+	})
 	md.status = ui.NewMenu(ui.MenuConfig{
 		Grid: gruid.NewGrid(UIWidth, 1),
 		StyledText: ui.StyledText{}.WithMarkups(map[rune]gruid.Style{
@@ -261,11 +270,14 @@ func (md *model) Draw() gruid.Grid {
 	case modePager:
 		md.gd.Copy(md.pager.Draw())
 	case modeMenu:
-		md.gd.Copy(md.menu.Draw())
+
 		switch md.menuMode {
 		case modeInventory:
+			md.gd.Copy(md.menu.Draw())
 			md.description.Box = &ui.Box{Title: ui.NewStyledText("Description")}
 			md.description.Draw(md.gd.Slice(md.gd.Range().Columns(UIWidth/2+1, UIWidth)))
+		case modeHelpKeys:
+			md.gd.Copy(md.help.Draw())
 		}
 	}
 	md.gd.Slice(md.gd.Range().Line(UIHeight - 1)).Copy(md.status.Draw())

@@ -338,27 +338,28 @@ const (
 )
 
 func (md *model) DrawKeysDescription(title string, actions []string) {
-	//ui.DrawDungeonView(NoFlushMode)
-
-	//if CustomKeys {
-	//ui.DrawStyledTextLine(fmt.Sprintf(" Default %s ", title), 0, HeaderLine)
-	//} else {
-	//ui.DrawStyledTextLine(fmt.Sprintf(" %s ", title), 0, HeaderLine)
-	//}
-	//for i := 0; i < len(actions)-1; i += 2 {
-	//if actions[i+1] != "" {
-	//bg := ui.ListItemBG(i / 2)
-	//ui.ClearLineWithColor(i/2+1, bg)
-	//ui.DrawColoredTextOnBG(fmt.Sprintf(" %-36s %s", actions[i], actions[i+1]), 0, i/2+1, ColorFg, bg)
-	//} else {
-	//ui.DrawStyledTextLine(fmt.Sprintf(" %s ", actions[i]), i/2+1, HeaderLine)
-	//}
-	//}
-	//lines := 1 + len(actions)/2
-	//ui.DrawTextLine(" press (x) to continue ", lines)
-	//ui.Flush()
-
-	//ui.WaitForContinue(lines)
+	md.menuMode = modeHelpKeys
+	md.mode = modeMenu
+	if CustomKeys {
+		title = fmt.Sprintf(" Default %s ", title)
+	} else {
+		title = fmt.Sprintf(" %s ", title)
+	}
+	md.help.SetBox(&ui.Box{Title: ui.NewStyledText(title).WithStyle(gruid.Style{}.WithFg(ColorYellow))})
+	entries := []ui.MenuEntry{}
+	for i := 0; i < len(actions)-1; i += 2 {
+		text := ""
+		if actions[i+1] != "" {
+			text = fmt.Sprintf(" %-36s %s", actions[i], actions[i+1])
+		} else {
+			text = fmt.Sprintf(" @h%s@N ", actions[i])
+		}
+		entries = append(entries, ui.MenuEntry{
+			Disabled: true,
+			Text:     text,
+		})
+	}
+	md.help.SetEntries(entries)
 }
 
 func (md *model) KeysHelp() {
