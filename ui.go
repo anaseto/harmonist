@@ -653,6 +653,7 @@ func (md *model) OpenIventory() {
 	md.menu.SetEntries(entries)
 	md.mode = modeMenu
 	md.menuMode = modeInventory
+	md.description.StyledText = ui.NewStyledText(items[md.menu.Active()].Desc(md.g)).Format(UIWidth/2 - 1 - 2)
 }
 
 //func (ui *model) HandleKey(rka runeKeyAction) (again bool, quit bool, err error) {
@@ -1044,48 +1045,6 @@ func (md *model) OpenIventory() {
 //ui.HideCursor()
 //return again, quit, err
 //}
-
-type menu int
-
-const (
-	//MenuExplore menu = iota
-	MenuOther menu = iota
-	MenuInventory
-	MenuEvoke
-	MenuInteract
-)
-
-func (m menu) String() (text string) {
-	switch m {
-	//case MenuExplore:
-	//text = "explore"
-	case MenuEvoke:
-		text = "evoke"
-	case MenuInventory:
-		text = "inventory"
-	case MenuOther:
-		text = "menu"
-	case MenuInteract:
-		text = "interact"
-	}
-	return "[" + text + "]"
-}
-
-func (m menu) Key(g *game) (key action) {
-	switch m {
-	//case MenuExplore:
-	//key = KeyExplore
-	case MenuOther:
-		key = ActionMenu
-	case MenuInventory:
-		key = ActionInventory
-	case MenuEvoke:
-		key = ActionEvoke
-	case MenuInteract:
-		key = ActionInteract
-	}
-	return key
-}
 
 //func (ui *model) UpdateInteractButton() string {
 //g := ui.st

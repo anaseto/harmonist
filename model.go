@@ -122,7 +122,6 @@ func (md *model) initKeys() {
 func (md *model) initWidgets() {
 	md.log = ui.NewLabel(ui.StyledText{}.WithStyle(gruid.Style{}).WithMarkup('t', gruid.Style{Fg: ColorYellow}))
 	md.description = ui.NewLabel(ui.StyledText{}.WithStyle(gruid.Style{}).WithMarkup('t', gruid.Style{Fg: ColorYellow}))
-	md.description.Box = &ui.Box{Title: ui.NewStyledText("Description")}
 	md.description.AdjustWidth = false
 	md.pager = ui.NewPager(ui.PagerConfig{
 		Grid:       gruid.NewGrid(UIWidth, UIHeight),
@@ -231,7 +230,7 @@ func (md *model) updateMenu(msg gruid.Msg) gruid.Effect {
 	switch md.menu.Action() {
 	case ui.MenuQuit:
 		md.mode = modeNormal
-	case ui.MenuMove:
+	case ui.MenuMove, ui.MenuInvoke:
 		switch md.menuMode {
 		case modeInventory:
 			items := []item{md.g.Player.Inventory.Body, md.g.Player.Inventory.Neck, md.g.Player.Inventory.Misc}
@@ -266,6 +265,7 @@ func (md *model) Draw() gruid.Grid {
 		md.gd.Copy(md.menu.Draw())
 		switch md.menuMode {
 		case modeInventory:
+			md.description.Box = &ui.Box{Title: ui.NewStyledText("Description")}
 			md.description.Draw(md.gd.Slice(md.gd.Range().Columns(UIWidth/2+1, UIWidth)))
 		}
 	}

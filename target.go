@@ -97,15 +97,15 @@ func (md *model) DrawPosInfo() {
 	g := md.g
 	p := gruid.Point{}
 	if md.mp.ex.pos.X <= DungeonWidth/2 {
-		p.X += DungeonWidth + 1
+		p.X += DungeonWidth/2 + 1
 	}
 	info := md.mp.ex.info
 
 	y := 2
 	formatBox := func(title, s string, fg gruid.Color) {
-		md.log.Box = &ui.Box{Title: ui.NewStyledText(title).WithStyle(gruid.Style{}.WithFg(fg))}
-		md.log.SetText(s)
-		y += md.log.Draw(md.gd.Slice(gruid.NewRange(0, y, DungeonWidth/2, 2+DungeonHeight).Add(p))).Size().Y
+		md.description.Box = &ui.Box{Title: ui.NewStyledText(title).WithStyle(gruid.Style{}.WithFg(fg))}
+		md.description.StyledText = md.description.StyledText.WithText(s).Format(DungeonWidth/2 - 1)
+		y += md.description.Draw(md.gd.Slice(gruid.NewRange(0, y, DungeonWidth/2, 2+DungeonHeight).Add(p))).Size().Y
 	}
 
 	features := []string{}
@@ -147,7 +147,7 @@ func (md *model) DrawPosInfo() {
 	if !mons.Exists() {
 		return
 	}
-	title := fmt.Sprintf(" %s %s (%s %s) ", mons.Kind, mons.State, mons.Dir.String())
+	title := fmt.Sprintf(" %s (%s %s) ", mons.Kind, mons.State, mons.Dir.String())
 	fg = mons.Color(g)
 	var mdesc []string
 
