@@ -816,62 +816,6 @@ func (md *model) DrawStatusLine() {
 	//}
 }
 
-func (e logEntry) StyleRune() rune {
-	var r rune
-	switch e.Style {
-	case logCritic:
-		r = 'r'
-	case logPlayerHit:
-		r = 'g'
-	case logMonsterHit:
-		r = 'o'
-	case logSpecial:
-		r = 'm'
-	case logStatusEnd:
-		r = 'v'
-	case logError:
-		r = 'e'
-	}
-	return r
-}
-
-var logStyles = map[rune]gruid.Style{
-	'r': gruid.Style{}.WithFg(ColorRed),
-	'g': gruid.Style{}.WithFg(ColorGreen),
-	'o': gruid.Style{}.WithFg(ColorOrange),
-	'm': gruid.Style{}.WithFg(ColorMagenta),
-	'v': gruid.Style{}.WithFg(ColorViolet),
-	'e': gruid.Style{}.WithFg(ColorRed),
-}
-
-func (md *model) DrawLog() ui.StyledText {
-	g := md.g
-	stt := ui.StyledText{}.WithMarkups(logStyles)
-	for i := len(g.Log) - 1; i >= 0; i-- {
-		var s string
-		e := g.Log[i]
-		if e.Tick {
-			s = "@t•@N "
-		}
-		r := e.StyleRune()
-		if r != 0 {
-			s += fmt.Sprintf("@%s%s@N", string(r), e.String())
-		} else {
-			s += e.String()
-		}
-		if e.Tick && stt.Text() != "" {
-			s = s + "\n"
-		} else if stt.Text() != "" {
-			s = s + " "
-		}
-		if stt.WithText(s+stt.Text()).Format(80).Size().Y > 2 {
-			break
-		}
-		stt = stt.WithText(s + stt.Text()).Format(80)
-	}
-	return stt
-}
-
 func (md *model) SelectMagara() error {
 	// TODO select
 	return nil

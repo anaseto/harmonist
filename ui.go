@@ -551,23 +551,14 @@ func (md *model) normalModeKeyDown(key gruid.Key) (again bool, err error) {
 		md.ExamineHelp()
 		again = true
 	case ActionLogs:
-		logs := []string{} // TODO improve this
-		for _, e := range g.Log {
-			var s string
-			if e.Tick {
-				s = "@t•@N "
-			}
-			r := e.StyleRune()
-			if r != 0 {
-				s += fmt.Sprintf("@%s%s@N", string(r), e.String())
-			} else {
-				s += e.String()
-			}
-			logs = append(logs, s)
+		if len(md.logs) > 0 {
+			md.logs = md.logs[:len(md.logs)-1]
 		}
-		md.pager.SetLines(logs)
+		for _, e := range g.Log[len(md.logs):] {
+			md.logs = append(md.logs, e.MText)
+		}
+		md.pager.SetLines(md.logs)
 		md.mode = modePager
-		//ui.DrawPreviousLogs()
 		again = true
 	case ActionSave:
 		g.Ev.Renew(g, 0)

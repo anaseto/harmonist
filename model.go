@@ -32,6 +32,7 @@ type model struct {
 	description *ui.Label
 	pager       *ui.Pager
 	mp          mapUI
+	logs        []string
 	keysNormal  map[gruid.Key]action
 	keysTarget  map[gruid.Key]action
 }

@@ -1,6 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/anaseto/gruid"
+	"github.com/anaseto/gruid/ui"
+)
 
 type logStyle int
 
@@ -16,6 +21,7 @@ const (
 
 type logEntry struct {
 	Text  string
+	MText string
 	Index int
 	Tick  bool
 	Style logStyle
@@ -23,10 +29,21 @@ type logEntry struct {
 }
 
 func (e logEntry) String() string {
-	if e.Dups > 0 {
-		return fmt.Sprintf("%s (%d×)", e.Text, e.Dups+1)
+	tick := ""
+	if e.Tick {
+		tick = "@t•@N "
 	}
-	return e.Text
+	s := e.Text
+	if e.Dups > 0 {
+		s += fmt.Sprintf(" (%d×)", e.Dups+1)
+	}
+	r := e.Style.Rune()
+	if r != 0 {
+		s = fmt.Sprintf("%s@%c%s@N", tick, r, e.Text)
+	} else {
+		s = fmt.Sprintf("%s%s", tick, s)
+	}
+	return s
 }
 
 func (g *game) Print(s string) {
@@ -61,6 +78,7 @@ func (g *game) PrintEntry(e logEntry) {
 			return
 		}
 	}
+	e.MText = e.String()
 	g.Log = append(g.Log, e)
 	g.LogIndex++
 	if len(g.Log) > 100000 {
@@ -100,4 +118,59 @@ func (g *game) ExplosionSound() (text string) {
 		text = "Boom!"
 	}
 	return text
+}
+
+func (st logStyle) Rune() rune {
+	var r rune
+	switch st {
+	case logCritic:
+		r = 'r'
+	case logPlayerHit:
+		r = 'g'
+	case logMonsterHit:
+		r = 'o'
+	case logSpecial:
+		r = 'm'
+	case logStatusEnd:
+		r = 'v'
+	case logError:
+		r = 'e'
+	}
+	return r
+}
+
+var logStyles = map[rune]gruid.Style{
+	'r': gruid.Style{}.WithFg(ColorRed),
+	'g': gruid.Style{}.WithFg(ColorGreen),
+	'o': gruid.Style{}.WithFg(ColorOrange),
+	'm': gruid.Style{}.WithFg(ColorMagenta),
+	'v': gruid.Style{}.WithFg(ColorViolet),
+	'e': gruid.Style{}.WithFg(ColorRed),
+}
+
+// DrawLog draws 2 compacted lines of log.
+func (md *model) DrawLog() ui.StyledText {
+	g := md.g
+	stt := ui.StyledText{}.WithMarkups(logStyles)
+	tick := false
+	for i := len(g.Log) - 1; i >= 0; i-- {
+		e := g.Log[i]
+		s := e.MText
+		if stt.Text() != "" {
+			if tick {
+				s = s + "\n"
+				tick = false
+			} else {
+				s = s + " "
+			}
+		}
+		if e.Tick {
+			tick = true
+		}
+		if stt.WithText(s+stt.Text()).Format(80).Size().Y > 2 {
+			break
+		}
+		stt = stt.WithText(s + stt.Text()).Format(80)
+	}
+	return stt
 }
