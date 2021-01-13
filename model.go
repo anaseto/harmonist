@@ -139,9 +139,7 @@ func (md *model) initWidgets() {
 	})
 	st := gruid.Style{}
 	md.status = ui.NewMenu(ui.MenuConfig{
-		Grid: md.gd.Slice(gruid.NewRange(0, UIHeight-1, UIWidth, UIHeight)),
-		//Grid: md.gd,
-		//Box:  &ui.Box{},
+		Grid: gruid.NewGrid(UIWidth, 1),
 		StyledText: ui.StyledText{}.WithMarkups(map[rune]gruid.Style{
 			'G': st.WithFg(ColorFgHPok),
 			'g': st.WithFg(ColorFgMPok),
@@ -269,6 +267,6 @@ func (md *model) Draw() gruid.Grid {
 			md.description.Draw(md.gd.Slice(md.gd.Range().Columns(UIWidth/2+1, UIWidth)))
 		}
 	}
-	md.status.Draw()
+	md.gd.Slice(md.gd.Range().Line(UIHeight - 1)).Copy(md.status.Draw())
 	return md.gd
 }
