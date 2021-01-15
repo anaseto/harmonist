@@ -505,8 +505,8 @@ func (md *model) normalModeKeyDown(key gruid.Key) (again bool, err error) {
 				//ui.MenuSelectedAnimation(MenuInteract, false)
 			}
 		case MagaraCell:
-			err = md.EquipMagara()
-			err = md.CleanError(err)
+			again = true
+			md.EquipMagaraMenu()
 		case StoneCell:
 			//ui.MenuSelectedAnimation(MenuInteract, true)
 			err = g.ActivateStone()
@@ -534,8 +534,8 @@ func (md *model) normalModeKeyDown(key gruid.Key) (again bool, err error) {
 			err = errors.New("You cannot interact with anything here.")
 		}
 	case ActionEvoke:
-		err = md.SelectMagara()
-		err = md.CleanError(err)
+		again = true
+		md.EvokeMagaraMenu()
 	case ActionInventory:
 		again = true
 		md.OpenIventory()
@@ -644,6 +644,42 @@ func (md *model) OpenIventory() {
 	md.menu.SetEntries(entries)
 	md.mode = modeMenu
 	md.menuMode = modeInventory
+	md.description.StyledText = ui.NewStyledText(items[md.menu.Active()].Desc(md.g)).Format(UIWidth/2 - 1 - 2)
+}
+
+func (md *model) EvokeMagaraMenu() {
+	entries := []ui.MenuEntry{}
+	items := md.g.Player.Magaras
+	r := 'a'
+	for _, it := range items {
+		entries = append(entries, ui.MenuEntry{
+			Text: fmt.Sprintf("%c - %s ", r, it.ShortDesc()),
+			Keys: []gruid.Key{gruid.Key(r)},
+		})
+		r++
+	}
+	md.menu.SetBox(&ui.Box{Title: ui.NewStyledText("Evoke Magara").WithStyle(gruid.Style{}.WithFg(ColorYellow))})
+	md.menu.SetEntries(entries)
+	md.mode = modeMenu
+	md.menuMode = modeEvokation
+	md.description.StyledText = ui.NewStyledText(items[md.menu.Active()].Desc(md.g)).Format(UIWidth/2 - 1 - 2)
+}
+
+func (md *model) EquipMagaraMenu() {
+	entries := []ui.MenuEntry{}
+	items := md.g.Player.Magaras
+	r := 'a'
+	for _, it := range items {
+		entries = append(entries, ui.MenuEntry{
+			Text: fmt.Sprintf("%c - %s ", r, it.ShortDesc()),
+			Keys: []gruid.Key{gruid.Key(r)},
+		})
+		r++
+	}
+	md.menu.SetBox(&ui.Box{Title: ui.NewStyledText("Equip Magara").WithStyle(gruid.Style{}.WithFg(ColorYellow))})
+	md.menu.SetEntries(entries)
+	md.mode = modeMenu
+	md.menuMode = modeEquip
 	md.description.StyledText = ui.NewStyledText(items[md.menu.Active()].Desc(md.g)).Format(UIWidth/2 - 1 - 2)
 }
 

@@ -20,6 +20,8 @@ const (
 	modeSettings
 	modeGameMenu
 	modeHelpKeys
+	modeEvokation
+	modeEquip
 )
 
 type model struct {
@@ -127,7 +129,7 @@ func (md *model) initWidgets() {
 	md.description = ui.NewLabel(ui.StyledText{}.WithStyle(gruid.Style{}).WithMarkup('t', gruid.Style{Fg: ColorYellow}))
 	md.description.AdjustWidth = false
 	md.pager = ui.NewPager(ui.PagerConfig{
-		Grid:       gruid.NewGrid(UIWidth, UIHeight),
+		Grid:       gruid.NewGrid(UIWidth, UIHeight-1),
 		Box:        &ui.Box{},
 		StyledText: ui.StyledText{}.WithMarkups(logStyles),
 	})
@@ -216,13 +218,18 @@ func (md *model) updateKeyDown(msg gruid.MsgKeyDown) gruid.Effect {
 			md.g.Print(err.Error())
 			break
 		}
-		md.g.EndTurn()
-		md.g.ComputeNoise()
-		md.g.ComputeLOS()
-		md.g.ComputeMonsterLOS()
-		md.updateStatus()
+		md.EndTurn()
 	}
 	return nil
+}
+
+func (md *model) EndTurn() {
+	md.mode = modeNormal
+	md.g.EndTurn()
+	md.g.ComputeNoise()
+	md.g.ComputeLOS()
+	md.g.ComputeMonsterLOS()
+	md.updateStatus()
 }
 
 func (md *model) updatePager(msg gruid.Msg) gruid.Effect {
@@ -235,7 +242,7 @@ func (md *model) updatePager(msg gruid.Msg) gruid.Effect {
 
 func (md *model) updateMenu(msg gruid.Msg) gruid.Effect {
 	md.menu.Update(msg)
-	switch md.menu.Action() {
+	switch act := md.menu.Action(); act {
 	case ui.MenuQuit:
 		md.mode = modeNormal
 	case ui.MenuMove, ui.MenuInvoke:
@@ -244,6 +251,34 @@ func (md *model) updateMenu(msg gruid.Msg) gruid.Effect {
 			items := []item{md.g.Player.Inventory.Body, md.g.Player.Inventory.Neck, md.g.Player.Inventory.Misc}
 			it := items[md.menu.Active()]
 			md.description.StyledText = ui.NewStyledText(it.Desc(md.g)).Format(UIWidth/2 - 1 - 2)
+		case modeEvokation:
+			items := md.g.Player.Magaras
+			it := items[md.menu.Active()]
+			md.description.StyledText = ui.NewStyledText(it.Desc(md.g)).Format(UIWidth/2 - 1 - 2)
+			if act != ui.MenuInvoke {
+				break
+			}
+			err := md.g.UseMagara(md.menu.Active())
+			if err != nil {
+				md.g.Printf("%v", err)
+				md.mode = modeNormal
+				break
+			}
+			md.EndTurn()
+		case modeEquip:
+			items := md.g.Player.Magaras
+			it := items[md.menu.Active()]
+			md.description.StyledText = ui.NewStyledText(it.Desc(md.g)).Format(UIWidth/2 - 1 - 2)
+			if act != ui.MenuInvoke {
+				break
+			}
+			err := md.g.EquipMagara(md.menu.Active())
+			if err != nil {
+				md.g.Printf("%v", err)
+				md.mode = modeNormal
+				break
+			}
+			md.EndTurn()
 		}
 	}
 	return nil
@@ -270,9 +305,8 @@ func (md *model) Draw() gruid.Grid {
 	case modePager:
 		md.gd.Copy(md.pager.Draw())
 	case modeMenu:
-
 		switch md.menuMode {
-		case modeInventory:
+		case modeInventory, modeEquip, modeEvokation:
 			md.gd.Copy(md.menu.Draw())
 			md.description.Box = &ui.Box{Title: ui.NewStyledText("Description")}
 			md.description.Draw(md.gd.Slice(md.gd.Range().Columns(UIWidth/2+1, UIWidth)))
