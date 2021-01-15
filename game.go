@@ -469,7 +469,7 @@ func (g *game) InitLevel() {
 	if g.Depth == 0 {
 		g.InitFirstLevel()
 	} else if !Testing {
-		g.ui.DrawLoading()
+		//g.ui.DrawLoading()
 	}
 
 	g.InitLevelStructures()
