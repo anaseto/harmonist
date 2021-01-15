@@ -644,30 +644,28 @@ func (md *model) updateStatus() {
 	}
 	sort.Sort(sts)
 
-	//if len(sts) > 0 {
-	//ui.DrawText("| ", col, line)
-	//col += 2
-	//}
-	//for _, st := range sts {
-	//fg := ColorFgStatusOther
-	//if st.Good() {
-	//fg = ColorFgStatusGood
-	//t := DurationTurn
-	//if g.Player.Expire[st] >= g.Ev.Rank() && g.Player.Expire[st]-g.Ev.Rank() <= t {
-	//fg = ColorFgStatusExpire
-	//}
-	//} else if st.Bad() {
-	//fg = ColorFgStatusBad
-	//}
-	//var sttext string
-	//if !st.Flag() {
-	//sttext = fmt.Sprintf("%s(%d) ", st.Short(), g.Player.Statuses[st]/DurationStatusStep)
-	//} else {
-	//sttext = fmt.Sprintf("%s ", st.Short())
-	//}
-	//ui.DrawColoredText(sttext, col, line, fg)
-	//col += utf8.RuneCountInString(sttext)
-	//}
+	if len(sts) > 0 {
+		entries = append(entries, ui.MenuEntry{Text: "| ", Disabled: true})
+	}
+	for _, st := range sts {
+		r := 'o'
+		if st.Good() {
+			r = 's'
+			t := DurationTurn
+			if g.Ev != nil && g.Player.Expire[st] >= g.Ev.Rank() && g.Player.Expire[st]-g.Ev.Rank() <= t {
+				r = 'x'
+			}
+		} else if st.Bad() {
+			r = 'b'
+		}
+		var sttext string
+		if !st.Flag() {
+			sttext = fmt.Sprintf("@%c%s(%d)@N ", r, st.Short(), g.Player.Statuses[st]/DurationStatusStep)
+		} else {
+			sttext = fmt.Sprintf("@%c%s@N ", r, st.Short())
+		}
+		entries = append(entries, ui.MenuEntry{Text: sttext, Disabled: true})
+	}
 
 	md.status.SetEntries(entries)
 }
