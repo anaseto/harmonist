@@ -366,12 +366,34 @@ func (md *model) OptionalDescendConfirmation(st stair) (err error) {
 
 }
 
-func (md *model) normalModeKeyDown(key gruid.Key) (again bool, err error) {
-	g := md.g
+func (md *model) normalModeKeyDown(key gruid.Key) (again bool, eff gruid.Effect, err error) {
 	action := md.keysNormal[key]
 	if md.mp.targeting {
 		action = md.keysTarget[key]
 	}
+	again, eff, err = md.normalModeAction(action)
+	if _, ok := err.(actionError); ok {
+		err = fmt.Errorf("Unknown key '%s'. Type ? for help.", key)
+	}
+	return again, eff, err
+}
+
+type actionError int
+
+const (
+	actionErrorUnknown actionError = iota
+)
+
+func (e actionError) Error() string {
+	switch e {
+	case actionErrorUnknown:
+		return "unknown action"
+	}
+	return ""
+}
+
+func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, err error) {
+	g := md.g
 	switch action {
 	case ActionW, ActionS, ActionN, ActionE:
 		if !md.mp.targeting {
@@ -403,9 +425,12 @@ func (md *model) normalModeKeyDown(key gruid.Key) (again bool, err error) {
 	case ActionExclude:
 		again = true
 		md.ExcludeZone(md.mp.ex.pos)
-	case ActionPreviousMonster, ActionNextMonster:
+	case ActionPreviousMonster:
 		again = true
-		md.NextMonster(key, md.mp.ex.pos, md.mp.ex)
+		md.NextMonster("-", md.mp.ex.pos, md.mp.ex)
+	case ActionNextMonster:
+		again = true
+		md.NextMonster("+", md.mp.ex.pos, md.mp.ex)
 	case ActionNextObject:
 		again = true
 		md.NextObject(md.mp.ex.pos, md.mp.ex)
@@ -459,7 +484,7 @@ func (md *model) normalModeKeyDown(key gruid.Key) (again bool, err error) {
 				if g.Descend(DescendNormal) {
 					md.Win()
 					// TODO: win
-					return again, err
+					return again, eff, err
 				}
 				//ui.DrawDungeonView(NormalMode)
 			} else if g.Dungeon.Cell(g.Player.Pos).T == StairCell && g.Objects.Stairs[g.Player.Pos] == BlockedStair {
@@ -530,14 +555,14 @@ func (md *model) normalModeKeyDown(key gruid.Key) (again bool, err error) {
 		md.mode = modePager
 		again = true
 	case ActionSave:
-		g.Ev.Renew(g, 0)
+		again = true
 		errsave := g.Save()
 		if errsave != nil {
 			g.PrintfStyled("Error: %v", logError, errsave)
 			g.PrintStyled("Could not save state.", logError)
 		} else {
-			// TODO quit on save
-			again = true
+			md.mode = modeQuit
+			eff = gruid.End()
 		}
 	case ActionDump:
 		errdump := g.WriteDump()
@@ -557,7 +582,7 @@ func (md *model) normalModeKeyDown(key gruid.Key) (again bool, err error) {
 			err = md.HandleWizardAction()
 			again = true
 		} else {
-			err = errors.New("Unknown key. Type ? for help.")
+			err = actionErrorUnknown
 		}
 	case ActionWizardDescend:
 		if g.Wizard && g.Depth == WinDepth {
@@ -568,19 +593,17 @@ func (md *model) normalModeKeyDown(key gruid.Key) (again bool, err error) {
 			if g.Descend(DescendNormal) {
 				md.Win() // TODO: win
 				//quit = true
-				return again, err
+				return again, eff, err
 			}
 		} else {
-			err = errors.New("Unknown key. Type ? for help.")
+			err = actionErrorUnknown
 		}
 	case ActionWizard:
 		md.EnterWizard()
-		return true, nil
+		return true, eff, nil
 	case ActionQuit:
-		//if ui.Quit() {
-		//return false, true, nil
-		//}
-		return true, nil
+		md.Quit()
+		again = true
 	case ActionConfigure:
 		err = md.HandleSettingAction()
 		again = true
@@ -589,12 +612,12 @@ func (md *model) normalModeKeyDown(key gruid.Key) (again bool, err error) {
 		//ui.MenuSelectedAnimation(MenuView, false)
 		err = fmt.Errorf("You must choose a target to describe.")
 	default:
-		err = fmt.Errorf("Unknown key '%s'. Type ? for help.", key)
+		err = actionErrorUnknown
 	}
 	if err != nil {
 		again = true
 	}
-	return again, err
+	return again, eff, err
 }
 
 func (md *model) OpenIventory() {
@@ -920,23 +943,10 @@ func (md *model) CriticalHPWarning() {
 	//g.Print("Ok. Be careful, then.")
 }
 
-//func (ui *model) Quit() bool {
-//g := ui.st
-//g.Print("Do you really want to quit without saving? [y/N]")
-//ui.DrawDungeonView(NormalMode)
-//quit := ui.PromptConfirmation()
-//if quit {
-//err := g.RemoveSaveFile()
-//if err != nil {
-//g.PrintfStyled("Error removing save file: %v ——press any key to quit——", logError, err)
-//ui.DrawDungeonView(NormalMode)
-//ui.PressAnyKey()
-//}
-//} else {
-//g.Print(DoNothing)
-//}
-//return quit
-//}
+func (md *model) Quit() {
+	md.g.Print("Do you really want to quit without saving? [y/N]")
+	md.mode = modeQuitConfirmation
+}
 
 func (md *model) Clear() {
 	c := gruid.Cell{}

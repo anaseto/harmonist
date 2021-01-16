@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/anaseto/gruid"
 	"github.com/anaseto/gruid/ui"
 )
@@ -11,6 +13,8 @@ const (
 	modeNormal mode = iota
 	modePager
 	modeMenu
+	modeQuit
+	modeQuitConfirmation
 )
 
 type menuMode int
@@ -39,6 +43,7 @@ type model struct {
 	logs        []string
 	keysNormal  map[gruid.Key]action
 	keysTarget  map[gruid.Key]action
+	quit        bool
 }
 
 type mapUI struct {
@@ -170,22 +175,76 @@ func (md *model) initWidgets() {
 	})
 }
 
+func (md *model) init() gruid.Effect {
+	SolarizedPalette()
+	GameConfig.DarkLOS = true
+	GameConfig.Version = Version
+	GameConfig.Tiles = true
+	LinkColors()
+	//ApplyConfig()
+	md.initKeys()
+	md.initWidgets()
+
+	g := md.g
+
+	load, err := g.LoadConfig()
+	var cfgerrstr string
+	var cfgreseterr string
+	if load && err != nil {
+		cfgerrstr = fmt.Sprintf("Error loading config: %s", err.Error())
+		err = g.SaveConfig()
+		if err != nil {
+			cfgreseterr = fmt.Sprintf("Error resetting config: %s", err.Error())
+		}
+	} else if load {
+		CustomKeys = true
+	}
+	ApplyConfig()
+	//ui.DrawWelcome()
+	load, err = g.Load()
+	if !load {
+		g.InitLevel()
+	} else if err != nil {
+		g.InitLevel()
+		g.PrintfStyled("Error: %v", logError, err)
+		g.PrintStyled("Could not load saved state… starting new state.", logError)
+	}
+	if cfgerrstr != "" {
+		g.PrintStyled(cfgerrstr, logError)
+	}
+	if cfgreseterr != "" {
+		g.PrintStyled(cfgreseterr, logError)
+	}
+
+	//md.g.InitLevel()
+	md.g.ComputeNoise()
+	md.g.ComputeLOS()
+	md.g.ComputeMonsterLOS()
+	md.updateStatus()
+	return nil
+}
+
 func (md *model) Update(msg gruid.Msg) gruid.Effect {
 	if _, ok := msg.(gruid.MsgInit); ok {
-		SolarizedPalette()
-		GameConfig.DarkLOS = true
-		GameConfig.Version = Version
-		GameConfig.Tiles = true
-		LinkColors()
-		ApplyConfig()
-		md.initKeys()
-		md.initWidgets()
-		md.g.InitLevel()
-		md.g.ComputeNoise()
-		md.g.ComputeLOS()
-		md.g.ComputeMonsterLOS()
-		md.updateStatus()
+		return md.init()
+	}
+	switch md.mode {
+	case modeQuit:
 		return nil
+	case modeQuitConfirmation:
+		eff := md.updateQuitConfirmation(msg)
+		if md.mode == modeQuit {
+			err := md.g.RemoveSaveFile()
+			if err != nil {
+				md.g.PrintfStyled("Error removing save file: %v", logError, err)
+			}
+		}
+		return eff
+	}
+	if _, ok := msg.(gruid.MsgQuit); ok {
+		md.mode = modeQuit
+		md.g.Save() // TODO: log error ?
+		return gruid.End()
 	}
 	var eff gruid.Effect
 	switch md.mode {
@@ -197,6 +256,19 @@ func (md *model) Update(msg gruid.Msg) gruid.Effect {
 		eff = md.updateMenu(msg)
 	}
 	return eff
+}
+
+func (md *model) updateQuitConfirmation(msg gruid.Msg) gruid.Effect {
+	switch msg := msg.(type) {
+	case gruid.MsgKeyDown:
+		if msg.Key == "y" || msg.Key == "Y" {
+			md.mode = modeQuit
+			return gruid.End()
+		} else {
+			md.mode = modeNormal
+		}
+	}
+	return nil
 }
 
 func (md *model) updateNormal(msg gruid.Msg) gruid.Effect {
@@ -214,13 +286,13 @@ func (md *model) updateKeyDown(msg gruid.MsgKeyDown) gruid.Effect {
 		return gruid.End()
 	default:
 		md.g.Ev = &simpleEvent{EAction: PlayerTurn, ERank: md.g.Turn}
-		again, err := md.normalModeKeyDown(msg.Key)
+		again, eff, err := md.normalModeKeyDown(msg.Key)
 		if again {
-			break
+			return eff
 		}
 		if err != nil {
 			md.g.Print(err.Error())
-			break
+			return eff
 		}
 		md.EndTurn()
 	}
