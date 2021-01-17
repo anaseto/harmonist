@@ -191,7 +191,7 @@ func LinkColors() {
 	ColorBg = ColorBase03
 	ColorBgBorder = ColorBase02
 	ColorBgDark = ColorBase03
-	ColorBgLOS = ColorBase3
+	ColorBgLOS = ColorBase02
 	ColorFg = ColorBase0
 	ColorFgDark = ColorBase01
 	ColorFgLOS = ColorBase0
@@ -345,20 +345,21 @@ func (md *model) DrawKeysDescription(title string, actions []string) {
 	} else {
 		title = fmt.Sprintf(" %s ", title)
 	}
-	md.help.SetBox(&ui.Box{Title: ui.NewStyledText(title).WithStyle(gruid.Style{}.WithFg(ColorYellow))})
+	md.help.SetBox(&ui.Box{Title: ui.Text(title).WithStyle(gruid.Style{}.WithFg(ColorYellow))})
 	entries := []ui.MenuEntry{}
 	for i := 0; i < len(actions)-1; i += 2 {
-		text := ""
+		stt := ui.StyledText{}
 		if actions[i+1] != "" {
-			text = fmt.Sprintf(" %-36s %s", actions[i], actions[i+1])
+			stt = stt.WithTextf(" %-36s %s", actions[i], actions[i+1])
 		} else {
-			text = fmt.Sprintf(" @h%s@N ", actions[i])
+			stt = stt.WithTextf(" @h%s@N ", actions[i]).WithStyle(gruid.Style{}.WithFg(ColorCyan))
 		}
 		entries = append(entries, ui.MenuEntry{
 			Disabled: true,
-			Text:     text,
+			Text:     stt,
 		})
 	}
+	altBgEntries(entries)
 	md.help.SetEntries(entries)
 }
 
@@ -566,6 +567,21 @@ func (md *model) updateStatus() {
 	g := md.g
 	var entries []ui.MenuEntry
 
+	st := gruid.Style{}
+	stt := ui.StyledText{}.WithMarkups(map[rune]gruid.Style{
+		'G': st.WithFg(ColorFgHPok),
+		'g': st.WithFg(ColorFgMPok),
+		'W': st.WithFg(ColorFgHPwounded),
+		'w': st.WithFg(ColorFgMPpartial),
+		'C': st.WithFg(ColorFgHPcritical),
+		'c': st.WithFg(ColorFgMPcritical),
+		'x': st.WithFg(ColorFgStatusExpire),
+		's': st.WithFg(ColorFgStatusGood),
+		'o': st.WithFg(ColorFgStatusOther),
+		'b': st.WithFg(ColorFgStatusBad),
+		'B': st.WithFg(ColorCyan),
+		'M': st.WithFg(ColorYellow).WithAttrs(AttrInMap),
+	})
 	// depth
 	var depth string
 	if g.Depth == -1 {
@@ -573,10 +589,10 @@ func (md *model) updateStatus() {
 	} else {
 		depth = fmt.Sprintf(" D:%d ", g.Depth)
 	}
-	entries = append(entries, ui.MenuEntry{Text: depth, Disabled: true})
+	entries = append(entries, ui.MenuEntry{Text: stt.WithText(depth), Disabled: true})
 
 	// turns
-	entries = append(entries, ui.MenuEntry{Text: fmt.Sprintf("T: %d ", g.Turn), Disabled: true})
+	entries = append(entries, ui.MenuEntry{Text: stt.WithTextf("T: %d ", g.Turn), Disabled: true})
 
 	// HP
 	nWounds := g.Player.HPMax() - g.Player.HP - g.Player.HPbonus
@@ -604,7 +620,7 @@ func (md *model) updateStatus() {
 			hps = fmt.Sprintf("@%c%d/%d@N", hpColor, hp, g.Player.HPMax())
 		}
 	}
-	entries = append(entries, ui.MenuEntry{Text: hps, Disabled: true})
+	entries = append(entries, ui.MenuEntry{Text: stt.WithText(hps), Disabled: true})
 
 	// MP
 	MPspent := g.Player.MPMax() - g.Player.MP
@@ -623,11 +639,11 @@ func (md *model) updateStatus() {
 	} else {
 		mps = fmt.Sprintf("@%c%d/%d@N ", mpColor, g.Player.MP, g.Player.MPMax())
 	}
-	entries = append(entries, ui.MenuEntry{Text: mps, Disabled: true})
+	entries = append(entries, ui.MenuEntry{Text: stt.WithText(mps), Disabled: true})
 
 	// bananas
 	bananas := fmt.Sprintf("@M)@N:%1d/%1d ", g.Player.Bananas, MaxBananas)
-	entries = append(entries, ui.MenuEntry{Text: bananas, Disabled: true})
+	entries = append(entries, ui.MenuEntry{Text: stt.WithText(bananas), Disabled: true})
 
 	// statuses TODO
 	sts := statusSlice{}
@@ -645,7 +661,7 @@ func (md *model) updateStatus() {
 	sort.Sort(sts)
 
 	if len(sts) > 0 {
-		entries = append(entries, ui.MenuEntry{Text: "| ", Disabled: true})
+		entries = append(entries, ui.MenuEntry{Text: stt.WithText("| "), Disabled: true})
 	}
 	for _, st := range sts {
 		r := 'o'
@@ -664,9 +680,10 @@ func (md *model) updateStatus() {
 		} else {
 			sttext = fmt.Sprintf("@%c%s@N ", r, st.Short())
 		}
-		entries = append(entries, ui.MenuEntry{Text: sttext, Disabled: true})
+		entries = append(entries, ui.MenuEntry{Text: stt.WithText(sttext), Disabled: true})
 	}
 
+	altBgEntries(entries)
 	md.status.SetEntries(entries)
 }
 

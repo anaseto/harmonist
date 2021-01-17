@@ -103,7 +103,7 @@ func (md *model) DrawPosInfo() {
 
 	y := 2
 	formatBox := func(title, s string, fg gruid.Color) {
-		md.description.Box = &ui.Box{Title: ui.NewStyledText(title).WithStyle(gruid.Style{}.WithFg(fg))}
+		md.description.Box = &ui.Box{Title: ui.NewStyledText(title, gruid.Style{}.WithFg(fg))}
 		md.description.StyledText = md.description.StyledText.WithText(s).Format(DungeonWidth/2 - 1)
 		y += md.description.Draw(md.gd.Slice(gruid.NewRange(0, y, DungeonWidth/2, 2+DungeonHeight).Add(p))).Size().Y
 	}

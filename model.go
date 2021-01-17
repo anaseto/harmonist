@@ -139,38 +139,20 @@ func (md *model) initWidgets() {
 		StyledText: ui.StyledText{}.WithMarkups(logStyles),
 	})
 	style := ui.MenuStyle{
-		BgAlt:  ColorBgLOS,
-		Active: ColorYellow,
+		Active: gruid.Style{}.WithFg(ColorYellow),
 	}
-	st := gruid.Style{}
 	md.menu = ui.NewMenu(ui.MenuConfig{
-		Grid:       gruid.NewGrid(UIWidth/2, UIHeight-1),
-		Box:        &ui.Box{},
-		StyledText: ui.StyledText{}.WithMarkup('h', st.WithFg(ColorCyan)),
-		Style:      style,
+		Grid:  gruid.NewGrid(UIWidth/2, UIHeight-1),
+		Box:   &ui.Box{},
+		Style: style,
 	})
 	md.help = ui.NewMenu(ui.MenuConfig{
-		Grid:       gruid.NewGrid(UIWidth, UIHeight-1),
-		Box:        &ui.Box{},
-		StyledText: ui.StyledText{}.WithMarkup('h', st.WithFg(ColorCyan)),
-		Style:      style,
+		Grid:  gruid.NewGrid(UIWidth, UIHeight-1),
+		Box:   &ui.Box{},
+		Style: style,
 	})
 	md.status = ui.NewMenu(ui.MenuConfig{
-		Grid: gruid.NewGrid(UIWidth, 1),
-		StyledText: ui.StyledText{}.WithMarkups(map[rune]gruid.Style{
-			'G': st.WithFg(ColorFgHPok),
-			'g': st.WithFg(ColorFgMPok),
-			'W': st.WithFg(ColorFgHPwounded),
-			'w': st.WithFg(ColorFgMPpartial),
-			'C': st.WithFg(ColorFgHPcritical),
-			'c': st.WithFg(ColorFgMPcritical),
-			'x': st.WithFg(ColorFgStatusExpire),
-			's': st.WithFg(ColorFgStatusGood),
-			'o': st.WithFg(ColorFgStatusOther),
-			'b': st.WithFg(ColorFgStatusBad),
-			'B': st.WithFg(ColorCyan),
-			'M': st.WithFg(ColorYellow).WithAttrs(AttrInMap),
-		}),
+		Grid:  gruid.NewGrid(UIWidth, 1),
 		Style: ui.MenuStyle{Layout: gruid.Point{0, 1}},
 	})
 }
@@ -326,11 +308,11 @@ func (md *model) updateMenu(msg gruid.Msg) gruid.Effect {
 		case modeInventory:
 			items := []item{md.g.Player.Inventory.Body, md.g.Player.Inventory.Neck, md.g.Player.Inventory.Misc}
 			it := items[md.menu.Active()]
-			md.description.StyledText = ui.NewStyledText(it.Desc(md.g)).Format(UIWidth/2 - 1 - 2)
+			md.description.StyledText = ui.Text(it.Desc(md.g)).Format(UIWidth/2 - 1 - 2)
 		case modeEvokation:
 			items := md.g.Player.Magaras
 			it := items[md.menu.Active()]
-			md.description.StyledText = ui.NewStyledText(it.Desc(md.g)).Format(UIWidth/2 - 1 - 2)
+			md.description.StyledText = ui.Text(it.Desc(md.g)).Format(UIWidth/2 - 1 - 2)
 			if act != ui.MenuInvoke {
 				break
 			}
@@ -344,7 +326,7 @@ func (md *model) updateMenu(msg gruid.Msg) gruid.Effect {
 		case modeEquip:
 			items := md.g.Player.Magaras
 			it := items[md.menu.Active()]
-			md.description.StyledText = ui.NewStyledText(it.Desc(md.g)).Format(UIWidth/2 - 1 - 2)
+			md.description.StyledText = ui.Text(it.Desc(md.g)).Format(UIWidth/2 - 1 - 2)
 			if act != ui.MenuInvoke {
 				break
 			}
@@ -384,7 +366,7 @@ func (md *model) Draw() gruid.Grid {
 		switch md.menuMode {
 		case modeInventory, modeEquip, modeEvokation:
 			md.gd.Copy(md.menu.Draw())
-			md.description.Box = &ui.Box{Title: ui.NewStyledText("Description")}
+			md.description.Box = &ui.Box{Title: ui.Text("Description")}
 			md.description.Draw(md.gd.Slice(md.gd.Range().Columns(UIWidth/2+1, UIWidth)))
 		case modeHelpKeys:
 			md.gd.Copy(md.help.Draw())

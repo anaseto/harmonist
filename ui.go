@@ -620,6 +620,15 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 	return again, eff, err
 }
 
+func altBgEntries(entries []ui.MenuEntry) {
+	for i := range entries {
+		if i%2 == 1 {
+			st := entries[i].Text.Style()
+			entries[i].Text = entries[i].Text.WithStyle(st.WithBg(ColorBgLOS))
+		}
+	}
+}
+
 func (md *model) OpenIventory() {
 	entries := []ui.MenuEntry{}
 	items := []item{md.g.Player.Inventory.Body, md.g.Player.Inventory.Neck, md.g.Player.Inventory.Misc}
@@ -627,16 +636,17 @@ func (md *model) OpenIventory() {
 	r := 'a'
 	for i, it := range items {
 		entries = append(entries, ui.MenuEntry{
-			Text: fmt.Sprintf("%c - %s (%s)", r, it.ShortDesc(md.g), parts[i]),
+			Text: ui.Textf("%c - %s (%s)", r, it.ShortDesc(md.g), parts[i]),
 			Keys: []gruid.Key{gruid.Key(r)},
 		})
 		r++
 	}
-	md.menu.SetBox(&ui.Box{Title: ui.NewStyledText("Inventory").WithStyle(gruid.Style{}.WithFg(ColorYellow))})
+	altBgEntries(entries)
+	md.menu.SetBox(&ui.Box{Title: ui.Text("Inventory").WithStyle(gruid.Style{}.WithFg(ColorYellow))})
 	md.menu.SetEntries(entries)
 	md.mode = modeMenu
 	md.menuMode = modeInventory
-	md.description.StyledText = ui.NewStyledText(items[md.menu.Active()].Desc(md.g)).Format(UIWidth/2 - 1 - 2)
+	md.description.StyledText = ui.Text(items[md.menu.Active()].Desc(md.g)).Format(UIWidth/2 - 1 - 2)
 }
 
 func (md *model) EvokeMagaraMenu() {
@@ -645,16 +655,17 @@ func (md *model) EvokeMagaraMenu() {
 	r := 'a'
 	for _, it := range items {
 		entries = append(entries, ui.MenuEntry{
-			Text: fmt.Sprintf("%c - %s ", r, it.ShortDesc()),
+			Text: ui.Textf("%c - %s ", r, it.ShortDesc()),
 			Keys: []gruid.Key{gruid.Key(r)},
 		})
 		r++
 	}
-	md.menu.SetBox(&ui.Box{Title: ui.NewStyledText("Evoke Magara").WithStyle(gruid.Style{}.WithFg(ColorYellow))})
+	altBgEntries(entries)
+	md.menu.SetBox(&ui.Box{Title: ui.Text("Evoke Magara").WithStyle(gruid.Style{}.WithFg(ColorYellow))})
 	md.menu.SetEntries(entries)
 	md.mode = modeMenu
 	md.menuMode = modeEvokation
-	md.description.StyledText = ui.NewStyledText(items[md.menu.Active()].Desc(md.g)).Format(UIWidth/2 - 1 - 2)
+	md.description.StyledText = ui.Text(items[md.menu.Active()].Desc(md.g)).Format(UIWidth/2 - 1 - 2)
 }
 
 func (md *model) EquipMagaraMenu() {
@@ -663,16 +674,17 @@ func (md *model) EquipMagaraMenu() {
 	r := 'a'
 	for _, it := range items {
 		entries = append(entries, ui.MenuEntry{
-			Text: fmt.Sprintf("%c - %s ", r, it.ShortDesc()),
+			Text: ui.Textf("%c - %s ", r, it.ShortDesc()),
 			Keys: []gruid.Key{gruid.Key(r)},
 		})
 		r++
 	}
-	md.menu.SetBox(&ui.Box{Title: ui.NewStyledText("Equip Magara").WithStyle(gruid.Style{}.WithFg(ColorYellow))})
+	altBgEntries(entries)
+	md.menu.SetBox(&ui.Box{Title: ui.Text("Equip Magara").WithStyle(gruid.Style{}.WithFg(ColorYellow))})
 	md.menu.SetEntries(entries)
 	md.mode = modeMenu
 	md.menuMode = modeEquip
-	md.description.StyledText = ui.NewStyledText(items[md.menu.Active()].Desc(md.g)).Format(UIWidth/2 - 1 - 2)
+	md.description.StyledText = ui.Text(items[md.menu.Active()].Desc(md.g)).Format(UIWidth/2 - 1 - 2)
 }
 
 //func (ui *model) HandleKey(rka runeKeyAction) (again bool, quit bool, err error) {
