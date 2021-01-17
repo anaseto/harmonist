@@ -549,10 +549,11 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 			md.logs = md.logs[:len(md.logs)-1]
 		}
 		for _, e := range g.Log[len(md.logs):] {
-			md.logs = append(md.logs, e.MText)
+			md.logs = append(md.logs, md.pagerMarkup.WithText(e.MText))
 		}
 		md.pager.SetLines(md.logs)
 		md.mode = modePager
+		md.pagerMode = modeLogs
 		again = true
 	case ActionSave:
 		again = true

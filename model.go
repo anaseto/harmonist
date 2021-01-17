@@ -17,13 +17,19 @@ const (
 	modeQuitConfirmation
 )
 
+type pagerMode int
+
+const (
+	modeLogs pagerMode = iota
+	modeHelpKeys
+)
+
 type menuMode int
 
 const (
 	modeInventory menuMode = iota
 	modeSettings
 	modeGameMenu
-	modeHelpKeys
 	modeEvokation
 	modeEquip
 )
@@ -33,14 +39,16 @@ type model struct {
 	gd          gruid.Grid
 	mode        mode
 	menuMode    menuMode
+	pagerMode   pagerMode
 	menu        *ui.Menu
 	help        *ui.Menu
 	status      *ui.Menu
 	log         *ui.Label
 	description *ui.Label
 	pager       *ui.Pager
+	pagerMarkup ui.StyledText
 	mp          mapUI
-	logs        []string
+	logs        []ui.StyledText
 	keysNormal  map[gruid.Key]action
 	keysTarget  map[gruid.Key]action
 	quit        bool
@@ -134,20 +142,15 @@ func (md *model) initWidgets() {
 	md.description = ui.NewLabel(ui.StyledText{}.WithStyle(gruid.Style{}).WithMarkup('t', gruid.Style{Fg: ColorYellow}))
 	md.description.AdjustWidth = false
 	md.pager = ui.NewPager(ui.PagerConfig{
-		Grid:       gruid.NewGrid(UIWidth, UIHeight-1),
-		Box:        &ui.Box{},
-		StyledText: ui.StyledText{}.WithMarkups(logStyles),
+		Grid: gruid.NewGrid(UIWidth, UIHeight-1),
+		Box:  &ui.Box{},
 	})
+	md.pagerMarkup = ui.StyledText{}.WithMarkups(logStyles)
 	style := ui.MenuStyle{
 		Active: gruid.Style{}.WithFg(ColorYellow),
 	}
 	md.menu = ui.NewMenu(ui.MenuConfig{
 		Grid:  gruid.NewGrid(UIWidth/2, UIHeight-1),
-		Box:   &ui.Box{},
-		Style: style,
-	})
-	md.help = ui.NewMenu(ui.MenuConfig{
-		Grid:  gruid.NewGrid(UIWidth, UIHeight-1),
 		Box:   &ui.Box{},
 		Style: style,
 	})
@@ -368,8 +371,6 @@ func (md *model) Draw() gruid.Grid {
 			md.gd.Copy(md.menu.Draw())
 			md.description.Box = &ui.Box{Title: ui.Text("Description")}
 			md.description.Draw(md.gd.Slice(md.gd.Range().Columns(UIWidth/2+1, UIWidth)))
-		case modeHelpKeys:
-			md.gd.Copy(md.help.Draw())
 		}
 	}
 	md.gd.Slice(md.gd.Range().Line(UIHeight - 1)).Copy(md.status.Draw())

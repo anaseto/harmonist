@@ -338,29 +338,28 @@ const (
 )
 
 func (md *model) DrawKeysDescription(title string, actions []string) {
-	md.menuMode = modeHelpKeys
-	md.mode = modeMenu
+	md.pagerMode = modeHelpKeys
+	md.mode = modePager
 	if CustomKeys {
 		title = fmt.Sprintf(" Default %s ", title)
 	} else {
 		title = fmt.Sprintf(" %s ", title)
 	}
-	md.help.SetBox(&ui.Box{Title: ui.Text(title).WithStyle(gruid.Style{}.WithFg(ColorYellow))})
-	entries := []ui.MenuEntry{}
+	md.pager.SetBox(&ui.Box{Title: ui.Text(title).WithStyle(gruid.Style{}.WithFg(ColorYellow))})
+	lines := []ui.StyledText{}
 	for i := 0; i < len(actions)-1; i += 2 {
 		stt := ui.StyledText{}
 		if actions[i+1] != "" {
 			stt = stt.WithTextf(" %-36s %s", actions[i], actions[i+1])
 		} else {
-			stt = stt.WithTextf(" @h%s@N ", actions[i]).WithStyle(gruid.Style{}.WithFg(ColorCyan))
+			stt = stt.WithTextf(" %s ", actions[i]).WithStyle(gruid.Style{}.WithFg(ColorCyan))
 		}
-		entries = append(entries, ui.MenuEntry{
-			Disabled: true,
-			Text:     stt,
-		})
+		if i%4 == 2 {
+			stt = stt.WithStyle(stt.Style().WithBg(ColorBgLOS))
+		}
+		lines = append(lines, stt)
 	}
-	altBgEntries(entries)
-	md.help.SetEntries(entries)
+	md.pager.SetLines(lines)
 }
 
 func (md *model) KeysHelp() {
@@ -683,7 +682,7 @@ func (md *model) updateStatus() {
 		entries = append(entries, ui.MenuEntry{Text: stt.WithText(sttext), Disabled: true})
 	}
 
-	altBgEntries(entries)
+	//altBgEntries(entries)
 	md.status.SetEntries(entries)
 }
 
