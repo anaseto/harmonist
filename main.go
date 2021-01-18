@@ -3,117 +3,106 @@
 package main
 
 import (
-	"bytes"
 	"context"
+	"flag"
+	"fmt"
+	"io"
 	"log"
+	"os"
+	"path/filepath"
 
 	"github.com/anaseto/gruid"
+	"github.com/anaseto/gruid/ui"
 )
 
 func main() {
-	gd := gruid.NewGrid(80, 24)
-	m := &model{gd: gd, g: &game{}}
-	framebuf := &bytes.Buffer{} // for compressed recording
+	optVersion := flag.Bool("v", false, "print version number")
+	optNoAnim := flag.Bool("n", false, "no animations")
+	optReplay := flag.String("r", "", "path to replay file (_ means default location)")
+	opt256colors := new(bool)
+	if Terminal {
+		opt256colors = flag.Bool("x", false, "use xterm 256-color palette (solarized approximation)")
+	}
+	flag.Parse()
 
-	// define new application
+	if *optVersion {
+		fmt.Println(Version)
+		os.Exit(0)
+	}
+	if *optNoAnim {
+		DisableAnimations = true
+	}
+	if *opt256colors {
+		Xterm256Color = true // TODO: map the colors
+	}
+	if *optReplay != "" {
+		RunReplay(*optReplay)
+	} else {
+		RunGame()
+	}
+}
+
+func RunGame() {
+	gd := gruid.NewGrid(UIWidth, UIHeight)
+	m := &model{gd: gd, g: &game{}}
+	var repw io.WriteCloser
+	dir, err := DataDir()
+	defer func() {
+		if repw != nil {
+			repw.Close()
+		}
+		if m.finished && dir != "" {
+			if err := os.Rename(filepath.Join(dir, "replay.part"), filepath.Join(dir, "replay")); err != nil {
+				log.Print("writing replay file: %v", err)
+			}
+		}
+	}()
+	if err == nil {
+		replay, err := os.OpenFile(filepath.Join(dir, "replay.part"), os.O_RDWR|os.O_APPEND|os.O_CREATE, 0666)
+		if err == nil {
+			repw = replay
+		} else {
+			log.Printf("writing to replay file: %v", err)
+		}
+	} else {
+		log.Print(err)
+	}
+
 	app := gruid.NewApp(gruid.AppConfig{
 		Driver:      driver,
 		Model:       m,
-		FrameWriter: framebuf,
+		FrameWriter: repw,
 	})
-
-	// start application
 	if err := app.Start(context.Background()); err != nil {
 		log.Fatal(err)
 	}
 }
 
-//func main() {
-//optSolarized := flag.Bool("s", false, "Use true 16-color solarized palette")
-//optVersion := flag.Bool("v", false, "print version number")
-//optCenteredCamera := flag.Bool("c", false, "centered camera")
-//color8 := false
-//if runtime.GOOS == "windows" {
-//color8 = true
-//}
-//opt8colors := flag.Bool("o", color8, "use only 8-color palette")
-//opt256colors := flag.Bool("x", !color8, "use xterm 256-color palette (solarized approximation)")
-//optNoAnim := flag.Bool("n", false, "no animations")
-//optReplay := flag.String("r", "", "path to replay file")
-//flag.Parse()
-//if *optSolarized {
-//SolarizedPalette()
-//} else if color8 && !*opt256colors || !color8 && *opt8colors {
-//SolarizedPalette()
-//Simple8ColorPalette()
-//}
-//if *optVersion {
-//fmt.Println(Version)
-//os.Exit(0)
-//}
-//if *optReplay != "" {
-//err := Replay(*optReplay)
-//if err != nil {
-//log.Printf("harmonist: replay: %v\n", err)
-//os.Exit(1)
-//}
-//os.Exit(0)
-//}
-//if *optCenteredCamera {
-//CenteredCamera = true
-//}
-//if *optNoAnim {
-//DisableAnimations = true
-//}
-
-//ui := &model{}
-//g := &state{}
-//ui.st = g
-//if CenteredCamera {
-//UIWidth = 80
-//}
-//err := ui.Init()
-//if err != nil {
-//fmt.Fprintf(os.Stderr, "harmonist: %v\n", err)
-//os.Exit(1)
-//}
-//defer ui.Close()
-
-//LinkColors()
-//GameConfig.DarkLOS = true
-//GameConfig.Version = Version
-
-//load, err := g.LoadConfig()
-//var cfgerrstr string
-//var cfgreseterr string
-//if load && err != nil {
-//cfgerrstr = fmt.Sprintf("Error loading config: %s", err.Error())
-//err = g.SaveConfig()
-//if err != nil {
-//cfgreseterr = fmt.Sprintf("Error resetting config: %s", err.Error())
-//}
-//} else if load {
-//CustomKeys = true
-//}
-//ApplyConfig()
-//ui.PostConfig()
-//ui.DrawWelcome()
-//load, err = g.Load()
-//if !load {
-//g.InitLevel()
-//} else if err != nil {
-//g.InitLevel()
-//g.PrintfStyled("Error: %v", logError, err)
-//g.PrintStyled("Could not load saved state… starting new state.", logError)
-//} else {
-//ui.DrawBufferInit()
-//}
-//if cfgerrstr != "" {
-//g.PrintStyled(cfgerrstr, logError)
-//}
-//if cfgreseterr != "" {
-//g.PrintStyled(cfgreseterr, logError)
-//}
-//g.ui = ui
-//g.EventLoop()
-//}
+func RunReplay(file string) {
+	if file == "_" {
+		dir, err := DataDir()
+		if err == nil {
+			file = filepath.Join(dir, "replay")
+		} else {
+			log.Print(err)
+		}
+	}
+	replay, err := os.Open(file)
+	if err != nil {
+		log.Fatalf("loading replay file: %v", err)
+	}
+	defer replay.Close()
+	fd, err := gruid.NewFrameDecoder(replay)
+	gd := gruid.NewGrid(UIWidth, UIHeight)
+	rep := ui.NewReplay(ui.ReplayConfig{
+		Grid:         gd,
+		FrameDecoder: fd,
+	})
+	app := gruid.NewApp(gruid.AppConfig{
+		Driver: driver,
+		Model:  rep,
+	})
+	if err := app.Start(context.Background()); err != nil {
+		log.Fatal(err)
+	}
+}

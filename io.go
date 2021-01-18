@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 )
 
-func (g *game) DataDir() (string, error) {
+func DataDir() (string, error) {
 	var xdg string
 	if os.Getenv("GOOS") == "windows" {
 		xdg = os.Getenv("LOCALAPPDATA")
@@ -25,14 +25,14 @@ func (g *game) DataDir() (string, error) {
 	if err != nil {
 		err = os.MkdirAll(dataDir, 0755)
 		if err != nil {
-			return "", fmt.Errorf("%v\n", err)
+			return "", fmt.Errorf("building data directory: %v\n", err)
 		}
 	}
 	return dataDir, nil
 }
 
 func (g *game) Save() error {
-	dataDir, err := g.DataDir()
+	dataDir, err := DataDir()
 	if err != nil {
 		g.Print(err.Error())
 		return err
@@ -56,7 +56,7 @@ func (g *game) RemoveSaveFile() error {
 }
 
 func (g *game) Load() (bool, error) {
-	dataDir, err := g.DataDir()
+	dataDir, err := DataDir()
 	if err != nil {
 		return false, err
 	}
@@ -82,7 +82,7 @@ func (g *game) Load() (bool, error) {
 }
 
 func (g *game) SaveConfig() error {
-	dataDir, err := g.DataDir()
+	dataDir, err := DataDir()
 	if err != nil {
 		g.Print(err.Error())
 		return err
@@ -102,7 +102,7 @@ func (g *game) SaveConfig() error {
 }
 
 func (g *game) LoadConfig() (bool, error) {
-	dataDir, err := g.DataDir()
+	dataDir, err := DataDir()
 	if err != nil {
 		return false, err
 	}
@@ -128,7 +128,7 @@ func (g *game) LoadConfig() (bool, error) {
 }
 
 func (g *game) RemoveDataFile(file string) error {
-	dataDir, err := g.DataDir()
+	dataDir, err := DataDir()
 	if err != nil {
 		return err
 	}
@@ -144,7 +144,7 @@ func (g *game) RemoveDataFile(file string) error {
 }
 
 func (g *game) WriteDump() error {
-	dataDir, err := g.DataDir()
+	dataDir, err := DataDir()
 	if err != nil {
 		return err
 	}

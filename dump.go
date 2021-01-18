@@ -376,7 +376,7 @@ func (g *game) SimplifedDump(err error) string {
 	if err != nil {
 		fmt.Fprintf(buf, "Error writing dump: %v.\n", err)
 	} else {
-		dataDir, err := g.DataDir()
+		dataDir, err := DataDir()
 		if err == nil {
 			if dataDir == "" {
 				fmt.Fprintf(buf, "Full state statistics written below.\n")

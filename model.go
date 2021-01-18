@@ -52,6 +52,7 @@ type model struct {
 	keysNormal  map[gruid.Key]action
 	keysTarget  map[gruid.Key]action
 	quit        bool
+	finished    bool
 }
 
 type mapUI struct {
@@ -213,6 +214,14 @@ func (md *model) Update(msg gruid.Msg) gruid.Effect {
 	if _, ok := msg.(gruid.MsgInit); ok {
 		return md.init()
 	}
+	if md.finished {
+		switch msg.(type) {
+		case gruid.MsgKeyDown:
+			return gruid.End()
+		default:
+			return nil
+		}
+	}
 	switch md.mode {
 	case modeQuit:
 		return nil
@@ -287,6 +296,11 @@ func (md *model) updateKeyDown(msg gruid.MsgKeyDown) gruid.Effect {
 func (md *model) EndTurn() {
 	md.mode = modeNormal
 	md.g.EndTurn()
+	if md.g.Player.HP <= 0 {
+		md.Death()
+		md.finished = true
+		return
+	}
 	md.g.ComputeNoise()
 	md.g.ComputeLOS()
 	md.g.ComputeMonsterLOS()

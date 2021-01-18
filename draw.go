@@ -11,10 +11,15 @@ import (
 	"github.com/anaseto/gruid/ui"
 )
 
+const (
+	UIWidth  = 80
+	UIHeight = 24
+)
+
 var (
-	UIWidth                = 80
-	UIHeight               = 24
 	DisableAnimations bool = false
+	Xterm256Color          = false
+	Terminal               = false
 )
 
 const (

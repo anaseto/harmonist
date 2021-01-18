@@ -15,6 +15,7 @@ func init() {
 	dr := tcell.NewDriver(tcell.Config{StyleManager: st})
 	//dr.PreventQuit()
 	driver = dr
+	Terminal = true
 }
 
 // styler implements the tcell.StyleManager interface.

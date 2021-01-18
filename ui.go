@@ -570,7 +570,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		if errdump != nil {
 			g.PrintfStyled("Error: %v", logError, errdump)
 		} else {
-			dataDir, _ := g.DataDir()
+			dataDir, _ := DataDir()
 			if dataDir != "" {
 				g.Printf("Game statistics written to %s.", filepath.Join(dataDir, "dump"))
 			} else {
@@ -916,11 +916,8 @@ func (md *model) Death() {
 		NoAchievement.Get(g)
 	}
 	g.Print("You die... [(x) to continue]")
-	//ui.DrawDungeonView(NormalMode)
-	//ui.WaitForContinue(-1)
 	err := g.WriteDump()
 	md.Dump(err)
-	//ui.WaitForContinue(-1)
 }
 
 func (md *model) Win() {
