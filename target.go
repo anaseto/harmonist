@@ -33,12 +33,7 @@ func (md *model) Examine(p gruid.Point) {
 	if !valid(p) {
 		return
 	}
-	if md.mp.ex == nil {
-		md.mp.ex = &examination{
-			pos:     p,
-			objects: []gruid.Point{},
-		}
-	} else if md.mp.ex.pos == p {
+	if md.mp.ex.pos == p {
 		return
 	}
 	md.SetCursor(p)

@@ -207,6 +207,7 @@ func (md *model) init() gruid.Effect {
 	md.g.ComputeLOS()
 	md.g.ComputeMonsterLOS()
 	md.updateStatus()
+	md.mp.ex = &examination{}
 	return nil
 }
 
@@ -278,6 +279,9 @@ func (md *model) updateNormal(msg gruid.Msg) gruid.Effect {
 
 func (md *model) updateKeyDown(msg gruid.MsgKeyDown) gruid.Effect {
 	md.g.Ev = &simpleEvent{EAction: PlayerTurn, ERank: md.g.Turn}
+	if !md.mp.kbTargeting && valid(md.mp.ex.pos) {
+		md.CancelExamine()
+	}
 	again, eff, err := md.normalModeKeyDown(msg.Key)
 	if again {
 		return eff
@@ -294,7 +298,11 @@ func (md *model) updateMouse(msg gruid.MsgMouse) gruid.Effect {
 	p := msg.P.Add(gruid.Point{0, -2}) // relative position ignoring log
 	switch msg.Action {
 	case gruid.MouseMove:
-		md.Examine(p)
+		if valid(p) {
+			md.Examine(p)
+		} else {
+			md.CancelExamine()
+		}
 	}
 	return nil
 }
@@ -372,14 +380,14 @@ func (md *model) Draw() gruid.Grid {
 		p := idxtopos(i)
 		r, fg, bg := md.PositionDrawing(p)
 		attrs := AttrInMap
-		if md.g.Highlight[p] || md.mp.ex != nil && p == md.mp.ex.pos {
+		if md.g.Highlight[p] || p == md.mp.ex.pos {
 			attrs |= AttrReverse
 		}
 		dgd.Set(p, gruid.Cell{Rune: r, Style: gruid.Style{Fg: fg, Bg: bg, Attrs: attrs}})
 	}
 	md.log.StyledText = md.DrawLog()
 	md.log.Draw(md.gd.Slice(md.gd.Range().Lines(0, 2)))
-	if md.mp.ex != nil && md.mp.ex.pos != InvalidPos {
+	if md.mp.ex.pos != InvalidPos {
 		md.DrawPosInfo()
 	}
 	switch md.mode {
