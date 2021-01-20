@@ -88,7 +88,7 @@ type posInfo struct {
 	Sees        bool
 	Player      bool
 	Monster     *monster
-	Cell        string
+	Cell        cell
 	Cloud       string
 	Lighted     bool
 }
@@ -110,12 +110,12 @@ func (md *model) DrawPosInfo() {
 
 	features := []string{}
 	if !info.Unknown {
-		features = append(features, info.Cell)
+		features = append(features, info.Cell.ShortDesc(g, info.Pos))
 		if info.Cloud != "" && info.Sees {
 			features = append(features, info.Cloud)
 		}
 		if info.Lighted && info.Sees {
-			features = append(features, "(lighted)")
+			features = append(features, "lighted")
 		}
 	} else {
 		features = append(features, "unknown place")
@@ -126,18 +126,17 @@ func (md *model) DrawPosInfo() {
 	if info.Unreachable {
 		features = append(features, "unreachable")
 	}
-	t := " Terrain Features"
 	if !info.Sees && !info.Unknown {
-		t += " (seen)"
+		features = append(features, "seen")
 	} else if info.Unknown {
-		t += " (unknown)"
+		//t += " unknown"
 	}
+	t := features[0] + " (" + strings.Join(features[1:], ", ") + ")"
 	fg := ColorFg
 	if info.Unreachable {
-		t += " - Unreachable"
 		fg = ColorOrange
 	}
-	formatBox(t+" ", strings.Join(features, ", "), fg)
+	formatBox(t+" ", info.Cell.Desc(g, info.Pos), fg)
 
 	if info.Player {
 		formatBox("Player", "This is you.", ColorBlue)
@@ -147,7 +146,7 @@ func (md *model) DrawPosInfo() {
 	if !mons.Exists() {
 		return
 	}
-	title := fmt.Sprintf(" %s (%s %s) ", mons.Kind, mons.State, mons.Dir.String())
+	title := fmt.Sprintf("%s (%s %s)", mons.Kind, mons.State, mons.Dir.String())
 	fg = mons.Color(g)
 	var mdesc []string
 
@@ -230,6 +229,7 @@ func (md *model) updatePosInfo() {
 		if g.Noise[pos] || g.NoiseIllusion[pos] {
 			pi.Noise = true
 		}
+		md.mp.ex.info = pi
 		return
 		//case !targ.Reachable(g, pos):
 		//pi.Unreachable = true
@@ -252,7 +252,7 @@ func (md *model) updatePosInfo() {
 	if cld, ok := g.Clouds[pos]; ok && g.Player.Sees(pos) {
 		pi.Cloud = cld.String()
 	}
-	pi.Cell = c.ShortDesc(g, pos)
+	pi.Cell = c
 	if g.Illuminated[idx(pos)] && c.IsIlluminable() && g.Player.Sees(pos) {
 		pi.Lighted = true
 	}

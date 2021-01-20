@@ -366,7 +366,7 @@ func (md *model) Draw() gruid.Grid {
 		p := idxtopos(i)
 		r, fg, bg := md.PositionDrawing(p)
 		attrs := AttrInMap
-		if md.g.Highlight[p] {
+		if md.g.Highlight[p] || md.mp.targeting && p == md.mp.ex.pos {
 			attrs |= AttrReverse
 		}
 		dgd.Set(p, gruid.Cell{Rune: r, Style: gruid.Style{Fg: fg, Bg: bg, Attrs: attrs}})
