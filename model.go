@@ -275,21 +275,16 @@ func (md *model) updateNormal(msg gruid.Msg) gruid.Effect {
 }
 
 func (md *model) updateKeyDown(msg gruid.MsgKeyDown) gruid.Effect {
-	switch msg.Key {
-	case gruid.KeyEscape:
-		return gruid.End()
-	default:
-		md.g.Ev = &simpleEvent{EAction: PlayerTurn, ERank: md.g.Turn}
-		again, eff, err := md.normalModeKeyDown(msg.Key)
-		if again {
-			return eff
-		}
-		if err != nil {
-			md.g.Print(err.Error())
-			return eff
-		}
-		md.EndTurn()
+	md.g.Ev = &simpleEvent{EAction: PlayerTurn, ERank: md.g.Turn}
+	again, eff, err := md.normalModeKeyDown(msg.Key)
+	if again {
+		return eff
 	}
+	if err != nil {
+		md.g.Print(err.Error())
+		return eff
+	}
+	md.EndTurn()
 	return nil
 }
 
