@@ -26,23 +26,25 @@ func (md *model) CancelExamine() {
 	md.g.Highlight = nil
 	md.g.MonsterTargLOS = nil
 	md.HideCursor()
-	md.mp.targeting = false
+	md.mp.kbTargeting = false
 }
 
-func (md *model) Examine(pos gruid.Point) {
-	if !valid(pos) {
+func (md *model) Examine(p gruid.Point) {
+	if !valid(p) {
 		return
 	}
 	if md.mp.ex == nil {
 		md.mp.ex = &examination{
-			pos:     pos,
+			pos:     p,
 			objects: []gruid.Point{},
 		}
+	} else if md.mp.ex.pos == p {
+		return
 	}
-	md.SetCursor(pos)
+	md.SetCursor(p)
 	md.ComputeHighlight()
-	m := md.g.MonsterAt(pos)
-	if m.Exists() && md.g.Player.Sees(pos) {
+	m := md.g.MonsterAt(p)
+	if m.Exists() && md.g.Player.Sees(p) {
 		md.g.ComputeMonsterCone(m)
 	} else {
 		md.g.MonsterTargLOS = nil
@@ -50,8 +52,8 @@ func (md *model) Examine(pos gruid.Point) {
 	md.updatePosInfo()
 }
 
-func (md *model) StartExamine() {
-	md.mp.targeting = true
+func (md *model) KeyboardExamine() {
+	md.mp.kbTargeting = true
 	g := md.g
 	pos := g.Player.Pos
 	minDist := 999
@@ -104,7 +106,7 @@ func (md *model) DrawPosInfo() {
 	y := 2
 	formatBox := func(title, s string, fg gruid.Color) {
 		md.description.Box = &ui.Box{Title: ui.NewStyledText(title, gruid.Style{}.WithFg(fg))}
-		md.description.StyledText = md.description.StyledText.WithText(s).Format(DungeonWidth/2 - 1)
+		md.description.StyledText = md.description.StyledText.WithText(s).Format(DungeonWidth/2 - 2)
 		y += md.description.Draw(md.gd.Slice(gruid.NewRange(0, y, DungeonWidth/2, 2+DungeonHeight).Add(p))).Size().Y
 	}
 

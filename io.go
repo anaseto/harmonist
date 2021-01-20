@@ -52,6 +52,7 @@ func (g *game) Save() error {
 }
 
 func (g *game) RemoveSaveFile() error {
+	g.RemoveDataFile("replay.part")
 	return g.RemoveDataFile("save")
 }
 

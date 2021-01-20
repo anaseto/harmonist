@@ -56,8 +56,8 @@ type model struct {
 }
 
 type mapUI struct {
-	targeting bool
-	ex        *examination
+	kbTargeting bool
+	ex          *examination
 }
 
 func (md *model) initKeys() {
@@ -270,6 +270,8 @@ func (md *model) updateNormal(msg gruid.Msg) gruid.Effect {
 	switch msg := msg.(type) {
 	case gruid.MsgKeyDown:
 		eff = md.updateKeyDown(msg)
+	case gruid.MsgMouse:
+		eff = md.updateMouse(msg)
 	}
 	return eff
 }
@@ -285,6 +287,15 @@ func (md *model) updateKeyDown(msg gruid.MsgKeyDown) gruid.Effect {
 		return eff
 	}
 	md.EndTurn()
+	return nil
+}
+
+func (md *model) updateMouse(msg gruid.MsgMouse) gruid.Effect {
+	p := msg.P.Add(gruid.Point{0, -2}) // relative position ignoring log
+	switch msg.Action {
+	case gruid.MouseMove:
+		md.Examine(p)
+	}
 	return nil
 }
 
@@ -361,14 +372,14 @@ func (md *model) Draw() gruid.Grid {
 		p := idxtopos(i)
 		r, fg, bg := md.PositionDrawing(p)
 		attrs := AttrInMap
-		if md.g.Highlight[p] || md.mp.targeting && p == md.mp.ex.pos {
+		if md.g.Highlight[p] || md.mp.ex != nil && p == md.mp.ex.pos {
 			attrs |= AttrReverse
 		}
 		dgd.Set(p, gruid.Cell{Rune: r, Style: gruid.Style{Fg: fg, Bg: bg, Attrs: attrs}})
 	}
 	md.log.StyledText = md.DrawLog()
 	md.log.Draw(md.gd.Slice(md.gd.Range().Lines(0, 2)))
-	if md.mp.targeting {
+	if md.mp.ex != nil && md.mp.ex.pos != InvalidPos {
 		md.DrawPosInfo()
 	}
 	switch md.mode {

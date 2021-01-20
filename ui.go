@@ -368,7 +368,7 @@ func (md *model) OptionalDescendConfirmation(st stair) (err error) {
 
 func (md *model) normalModeKeyDown(key gruid.Key) (again bool, eff gruid.Effect, err error) {
 	action := md.keysNormal[key]
-	if md.mp.targeting {
+	if md.mp.kbTargeting {
 		action = md.keysTarget[key]
 	}
 	again, eff, err = md.normalModeAction(action)
@@ -396,7 +396,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 	g := md.g
 	switch action {
 	case ActionW, ActionS, ActionN, ActionE:
-		if !md.mp.targeting {
+		if !md.mp.kbTargeting {
 			err = g.PlayerBump(To(KeyToDir(action), g.Player.Pos))
 		} else {
 			p := To(KeyToDir(action), md.mp.ex.pos)
@@ -406,7 +406,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 			again = true
 		}
 	case ActionRunW, ActionRunS, ActionRunN, ActionRunE:
-		if !md.mp.targeting {
+		if !md.mp.kbTargeting {
 			err = g.GoToDir(KeyToDir(action))
 		} else {
 			q := InvalidPos
@@ -537,7 +537,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		err = g.Autoexplore()
 	case ActionExamine:
 		again = true
-		md.StartExamine()
+		md.KeyboardExamine()
 	case ActionHelp, ActionMenuCommandHelp:
 		md.KeysHelp()
 		again = true
