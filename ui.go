@@ -415,18 +415,18 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		case BarrelCell:
 			//ui.MenuSelectedAnimation(MenuInteract, true)
 			err = g.Rest()
-			if err != nil {
-				//ui.MenuSelectedAnimation(MenuInteract, false)
-			}
+			//if err != nil {
+			//ui.MenuSelectedAnimation(MenuInteract, false)
+			//}
 		case MagaraCell:
 			again = true
 			md.EquipMagaraMenu()
 		case StoneCell:
 			//ui.MenuSelectedAnimation(MenuInteract, true)
 			err = g.ActivateStone()
-			if err != nil {
-				//ui.MenuSelectedAnimation(MenuInteract, false)
-			}
+			//if err != nil {
+			//ui.MenuSelectedAnimation(MenuInteract, false)
+			//}
 		case ScrollCell:
 			err = md.ReadScroll()
 			err = md.CleanError(err)
@@ -865,7 +865,8 @@ func (md *model) Dump(err error) {
 }
 
 func (md *model) CriticalHPWarning() {
-	md.confirmation = ConfirmationHPCritical
+	md.pause = PauseHPCritical
+	md.g.PrintStyled("*** CRITICAL HP WARNING *** [(x) to continue]", logCritic)
 }
 
 func (md *model) Quit() {

@@ -74,6 +74,7 @@ func (g *game) PrintEntry(e logEntry) {
 		le := g.Log[len(g.Log)-1]
 		if le.Text == e.Text {
 			le.Dups++
+			le.MText = le.String()
 			g.Log[len(g.Log)-1] = le
 			return
 		}

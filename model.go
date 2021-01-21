@@ -35,33 +35,32 @@ const (
 )
 
 type model struct {
-	g            *game // game state
-	gd           gruid.Grid
-	mode         mode
-	menuMode     menuMode
-	pagerMode    pagerMode
-	menu         *ui.Menu
-	help         *ui.Menu
-	status       *ui.Menu
-	log          *ui.Label
-	description  *ui.Label
-	pager        *ui.Pager
-	pagerMarkup  ui.StyledText
-	mp           mapUI
-	logs         []ui.StyledText
-	keysNormal   map[gruid.Key]action
-	keysTarget   map[gruid.Key]action
-	quit         bool
-	finished     bool
-	confirmation confirmationMode
+	g           *game // game state
+	gd          gruid.Grid
+	mode        mode
+	menuMode    menuMode
+	pagerMode   pagerMode
+	menu        *ui.Menu
+	help        *ui.Menu
+	status      *ui.Menu
+	log         *ui.Label
+	description *ui.Label
+	pager       *ui.Pager
+	pagerMarkup ui.StyledText
+	mp          mapUI
+	logs        []ui.StyledText
+	keysNormal  map[gruid.Key]action
+	keysTarget  map[gruid.Key]action
+	quit        bool
+	finished    bool
+	pause       confirmationMode
 }
 
 type confirmationMode int
 
 const (
-	ConfirmationNone confirmationMode = iota
-	ConfirmationHPCritical
-	ConfirmationHPCriticalWait
+	PauseNone confirmationMode = iota
+	PauseHPCritical
 )
 
 type mapUI struct {
@@ -198,6 +197,7 @@ func (md *model) init() gruid.Effect {
 	md.applyConfig()
 	//ui.DrawWelcome()
 	load, err = g.Load()
+	md.g.ui = md // TODO: avoid this? (though it's handy)
 	if !load {
 		g.InitLevel()
 	} else if err != nil {
@@ -233,23 +233,6 @@ func (md *model) Update(msg gruid.Msg) gruid.Effect {
 			return nil
 		}
 	}
-	switch md.confirmation {
-	case ConfirmationNone:
-	case ConfirmationHPCritical:
-		md.g.PrintStyled("*** CRITICAL HP WARNING *** [(x) to continue]", logCritic)
-		md.confirmation = ConfirmationHPCriticalWait
-		return nil
-	case ConfirmationHPCriticalWait:
-		switch msg := msg.(type) {
-		case gruid.MsgKeyDown:
-			switch msg.Key {
-			case "x", "X", gruid.KeyEnter, gruid.KeySpace:
-				md.confirmation = ConfirmationNone
-				md.g.Print("Ok. Be careful, then.")
-			}
-		}
-		return nil
-	}
 	switch md.mode {
 	case modeQuit:
 		return nil
@@ -267,6 +250,19 @@ func (md *model) Update(msg gruid.Msg) gruid.Effect {
 		md.mode = modeQuit
 		md.g.Save() // TODO: log error ?
 		return gruid.End()
+	}
+	switch md.pause {
+	case PauseNone:
+	case PauseHPCritical:
+		switch msg := msg.(type) {
+		case gruid.MsgKeyDown:
+			switch msg.Key {
+			case "x", "X", gruid.KeyEnter, gruid.KeySpace:
+				md.pause = PauseNone
+				md.g.Print("Ok. Be careful, then.")
+			}
+		}
+		return nil
 	}
 	var eff gruid.Effect
 	switch md.mode {
@@ -310,15 +306,13 @@ func (md *model) updateKeyDown(msg gruid.MsgKeyDown) gruid.Effect {
 		md.CancelExamine()
 	}
 	again, eff, err := md.normalModeKeyDown(msg.Key)
+	if err != nil {
+		md.g.Print(err.Error())
+	}
 	if again {
 		return eff
 	}
-	if err != nil {
-		md.g.Print(err.Error())
-		return eff
-	}
-	md.EndTurn()
-	return nil
+	return md.EndTurn()
 }
 
 func (md *model) updateMouse(msg gruid.MsgMouse) gruid.Effect {
@@ -334,18 +328,19 @@ func (md *model) updateMouse(msg gruid.MsgMouse) gruid.Effect {
 	return nil
 }
 
-func (md *model) EndTurn() {
+func (md *model) EndTurn() gruid.Effect {
 	md.mode = modeNormal
 	md.g.EndTurn()
 	if md.g.Player.HP <= 0 {
 		md.Death()
 		md.finished = true
-		return
+		return nil
 	}
 	md.g.ComputeNoise()
 	md.g.ComputeLOS()
 	md.g.ComputeMonsterLOS()
 	md.updateStatus()
+	return nil
 }
 
 func (md *model) updatePager(msg gruid.Msg) gruid.Effect {
@@ -380,7 +375,7 @@ func (md *model) updateMenu(msg gruid.Msg) gruid.Effect {
 				md.mode = modeNormal
 				break
 			}
-			md.EndTurn()
+			return md.EndTurn()
 		case modeEquip:
 			items := md.g.Player.Magaras
 			it := items[md.menu.Active()]
@@ -394,7 +389,7 @@ func (md *model) updateMenu(msg gruid.Msg) gruid.Effect {
 				md.mode = modeNormal
 				break
 			}
-			md.EndTurn()
+			return md.EndTurn()
 		}
 	}
 	return nil
