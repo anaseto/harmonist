@@ -277,86 +277,6 @@ func (k action) TargetingModeAction() bool {
 
 var GameConfig config
 
-func ApplyDefaultKeyBindings() {
-	// TODO: rewrite with gruid.Key
-	GameConfig.RuneNormalModeKeys = map[rune]action{
-		'h': ActionW,
-		'j': ActionS,
-		'k': ActionN,
-		'l': ActionE,
-		'a': ActionW,
-		's': ActionS,
-		'w': ActionN,
-		'd': ActionE,
-		'4': ActionW,
-		'2': ActionS,
-		'8': ActionN,
-		'6': ActionE,
-		'H': ActionRunW,
-		'J': ActionRunS,
-		'K': ActionRunN,
-		'L': ActionRunE,
-		'.': ActionWaitTurn,
-		'5': ActionWaitTurn,
-		'G': ActionGoToStairs,
-		'o': ActionExplore,
-		'x': ActionExamine,
-		'v': ActionEvoke,
-		'z': ActionEvoke,
-		'e': ActionInteract,
-		'i': ActionInventory,
-		'm': ActionLogs,
-		'M': ActionMenu,
-		'#': ActionDump,
-		'?': ActionHelp,
-		'S': ActionSave,
-		'Q': ActionQuit,
-		'W': ActionWizard,
-		'@': ActionWizardInfo,
-		'>': ActionWizardDescend,
-		'=': ActionConfigure,
-	}
-	GameConfig.RuneTargetModeKeys = map[rune]action{
-		'h':    ActionW,
-		'j':    ActionS,
-		'k':    ActionN,
-		'l':    ActionE,
-		'a':    ActionW,
-		's':    ActionS,
-		'w':    ActionN,
-		'd':    ActionE,
-		'4':    ActionW,
-		'2':    ActionS,
-		'8':    ActionN,
-		'6':    ActionE,
-		'H':    ActionRunW,
-		'J':    ActionRunS,
-		'K':    ActionRunN,
-		'L':    ActionRunE,
-		'>':    ActionNextStairs,
-		'-':    ActionPreviousMonster,
-		'+':    ActionNextMonster,
-		'o':    ActionNextObject,
-		']':    ActionNextObject,
-		')':    ActionNextObject,
-		'(':    ActionNextObject,
-		'[':    ActionNextObject,
-		'_':    ActionNextObject,
-		'=':    ActionNextObject,
-		'v':    ActionDescription,
-		'.':    ActionTarget,
-		't':    ActionTarget,
-		'g':    ActionTarget,
-		'e':    ActionExclude,
-		' ':    ActionEscape,
-		'\x1b': ActionEscape,
-		'x':    ActionEscape,
-		'X':    ActionEscape,
-		'?':    ActionHelp,
-	}
-	CustomKeys = false
-}
-
 func (md *model) OptionalDescendConfirmation(st stair) (err error) {
 	g := md.g
 	if g.Depth == WinDepth && st == NormalStair && g.Dungeon.Cell(g.Places.Shaedra).T == StoryCell {
@@ -945,12 +865,7 @@ func (md *model) Dump(err error) {
 }
 
 func (md *model) CriticalHPWarning() {
-	// TODO
-	//g := ui.st
-	//g.PrintStyled("*** CRITICAL HP WARNING *** [(x) to continue]", logCritic)
-	//ui.DrawDungeonView(NormalMode)
-	//ui.WaitForContinue(ui.MapHeight())
-	//g.Print("Ok. Be careful, then.")
+	md.confirmation = ConfirmationHPCritical
 }
 
 func (md *model) Quit() {
@@ -958,16 +873,12 @@ func (md *model) Quit() {
 	md.mode = modeQuitConfirmation
 }
 
-func (md *model) Clear() {
-	c := gruid.Cell{}
-	c.Rune = ' '
-	c.Style = gruid.Style{Fg: ColorFg, Bg: ColorBg}
-	md.gd.Fill(c)
-}
-
-func ApplyConfig() {
-	if GameConfig.RuneNormalModeKeys == nil || GameConfig.RuneTargetModeKeys == nil {
-		ApplyDefaultKeyBindings()
+func (md *model) applyConfig() {
+	if GameConfig.NormalModeKeys != nil {
+		md.keysNormal = GameConfig.NormalModeKeys
+	}
+	if GameConfig.TargetModeKeys != nil {
+		md.keysTarget = GameConfig.TargetModeKeys
 	}
 	if GameConfig.DarkLOS {
 		ApplyDarkLOS()

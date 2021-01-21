@@ -35,25 +35,34 @@ const (
 )
 
 type model struct {
-	g           *game // game state
-	gd          gruid.Grid
-	mode        mode
-	menuMode    menuMode
-	pagerMode   pagerMode
-	menu        *ui.Menu
-	help        *ui.Menu
-	status      *ui.Menu
-	log         *ui.Label
-	description *ui.Label
-	pager       *ui.Pager
-	pagerMarkup ui.StyledText
-	mp          mapUI
-	logs        []ui.StyledText
-	keysNormal  map[gruid.Key]action
-	keysTarget  map[gruid.Key]action
-	quit        bool
-	finished    bool
+	g            *game // game state
+	gd           gruid.Grid
+	mode         mode
+	menuMode     menuMode
+	pagerMode    pagerMode
+	menu         *ui.Menu
+	help         *ui.Menu
+	status       *ui.Menu
+	log          *ui.Label
+	description  *ui.Label
+	pager        *ui.Pager
+	pagerMarkup  ui.StyledText
+	mp           mapUI
+	logs         []ui.StyledText
+	keysNormal   map[gruid.Key]action
+	keysTarget   map[gruid.Key]action
+	quit         bool
+	finished     bool
+	confirmation confirmationMode
 }
+
+type confirmationMode int
+
+const (
+	ConfirmationNone confirmationMode = iota
+	ConfirmationHPCritical
+	ConfirmationHPCriticalWait
+)
 
 type mapUI struct {
 	kbTargeting bool
@@ -136,6 +145,7 @@ func (md *model) initKeys() {
 		"X":             ActionEscape,
 		"?":             ActionHelp,
 	}
+	CustomKeys = false
 }
 
 func (md *model) initWidgets() {
@@ -185,7 +195,7 @@ func (md *model) init() gruid.Effect {
 	} else if load {
 		CustomKeys = true
 	}
-	ApplyConfig()
+	md.applyConfig()
 	//ui.DrawWelcome()
 	load, err = g.Load()
 	if !load {
@@ -222,6 +232,23 @@ func (md *model) Update(msg gruid.Msg) gruid.Effect {
 		default:
 			return nil
 		}
+	}
+	switch md.confirmation {
+	case ConfirmationNone:
+	case ConfirmationHPCritical:
+		md.g.PrintStyled("*** CRITICAL HP WARNING *** [(x) to continue]", logCritic)
+		md.confirmation = ConfirmationHPCriticalWait
+		return nil
+	case ConfirmationHPCriticalWait:
+		switch msg := msg.(type) {
+		case gruid.MsgKeyDown:
+			switch msg.Key {
+			case "x", "X", gruid.KeyEnter, gruid.KeySpace:
+				md.confirmation = ConfirmationNone
+				md.g.Print("Ok. Be careful, then.")
+			}
+		}
+		return nil
 	}
 	switch md.mode {
 	case modeQuit:

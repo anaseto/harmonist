@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"compress/zlib"
 	"encoding/gob"
+
+	"github.com/anaseto/gruid"
 )
 
 func init() {
@@ -27,13 +29,12 @@ func (g *game) GameSave() ([]byte, error) {
 }
 
 type config struct {
-	RuneNormalModeKeys map[rune]action
-	RuneTargetModeKeys map[rune]action
-	DarkLOS            bool
-	Small              bool
-	Tiles              bool
-	Version            string
-	ShowNumbers        bool
+	NormalModeKeys map[gruid.Key]action
+	TargetModeKeys map[gruid.Key]action
+	DarkLOS        bool
+	Tiles          bool
+	Version        string
+	ShowNumbers    bool
 }
 
 func (c *config) ConfigSave() ([]byte, error) {

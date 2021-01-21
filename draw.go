@@ -40,11 +40,11 @@ const (
 	Color256Cyan    gruid.Color = 37
 	Color256Green   gruid.Color = 64
 
-	Color16Base03  gruid.Color = 0
+	Color16Base03  gruid.Color = gruid.ColorDefault // background
 	Color16Base02  gruid.Color = 8
 	Color16Base01  gruid.Color = 10
 	Color16Base00  gruid.Color = 11
-	Color16Base0   gruid.Color = 0
+	Color16Base0   gruid.Color = gruid.ColorDefault // foreground
 	Color16Base1   gruid.Color = 14
 	Color16Base2   gruid.Color = 7
 	Color16Base3   gruid.Color = 15
