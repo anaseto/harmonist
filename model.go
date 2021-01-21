@@ -292,6 +292,10 @@ func (md *model) updateQuitConfirmation(msg gruid.Msg) gruid.Effect {
 func (md *model) updateNormal(msg gruid.Msg) gruid.Effect {
 	var eff gruid.Effect
 	switch msg := msg.(type) {
+	case msgAuto:
+		if int(msg) == md.g.Turn && md.g.AutoNext {
+			return md.EndTurn()
+		}
 	case gruid.MsgKeyDown:
 		eff = md.updateKeyDown(msg)
 	case gruid.MsgMouse:
@@ -330,17 +334,17 @@ func (md *model) updateMouse(msg gruid.MsgMouse) gruid.Effect {
 
 func (md *model) EndTurn() gruid.Effect {
 	md.mode = modeNormal
-	md.g.EndTurn()
+	eff := md.g.EndTurn()
 	if md.g.Player.HP <= 0 {
 		md.Death()
 		md.finished = true
-		return nil
+		return eff
 	}
 	md.g.ComputeNoise()
 	md.g.ComputeLOS()
 	md.g.ComputeMonsterLOS()
 	md.updateStatus()
-	return nil
+	return eff
 }
 
 func (md *model) updatePager(msg gruid.Msg) gruid.Effect {

@@ -2,6 +2,7 @@ package main
 
 import (
 	"container/heap"
+	"time"
 
 	"github.com/anaseto/gruid"
 )
@@ -712,17 +713,17 @@ func (g *game) AutoPlayer(ev event) bool {
 		}
 		g.Autoexploring = false
 	} else if valid(g.AutoTarget) {
-		//if !g.ui.ExploreStep() && g.MoveToTarget() {
-		//return true
-		//} else {
-		//g.AutoTarget = InvalidPos
-		//}
+		if g.MoveToTarget() {
+			return true
+		} else {
+			g.AutoTarget = InvalidPos
+		}
 	} else if g.AutoDir != NoDir {
-		//if !g.ui.ExploreStep() && g.AutoToDir() {
-		//return true
-		//} else {
-		//g.AutoDir = NoDir
-		//}
+		if g.AutoToDir() {
+			return true
+		} else {
+			g.AutoDir = NoDir
+		}
 	}
 	return false
 }
@@ -779,13 +780,15 @@ func (g *game) Died() bool {
 	return false
 }
 
-func (g *game) EndTurn() {
+type msgAuto int
+
+func (g *game) EndTurn() gruid.Effect {
 	for {
 		if g.Died() {
-			return
+			return nil
 		}
 		if g.Events.Len() == 0 {
-			return
+			return nil
 		}
 		ev := g.PopIEvent().Event
 		g.Turn = ev.Rank()
@@ -794,14 +797,19 @@ func (g *game) EndTurn() {
 		switch ev := ev.(type) {
 		case *simpleEvent:
 			if ev.EAction == PlayerTurn {
-				return
+				if g.AutoNext {
+					n := g.Turn
+					return gruid.Cmd(func() gruid.Msg {
+						t := time.NewTimer(time.Millisecond * 25)
+						<-t.C
+						return msgAuto(n)
+					})
+				}
+				return nil
 			}
 		}
-		//if g.AutoNext {
-		//continue loop
-		//}
 		if g.Quit {
-			return
+			return nil
 		}
 	}
 }
