@@ -115,7 +115,7 @@ func (md *model) DrawPosInfo() {
 			features = append(features, "lighted")
 		}
 	} else {
-		features = append(features, "unknown place")
+		features = append(features, "unknown")
 	}
 	if info.Noise {
 		features = append(features, "noise")
@@ -126,14 +126,20 @@ func (md *model) DrawPosInfo() {
 	if !info.Sees && !info.Unknown {
 		features = append(features, "seen")
 	} else if info.Unknown {
-		//t += " unknown"
+		features = append(features, "unexplored")
 	}
 	t := features[0] + " (" + strings.Join(features[1:], ", ") + ")"
 	fg := ColorFg
 	if info.Unreachable {
 		fg = ColorOrange
 	}
-	formatBox(t+" ", info.Cell.Desc(g, info.Pos), fg)
+	desc := ""
+	if info.Unknown {
+		desc = "You do not know what is in there."
+	} else {
+		desc = info.Cell.Desc(g, info.Pos)
+	}
+	formatBox(t+" ", desc, fg)
 
 	if info.Player {
 		formatBox("Player", "This is you.", ColorBlue)
