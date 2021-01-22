@@ -82,16 +82,20 @@ const (
 	ActionPreviousMonster
 	ActionNextMonster
 	ActionNextObject
-	ActionDescription
 	ActionTarget
 	ActionExclude
 	ActionEscape
 
-	ActionConfigure
+	ActionSettings
 	ActionMenu
 	ActionNextStairs
 	ActionMenuCommandHelp
 	ActionMenuTargetingHelp
+
+	ActionSetKeys
+	ActionInvertLOS
+	ActionToggleTiles
+	ActionToggleShowNumbers
 )
 
 var ConfigurableKeyActions = [...]action{
@@ -119,7 +123,6 @@ var ConfigurableKeyActions = [...]action{
 	ActionNextMonster,
 	ActionNextObject,
 	ActionNextStairs,
-	ActionDescription,
 	ActionTarget,
 	ActionExclude}
 
@@ -145,7 +148,7 @@ func (k action) NormalModeAction() bool {
 		ActionMenuTargetingHelp,
 		ActionSave,
 		ActionQuit,
-		ActionConfigure,
+		ActionSettings,
 		ActionWizard,
 		ActionWizardInfo:
 		return true
@@ -154,7 +157,7 @@ func (k action) NormalModeAction() bool {
 	}
 }
 
-func (k action) NormalModeDescription() (text string) {
+func (k action) String() (text string) {
 	switch k {
 	case ActionW:
 		text = "Move west"
@@ -202,7 +205,7 @@ func (k action) NormalModeDescription() (text string) {
 		text = "Help (general commands)"
 	case ActionMenuTargetingHelp:
 		text = "Help (targeting commands)"
-	case ActionConfigure:
+	case ActionSettings:
 		text = "Settings and key bindings"
 	case ActionWizard:
 		text = "Wizard (debug) mode"
@@ -210,6 +213,14 @@ func (k action) NormalModeDescription() (text string) {
 		text = "Wizard (debug) mode information"
 	case ActionMenu:
 		text = "Action Menu"
+	case ActionSetKeys:
+		text = "Change key bindings"
+	case ActionInvertLOS:
+		text = "Toggle dark/light LOS"
+	case ActionToggleTiles:
+		text = "Toggle tiles/ascii display"
+	case ActionToggleShowNumbers:
+		text = "Toggle hearts/numbers"
 	}
 	return text
 }
@@ -242,16 +253,12 @@ func (k action) TargetingModeDescription() (text string) {
 		text = "Target next object"
 	case ActionNextStairs:
 		text = "Target next stairs"
-	case ActionDescription:
-		text = "View target description"
 	case ActionTarget:
 		text = "Go to"
 	case ActionExclude:
 		text = "Toggle exclude area from auto-travel"
 	case ActionEscape:
 		text = "Quit targeting mode"
-	case ActionMenu:
-		text = "Action Menu"
 	}
 	return text
 }
@@ -260,12 +267,10 @@ func (k action) TargetingModeAction() bool {
 	switch k {
 	case ActionW, ActionS, ActionN, ActionE,
 		ActionRunW, ActionRunS, ActionRunN, ActionRunE,
-		ActionDescend,
 		ActionPreviousMonster,
 		ActionNextMonster,
 		ActionNextObject,
 		ActionNextStairs,
-		ActionDescription,
 		ActionTarget,
 		ActionExclude,
 		ActionEscape:
@@ -529,14 +534,39 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 	case ActionQuit:
 		md.Quit()
 		again = true
-	case ActionConfigure:
-		// TODO: configure settings
-		err = md.HandleSettingAction()
+	case ActionSettings:
+		md.OpenSettings()
 		again = true
-	case ActionDescription:
+	case ActionSetKeys:
 		again = true
-		//ui.MenuSelectedAnimation(MenuView, false)
-		err = fmt.Errorf("You must choose a target to describe.")
+		// TODO
+		//ui.ChangeKeys()
+	case ActionInvertLOS:
+		again = true
+		GameConfig.DarkLOS = !GameConfig.DarkLOS
+		err := g.SaveConfig()
+		if err != nil {
+			g.Print(err.Error())
+		}
+		if GameConfig.DarkLOS {
+			ApplyDarkLOS()
+		} else {
+			ApplyLightLOS()
+		}
+	case ActionToggleTiles:
+		again = true
+		md.ApplyToggleTiles()
+		err := g.SaveConfig()
+		if err != nil {
+			g.Print(err.Error())
+		}
+	case ActionToggleShowNumbers:
+		again = true
+		GameConfig.ShowNumbers = !GameConfig.ShowNumbers
+		err := g.SaveConfig()
+		if err != nil {
+			g.Print(err.Error())
+		}
 	default:
 		err = actionErrorUnknown
 	}
@@ -555,11 +585,34 @@ func altBgEntries(entries []ui.MenuEntry) {
 	}
 }
 
+var settingsActions = []action{
+	ActionSetKeys,
+	ActionInvertLOS,
+	ActionToggleShowNumbers,
+}
+
+func (md *model) OpenSettings() {
+	entries := []ui.MenuEntry{}
+	r := 'a'
+	for _, it := range settingsActions {
+		entries = append(entries, ui.MenuEntry{
+			Text: ui.Textf("%c - %s", r, it),
+			Keys: []gruid.Key{gruid.Key(r)},
+		})
+		r++
+	}
+	altBgEntries(entries)
+	md.menu.SetBox(&ui.Box{Title: ui.Text("Settings").WithStyle(gruid.Style{}.WithFg(ColorYellow))})
+	md.menu.SetEntries(entries)
+	md.mode = modeMenu
+	md.menuMode = modeSettings
+}
+
 var menuActions = []action{
 	ActionLogs,
 	ActionMenuCommandHelp,
 	ActionMenuTargetingHelp,
-	ActionConfigure,
+	ActionSettings,
 	ActionSave,
 	ActionQuit,
 }
@@ -569,7 +622,7 @@ func (md *model) OpenMenu() {
 	r := 'a'
 	for _, it := range menuActions {
 		entries = append(entries, ui.MenuEntry{
-			Text: ui.Textf("%c - %s", r, it.NormalModeDescription()),
+			Text: ui.Textf("%c - %s", r, it),
 			Keys: []gruid.Key{gruid.Key(r)},
 		})
 		r++

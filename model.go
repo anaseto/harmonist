@@ -105,7 +105,7 @@ func (md *model) initKeys() {
 		"W": ActionWizard,
 		"@": ActionWizardInfo,
 		">": ActionWizardDescend,
-		"=": ActionConfigure,
+		"=": ActionSettings,
 	}
 	md.keysTarget = map[gruid.Key]action{
 		"h":             ActionW,
@@ -134,7 +134,6 @@ func (md *model) initKeys() {
 		"[":             ActionNextObject,
 		"_":             ActionNextObject,
 		"=":             ActionNextObject,
-		"v":             ActionDescription,
 		".":             ActionTarget,
 		"t":             ActionTarget,
 		"g":             ActionTarget,
@@ -401,6 +400,16 @@ func (md *model) updateMenu(msg gruid.Msg) gruid.Effect {
 				break
 			}
 			_, eff, err := md.normalModeAction(menuActions[md.menu.Active()])
+			if err != nil {
+				// should not happen
+				md.g.Printf("%v", err)
+			}
+			return eff
+		case modeSettings:
+			if act != ui.MenuInvoke {
+				break
+			}
+			_, eff, err := md.normalModeAction(settingsActions[md.menu.Active()])
 			if err != nil {
 				// should not happen
 				md.g.Printf("%v", err)
