@@ -692,6 +692,7 @@ func (md *model) updateStatus() {
 }
 
 func (md *model) ReadScroll() error {
+	// TODO: read scroll
 	sc, ok := md.g.Objects.Scrolls[md.g.Player.Pos]
 	if !ok {
 		return errors.New("Internal error: no scroll found")
@@ -714,45 +715,6 @@ func (md *model) ReadScroll() error {
 		//ui.DrawDescription(sc.Text(ui.st), "Story Message")
 	}
 	return errors.New(DoNothing)
-}
-
-var menuActions = []action{
-	ActionLogs,
-	ActionMenuCommandHelp,
-	ActionMenuTargetingHelp,
-	ActionConfigure,
-	ActionSave,
-	ActionQuit,
-}
-
-func (md *model) SelectAction(actions []action) (action, error) {
-	// TODO
-	return actions[0], nil
-	//ui.DrawDungeonView(NoFlushMode)
-	//for {
-	//ui.ClearLine(0)
-	//ui.DrawColoredText("Choose", 0, 0, ColorCyan)
-	//col := utf8.RuneCountInString("Choose")
-	//ui.DrawText(" which action?", col, 0)
-	//for i, r := range actions {
-	//ui.ActionItem(i, i+1, r, ColorFg)
-	//}
-	//ui.DrawTextLine(" press (x) to cancel ", len(actions)+1)
-	////ui.Flush()
-	//index, alt, err := ui.Select(len(actions))
-	//if alt {
-	//continue
-	//}
-	//if err != nil {
-	//ui.DrawDungeonView(NoFlushMode)
-	//return ActionExamine, err
-	//}
-	//ui.ActionItem(index, index+1, actions[index], ColorYellow)
-	////ui.Flush()
-	//Sleep(AnimDurMedium)
-	//ui.DrawDungeonView(NoFlushMode)
-	//return actions[index], nil
-	//}
 }
 
 type setting int

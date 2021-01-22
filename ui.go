@@ -464,6 +464,9 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 	case ActionMenuTargetingHelp:
 		md.ExamineHelp()
 		again = true
+	case ActionMenu:
+		md.OpenMenu()
+		again = true
 	case ActionLogs:
 		if len(md.logs) > 0 {
 			md.logs = md.logs[:len(md.logs)-1]
@@ -481,6 +484,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		if errsave != nil {
 			g.PrintfStyled("Error: %v", logError, errsave)
 			g.PrintStyled("Could not save state.", logError)
+			md.mode = modeNormal
 		} else {
 			md.mode = modeQuit
 			eff = gruid.End()
@@ -526,6 +530,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		md.Quit()
 		again = true
 	case ActionConfigure:
+		// TODO: configure settings
 		err = md.HandleSettingAction()
 		again = true
 	case ActionDescription:
@@ -548,6 +553,32 @@ func altBgEntries(entries []ui.MenuEntry) {
 			entries[i].Text = entries[i].Text.WithStyle(st.WithBg(ColorBgLOS))
 		}
 	}
+}
+
+var menuActions = []action{
+	ActionLogs,
+	ActionMenuCommandHelp,
+	ActionMenuTargetingHelp,
+	ActionConfigure,
+	ActionSave,
+	ActionQuit,
+}
+
+func (md *model) OpenMenu() {
+	entries := []ui.MenuEntry{}
+	r := 'a'
+	for _, it := range menuActions {
+		entries = append(entries, ui.MenuEntry{
+			Text: ui.Textf("%c - %s", r, it.NormalModeDescription()),
+			Keys: []gruid.Key{gruid.Key(r)},
+		})
+		r++
+	}
+	altBgEntries(entries)
+	md.menu.SetBox(&ui.Box{Title: ui.Text("Menu").WithStyle(gruid.Style{}.WithFg(ColorYellow))})
+	md.menu.SetEntries(entries)
+	md.mode = modeMenu
+	md.menuMode = modeGameMenu
 }
 
 func (md *model) OpenIventory() {

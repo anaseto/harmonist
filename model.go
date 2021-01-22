@@ -29,6 +29,7 @@ type menuMode int
 const (
 	modeInventory menuMode = iota
 	modeSettings
+	modeKeys
 	modeGameMenu
 	modeEvokation
 	modeEquip
@@ -395,6 +396,16 @@ func (md *model) updateMenu(msg gruid.Msg) gruid.Effect {
 				break
 			}
 			return md.EndTurn()
+		case modeGameMenu:
+			if act != ui.MenuInvoke {
+				break
+			}
+			_, eff, err := md.normalModeAction(menuActions[md.menu.Active()])
+			if err != nil {
+				// should not happen
+				md.g.Printf("%v", err)
+			}
+			return eff
 		}
 	}
 	return nil
@@ -426,6 +437,8 @@ func (md *model) Draw() gruid.Grid {
 			md.gd.Copy(md.menu.Draw())
 			md.description.Box = &ui.Box{Title: ui.Text("Description")}
 			md.description.Draw(md.gd.Slice(md.gd.Range().Columns(UIWidth/2+1, UIWidth)))
+		case modeGameMenu, modeSettings, modeKeys:
+			md.gd.Copy(md.menu.Draw())
 		}
 	}
 	md.gd.Slice(md.gd.Range().Line(UIHeight - 1)).Copy(md.status.Draw())
