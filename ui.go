@@ -553,6 +553,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		} else {
 			ApplyLightLOS()
 		}
+		md.mode = modeNormal
 	case ActionToggleTiles:
 		again = true
 		md.ApplyToggleTiles()
@@ -567,6 +568,8 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		if err != nil {
 			g.Print(err.Error())
 		}
+		md.updateStatus()
+		md.mode = modeNormal
 	default:
 		err = actionErrorUnknown
 	}

@@ -619,9 +619,9 @@ func (md *model) updateStatus() {
 		)
 	} else {
 		if g.Player.HPbonus > 0 {
-			hps = fmt.Sprintf("@%c%d+%d/%d@N", hpColor, hp, g.Player.HPbonus, g.Player.HPMax())
+			hps = fmt.Sprintf("@%c%d+%d/%d@N ", hpColor, hp, g.Player.HPbonus, g.Player.HPMax())
 		} else {
-			hps = fmt.Sprintf("@%c%d/%d@N", hpColor, hp, g.Player.HPMax())
+			hps = fmt.Sprintf("@%c%d/%d@N ", hpColor, hp, g.Player.HPMax())
 		}
 	}
 	entries = append(entries, ui.MenuEntry{Text: stt.WithText(hps), Disabled: true})
