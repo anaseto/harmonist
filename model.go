@@ -154,6 +154,7 @@ func (md *model) initWidgets() {
 	md.pager = ui.NewPager(ui.PagerConfig{
 		Grid: gruid.NewGrid(UIWidth, UIHeight-1),
 		Box:  &ui.Box{},
+		Keys: ui.PagerKeys{Quit: []gruid.Key{gruid.KeySpace, "x", "X", gruid.KeyEscape}},
 	})
 	md.pagerMarkup = ui.StyledText{}.WithMarkups(logStyles)
 	style := ui.MenuStyle{
