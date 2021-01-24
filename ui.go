@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"strings"
 	//"time"
 
 	"github.com/anaseto/gruid"
@@ -539,8 +540,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		again = true
 	case ActionSetKeys:
 		again = true
-		// TODO
-		//ui.ChangeKeys()
+		md.OpenKeyBindings()
 	case ActionInvertLOS:
 		again = true
 		GameConfig.DarkLOS = !GameConfig.DarkLOS
@@ -609,6 +609,55 @@ func (md *model) OpenSettings() {
 	md.menu.SetEntries(entries)
 	md.mode = modeMenu
 	md.menuMode = modeSettings
+}
+
+func (md *model) KeysForAction(a action) string {
+	keys := []gruid.Key{}
+	for k, action := range md.keysNormal {
+		if a == action && !k.In(keys) {
+			keys = append(keys, k)
+		}
+	}
+	for k, action := range md.keysTarget {
+		if a == action && !k.In(keys) {
+			keys = append(keys, k)
+		}
+	}
+	// TODO: sort keys
+	switch len(keys) {
+	case 0:
+		return ""
+	case 1:
+		return string(keys[0])
+	}
+	b := strings.Builder{}
+	b.WriteString(string(keys[0]))
+	for _, k := range keys {
+		b.WriteString(" or ")
+		b.WriteString(string(k))
+	}
+	return b.String()
+}
+
+func (md *model) OpenKeyBindings() {
+	entries := []ui.MenuEntry{}
+	r := 'a'
+	for _, it := range ConfigurableKeyActions {
+		desc := it.String()
+		if !it.NormalModeAction() {
+			desc = it.TargetingModeDescription()
+		}
+		desc = fmt.Sprintf(" %-36s %s", desc, md.KeysForAction(it))
+		entries = append(entries, ui.MenuEntry{
+			Text: ui.Text(desc),
+		})
+		r++
+	}
+	altBgEntries(entries)
+	md.keysMenu.SetBox(&ui.Box{Title: ui.Text("Key Bindings").WithStyle(gruid.Style{}.WithFg(ColorYellow))})
+	md.keysMenu.SetEntries(entries)
+	md.mode = modeMenu
+	md.menuMode = modeKeys
 }
 
 var menuActions = []action{

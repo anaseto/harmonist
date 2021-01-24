@@ -30,6 +30,7 @@ const (
 	modeInventory menuMode = iota
 	modeSettings
 	modeKeys
+	modeKeysChange
 	modeGameMenu
 	modeEvokation
 	modeEquip
@@ -42,6 +43,7 @@ type model struct {
 	menuMode    menuMode
 	pagerMode   pagerMode
 	menu        *ui.Menu
+	keysMenu    *ui.Menu
 	help        *ui.Menu
 	status      *ui.Menu
 	log         *ui.Label
@@ -165,6 +167,11 @@ func (md *model) initWidgets() {
 		Box:   &ui.Box{},
 		Style: style,
 	})
+	md.keysMenu = ui.NewMenu(ui.MenuConfig{
+		Grid:  gruid.NewGrid(UIWidth, UIHeight-1),
+		Box:   &ui.Box{},
+		Style: style,
+	})
 	md.status = ui.NewMenu(ui.MenuConfig{
 		Grid:  gruid.NewGrid(UIWidth, 1),
 		Style: ui.MenuStyle{Layout: gruid.Point{0, 1}},
@@ -272,7 +279,12 @@ func (md *model) Update(msg gruid.Msg) gruid.Effect {
 	case modePager:
 		eff = md.updatePager(msg)
 	case modeMenu:
-		eff = md.updateMenu(msg)
+		switch md.menuMode {
+		case modeKeys, modeKeysChange:
+			eff = md.updateKeysMenu(msg)
+		default:
+			eff = md.updateMenu(msg)
+		}
 	}
 	return eff
 }
@@ -352,6 +364,61 @@ func (md *model) updatePager(msg gruid.Msg) gruid.Effect {
 	md.pager.Update(msg)
 	if md.pager.Action() == ui.PagerQuit {
 		md.mode = modeNormal
+	}
+	return nil
+}
+
+func (md *model) updateKeysMenu(msg gruid.Msg) gruid.Effect {
+	if md.menuMode == modeKeysChange {
+		msg, ok := msg.(gruid.MsgKeyDown)
+		if !ok {
+			return nil
+		}
+		key := msg.Key
+		switch {
+		case key == gruid.KeyEscape:
+			md.OpenKeyBindings()
+			return nil
+		case key.IsRune():
+			action := ConfigurableKeyActions[md.menu.Active()]
+			if action.NormalModeAction() {
+				md.keysNormal[key] = action
+			}
+			if action.TargetingModeAction() {
+				md.keysTarget[key] = action
+			}
+			GameConfig.NormalModeKeys = md.keysNormal
+			GameConfig.TargetModeKeys = md.keysTarget
+			err := md.g.SaveConfig()
+			if err != nil {
+				md.g.PrintStyled("Error while saving config changes.", logCritic)
+			}
+			md.OpenKeyBindings()
+			return nil
+		}
+		return nil
+	}
+	md.keysMenu.Update(msg)
+	switch act := md.keysMenu.Action(); act {
+	case ui.MenuQuit:
+		md.mode = modeNormal
+	case ui.MenuInvoke:
+		md.menuMode = modeKeysChange
+	case ui.MenuPass:
+		msg, ok := msg.(gruid.MsgKeyDown)
+		if !ok {
+			return nil
+		}
+		if msg.Key == "R" {
+			md.initKeys()
+			GameConfig.NormalModeKeys = md.keysNormal
+			GameConfig.TargetModeKeys = md.keysTarget
+			err := md.g.SaveConfig()
+			if err != nil {
+				md.g.PrintStyled("Error while resetting config changes.", logCritic)
+			}
+			md.OpenKeyBindings()
+		}
 	}
 	return nil
 }
@@ -446,8 +513,10 @@ func (md *model) Draw() gruid.Grid {
 			md.gd.Copy(md.menu.Draw())
 			md.description.Box = &ui.Box{Title: ui.Text("Description")}
 			md.description.Draw(md.gd.Slice(md.gd.Range().Columns(UIWidth/2+1, UIWidth)))
-		case modeGameMenu, modeSettings, modeKeys:
+		case modeGameMenu, modeSettings:
 			md.gd.Copy(md.menu.Draw())
+		case modeKeys, modeKeysChange:
+			md.gd.Copy(md.keysMenu.Draw())
 		}
 	}
 	md.gd.Slice(md.gd.Range().Line(UIHeight - 1)).Copy(md.status.Draw())
