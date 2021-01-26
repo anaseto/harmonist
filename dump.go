@@ -50,7 +50,7 @@ func (g *game) SortedKilledMonsters() monsSlice {
 }
 
 func (g *game) Dump() string {
-	buf := &bytes.Buffer{}
+	buf := &strings.Builder{}
 	fmt.Fprintf(buf, " -- Harmonist version %s character file --\n\n", Version)
 	if g.Wizard {
 		fmt.Fprintf(buf, "**WIZARD MODE**\n")
@@ -343,8 +343,8 @@ func (g *game) DumpedKilledMonsters() string {
 }
 
 func (g *game) SimplifedDump(err error) string {
-	buf := &bytes.Buffer{}
-	fmt.Fprintf(buf, " ♣ Harmonist version %s play summary ♣\n\n", Version)
+	buf := &strings.Builder{}
+	fmt.Fprintf(buf, " ♣ Harmonist version %s game summary ♣\n\n", Version)
 	if g.Wizard {
 		fmt.Fprintf(buf, "**WIZARD MODE**\n")
 	}
@@ -381,11 +381,9 @@ func (g *game) SimplifedDump(err error) string {
 			if dataDir == "" {
 				fmt.Fprintf(buf, "Full state statistics written below.\n")
 			} else {
-				fmt.Fprintf(buf, "Full state statistics dump written to %s.\n", filepath.Join(dataDir, "dump"))
+				fmt.Fprintf(buf, "Full state statistics dump written to:\n    %s", filepath.Join(dataDir, "dump"))
 			}
 		}
 	}
-	fmt.Fprintf(buf, "\n\n")
-	fmt.Fprintf(buf, "───Press (x) to close───")
 	return buf.String()
 }

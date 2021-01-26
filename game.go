@@ -742,7 +742,6 @@ loop:
 				if err != nil {
 					g.PrintfStyled("Error removing save file: %v", logError, err.Error())
 				}
-				g.ui.Death()
 				break loop
 			}
 		}

@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"log"
 	"path/filepath"
 	"strings"
 	//"time"
@@ -972,8 +973,7 @@ func (md *model) Death() {
 		NoAchievement.Get(g)
 	}
 	g.Print("You die... [(x) to continue]")
-	err := g.WriteDump()
-	md.Dump(err)
+	md.mode = modeEnd
 }
 
 func (md *model) Win() {
@@ -988,16 +988,19 @@ func (md *model) Win() {
 	} else {
 		g.Print("You escape by the magic portal! [(x) to continue]")
 	}
-	//ui.DrawDungeonView(NormalMode)
-	//ui.WaitForContinue(-1)
-	err = g.WriteDump()
-	md.Dump(err)
-	//ui.WaitForContinue(-1)
+	md.mode = modeEnd
 }
 
 func (md *model) Dump(err error) {
-	//g := ui.st
-	//ui.DrawText(g.SimplifedDump(err), 0, 0)
+	s := md.g.SimplifedDump(err)
+	lines := strings.Split(s, "\n")
+	stts := []ui.StyledText{}
+	for _, l := range lines {
+		stts = append(stts, ui.Text(l))
+	}
+	md.pager.SetLines(stts)
+	log.Printf("%v", s)
+	log.Printf("%v", stts)
 }
 
 func (md *model) CriticalHPWarning() {

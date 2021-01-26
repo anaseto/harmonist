@@ -15,6 +15,8 @@ const (
 	modeMenu
 	modeQuit
 	modeQuitConfirmation
+	modeDump // simplified dump visualization after end
+	modeEnd  // win or death
 )
 
 type pagerMode int
@@ -55,8 +57,8 @@ type model struct {
 	keysNormal  map[gruid.Key]action
 	keysTarget  map[gruid.Key]action
 	quit        bool
-	finished    bool
 	pause       confirmationMode
+	finished    bool
 }
 
 type confirmationMode int
@@ -166,11 +168,13 @@ func (md *model) initWidgets() {
 		Grid:  gruid.NewGrid(UIWidth/2, UIHeight-1),
 		Box:   &ui.Box{},
 		Style: style,
+		Keys:  ui.MenuKeys{Quit: []gruid.Key{gruid.KeySpace, "x", "X", gruid.KeyEscape}},
 	})
 	md.keysMenu = ui.NewMenu(ui.MenuConfig{
 		Grid:  gruid.NewGrid(UIWidth, UIHeight-1),
 		Box:   &ui.Box{},
 		Style: style,
+		Keys:  ui.MenuKeys{Quit: []gruid.Key{gruid.KeySpace, "x", "X", gruid.KeyEscape}},
 	})
 	md.status = ui.NewMenu(ui.MenuConfig{
 		Grid:  gruid.NewGrid(UIWidth, 1),
@@ -184,7 +188,6 @@ func (md *model) init() gruid.Effect {
 	GameConfig.Version = Version
 	GameConfig.Tiles = true
 	LinkColors()
-	//ApplyConfig()
 	md.initKeys()
 	md.initWidgets()
 
@@ -220,7 +223,6 @@ func (md *model) init() gruid.Effect {
 		g.PrintStyled(cfgreseterr, logError)
 	}
 
-	//md.g.InitLevel()
 	md.g.ComputeNoise()
 	md.g.ComputeLOS()
 	md.g.ComputeMonsterLOS()
@@ -229,21 +231,38 @@ func (md *model) init() gruid.Effect {
 	return nil
 }
 
+func (md *model) more(msg gruid.Msg) bool {
+	switch msg := msg.(type) {
+	case gruid.MsgKeyDown:
+		switch msg.Key {
+		case "x", "X", gruid.KeyEscape, gruid.KeySpace:
+			return true
+		}
+	}
+	return false
+}
+
 func (md *model) Update(msg gruid.Msg) gruid.Effect {
 	if _, ok := msg.(gruid.MsgInit); ok {
 		return md.init()
 	}
-	if md.finished {
-		switch msg.(type) {
-		case gruid.MsgKeyDown:
-			return gruid.End()
-		default:
-			return nil
-		}
+	if _, ok := msg.(gruid.MsgQuit); ok {
+		md.mode = modeQuit
+		md.g.Save() // TODO: log error ?
+		return gruid.End()
 	}
 	switch md.mode {
 	case modeQuit:
 		return nil
+	case modeEnd:
+		if md.more(msg) {
+			md.finished = true
+			md.mode = modeDump
+			md.Dump(md.g.WriteDump())
+		}
+		return nil
+	case modeDump:
+		return md.updateDump(msg)
 	case modeQuitConfirmation:
 		eff := md.updateQuitConfirmation(msg)
 		if md.mode == modeQuit {
@@ -253,11 +272,6 @@ func (md *model) Update(msg gruid.Msg) gruid.Effect {
 			}
 		}
 		return eff
-	}
-	if _, ok := msg.(gruid.MsgQuit); ok {
-		md.mode = modeQuit
-		md.g.Save() // TODO: log error ?
-		return gruid.End()
 	}
 	switch md.pause {
 	case PauseNone:
@@ -350,7 +364,6 @@ func (md *model) EndTurn() gruid.Effect {
 	eff := md.g.EndTurn()
 	if md.g.Player.HP <= 0 {
 		md.Death()
-		md.finished = true
 		return eff
 	}
 	md.g.ComputeNoise()
@@ -364,6 +377,15 @@ func (md *model) updatePager(msg gruid.Msg) gruid.Effect {
 	md.pager.Update(msg)
 	if md.pager.Action() == ui.PagerQuit {
 		md.mode = modeNormal
+	}
+	return nil
+}
+
+func (md *model) updateDump(msg gruid.Msg) gruid.Effect {
+	md.pager.Update(msg)
+	if md.pager.Action() == ui.PagerQuit {
+		md.mode = modeQuit
+		return gruid.End()
 	}
 	return nil
 }
@@ -489,6 +511,11 @@ func (md *model) updateMenu(msg gruid.Msg) gruid.Effect {
 
 func (md *model) Draw() gruid.Grid {
 	md.gd.Fill(gruid.Cell{Rune: ' '})
+	switch md.mode {
+	case modeDump:
+		md.gd.Copy(md.pager.Draw())
+		return md.gd
+	}
 	dgd := md.gd.Slice(md.gd.Range().Shift(0, 2, 0, -1))
 	for i := range md.g.Dungeon.Cells {
 		p := idxtopos(i)

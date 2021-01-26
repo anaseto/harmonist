@@ -128,7 +128,10 @@ func (md *model) DrawPosInfo() {
 	} else if info.Unknown {
 		features = append(features, "unexplored")
 	}
-	t := features[0] + " (" + strings.Join(features[1:], ", ") + ")"
+	t := features[0]
+	if len(features) > 1 {
+		t += " (" + strings.Join(features[1:], ", ") + ")"
+	}
 	fg := ColorFg
 	if info.Unreachable {
 		fg = ColorOrange
