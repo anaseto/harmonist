@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -691,16 +690,23 @@ func (md *model) updateStatus() {
 	md.status.SetEntries(entries)
 }
 
-func (md *model) ReadScroll() error {
-	// TODO: read scroll
+func (md *model) ReadScroll() {
 	sc, ok := md.g.Objects.Scrolls[md.g.Player.Pos]
 	if !ok {
-		return errors.New("Internal error: no scroll found")
+		md.g.PrintStyled("Error while reading message.", logError)
+		return
 	}
 	md.g.Print("You read the message.")
+	md.mode = modeSmallPager
 	switch sc {
 	case ScrollLore:
-		//ui.DrawDescription(sc.Text(ui.st), "Lore Message")
+		md.smallPager.SetBox(&ui.Box{Title: ui.Text("Lore Message")})
+		stts := []ui.StyledText{}
+		text := ui.Text(sc.Text(md.g)).Format(56)
+		for _, s := range strings.Split(text.Text(), "\n") {
+			stts = append(stts, ui.Text(s))
+		}
+		md.smallPager.SetLines(stts)
 		if !md.g.Stats.Lore[md.g.Depth] {
 			md.g.StoryPrint("Read lore message")
 		}
@@ -712,7 +718,12 @@ func (md *model) ReadScroll() error {
 			AchLoremaster.Get(md.g)
 		}
 	default:
-		//ui.DrawDescription(sc.Text(ui.st), "Story Message")
+		md.smallPager.SetBox(&ui.Box{Title: ui.Text("Story Message")})
+		stts := []ui.StyledText{}
+		text := ui.Text(sc.Text(md.g)).Format(56)
+		for _, s := range strings.Split(text.Text(), "\n") {
+			stts = append(stts, ui.Text(s))
+		}
+		md.smallPager.SetLines(stts)
 	}
-	return errors.New(DoNothing)
 }

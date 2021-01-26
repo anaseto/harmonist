@@ -12,11 +12,13 @@ type mode int
 const (
 	modeNormal mode = iota
 	modePager
+	modeSmallPager
 	modeMenu
 	modeQuit
 	modeQuitConfirmation
 	modeDump // simplified dump visualization after end
 	modeEnd  // win or death
+	modeHPCritical
 )
 
 type pagerMode int
@@ -51,22 +53,15 @@ type model struct {
 	log         *ui.Label
 	description *ui.Label
 	pager       *ui.Pager
+	smallPager  *ui.Pager
 	pagerMarkup ui.StyledText
 	mp          mapUI
 	logs        []ui.StyledText
 	keysNormal  map[gruid.Key]action
 	keysTarget  map[gruid.Key]action
 	quit        bool
-	pause       confirmationMode
 	finished    bool
 }
-
-type confirmationMode int
-
-const (
-	PauseNone confirmationMode = iota
-	PauseHPCritical
-)
 
 type mapUI struct {
 	kbTargeting bool
@@ -157,6 +152,11 @@ func (md *model) initWidgets() {
 	md.description.AdjustWidth = false
 	md.pager = ui.NewPager(ui.PagerConfig{
 		Grid: gruid.NewGrid(UIWidth, UIHeight-1),
+		Box:  &ui.Box{},
+		Keys: ui.PagerKeys{Quit: []gruid.Key{gruid.KeySpace, "x", "X", gruid.KeyEscape}},
+	})
+	md.smallPager = ui.NewPager(ui.PagerConfig{
+		Grid: gruid.NewGrid(60, UIHeight-1),
 		Box:  &ui.Box{},
 		Keys: ui.PagerKeys{Quit: []gruid.Key{gruid.KeySpace, "x", "X", gruid.KeyEscape}},
 	})
@@ -251,6 +251,7 @@ func (md *model) Update(msg gruid.Msg) gruid.Effect {
 		md.g.Save() // TODO: log error ?
 		return gruid.End()
 	}
+	var eff gruid.Effect
 	switch md.mode {
 	case modeQuit:
 		return nil
@@ -272,26 +273,18 @@ func (md *model) Update(msg gruid.Msg) gruid.Effect {
 			}
 		}
 		return eff
-	}
-	switch md.pause {
-	case PauseNone:
-	case PauseHPCritical:
-		switch msg := msg.(type) {
-		case gruid.MsgKeyDown:
-			switch msg.Key {
-			case "x", "X", gruid.KeyEnter, gruid.KeySpace:
-				md.pause = PauseNone
-				md.g.Print("Ok. Be careful, then.")
-			}
+	case modeHPCritical:
+		if md.more(msg) {
+			md.mode = modeNormal
+			md.g.Print("Ok. Be careful, then.")
 		}
 		return nil
-	}
-	var eff gruid.Effect
-	switch md.mode {
 	case modeNormal:
 		eff = md.updateNormal(msg)
 	case modePager:
 		eff = md.updatePager(msg)
+	case modeSmallPager:
+		eff = md.updateSmallPager(msg)
 	case modeMenu:
 		switch md.menuMode {
 		case modeKeys, modeKeysChange:
@@ -376,6 +369,14 @@ func (md *model) EndTurn() gruid.Effect {
 func (md *model) updatePager(msg gruid.Msg) gruid.Effect {
 	md.pager.Update(msg)
 	if md.pager.Action() == ui.PagerQuit {
+		md.mode = modeNormal
+	}
+	return nil
+}
+
+func (md *model) updateSmallPager(msg gruid.Msg) gruid.Effect {
+	md.smallPager.Update(msg)
+	if md.smallPager.Action() == ui.PagerQuit {
 		md.mode = modeNormal
 	}
 	return nil
@@ -534,6 +535,8 @@ func (md *model) Draw() gruid.Grid {
 	switch md.mode {
 	case modePager:
 		md.gd.Copy(md.pager.Draw())
+	case modeSmallPager:
+		md.gd.Slice(gruid.NewRange(10, 2, UIWidth, UIHeight-1)).Copy(md.smallPager.Draw())
 	case modeMenu:
 		switch md.menuMode {
 		case modeInventory, modeEquip, modeEvokation:

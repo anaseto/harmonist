@@ -435,8 +435,8 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 			//ui.MenuSelectedAnimation(MenuInteract, false)
 			//}
 		case ScrollCell:
-			err = md.ReadScroll()
-			err = md.CleanError(err)
+			again = true
+			md.ReadScroll()
 		case ItemCell:
 			err = md.g.EquipItem()
 		case LightCell:
@@ -1004,7 +1004,7 @@ func (md *model) Dump(err error) {
 }
 
 func (md *model) CriticalHPWarning() {
-	md.pause = PauseHPCritical
+	md.mode = modeHPCritical
 	md.g.PrintStyled("*** CRITICAL HP WARNING *** [(x) to continue]", logCritic)
 }
 
