@@ -570,7 +570,7 @@ func (md *model) Draw() gruid.Grid {
 		case modeInventory, modeEquip, modeEvokation:
 			md.gd.Copy(md.menu.Draw())
 			md.description.Box = &ui.Box{Title: ui.Text("Description")}
-			md.description.Draw(md.gd.Slice(md.gd.Range().Columns(UIWidth/2+1, UIWidth)))
+			md.description.Draw(md.gd.Slice(md.gd.Range().Columns(UIWidth/2, UIWidth)))
 		case modeGameMenu, modeSettings:
 			md.gd.Copy(md.menu.Draw())
 		case modeKeys, modeKeysChange:

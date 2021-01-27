@@ -181,6 +181,8 @@ var LetterNames = map[rune]string{
 	'┤':  "boxe",
 	'│':  "vbar",
 	'┘':  "boxse",
+	'┌':  "boxnw",
+	'└':  "boxsw",
 	'─':  "hbar",
 	'►':  "arrow",
 	'×':  "times",
