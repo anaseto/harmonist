@@ -350,11 +350,17 @@ func (md *model) updateMouse(msg gruid.MsgMouse) gruid.Effect {
 			md.CancelExamine()
 		}
 	case gruid.MouseMain:
-		md.g.AutoTarget = md.mp.ex.pos
-		md.g.AutoNext = md.g.AutoPlayer()
-		if md.g.AutoNext {
-			return md.EndTurn()
+		if !valid(p) {
+			return nil
 		}
+		again, eff, err := md.normalModeAction(ActionTarget)
+		if err != nil {
+			md.g.Print(err.Error())
+		}
+		if again {
+			return eff
+		}
+		return md.EndTurn()
 	}
 	return nil
 }
