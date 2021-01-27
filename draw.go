@@ -341,6 +341,42 @@ const (
 	AttrReverse
 )
 
+func (md *model) DrawWelcome() {
+	tst := gruid.Style{}
+	st := gruid.Style{}.WithAttrs(AttrInMap)
+	stt := ui.StyledText{}.WithMarkups(map[rune]gruid.Style{
+		't': tst.WithFg(ColorGreen), // title
+		'W': st.WithFg(ColorViolet), // wall box
+		'l': st.WithFg(ColorFgLOS).WithBg(ColorBgLOS),
+		'L': st.WithFg(ColorFgLOSLight).WithBg(ColorBgLOS),
+		'p': st.WithFg(ColorFgPlayer).WithBg(ColorBgLOS),
+		'm': st.WithFg(ColorFgWanderingMonster),
+		'P': st.WithFg(ColorFgPlace),
+		'd': st.WithFg(ColorFgDark),
+		's': st.WithFg(ColorFgMagicPlace),
+		'T': st.WithFg(ColorFgTree),
+		'b': st.WithFg(ColorFgBananas),
+		'z': st.WithFg(ColorFgSleepingMonster),
+		'r': st.WithFg(ColorFgWanderingMonster).WithBg(ColorBgLOS),
+		'o': st.WithFg(ColorFgObject),
+	})
+	gd := md.gd
+	rg := gd.Range()
+	text := fmt.Sprintf("     Harmonist %s\n", Version)
+	text += `@t───────────────────────
+ @d#@l##@W###############@d### 
+@d#.@L..@W#@t  HARMONIST  @W#@d.@b)@zt@d#
+@d#.@pb@L.@W###############@d.## 
+@d #@L...@r...@l#@d#@oπ@d.@P>@d##.....#  
+@d @l#@L..@r.@mg@r..+@d..@mG@d..@P+@d.....#  
+@l#@p@@@L.@l#@d≈@m♫@d..##@o☼@d.@o&@d##..@T♣@d.".##
+@l#@L.@l#@d#≈≈≈..##@P+@d##..@mh@d."#.@s∩@d#
+@l#@L.@l.@d##≈≈≈.........""""##
+@t───────────────────────
+`
+	stt.WithText(text).Draw(gd.Slice(rg.Shift(20, 6, 0, 0)))
+}
+
 func (md *model) DrawKeysDescription(title string, actions []string) {
 	md.pagerMode = modeHelpKeys
 	md.mode = modePager

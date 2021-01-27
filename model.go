@@ -19,6 +19,7 @@ const (
 	modeDump // simplified dump visualization after end
 	modeEnd  // win or death
 	modeHPCritical
+	modeWelcome
 )
 
 type pagerMode int
@@ -184,6 +185,7 @@ func (md *model) initWidgets() {
 }
 
 func (md *model) init() gruid.Effect {
+	md.mode = modeWelcome
 	SolarizedPalette()
 	GameConfig.DarkLOS = true
 	GameConfig.Version = Version
@@ -254,6 +256,16 @@ func (md *model) Update(msg gruid.Msg) gruid.Effect {
 	}
 	var eff gruid.Effect
 	switch md.mode {
+	case modeWelcome:
+		switch msg := msg.(type) {
+		case gruid.MsgKeyDown:
+			md.mode = modeNormal
+		case gruid.MsgMouse:
+			if msg.Action != gruid.MouseMove {
+				md.mode = modeNormal
+			}
+		}
+		return nil
 	case modeQuit:
 		return nil
 	case modeEnd:
@@ -528,6 +540,9 @@ func (md *model) Draw() gruid.Grid {
 	switch md.mode {
 	case modeDump:
 		md.gd.Copy(md.pager.Draw())
+		return md.gd
+	case modeWelcome:
+		md.DrawWelcome()
 		return md.gd
 	}
 	dgd := md.gd.Slice(md.gd.Range().Shift(0, 2, 0, -1))
