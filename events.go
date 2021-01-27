@@ -164,15 +164,7 @@ func (sev *simpleEvent) Action(g *game) {
 		}
 		g.PlayerAgain = false
 		g.LogNextTick = g.LogIndex
-		g.AutoNext = g.AutoPlayer(sev)
-		if g.AutoNext {
-			g.TurnStats()
-			return
-		}
-		//g.Quit = g.ui.HandlePlayerTurn()
-		//if g.Quit {
-		//return
-		//}
+		g.AutoNext = g.AutoPlayer()
 		g.TurnStats()
 	case ShaedraAnimation:
 		g.ComputeLOS()

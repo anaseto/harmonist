@@ -661,9 +661,9 @@ func (g *game) ApplyRest() {
 	}
 }
 
-func (g *game) AutoPlayer(ev event) bool {
-	// TODO: update this
-	if g.Resting {
+func (g *game) AutoPlayer() bool {
+	switch {
+	case g.Resting:
 		const enoughRestTurns = 25
 		if g.RestingTurns < enoughRestTurns {
 			g.RenewEvent(DurationTurn)
@@ -674,11 +674,7 @@ func (g *game) AutoPlayer(ev event) bool {
 			g.ApplyRest()
 		}
 		g.Resting = false
-	} else if g.Autoexploring {
-		//if g.ui.ExploreStep() {
-		//g.AutoHalt = true
-		//g.Print("Stopping, then.")
-		//}
+	case g.Autoexploring:
 		switch {
 		case g.AutoHalt:
 			// stop exploring
@@ -712,13 +708,13 @@ func (g *game) AutoPlayer(ev event) bool {
 			}
 		}
 		g.Autoexploring = false
-	} else if valid(g.AutoTarget) {
+	case valid(g.AutoTarget):
 		if g.MoveToTarget() {
 			return true
 		} else {
 			g.AutoTarget = InvalidPos
 		}
-	} else if g.AutoDir != NoDir {
+	case g.AutoDir != NoDir:
 		if g.AutoToDir() {
 			return true
 		} else {
