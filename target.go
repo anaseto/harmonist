@@ -22,7 +22,6 @@ type examination struct {
 }
 
 func (md *model) CancelExamine() {
-	md.g.Targeting = InvalidPos
 	md.g.Highlight = nil
 	md.g.MonsterTargLOS = nil
 	md.HideCursor()
@@ -295,7 +294,6 @@ func (md *model) Target() error {
 	}
 	if c := g.Dungeon.Cell(pos); c.Explored && c.T != WallCell {
 		g.AutoTarget = pos
-		g.Targeting = pos
 		return nil
 	}
 	return errors.New("Invalid destination.")

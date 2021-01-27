@@ -370,7 +370,6 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		if err != nil {
 			break
 		}
-		g.Targeting = InvalidPos
 		if g.MoveToTarget() {
 			again = false
 		}

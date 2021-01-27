@@ -44,7 +44,6 @@ type game struct {
 	RestingTurns       int
 	Autoexploring      bool
 	DijkstraMapRebuild bool
-	Targeting          gruid.Point
 	AutoTarget         gruid.Point
 	AutoDir            direction
 	AutoHalt           bool
@@ -290,7 +289,6 @@ func (g *game) InitFirstLevel() {
 	g.Depth++ // start at 1
 	g.InitPlayer()
 	g.AutoTarget = InvalidPos
-	g.Targeting = InvalidPos
 	g.Illuminated = make([]bool, DungeonNCells)
 	g.RaysCache = rayMap{}
 	g.GeneratedLore = map[int]bool{}
