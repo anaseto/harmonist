@@ -54,25 +54,20 @@ or using the github repos:
 The `harmonist` command should now be available (you may have to rename it to
 remove the `.git` suffix).
 
-The only dependency outside of the go standard library is the lightweight
-curses-like library [termbox-go](https://github.com/nsf/termbox-go), which is
-installed automatically by the previous `go get` command.
-
-*Portability note.* If you happen to experience input problems, try adding
-option `--tags tcell` or `--tags ansi` to the `go get` command. The first will use
-[tcell](https://github.com/gdamore/tcell) instead of termbox-go, which may be
-more portable. The second will work on POSIX systems with a `stty` command.
+This version uses the [tcell](https://github.com/gdamore/tcell) terminal
+library.
 
 ### Tiles
 
-You can build a graphical version depending on Tcl/Tk (8.6) using this command:
+You can build a graphical version depending on SDL2 using this command:
 
-    go get -u --tags tk git.tuxfamily.org/harmonist/harmonist.git
+    go get -u --tags sdl git.tuxfamily.org/harmonist/harmonist.git
 
-This will install the [gothic](https://github.com/nsf/gothic) Go bindings for
-Tcl/Tk. You need to install Tcl/Tk first.
+This will install the [go-sdl2](https://github.com/veandco/go-sdl2/sdl) Go
+bindings for SDL2. You need to install
+[SDL2](https://libsdl.org/download-2.0.php) first.
 
-With Go 1.11 or later, you can also build the WebAssembly version with:
+You can also build a WebAssembly version with:
 
     GOOS=js GOARCH=wasm go build --tags js -o harmonist.wasm
 

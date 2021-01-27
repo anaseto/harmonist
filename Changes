@@ -1,3 +1,10 @@
+v0.4 2021-?
+
++ Rewrite of the user interface: now it uses the gruid library. Among
+  noticeable changes for players, description for items and places is now
+  displayed just by examining them, without requiring an additional keypress.
++ The Tk backend for tiles has been replaced with an SDL backend. 
+
 v0.3 2019-12-10
 
 Highligths:
