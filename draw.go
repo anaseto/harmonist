@@ -698,9 +698,10 @@ func (md *model) ReadScroll() {
 	}
 	md.g.Print("You read the message.")
 	md.mode = modeSmallPager
+	st := gruid.Style{}
 	switch sc {
 	case ScrollLore:
-		md.smallPager.SetBox(&ui.Box{Title: ui.Text("Lore Message")})
+		md.smallPager.SetBox(&ui.Box{Title: ui.Text("Lore Message").WithStyle(st.WithFg(ColorCyan))})
 		stts := []ui.StyledText{}
 		text := ui.Text(sc.Text(md.g)).Format(56)
 		for _, s := range strings.Split(text.Text(), "\n") {
@@ -718,7 +719,7 @@ func (md *model) ReadScroll() {
 			AchLoremaster.Get(md.g)
 		}
 	default:
-		md.smallPager.SetBox(&ui.Box{Title: ui.Text("Story Message")})
+		md.smallPager.SetBox(&ui.Box{Title: ui.Text("Story Message").WithStyle(st.WithFg(ColorCyan))})
 		stts := []ui.StyledText{}
 		text := ui.Text(sc.Text(md.g)).Format(56)
 		for _, s := range strings.Split(text.Text(), "\n") {

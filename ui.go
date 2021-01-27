@@ -55,7 +55,7 @@ func (md *model) CleanError(err error) error {
 type action int
 
 const (
-	ActionNothing action = iota
+	ActionNone action = iota
 	ActionW
 	ActionS
 	ActionN
@@ -322,6 +322,9 @@ func (e actionError) Error() string {
 func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, err error) {
 	g := md.g
 	switch action {
+	case ActionNone:
+		// not used
+		again = true
 	case ActionW, ActionS, ActionN, ActionE:
 		if !md.mp.kbTargeting {
 			err = g.PlayerBump(To(KeyToDir(action), g.Player.Pos))
