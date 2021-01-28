@@ -72,6 +72,7 @@ type model struct {
 	status      *ui.Menu
 	log         *ui.Label
 	description *ui.Label
+	statusDesc  *ui.Label
 	pager       *ui.Pager
 	smallPager  *ui.Pager
 	pagerMarkup ui.StyledText
@@ -81,6 +82,7 @@ type model struct {
 	keysTarget  map[gruid.Key]action
 	quit        bool
 	finished    bool
+	statusFocus bool
 }
 
 type mapUI struct {
@@ -171,6 +173,7 @@ func (md *model) initWidgets() {
 	md.log = ui.NewLabel(ui.StyledText{}.WithStyle(gruid.Style{}).WithMarkup('t', gruid.Style{Fg: ColorYellow}))
 	md.description = ui.NewLabel(ui.StyledText{}.WithStyle(gruid.Style{}).WithMarkup('t', gruid.Style{Fg: ColorYellow}))
 	md.description.AdjustWidth = false
+	md.statusDesc = ui.NewLabel(ui.StyledText{}.WithStyle(gruid.Style{}))
 	md.pager = ui.NewPager(ui.PagerConfig{
 		Grid: gruid.NewGrid(UIWidth, UIHeight-1),
 		Box:  &ui.Box{},
@@ -358,6 +361,7 @@ func (md *model) updateNormal(msg gruid.Msg) gruid.Effect {
 }
 
 func (md *model) updateKeyDown(msg gruid.MsgKeyDown) gruid.Effect {
+	md.statusFocus = false
 	md.g.Ev = &simpleEvent{EAction: PlayerTurn, ERank: md.g.Turn}
 	if !md.mp.kbTargeting && valid(md.mp.ex.pos) {
 		md.CancelExamine()
@@ -373,6 +377,10 @@ func (md *model) updateKeyDown(msg gruid.MsgKeyDown) gruid.Effect {
 }
 
 func (md *model) updateMouse(msg gruid.MsgMouse) gruid.Effect {
+	if msg.P.Y == UIHeight-1 {
+		return md.updateStatusMouse(msg)
+	}
+	md.statusFocus = false
 	p := msg.P.Add(gruid.Point{0, -2}) // relative position ignoring log
 	switch msg.Action {
 	case gruid.MouseMove:
@@ -393,6 +401,49 @@ func (md *model) updateMouse(msg gruid.MsgMouse) gruid.Effect {
 			return eff
 		}
 		return md.EndTurn()
+	}
+	return nil
+}
+
+func (md *model) updateStatusMouse(msg gruid.MsgMouse) gruid.Effect {
+	md.CancelExamine()
+	md.status.Update(md.gd.Range().Line(UIHeight - 1).RelMsg(msg))
+	switch md.status.Action() {
+	case ui.MenuMove:
+		const statusIndex = 6
+		const bananaIndex = 4
+		i := md.status.Active()
+		switch {
+		case i == 0:
+			md.statusDesc.Box = &ui.Box{Title: ui.Text("Depth")}
+			md.statusDesc.SetText("Dungeon depth.")
+			md.statusFocus = true
+		case i == 1:
+			md.statusDesc.Box = &ui.Box{Title: ui.Text("Turns")}
+			md.statusDesc.SetText("Number of turns since the beginning.")
+			md.statusFocus = true
+		case i == 2:
+			md.statusDesc.Box = &ui.Box{Title: ui.Text("Health")}
+			md.statusDesc.SetText("Your hit points.")
+			md.statusFocus = true
+		case i == 3:
+			md.statusDesc.Box = &ui.Box{Title: ui.Text("Magic Points")}
+			md.statusDesc.SetText("Your magic points. Needed for evoking magaras.")
+			md.statusFocus = true
+		case i == 4:
+			md.statusDesc.Box = &ui.Box{Title: ui.Text("Bananas")}
+			md.statusDesc.SetText("Need to eat one before sleeping in barrels.")
+			md.statusFocus = true
+		case i >= statusIndex:
+			i := md.status.Active() - statusIndex
+			sts := md.sortedStatuses()
+			if i > len(sts)-1 {
+				break
+			}
+			md.statusDesc.Box = &ui.Box{Title: ui.Text(sts[i].String())}
+			md.statusDesc.SetText(sts[i].Desc())
+			md.statusFocus = true
+		}
 	}
 	return nil
 }

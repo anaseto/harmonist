@@ -16,7 +16,6 @@ const (
 	StatusSwift
 	StatusLignification
 	StatusConfusion
-	StatusNausea
 	StatusFlames // fake status
 	StatusHidden
 	StatusUnhidden
@@ -68,7 +67,7 @@ func (st status) Good() bool {
 
 func (st status) Bad() bool {
 	switch st {
-	case StatusConfusion, StatusNausea, StatusUnhidden, StatusIlluminated:
+	case StatusConfusion, StatusUnhidden, StatusIlluminated:
 		return true
 	default:
 		return false
@@ -78,15 +77,13 @@ func (st status) Bad() bool {
 func (st status) String() string {
 	switch st {
 	case StatusExhausted:
-		return "Exhausted"
+		return "Exhaustion"
 	case StatusSwift:
-		return "Swift"
+		return "Swiftness"
 	case StatusLignification:
-		return "Lignified"
+		return "Lignification"
 	case StatusConfusion:
-		return "Confused"
-	case StatusNausea:
-		return "Nausea"
+		return "Confusion"
 	case StatusFlames:
 		return "Flames"
 	case StatusHidden:
@@ -98,19 +95,59 @@ func (st status) String() string {
 	case StatusLight:
 		return "Light"
 	case StatusLevitation:
-		return "Levitating"
+		return "Levitation"
 	case StatusShadows:
 		return "Shadows"
 	case StatusIlluminated:
-		return "Illuminated"
+		return "Illumination"
 	case StatusTransparent:
-		return "Transparent"
+		return "Transparency"
 	case StatusDisguised:
-		return "Disguised"
+		return "Disguise"
 	case StatusDelay:
 		return "Delay"
 	case StatusDispersal:
 		return "Dispersal"
+	default:
+		// should not happen
+		return "unknown"
+	}
+}
+
+func (st status) Desc() string {
+	switch st {
+	case StatusExhausted:
+		return "Forbids some actions, such as jumping."
+	case StatusSwift:
+		return "Allows for moving several times in a row."
+	case StatusLignification:
+		return "Makes it impossible to move."
+	case StatusConfusion:
+		return "Makes it impossible to use magaras."
+	case StatusFlames:
+		return "Surrounded by magical flames."
+	case StatusHidden:
+		return "No monster can see you."
+	case StatusUnhidden:
+		return "Some monsters can see you."
+	case StatusDig:
+		return "Allows to walk into walls."
+	case StatusLight:
+		return "You are in a lighted cell."
+	case StatusLevitation:
+		return "Allows to fly over chasm and oric barriers."
+	case StatusShadows:
+		return "Only adjacent monsters see you on dark cells."
+	case StatusIlluminated:
+		return "You are always in a lighted cell."
+	case StatusTransparent:
+		return "Only adjacent monsters see you on lighted cells."
+	case StatusDisguised:
+		return "Most monsters will ignore you, except those with good flair."
+	case StatusDelay:
+		return "Time remaining before the trigger."
+	case StatusDispersal:
+		return "Monsters that attempt to hit you will blink away."
 	default:
 		// should not happen
 		return "unknown"
@@ -127,8 +164,6 @@ func (st status) Short() string {
 		return "Lg"
 	case StatusConfusion:
 		return "Co"
-	case StatusNausea:
-		return "Na"
 	case StatusFlames:
 		return "Fl"
 	case StatusHidden:
@@ -183,6 +218,24 @@ func (md *model) statusMPColor() rune {
 	return mpColor
 }
 
+func (md *model) sortedStatuses() statusSlice {
+	g := md.g
+	sts := statusSlice{}
+	if cld, ok := g.Clouds[g.Player.Pos]; ok && cld == CloudFire {
+		g.Player.Statuses[StatusFlames] = 1
+		defer func() {
+			g.Player.Statuses[StatusFlames] = 0
+		}()
+	}
+	for st, c := range g.Player.Statuses {
+		if c > 0 {
+			sts = append(sts, st)
+		}
+	}
+	sort.Sort(sts)
+	return sts
+}
+
 func (md *model) updateStatusInfo() {
 	g := md.g
 	var entries []ui.MenuEntry
@@ -202,7 +255,7 @@ func (md *model) updateStatusInfo() {
 		'B': st.WithFg(ColorCyan),
 		'M': st.WithFg(ColorYellow).WithAttrs(AttrInMap),
 	})
-	// depth
+	// depth: entries[0]
 	var depth string
 	if g.Depth == -1 {
 		depth = "D: Out! "
@@ -211,10 +264,10 @@ func (md *model) updateStatusInfo() {
 	}
 	entries = append(entries, ui.MenuEntry{Text: stt.WithText(depth), Disabled: true})
 
-	// turns
+	// turns: entries[1]
 	entries = append(entries, ui.MenuEntry{Text: stt.WithTextf("T: %d ", g.Turn), Disabled: true})
 
-	// HP
+	// HP: entries[2]
 	nWounds := g.Player.HPMax() - g.Player.HP - g.Player.HPbonus
 	if nWounds <= 0 {
 		nWounds = 0
@@ -242,7 +295,7 @@ func (md *model) updateStatusInfo() {
 	}
 	entries = append(entries, ui.MenuEntry{Text: stt.WithText(hps), Disabled: true})
 
-	// MP
+	// MP: entries[3]
 	MPspent := g.Player.MPMax() - g.Player.MP
 	if MPspent <= 0 {
 		MPspent = 0
@@ -261,26 +314,15 @@ func (md *model) updateStatusInfo() {
 	}
 	entries = append(entries, ui.MenuEntry{Text: stt.WithText(mps), Disabled: true})
 
-	// bananas
+	// bananas: entries[4]
 	bananas := fmt.Sprintf("@M)@N:%1d/%1d ", g.Player.Bananas, MaxBananas)
 	entries = append(entries, ui.MenuEntry{Text: stt.WithText(bananas), Disabled: true})
 
-	// statuses (TODO: add description)
-	sts := statusSlice{}
-	if cld, ok := g.Clouds[g.Player.Pos]; ok && cld == CloudFire {
-		g.Player.Statuses[StatusFlames] = 1
-		defer func() {
-			g.Player.Statuses[StatusFlames] = 0
-		}()
-	}
-	for st, c := range g.Player.Statuses {
-		if c > 0 {
-			sts = append(sts, st)
-		}
-	}
-	sort.Sort(sts)
+	// statuses (TODO: add description) entries[6+]
+	sts := md.sortedStatuses()
 
 	if len(sts) > 0 {
+		// entries[5]
 		entries = append(entries, ui.MenuEntry{Text: stt.WithText("| "), Disabled: true})
 	}
 	for _, st := range sts {

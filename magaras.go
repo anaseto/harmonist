@@ -130,9 +130,6 @@ func (g *game) EquipMagara(i int) (err error) {
 }
 
 func (g *game) UseMagara(n int) (err error) {
-	if g.Player.HasStatus(StatusNausea) {
-		return errors.New("You cannot use magaras while sick.")
-	}
 	if g.Player.HasStatus(StatusConfusion) {
 		return errors.New("You cannot use magaras while confused.")
 	}

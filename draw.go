@@ -26,6 +26,10 @@ func (md *model) Draw() gruid.Grid {
 		md.drawPosInfo()
 	}
 	switch md.mode {
+	case modeNormal:
+		if md.statusFocus {
+			md.statusDesc.Draw(md.gd.Slice(md.gd.Range().Lines(UIHeight-4, UIHeight-1).Shift(10, 0, 0, 0)))
+		}
 	case modePager:
 		md.gd.Copy(md.pager.Draw())
 	case modeSmallPager:
