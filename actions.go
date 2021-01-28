@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"log"
 	"path/filepath"
 	"strings"
 	//"time"
@@ -11,106 +10,6 @@ import (
 	"github.com/anaseto/gruid"
 	"github.com/anaseto/gruid/ui"
 )
-
-const (
-	UIWidth  = 80
-	UIHeight = 24
-)
-
-var (
-	DisableAnimations bool = false
-	Xterm256Color          = false
-	Terminal               = false
-)
-
-const doNothing = "Do nothing, then."
-
-func (md *model) updateKeysDescription(title string, actions []string) {
-	md.pagerMode = modeHelpKeys
-	md.mode = modePager
-	if CustomKeys {
-		title = fmt.Sprintf(" Default %s ", title)
-	} else {
-		title = fmt.Sprintf(" %s ", title)
-	}
-	md.pager.SetBox(&ui.Box{Title: ui.Text(title).WithStyle(gruid.Style{}.WithFg(ColorYellow))})
-	lines := []ui.StyledText{}
-	for i := 0; i < len(actions)-1; i += 2 {
-		stt := ui.StyledText{}
-		if actions[i+1] != "" {
-			stt = stt.WithTextf(" %-36s %s", actions[i], actions[i+1])
-		} else {
-			stt = stt.WithTextf(" %s ", actions[i]).WithStyle(gruid.Style{}.WithFg(ColorCyan))
-		}
-		if i%4 == 2 {
-			stt = stt.WithStyle(stt.Style().WithBg(ColorBgLOS))
-		}
-		lines = append(lines, stt)
-	}
-	md.pager.SetLines(lines)
-}
-
-func (md *model) KeysHelp() {
-	md.updateKeysDescription("Basic Commands", []string{
-		"Move/Jump", "arrows or wasd or hjkl or mouse left",
-		"Wait a turn", "“.” or 5 or enter or mouse left on @",
-		"Interact (Equip/Descend/Rest...)", "e",
-		"Evoke/Zap magara", "v or z",
-		"Inventory", "i",
-		"Examine", "x or mouse hover",
-		"Menu", "M",
-		"Advanced Commands", "",
-		"Save and Quit", "S",
-		"View previous messages", "m",
-		"Go to nearest stairs", "G",
-		"Autoexplore (use with caution)", "o",
-		"Write state statistics to file", "#",
-		"Quit without saving", "Q",
-		"Change settings and key bindings", "=",
-	})
-}
-
-func (md *model) ExamineHelp() {
-	md.updateKeysDescription("Examine/Travel Commands", []string{
-		"Move cursor", "arrows or wasd or hjkl or mouse hover",
-		"Go to/select target", "“.” or enter or mouse left",
-		"View target description", "v or mouse right",
-		"Cycle through monsters", "+",
-		"Cycle through stairs", ">",
-		"Cycle through objects", "o",
-		"Toggle exclude area from auto-travel", "e or mouse middle",
-	})
-}
-
-func (md *model) WizardInfo() {
-	// TODO
-	//g := ui.st
-	//ui.Clear()
-	//b := &bytes.Buffer{}
-	//fmt.Fprintf(b, "Monsters: %d (%d)\n", len(g.Monsters), g.MaxMonsters())
-	//fmt.Fprintf(b, "Danger: %d (%d)\n", g.Danger(), g.MaxDanger())
-	//ui.DrawText(b.String(), 0, 0)
-	//ui.Flush()
-	//ui.WaitForContinue(-1)
-}
-
-func (md *model) EnterWizard() {
-	// TODO
-	//g := ui.st
-	//if ui.Wizard() {
-	//g.EnterWizardMode()
-	//ui.DrawDungeonView(NoFlushMode)
-	//} else {
-	//g.Print(DoNothing)
-	//}
-}
-
-func (md *model) cleanError(err error) error {
-	if err != nil && err.Error() == doNothing {
-		err = errors.New("")
-	}
-	return err
-}
 
 type action int
 
@@ -187,9 +86,6 @@ var ConfigurableKeyActions = [...]action{
 	ActionNextStairs,
 	ActionTarget,
 	ActionExclude}
-
-// CustomKeys tracks whether we're using custom key bindings.
-var CustomKeys bool
 
 func (k action) normalModeAction() bool {
 	switch k {
@@ -341,43 +237,6 @@ func (k action) targetingModeAction() bool {
 	default:
 		return false
 	}
-}
-
-var GameConfig config
-
-func (md *model) checkShaedra(st stair) (err error) {
-	g := md.g
-	if g.Depth == WinDepth && st == NormalStair && g.Dungeon.Cell(g.Places.Shaedra).T == StoryCell {
-		err = errors.New("You have to rescue Shaedra first!")
-	}
-	return err
-
-}
-
-func (md *model) normalModeKeyDown(key gruid.Key) (again bool, eff gruid.Effect, err error) {
-	action := md.keysNormal[key]
-	if md.mp.kbTargeting {
-		action = md.keysTarget[key]
-	}
-	again, eff, err = md.normalModeAction(action)
-	if _, ok := err.(actionError); ok {
-		err = fmt.Errorf("Unknown key '%s'. Type ? for help.", key)
-	}
-	return again, eff, err
-}
-
-type actionError int
-
-const (
-	actionErrorUnknown actionError = iota
-)
-
-func (e actionError) Error() string {
-	switch e {
-	case actionErrorUnknown:
-		return "unknown action"
-	}
-	return ""
 }
 
 func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, err error) {
@@ -640,6 +499,59 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		again = true
 	}
 	return again, eff, err
+}
+
+func (md *model) readScroll() {
+	sc, ok := md.g.Objects.Scrolls[md.g.Player.Pos]
+	if !ok {
+		md.g.PrintStyled("Error while reading message.", logError)
+		return
+	}
+	md.g.Print("You read the message.")
+	md.mode = modeSmallPager
+	st := gruid.Style{}
+	switch sc {
+	case ScrollLore:
+		md.smallPager.SetBox(&ui.Box{Title: ui.Text("Lore Message").WithStyle(st.WithFg(ColorCyan))})
+		stts := []ui.StyledText{}
+		text := ui.Text(sc.Text(md.g)).Format(56)
+		for _, s := range strings.Split(text.Text(), "\n") {
+			stts = append(stts, ui.Text(s))
+		}
+		md.smallPager.SetLines(stts)
+		if !md.g.Stats.Lore[md.g.Depth] {
+			md.g.StoryPrint("Read lore message")
+		}
+		md.g.Stats.Lore[md.g.Depth] = true
+		if len(md.g.Stats.Lore) == 4 {
+			AchLoreStudent.Get(md.g)
+		}
+		if len(md.g.Stats.Lore) == len(md.g.Params.Lore) {
+			AchLoremaster.Get(md.g)
+		}
+	default:
+		md.smallPager.SetBox(&ui.Box{Title: ui.Text("Story Message").WithStyle(st.WithFg(ColorCyan))})
+		stts := []ui.StyledText{}
+		text := ui.Text(sc.Text(md.g)).Format(56)
+		for _, s := range strings.Split(text.Text(), "\n") {
+			stts = append(stts, ui.Text(s))
+		}
+		md.smallPager.SetLines(stts)
+	}
+}
+
+type actionError int
+
+const (
+	actionErrorUnknown actionError = iota
+)
+
+func (e actionError) Error() string {
+	switch e {
+	case actionErrorUnknown:
+		return "unknown action"
+	}
+	return ""
 }
 
 func altBgEntries(entries []ui.MenuEntry) {
@@ -1028,101 +940,97 @@ func (md *model) HandleWizardAction() error {
 	return nil
 }
 
-func (md *model) death() {
-	g := md.g
-	if len(g.Stats.Achievements) == 0 {
-		NoAchievement.Get(g)
-	}
-	g.Print("You die... [(x) to continue]")
-	md.mode = modeEnd
-}
-
-func (md *model) win() {
-	g := md.g
-	err := g.RemoveSaveFile()
-	if err != nil {
-		g.PrintfStyled("Error removing save file: %v", logError, err)
-	}
-	if g.Wizard {
-		g.Print("You escape by the magic portal! **WIZARD** [(x) to continue]")
+func (md *model) updateKeysDescription(title string, actions []string) {
+	md.pagerMode = modeHelpKeys
+	md.mode = modePager
+	if CustomKeys {
+		title = fmt.Sprintf(" Default %s ", title)
 	} else {
-		g.Print("You escape by the magic portal! [(x) to continue]")
+		title = fmt.Sprintf(" %s ", title)
 	}
-	md.mode = modeEnd
+	md.pager.SetBox(&ui.Box{Title: ui.Text(title).WithStyle(gruid.Style{}.WithFg(ColorYellow))})
+	lines := []ui.StyledText{}
+	for i := 0; i < len(actions)-1; i += 2 {
+		stt := ui.StyledText{}
+		if actions[i+1] != "" {
+			stt = stt.WithTextf(" %-36s %s", actions[i], actions[i+1])
+		} else {
+			stt = stt.WithTextf(" %s ", actions[i]).WithStyle(gruid.Style{}.WithFg(ColorCyan))
+		}
+		if i%4 == 2 {
+			stt = stt.WithStyle(stt.Style().WithBg(ColorBgLOS))
+		}
+		lines = append(lines, stt)
+	}
+	md.pager.SetLines(lines)
 }
 
-func (md *model) dump(err error) {
-	s := md.g.SimplifedDump(err)
-	lines := strings.Split(s, "\n")
-	stts := []ui.StyledText{}
-	for _, l := range lines {
-		stts = append(stts, ui.Text(l))
-	}
-	md.pager.SetLines(stts)
-	log.Printf("%v", s)
-	log.Printf("%v", stts)
+func (md *model) KeysHelp() {
+	md.updateKeysDescription("Basic Commands", []string{
+		"Move/Jump", "arrows or wasd or hjkl or mouse left",
+		"Wait a turn", "“.” or 5 or enter or mouse left on @",
+		"Interact (Equip/Descend/Rest...)", "e",
+		"Evoke/Zap magara", "v or z",
+		"Inventory", "i",
+		"Examine", "x or mouse hover",
+		"Menu", "M",
+		"Advanced Commands", "",
+		"Save and Quit", "S",
+		"View previous messages", "m",
+		"Go to nearest stairs", "G",
+		"Autoexplore (use with caution)", "o",
+		"Write state statistics to file", "#",
+		"Quit without saving", "Q",
+		"Change settings and key bindings", "=",
+	})
 }
 
-func (md *model) criticalHPWarning() {
-	md.mode = modeHPCritical
-	md.g.PrintStyled("*** CRITICAL HP WARNING *** [(x) to continue]", logCritic)
+func (md *model) ExamineHelp() {
+	md.updateKeysDescription("Examine/Travel Commands", []string{
+		"Move cursor", "arrows or wasd or hjkl or mouse hover",
+		"Go to/select target", "“.” or enter or mouse left",
+		"View target description", "v or mouse right",
+		"Cycle through monsters", "+",
+		"Cycle through stairs", ">",
+		"Cycle through objects", "o",
+		"Toggle exclude area from auto-travel", "e or mouse middle",
+	})
+}
+
+func (md *model) WizardInfo() {
+	// TODO
+	//g := ui.st
+	//ui.Clear()
+	//b := &bytes.Buffer{}
+	//fmt.Fprintf(b, "Monsters: %d (%d)\n", len(g.Monsters), g.MaxMonsters())
+	//fmt.Fprintf(b, "Danger: %d (%d)\n", g.Danger(), g.MaxDanger())
+	//ui.DrawText(b.String(), 0, 0)
+	//ui.Flush()
+	//ui.WaitForContinue(-1)
+}
+
+func (md *model) EnterWizard() {
+	// TODO
+	//g := ui.st
+	//if ui.Wizard() {
+	//g.EnterWizardMode()
+	//ui.DrawDungeonView(NoFlushMode)
+	//} else {
+	//g.Print(DoNothing)
+	//}
+}
+
+func (md *model) checkShaedra(st stair) (err error) {
+	g := md.g
+	if g.Depth == WinDepth && st == NormalStair && g.Dungeon.Cell(g.Places.Shaedra).T == StoryCell {
+		err = errors.New("You have to rescue Shaedra first!")
+	}
+	return err
+
 }
 
 // Quit enters confirmation mode for quit without saving.
 func (md *model) Quit() {
 	md.g.Print("Do you really want to quit without saving? [y/N]")
 	md.mode = modeQuitConfirmation
-}
-
-func (md *model) applyConfig() {
-	if GameConfig.NormalModeKeys != nil {
-		md.keysNormal = GameConfig.NormalModeKeys
-	}
-	if GameConfig.TargetModeKeys != nil {
-		md.keysTarget = GameConfig.TargetModeKeys
-	}
-	if GameConfig.DarkLOS {
-		ApplyDarkLOS()
-	} else {
-		ApplyLightLOS()
-	}
-}
-
-func (md *model) readScroll() {
-	sc, ok := md.g.Objects.Scrolls[md.g.Player.Pos]
-	if !ok {
-		md.g.PrintStyled("Error while reading message.", logError)
-		return
-	}
-	md.g.Print("You read the message.")
-	md.mode = modeSmallPager
-	st := gruid.Style{}
-	switch sc {
-	case ScrollLore:
-		md.smallPager.SetBox(&ui.Box{Title: ui.Text("Lore Message").WithStyle(st.WithFg(ColorCyan))})
-		stts := []ui.StyledText{}
-		text := ui.Text(sc.Text(md.g)).Format(56)
-		for _, s := range strings.Split(text.Text(), "\n") {
-			stts = append(stts, ui.Text(s))
-		}
-		md.smallPager.SetLines(stts)
-		if !md.g.Stats.Lore[md.g.Depth] {
-			md.g.StoryPrint("Read lore message")
-		}
-		md.g.Stats.Lore[md.g.Depth] = true
-		if len(md.g.Stats.Lore) == 4 {
-			AchLoreStudent.Get(md.g)
-		}
-		if len(md.g.Stats.Lore) == len(md.g.Params.Lore) {
-			AchLoremaster.Get(md.g)
-		}
-	default:
-		md.smallPager.SetBox(&ui.Box{Title: ui.Text("Story Message").WithStyle(st.WithFg(ColorCyan))})
-		stts := []ui.StyledText{}
-		text := ui.Text(sc.Text(md.g)).Format(56)
-		for _, s := range strings.Split(text.Text(), "\n") {
-			stts = append(stts, ui.Text(s))
-		}
-		md.smallPager.SetLines(stts)
-	}
 }

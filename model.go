@@ -2,10 +2,29 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"strings"
 
 	"github.com/anaseto/gruid"
 	"github.com/anaseto/gruid/ui"
 )
+
+const (
+	UIWidth  = 80
+	UIHeight = 24
+)
+
+var (
+	DisableAnimations bool = false
+	Xterm256Color          = false
+	Terminal               = false
+)
+
+// CustomKeys tracks whether we're using custom key bindings.
+var CustomKeys bool
+var GameConfig config
+
+const doNothing = "Do nothing, then."
 
 type mode int
 
@@ -378,6 +397,8 @@ func (md *model) updateMouse(msg gruid.MsgMouse) gruid.Effect {
 	return nil
 }
 
+// EndTurn finalizes player's turn and runs other events until next player
+// turn.
 func (md *model) EndTurn() gruid.Effect {
 	md.mode = modeNormal
 	eff := md.g.EndTurn()
@@ -537,4 +558,70 @@ func (md *model) updateMenu(msg gruid.Msg) gruid.Effect {
 		}
 	}
 	return nil
+}
+
+func (md *model) normalModeKeyDown(key gruid.Key) (again bool, eff gruid.Effect, err error) {
+	action := md.keysNormal[key]
+	if md.mp.kbTargeting {
+		action = md.keysTarget[key]
+	}
+	again, eff, err = md.normalModeAction(action)
+	if _, ok := err.(actionError); ok {
+		err = fmt.Errorf("Unknown key '%s'. Type ? for help.", key)
+	}
+	return again, eff, err
+}
+
+func (md *model) death() {
+	g := md.g
+	if len(g.Stats.Achievements) == 0 {
+		NoAchievement.Get(g)
+	}
+	g.Print("You die... [(x) to continue]")
+	md.mode = modeEnd
+}
+
+func (md *model) win() {
+	g := md.g
+	err := g.RemoveSaveFile()
+	if err != nil {
+		g.PrintfStyled("Error removing save file: %v", logError, err)
+	}
+	if g.Wizard {
+		g.Print("You escape by the magic portal! **WIZARD** [(x) to continue]")
+	} else {
+		g.Print("You escape by the magic portal! [(x) to continue]")
+	}
+	md.mode = modeEnd
+}
+
+func (md *model) dump(err error) {
+	s := md.g.SimplifedDump(err)
+	lines := strings.Split(s, "\n")
+	stts := []ui.StyledText{}
+	for _, l := range lines {
+		stts = append(stts, ui.Text(l))
+	}
+	md.pager.SetLines(stts)
+	log.Printf("%v", s)
+	log.Printf("%v", stts)
+}
+
+func (md *model) criticalHPWarning() {
+	md.mode = modeHPCritical
+	md.g.PrintStyled("*** CRITICAL HP WARNING *** [(x) to continue]", logCritic)
+}
+
+func (md *model) applyConfig() {
+	if GameConfig.NormalModeKeys != nil {
+		md.keysNormal = GameConfig.NormalModeKeys
+	}
+	if GameConfig.TargetModeKeys != nil {
+		md.keysTarget = GameConfig.TargetModeKeys
+	}
+	if GameConfig.DarkLOS {
+		ApplyDarkLOS()
+	} else {
+		ApplyLightLOS()
+	}
 }
