@@ -387,7 +387,11 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		again = true
 		md.KeyboardExamine()
 	case ActionHelp, ActionMenuCommandHelp:
-		md.KeysHelp()
+		if md.mp.kbTargeting {
+			md.ExamineHelp()
+		} else {
+			md.KeysHelp()
+		}
 		again = true
 	case ActionMenuTargetingHelp:
 		md.ExamineHelp()
