@@ -39,6 +39,11 @@ func (m *monster) InflictDamage(g *game, damage, max int) {
 	}
 }
 
+func (md *model) criticalHPWarning() {
+	md.mode = modeHPCritical
+	md.g.PrintStyled("*** CRITICAL HP WARNING *** [(x) to continue]", logCritic)
+}
+
 func (g *game) MakeMonstersAware() {
 	for _, m := range g.Monsters {
 		if m.Dead {

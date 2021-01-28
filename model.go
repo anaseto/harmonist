@@ -607,11 +607,6 @@ func (md *model) dump(err error) {
 	log.Printf("%v", stts)
 }
 
-func (md *model) criticalHPWarning() {
-	md.mode = modeHPCritical
-	md.g.PrintStyled("*** CRITICAL HP WARNING *** [(x) to continue]", logCritic)
-}
-
 func (md *model) applyConfig() {
 	if GameConfig.NormalModeKeys != nil {
 		md.keysNormal = GameConfig.NormalModeKeys
