@@ -183,7 +183,7 @@ func (md *model) statusMPColor() rune {
 	return mpColor
 }
 
-func (md *model) updateStatus() {
+func (md *model) updateStatusInfo() {
 	g := md.g
 	var entries []ui.MenuEntry
 

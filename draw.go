@@ -15,12 +15,11 @@ func (md *model) Draw() gruid.Grid {
 		md.gd.Copy(md.pager.Draw())
 		return md.gd
 	case modeWelcome:
-		md.drawWelcome()
-		return md.gd
+		return drawWelcome(md.gd)
 	}
 	// Draw map in all other cases, as it may be covered only partially by
 	// other modes.
-	md.drawMap()
+	md.drawMap(md.gd.Slice(md.gd.Range().Shift(0, 2, 0, -1)))
 	md.log.StyledText = md.DrawLog()
 	md.log.Draw(md.gd.Slice(md.gd.Range().Lines(0, 2)))
 	if md.mp.ex.pos != InvalidPos {
@@ -47,7 +46,7 @@ func (md *model) Draw() gruid.Grid {
 	return md.gd
 }
 
-func (md *model) drawWelcome() {
+func drawWelcome(gd gruid.Grid) gruid.Grid {
 	tst := gruid.Style{}
 	st := gruid.Style{}.WithAttrs(AttrInMap)
 	stt := ui.StyledText{}.WithMarkups(map[rune]gruid.Style{
@@ -67,7 +66,6 @@ func (md *model) drawWelcome() {
 		'r': st.WithFg(ColorFgWanderingMonster).WithBg(ColorBgLOS),
 		'o': st.WithFg(ColorFgObject),
 	})
-	gd := md.gd
 	rg := gd.Range()
 	text := fmt.Sprintf("     Harmonist %s\n", Version)
 	text += `@t───────────────────────
@@ -82,10 +80,10 @@ func (md *model) drawWelcome() {
 @t───────────────────────
 `
 	stt.WithText(text).Draw(gd.Slice(rg.Shift(20, 6, 0, 0)))
+	return gd
 }
 
-func (md *model) drawMap() {
-	dgd := md.gd.Slice(md.gd.Range().Shift(0, 2, 0, -1))
+func (md *model) drawMap(gd gruid.Grid) {
 	for i := range md.g.Dungeon.Cells {
 		p := idxtopos(i)
 		r, fg, bg := md.positionDrawing(p)
@@ -93,7 +91,7 @@ func (md *model) drawMap() {
 		if md.g.Highlight[p] || p == md.mp.ex.pos {
 			attrs |= AttrReverse
 		}
-		dgd.Set(p, gruid.Cell{Rune: r, Style: gruid.Style{Fg: fg, Bg: bg, Attrs: attrs}})
+		gd.Set(p, gruid.Cell{Rune: r, Style: gruid.Style{Fg: fg, Bg: bg, Attrs: attrs}})
 	}
 }
 

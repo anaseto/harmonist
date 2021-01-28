@@ -248,7 +248,7 @@ func (md *model) init() gruid.Effect {
 	md.g.ComputeNoise()
 	md.g.ComputeLOS()
 	md.g.ComputeMonsterLOS()
-	md.updateStatus()
+	md.updateStatusInfo()
 	md.mp.ex = &examination{}
 	md.CancelExamine()
 	return nil
@@ -409,7 +409,7 @@ func (md *model) EndTurn() gruid.Effect {
 	md.g.ComputeNoise()
 	md.g.ComputeLOS()
 	md.g.ComputeMonsterLOS()
-	md.updateStatus()
+	md.updateStatusInfo()
 	if md.g.Highlight != nil {
 		md.examine(md.mp.ex.pos)
 	}
