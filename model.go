@@ -231,6 +231,7 @@ func (md *model) init() gruid.Effect {
 	md.g.ComputeMonsterLOS()
 	md.updateStatus()
 	md.mp.ex = &examination{}
+	md.CancelExamine()
 	return nil
 }
 
@@ -272,7 +273,7 @@ func (md *model) Update(msg gruid.Msg) gruid.Effect {
 		if md.more(msg) {
 			md.finished = true
 			md.mode = modeDump
-			md.Dump(md.g.WriteDump())
+			md.dump(md.g.WriteDump())
 		}
 		return nil
 	case modeDump:
@@ -381,13 +382,16 @@ func (md *model) EndTurn() gruid.Effect {
 	md.mode = modeNormal
 	eff := md.g.EndTurn()
 	if md.g.Player.HP <= 0 {
-		md.Death()
+		md.death()
 		return eff
 	}
 	md.g.ComputeNoise()
 	md.g.ComputeLOS()
 	md.g.ComputeMonsterLOS()
 	md.updateStatus()
+	if md.g.Highlight != nil {
+		md.examine(md.mp.ex.pos)
+	}
 	return eff
 }
 
@@ -425,14 +429,14 @@ func (md *model) updateKeysMenu(msg gruid.Msg) gruid.Effect {
 		key := msg.Key
 		switch {
 		case key == gruid.KeyEscape:
-			md.OpenKeyBindings()
+			md.openKeyBindings()
 			return nil
 		case key.IsRune():
 			action := ConfigurableKeyActions[md.menu.Active()]
-			if action.NormalModeAction() {
+			if action.normalModeAction() {
 				md.keysNormal[key] = action
 			}
-			if action.TargetingModeAction() {
+			if action.targetingModeAction() {
 				md.keysTarget[key] = action
 			}
 			GameConfig.NormalModeKeys = md.keysNormal
@@ -441,7 +445,7 @@ func (md *model) updateKeysMenu(msg gruid.Msg) gruid.Effect {
 			if err != nil {
 				md.g.PrintStyled("Error while saving config changes.", logCritic)
 			}
-			md.OpenKeyBindings()
+			md.openKeyBindings()
 			return nil
 		}
 		return nil
@@ -465,7 +469,7 @@ func (md *model) updateKeysMenu(msg gruid.Msg) gruid.Effect {
 			if err != nil {
 				md.g.PrintStyled("Error while resetting config changes.", logCritic)
 			}
-			md.OpenKeyBindings()
+			md.openKeyBindings()
 		}
 	}
 	return nil
@@ -533,50 +537,4 @@ func (md *model) updateMenu(msg gruid.Msg) gruid.Effect {
 		}
 	}
 	return nil
-}
-
-func (md *model) Draw() gruid.Grid {
-	md.gd.Fill(gruid.Cell{Rune: ' '})
-	switch md.mode {
-	case modeDump:
-		md.gd.Copy(md.pager.Draw())
-		return md.gd
-	case modeWelcome:
-		md.DrawWelcome()
-		return md.gd
-	}
-	dgd := md.gd.Slice(md.gd.Range().Shift(0, 2, 0, -1))
-	for i := range md.g.Dungeon.Cells {
-		p := idxtopos(i)
-		r, fg, bg := md.PositionDrawing(p)
-		attrs := AttrInMap
-		if md.g.Highlight[p] || p == md.mp.ex.pos {
-			attrs |= AttrReverse
-		}
-		dgd.Set(p, gruid.Cell{Rune: r, Style: gruid.Style{Fg: fg, Bg: bg, Attrs: attrs}})
-	}
-	md.log.StyledText = md.DrawLog()
-	md.log.Draw(md.gd.Slice(md.gd.Range().Lines(0, 2)))
-	if md.mp.ex.pos != InvalidPos {
-		md.DrawPosInfo()
-	}
-	switch md.mode {
-	case modePager:
-		md.gd.Copy(md.pager.Draw())
-	case modeSmallPager:
-		md.gd.Slice(gruid.NewRange(10, 2, UIWidth, UIHeight-1)).Copy(md.smallPager.Draw())
-	case modeMenu:
-		switch md.menuMode {
-		case modeInventory, modeEquip, modeEvokation:
-			md.gd.Copy(md.menu.Draw())
-			md.description.Box = &ui.Box{Title: ui.Text("Description")}
-			md.description.Draw(md.gd.Slice(md.gd.Range().Columns(UIWidth/2, UIWidth)))
-		case modeGameMenu, modeSettings:
-			md.gd.Copy(md.menu.Draw())
-		case modeKeys, modeKeysChange:
-			md.gd.Copy(md.keysMenu.Draw())
-		}
-	}
-	md.gd.Slice(md.gd.Range().Line(UIHeight - 1)).Copy(md.status.Draw())
-	return md.gd
 }

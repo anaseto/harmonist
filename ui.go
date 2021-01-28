@@ -12,30 +12,90 @@ import (
 	"github.com/anaseto/gruid/ui"
 )
 
-func (md *model) HideCursor() {
-	md.mp.ex.pos = InvalidPos
-}
-
-func (md *model) SetCursor(pos gruid.Point) {
-	md.mp.ex.pos = pos
-}
-
-func (md *model) GetPos(i int) (int, int) {
-	return i - (i/UIWidth)*UIWidth, i / UIWidth
-}
-
-type uiMode int
-
 const (
-	NormalMode uiMode = iota
-	TargetingMode
-	NoFlushMode
-	AnimationMode
+	UIWidth  = 80
+	UIHeight = 24
 )
 
-const DoNothing = "Do nothing, then."
+var (
+	DisableAnimations bool = false
+	Xterm256Color          = false
+	Terminal               = false
+)
+
+const doNothing = "Do nothing, then."
+
+func (md *model) updateKeysDescription(title string, actions []string) {
+	md.pagerMode = modeHelpKeys
+	md.mode = modePager
+	if CustomKeys {
+		title = fmt.Sprintf(" Default %s ", title)
+	} else {
+		title = fmt.Sprintf(" %s ", title)
+	}
+	md.pager.SetBox(&ui.Box{Title: ui.Text(title).WithStyle(gruid.Style{}.WithFg(ColorYellow))})
+	lines := []ui.StyledText{}
+	for i := 0; i < len(actions)-1; i += 2 {
+		stt := ui.StyledText{}
+		if actions[i+1] != "" {
+			stt = stt.WithTextf(" %-36s %s", actions[i], actions[i+1])
+		} else {
+			stt = stt.WithTextf(" %s ", actions[i]).WithStyle(gruid.Style{}.WithFg(ColorCyan))
+		}
+		if i%4 == 2 {
+			stt = stt.WithStyle(stt.Style().WithBg(ColorBgLOS))
+		}
+		lines = append(lines, stt)
+	}
+	md.pager.SetLines(lines)
+}
+
+func (md *model) KeysHelp() {
+	md.updateKeysDescription("Basic Commands", []string{
+		"Move/Jump", "arrows or wasd or hjkl or mouse left",
+		"Wait a turn", "“.” or 5 or enter or mouse left on @",
+		"Interact (Equip/Descend/Rest...)", "e",
+		"Evoke/Zap magara", "v or z",
+		"Inventory", "i",
+		"Examine", "x or mouse hover",
+		"Menu", "M",
+		"Advanced Commands", "",
+		"Save and Quit", "S",
+		"View previous messages", "m",
+		"Go to nearest stairs", "G",
+		"Autoexplore (use with caution)", "o",
+		"Write state statistics to file", "#",
+		"Quit without saving", "Q",
+		"Change settings and key bindings", "=",
+	})
+}
+
+func (md *model) ExamineHelp() {
+	md.updateKeysDescription("Examine/Travel Commands", []string{
+		"Move cursor", "arrows or wasd or hjkl or mouse hover",
+		"Go to/select target", "“.” or enter or mouse left",
+		"View target description", "v or mouse right",
+		"Cycle through monsters", "+",
+		"Cycle through stairs", ">",
+		"Cycle through objects", "o",
+		"Toggle exclude area from auto-travel", "e or mouse middle",
+	})
+}
+
+func (md *model) WizardInfo() {
+	// TODO
+	//g := ui.st
+	//ui.Clear()
+	//b := &bytes.Buffer{}
+	//fmt.Fprintf(b, "Monsters: %d (%d)\n", len(g.Monsters), g.MaxMonsters())
+	//fmt.Fprintf(b, "Danger: %d (%d)\n", g.Danger(), g.MaxDanger())
+	//ui.DrawText(b.String(), 0, 0)
+	//ui.Flush()
+	//ui.WaitForContinue(-1)
+}
 
 func (md *model) EnterWizard() {
+	// TODO
 	//g := ui.st
 	//if ui.Wizard() {
 	//g.EnterWizardMode()
@@ -45,8 +105,8 @@ func (md *model) EnterWizard() {
 	//}
 }
 
-func (md *model) CleanError(err error) error {
-	if err != nil && err.Error() == DoNothing {
+func (md *model) cleanError(err error) error {
+	if err != nil && err.Error() == doNothing {
 		err = errors.New("")
 	}
 	return err
@@ -128,9 +188,10 @@ var ConfigurableKeyActions = [...]action{
 	ActionTarget,
 	ActionExclude}
 
+// CustomKeys tracks whether we're using custom key bindings.
 var CustomKeys bool
 
-func (k action) NormalModeAction() bool {
+func (k action) normalModeAction() bool {
 	switch k {
 	case ActionW, ActionS, ActionN, ActionE,
 		ActionRunW, ActionRunS, ActionRunN, ActionRunE,
@@ -227,7 +288,7 @@ func (k action) String() (text string) {
 	return text
 }
 
-func (k action) TargetingModeDescription() (text string) {
+func (k action) targetingModeDescription() (text string) {
 	switch k {
 	case ActionW:
 		text = "Move cursor west"
@@ -265,7 +326,7 @@ func (k action) TargetingModeDescription() (text string) {
 	return text
 }
 
-func (k action) TargetingModeAction() bool {
+func (k action) targetingModeAction() bool {
 	switch k {
 	case ActionW, ActionS, ActionN, ActionE,
 		ActionRunW, ActionRunS, ActionRunN, ActionRunE,
@@ -284,7 +345,7 @@ func (k action) TargetingModeAction() bool {
 
 var GameConfig config
 
-func (md *model) OptionalDescendConfirmation(st stair) (err error) {
+func (md *model) checkShaedra(st stair) (err error) {
 	g := md.g
 	if g.Depth == WinDepth && st == NormalStair && g.Dungeon.Cell(g.Places.Shaedra).T == StoryCell {
 		err = errors.New("You have to rescue Shaedra first!")
@@ -354,19 +415,19 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		}
 	case ActionExclude:
 		again = true
-		md.ExcludeZone(md.mp.ex.pos)
+		md.excludeZone(md.mp.ex.pos)
 	case ActionPreviousMonster:
 		again = true
-		md.NextMonster("-", md.mp.ex.pos, md.mp.ex)
+		md.nextMonster("-", md.mp.ex.pos, md.mp.ex)
 	case ActionNextMonster:
 		again = true
-		md.NextMonster("+", md.mp.ex.pos, md.mp.ex)
+		md.nextMonster("+", md.mp.ex.pos, md.mp.ex)
 	case ActionNextObject:
 		again = true
-		md.NextObject(md.mp.ex.pos, md.mp.ex)
+		md.nextObject(md.mp.ex.pos, md.mp.ex)
 	case ActionTarget:
 		again = true
-		err = md.Target()
+		err = md.target()
 		if err != nil {
 			break
 		}
@@ -389,7 +450,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 				break
 			}
 			md.mp.ex.pos = stair
-			err = md.Target()
+			err = md.target()
 			if err != nil {
 				err = errors.New("There is no safe path to the nearest stairs.")
 			} else if !g.MoveToTarget() {
@@ -406,13 +467,12 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 				// TODO: animation
 				//ui.MenuSelectedAnimation(MenuInteract, true)
 				strt := g.Objects.Stairs[g.Player.Pos]
-				err = md.OptionalDescendConfirmation(strt)
+				err = md.checkShaedra(strt)
 				if err != nil {
 					break
 				}
 				if g.Descend(DescendNormal) {
-					md.Win()
-					// TODO: win
+					md.win()
 					return again, eff, err
 				}
 				//ui.DrawDungeonView(NormalMode)
@@ -429,7 +489,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 			//}
 		case MagaraCell:
 			again = true
-			md.EquipMagaraMenu()
+			md.equipMagaraMenu()
 		case StoneCell:
 			//ui.MenuSelectedAnimation(MenuInteract, true)
 			err = g.ActivateStone()
@@ -438,7 +498,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 			//}
 		case ScrollCell:
 			again = true
-			md.ReadScroll()
+			md.readScroll()
 		case ItemCell:
 			err = md.g.EquipItem()
 		case LightCell:
@@ -458,10 +518,10 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		}
 	case ActionEvoke:
 		again = true
-		md.EvokeMagaraMenu()
+		md.evokeMagaraMenu()
 	case ActionInventory:
 		again = true
-		md.OpenIventory()
+		md.openIventory()
 	case ActionExplore:
 		err = g.Autoexplore()
 	case ActionExamine:
@@ -474,7 +534,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		md.ExamineHelp()
 		again = true
 	case ActionMenu:
-		md.OpenMenu()
+		md.openMenu()
 		again = true
 	case ActionLogs:
 		if len(md.logs) > 0 {
@@ -525,7 +585,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		if g.Wizard && g.Depth < MaxDepth {
 			g.StoryPrint("Descended wizardly")
 			if g.Descend(DescendNormal) {
-				md.Win() // TODO: win
+				md.win() // TODO: win
 				//quit = true
 				return again, eff, err
 			}
@@ -539,11 +599,11 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		md.Quit()
 		again = true
 	case ActionSettings:
-		md.OpenSettings()
+		md.openSettings()
 		again = true
 	case ActionSetKeys:
 		again = true
-		md.OpenKeyBindings()
+		md.openKeyBindings()
 	case ActionInvertLOS:
 		again = true
 		GameConfig.DarkLOS = !GameConfig.DarkLOS
@@ -597,7 +657,7 @@ var settingsActions = []action{
 	ActionToggleShowNumbers,
 }
 
-func (md *model) OpenSettings() {
+func (md *model) openSettings() {
 	entries := []ui.MenuEntry{}
 	r := 'a'
 	for _, it := range settingsActions {
@@ -614,7 +674,7 @@ func (md *model) OpenSettings() {
 	md.menuMode = modeSettings
 }
 
-func (md *model) KeysForAction(a action) string {
+func (md *model) keysForAction(a action) string {
 	keys := []gruid.Key{}
 	for k, action := range md.keysNormal {
 		if a == action && !k.In(keys) {
@@ -642,15 +702,15 @@ func (md *model) KeysForAction(a action) string {
 	return b.String()
 }
 
-func (md *model) OpenKeyBindings() {
+func (md *model) openKeyBindings() {
 	entries := []ui.MenuEntry{}
 	r := 'a'
 	for _, it := range ConfigurableKeyActions {
 		desc := it.String()
-		if !it.NormalModeAction() {
-			desc = it.TargetingModeDescription()
+		if !it.normalModeAction() {
+			desc = it.targetingModeDescription()
 		}
-		desc = fmt.Sprintf(" %-36s %s", desc, md.KeysForAction(it))
+		desc = fmt.Sprintf(" %-36s %s", desc, md.keysForAction(it))
 		entries = append(entries, ui.MenuEntry{
 			Text: ui.Text(desc),
 		})
@@ -672,7 +732,7 @@ var menuActions = []action{
 	ActionQuit,
 }
 
-func (md *model) OpenMenu() {
+func (md *model) openMenu() {
 	entries := []ui.MenuEntry{}
 	r := 'a'
 	for _, it := range menuActions {
@@ -689,7 +749,7 @@ func (md *model) OpenMenu() {
 	md.menuMode = modeGameMenu
 }
 
-func (md *model) OpenIventory() {
+func (md *model) openIventory() {
 	entries := []ui.MenuEntry{}
 	items := []item{md.g.Player.Inventory.Body, md.g.Player.Inventory.Neck, md.g.Player.Inventory.Misc}
 	parts := []string{"body", "neck", "backpack"}
@@ -709,7 +769,7 @@ func (md *model) OpenIventory() {
 	md.description.StyledText = ui.Text(items[md.menu.Active()].Desc(md.g)).Format(UIWidth/2 - 1 - 2)
 }
 
-func (md *model) EvokeMagaraMenu() {
+func (md *model) evokeMagaraMenu() {
 	entries := []ui.MenuEntry{}
 	items := md.g.Player.Magaras
 	r := 'a'
@@ -728,7 +788,7 @@ func (md *model) EvokeMagaraMenu() {
 	md.description.StyledText = ui.Text(items[md.menu.Active()].Desc(md.g)).Format(UIWidth/2 - 1 - 2)
 }
 
-func (md *model) EquipMagaraMenu() {
+func (md *model) equipMagaraMenu() {
 	entries := []ui.MenuEntry{}
 	items := md.g.Player.Magaras
 	r := 'a'
@@ -968,8 +1028,7 @@ func (md *model) HandleWizardAction() error {
 	return nil
 }
 
-func (md *model) Death() {
-	// TODO: fix this
+func (md *model) death() {
 	g := md.g
 	if len(g.Stats.Achievements) == 0 {
 		NoAchievement.Get(g)
@@ -978,8 +1037,7 @@ func (md *model) Death() {
 	md.mode = modeEnd
 }
 
-func (md *model) Win() {
-	// TODO: rewrite
+func (md *model) win() {
 	g := md.g
 	err := g.RemoveSaveFile()
 	if err != nil {
@@ -993,7 +1051,7 @@ func (md *model) Win() {
 	md.mode = modeEnd
 }
 
-func (md *model) Dump(err error) {
+func (md *model) dump(err error) {
 	s := md.g.SimplifedDump(err)
 	lines := strings.Split(s, "\n")
 	stts := []ui.StyledText{}
@@ -1005,11 +1063,12 @@ func (md *model) Dump(err error) {
 	log.Printf("%v", stts)
 }
 
-func (md *model) CriticalHPWarning() {
+func (md *model) criticalHPWarning() {
 	md.mode = modeHPCritical
 	md.g.PrintStyled("*** CRITICAL HP WARNING *** [(x) to continue]", logCritic)
 }
 
+// Quit enters confirmation mode for quit without saving.
 func (md *model) Quit() {
 	md.g.Print("Do you really want to quit without saving? [y/N]")
 	md.mode = modeQuitConfirmation
@@ -1026,5 +1085,44 @@ func (md *model) applyConfig() {
 		ApplyDarkLOS()
 	} else {
 		ApplyLightLOS()
+	}
+}
+
+func (md *model) readScroll() {
+	sc, ok := md.g.Objects.Scrolls[md.g.Player.Pos]
+	if !ok {
+		md.g.PrintStyled("Error while reading message.", logError)
+		return
+	}
+	md.g.Print("You read the message.")
+	md.mode = modeSmallPager
+	st := gruid.Style{}
+	switch sc {
+	case ScrollLore:
+		md.smallPager.SetBox(&ui.Box{Title: ui.Text("Lore Message").WithStyle(st.WithFg(ColorCyan))})
+		stts := []ui.StyledText{}
+		text := ui.Text(sc.Text(md.g)).Format(56)
+		for _, s := range strings.Split(text.Text(), "\n") {
+			stts = append(stts, ui.Text(s))
+		}
+		md.smallPager.SetLines(stts)
+		if !md.g.Stats.Lore[md.g.Depth] {
+			md.g.StoryPrint("Read lore message")
+		}
+		md.g.Stats.Lore[md.g.Depth] = true
+		if len(md.g.Stats.Lore) == 4 {
+			AchLoreStudent.Get(md.g)
+		}
+		if len(md.g.Stats.Lore) == len(md.g.Params.Lore) {
+			AchLoremaster.Get(md.g)
+		}
+	default:
+		md.smallPager.SetBox(&ui.Box{Title: ui.Text("Story Message").WithStyle(st.WithFg(ColorCyan))})
+		stts := []ui.StyledText{}
+		text := ui.Text(sc.Text(md.g)).Format(56)
+		for _, s := range strings.Split(text.Text(), "\n") {
+			stts = append(stts, ui.Text(s))
+		}
+		md.smallPager.SetLines(stts)
 	}
 }

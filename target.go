@@ -21,6 +21,17 @@ type examination struct {
 	info         posInfo
 }
 
+// HideCursor hides the target cursor.
+func (md *model) HideCursor() {
+	md.mp.ex.pos = InvalidPos
+}
+
+// SetCursor sets the target cursor.
+func (md *model) SetCursor(pos gruid.Point) {
+	md.mp.ex.pos = pos
+}
+
+// CancelExamine cancels current targeting.
 func (md *model) CancelExamine() {
 	md.g.Highlight = nil
 	md.g.MonsterTargLOS = nil
@@ -28,15 +39,20 @@ func (md *model) CancelExamine() {
 	md.mp.kbTargeting = false
 }
 
+// Examine targets a given position with the cursor.
 func (md *model) Examine(p gruid.Point) {
-	if !valid(p) {
-		return
-	}
 	if md.mp.ex.pos == p {
 		return
 	}
+	md.examine(p)
+}
+
+func (md *model) examine(p gruid.Point) {
+	if !valid(p) {
+		return
+	}
 	md.SetCursor(p)
-	md.ComputeHighlight()
+	md.computeHighlight()
 	m := md.g.MonsterAt(p)
 	if m.Exists() && md.g.Player.Sees(p) {
 		md.g.ComputeMonsterCone(m)
@@ -46,6 +62,8 @@ func (md *model) Examine(p gruid.Point) {
 	md.updatePosInfo()
 }
 
+// KeyboardExamine starts keyboard examination mode, with a sensible default
+// target.
 func (md *model) KeyboardExamine() {
 	md.mp.kbTargeting = true
 	g := md.g
@@ -65,9 +83,9 @@ func (md *model) KeyboardExamine() {
 		objects: []gruid.Point{},
 	}
 	if pos == g.Player.Pos {
-		md.NextObject(InvalidPos, md.mp.ex)
+		md.nextObject(InvalidPos, md.mp.ex)
 		if !valid(md.mp.ex.pos) {
-			md.NextStair(md.mp.ex)
+			md.nextStair(md.mp.ex)
 		}
 		if valid(md.mp.ex.pos) && Distance(pos, md.mp.ex.pos) < DefaultLOSRange+5 {
 			pos = md.mp.ex.pos
@@ -89,7 +107,7 @@ type posInfo struct {
 	Lighted     bool
 }
 
-func (md *model) DrawPosInfo() {
+func (md *model) drawPosInfo() {
 	g := md.g
 	p := gruid.Point{}
 	if md.mp.ex.pos.X <= DungeonWidth/2 {
@@ -152,18 +170,18 @@ func (md *model) DrawPosInfo() {
 		return
 	}
 	title := fmt.Sprintf("%s (%s %s)", mons.Kind, mons.State, mons.Dir.String())
-	fg = mons.Color(g)
+	fg = mons.color(g)
 	var mdesc []string
 
-	statuses := mons.StatusesText()
+	statuses := mons.statusesText()
 	if statuses != "" {
 		mdesc = append(mdesc, "Statuses: %s", statuses)
 	}
-	mdesc = append(mdesc, "Traits: "+mons.Traits())
+	mdesc = append(mdesc, "Traits: "+mons.traits())
 	formatBox(title, strings.Join(mdesc, "\n"), fg)
 }
 
-func (m *monster) Color(gs *game) gruid.Color {
+func (m *monster) color(gs *game) gruid.Color {
 	var fg gruid.Color
 	if m.Status(MonsLignified) {
 		fg = ColorFgLignifiedMonster
@@ -183,7 +201,7 @@ func (m *monster) Color(gs *game) gruid.Color {
 	return fg
 }
 
-func (m *monster) StatusesText() string {
+func (m *monster) statusesText() string {
 	infos := []string{}
 	for st, i := range m.Statuses {
 		if i > 0 {
@@ -193,7 +211,7 @@ func (m *monster) StatusesText() string {
 	return strings.Join(infos, ", ")
 }
 
-func (m *monster) Traits() string {
+func (m *monster) traits() string {
 	var info string
 	info += fmt.Sprintf("Their size is %s.", m.Kind.Size())
 	if m.Kind.Peaceful() {
@@ -267,11 +285,11 @@ func (md *model) updatePosInfo() {
 	md.mp.ex.info = pi
 }
 
-func (md *model) ComputeHighlight() {
-	md.g.ComputePathHighlight(md.mp.ex.pos)
+func (md *model) computeHighlight() {
+	md.g.computePathHighlight(md.mp.ex.pos)
 }
 
-func (g *game) ComputePathHighlight(pos gruid.Point) {
+func (g *game) computePathHighlight(pos gruid.Point) {
 	path := g.PlayerPath(g.Player.Pos, pos)
 	g.Highlight = map[gruid.Point]bool{}
 	for _, p := range path {
@@ -279,7 +297,7 @@ func (g *game) ComputePathHighlight(pos gruid.Point) {
 	}
 }
 
-func (md *model) Target() error {
+func (md *model) target() error {
 	g := md.g
 	pos := md.mp.ex.pos
 	if !g.Dungeon.Cell(pos).Explored {
@@ -299,7 +317,7 @@ func (md *model) Target() error {
 	return errors.New("Invalid destination.")
 }
 
-func (md *model) NextMonster(key gruid.Key, pos gruid.Point, data *examination) {
+func (md *model) nextMonster(key gruid.Key, pos gruid.Point, data *examination) {
 	g := md.g
 	nmonster := data.nmonster
 	for i := 0; i < len(g.Monsters); i++ {
@@ -323,7 +341,7 @@ func (md *model) NextMonster(key gruid.Key, pos gruid.Point, data *examination) 
 	md.Examine(pos)
 }
 
-func (md *model) NextStair(data *examination) {
+func (md *model) nextStair(data *examination) {
 	g := md.g
 	if data.sortedStairs == nil {
 		stairs := g.StairsSlice()
@@ -338,7 +356,7 @@ func (md *model) NextStair(data *examination) {
 	}
 }
 
-func (md *model) NextObject(pos gruid.Point, data *examination) {
+func (md *model) nextObject(pos gruid.Point, data *examination) {
 	g := md.g
 	nobject := data.nobject
 	if len(data.objects) == 0 {
@@ -386,7 +404,7 @@ func (md *model) NextObject(pos gruid.Point, data *examination) {
 	md.Examine(pos)
 }
 
-func (md *model) ExcludeZone(pos gruid.Point) {
+func (md *model) excludeZone(pos gruid.Point) {
 	g := md.g
 	if !g.Dungeon.Cell(pos).Explored {
 		g.Print("You cannot choose an unexplored cell for exclusion.")

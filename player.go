@@ -306,7 +306,7 @@ func (g *game) AbyssJump() error {
 		return errors.New("You cannot jump into deep chasm.")
 	}
 	if !g.AbyssJumpConfirmation() {
-		return errors.New(DoNothing)
+		return errors.New(doNothing)
 	}
 	g.FallAbyss(DescendJump) // last action
 	return nil

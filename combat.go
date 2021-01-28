@@ -28,7 +28,7 @@ func (m *monster) InflictDamage(g *game, damage, max int) {
 	if oldHP > max && g.Player.HP <= max {
 		g.StoryPrintf("Critical hit by %s (HP: %d)", m.Kind, g.Player.HP)
 		// TODO: animation
-		g.ui.CriticalHPWarning()
+		g.ui.criticalHPWarning()
 	} else if g.Player.HP > 0 {
 		g.StoryPrintf("Hit by %s (HP: %d)", m.Kind, g.Player.HP)
 	} else {
@@ -141,7 +141,7 @@ func (g *game) Jump(mons *monster) error {
 				return errors.New("You cannot jump into deep chasm.")
 			}
 			if !g.AbyssJumpConfirmation() {
-				return errors.New(DoNothing)
+				return errors.New(doNothing)
 			}
 			g.PushEvent(&simpleEvent{ERank: g.Ev.Rank(), EAction: AbyssFall})
 		}
