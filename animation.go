@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	//"log"
 	"sort"
 	"time"
 
@@ -43,7 +43,6 @@ func (md *model) initAnimations() {
 
 func (md *model) animNext() gruid.Cmd {
 	d := md.anims.frames[0].Duration
-	log.Printf("duration: %d", d)
 	idx := md.anims.idx
 	return func() gruid.Msg {
 		t := time.NewTimer(d)
@@ -63,6 +62,9 @@ func (md *model) animCmd() gruid.Cmd {
 }
 
 func (md *model) startAnimSeq() {
+	if md.anims.Done() {
+		md.resetAnimations()
+	}
 	for i := range md.g.Dungeon.Cells {
 		p := idxtopos(i)
 		r, fg, bg := md.positionDrawing(p)
@@ -78,10 +80,9 @@ func (md *model) resetAnimations() {
 	gd := md.gd.Slice(md.gd.Range().Shift(0, 2, 0, -1))
 	md.anims.grid.Copy(gd)
 	md.anims.pgrid.Copy(gd)
-	md.anims.Cancel()
 }
 
-func (a *Animations) Cancel() {
+func (a *Animations) Finish() {
 	a.idx++
 	a.frames = nil
 }

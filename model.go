@@ -299,16 +299,16 @@ func (md *model) Update(msg gruid.Msg) gruid.Effect {
 			md.anims.draw = true
 			return md.animNext()
 		}
-		md.resetAnimations()
+		md.anims.Finish()
 		return nil
 	}
 	anims := !md.anims.Done()
 	if anims && md.interrupt(msg) {
-		md.resetAnimations()
+		md.anims.Finish()
 	}
 	eff := md.update(msg)
+	cmd := md.animCmd()
 	if !anims {
-		cmd := md.animCmd()
 		if cmd != nil {
 			return gruid.Batch(eff, cmd)
 		}
