@@ -408,8 +408,12 @@ func (md *model) updateMouse(msg gruid.MsgMouse) gruid.Effect {
 func (md *model) updateStatusMouse(msg gruid.MsgMouse) gruid.Effect {
 	md.CancelExamine()
 	md.status.Update(md.gd.Range().Line(UIHeight - 1).RelMsg(msg))
+	update := !md.statusFocus
 	switch md.status.Action() {
 	case ui.MenuMove:
+		update = true
+	}
+	if update {
 		const statusIndex = 6
 		const bananaIndex = 4
 		i := md.status.Active()
@@ -434,6 +438,8 @@ func (md *model) updateStatusMouse(msg gruid.MsgMouse) gruid.Effect {
 			md.statusDesc.Box = &ui.Box{Title: ui.Text("Bananas")}
 			md.statusDesc.SetText("Need to eat one before sleeping in barrels.")
 			md.statusFocus = true
+		case i == 5:
+			md.statusFocus = false
 		case i >= statusIndex:
 			i := md.status.Active() - statusIndex
 			sts := md.sortedStatuses()

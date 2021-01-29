@@ -13,7 +13,7 @@ func init() {
 	dr := sdl.NewDriver(sdl.Config{
 		TileManager: &monochromeTileManager{},
 	})
-	//dr.SetScale(2.0, 2.0)
+	//dr.SetScale(1.5, 1.5)
 	//dr.PreventQuit()
 	driver = dr
 }

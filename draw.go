@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	//"log"
 	//"time"
 
 	"github.com/anaseto/gruid"
@@ -28,7 +29,17 @@ func (md *model) Draw() gruid.Grid {
 	switch md.mode {
 	case modeNormal:
 		if md.statusFocus {
-			md.statusDesc.Draw(md.gd.Slice(md.gd.Range().Lines(UIHeight-4, UIHeight-1).Shift(10, 0, 0, 0)))
+			rg := md.status.ActiveBounds()
+			x := (rg.Min.X + rg.Max.X) / 2
+			w := md.statusDesc.StyledText.Size().X
+			x -= w / 2
+			if x+w > UIWidth {
+				x = UIWidth - w
+			}
+			if x < 0 {
+				x = 0
+			}
+			md.statusDesc.Draw(md.gd.Slice(md.gd.Range().Lines(UIHeight-4, UIHeight-1).Shift(x, 0, 0, 0)))
 		}
 	case modePager:
 		md.gd.Copy(md.pager.Draw())
