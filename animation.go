@@ -1,20 +1,117 @@
 package main
 
 import (
+	"log"
 	"sort"
-	//"time"
+	"time"
 
 	"github.com/anaseto/gruid"
 )
 
 const (
-	AnimDurShort       = 25
-	AnimDurShortMedium = 50
-	AnimDurMedium      = 75
-	AnimDurMediumLong  = 100
-	AnimDurLong        = 200
-	AnimDurExtraLong   = 300
+	AnimDurShort       = 25 * time.Millisecond
+	AnimDurShortMedium = 50 * time.Millisecond
+	AnimDurMedium      = 75 * time.Millisecond
+	AnimDurMediumLong  = 100 * time.Millisecond
+	AnimDurLong        = 200 * time.Millisecond
+	AnimDurExtraLong   = 300 * time.Millisecond
 )
+
+type Animations struct {
+	frames []AnimFrame
+	grid   gruid.Grid
+	pgrid  gruid.Grid
+	idx    int
+	draw   bool
+}
+
+type AnimFrame struct {
+	Cells    []gruid.FrameCell
+	Duration time.Duration
+}
+
+type msgAnim int
+
+func (md *model) initAnimations() {
+	gd := md.gd.Slice(md.gd.Range().Shift(0, 2, 0, -1))
+	max := gd.Size()
+	md.anims.grid = gruid.NewGrid(max.X, max.Y)
+	md.anims.pgrid = gruid.NewGrid(max.X, max.Y)
+	md.anims.grid.Copy(gd)
+	md.anims.pgrid.Copy(gd)
+}
+
+func (md *model) animNext() gruid.Cmd {
+	d := md.anims.frames[0].Duration
+	log.Printf("duration: %d", d)
+	idx := md.anims.idx
+	return func() gruid.Msg {
+		t := time.NewTimer(d)
+		<-t.C
+		return msgAnim(idx)
+	}
+}
+
+func (md *model) animCmd() gruid.Cmd {
+	if len(md.anims.frames) == 0 {
+		return nil
+	}
+	idx := md.anims.idx
+	return func() gruid.Msg {
+		return msgAnim(idx)
+	}
+}
+
+func (md *model) startAnimSeq() {
+	for i := range md.g.Dungeon.Cells {
+		p := idxtopos(i)
+		r, fg, bg := md.positionDrawing(p)
+		attrs := AttrInMap
+		if md.g.Highlight[p] || p == md.mp.ex.pos {
+			attrs |= AttrReverse
+		}
+		md.anims.grid.Set(p, gruid.Cell{Rune: r, Style: gruid.Style{Fg: fg, Bg: bg, Attrs: attrs}})
+	}
+}
+
+func (md *model) resetAnimations() {
+	gd := md.gd.Slice(md.gd.Range().Shift(0, 2, 0, -1))
+	md.anims.grid.Copy(gd)
+	md.anims.pgrid.Copy(gd)
+	md.anims.Cancel()
+}
+
+func (a *Animations) Cancel() {
+	a.idx++
+	a.frames = nil
+}
+
+func (a *Animations) Done() bool {
+	return len(a.frames) == 0
+}
+
+func (a *Animations) Draw(p gruid.Point, r rune, fg, bg gruid.Color) {
+	c := a.grid.At(p)
+	c.Rune = r
+	c.Style.Fg = fg
+	c.Style.Bg = bg
+	a.grid.Set(p, c)
+}
+
+func (a *Animations) Frame(d time.Duration) {
+	frame := AnimFrame{}
+	frame.Duration = d
+	it := a.grid.Iterator()
+	itp := a.pgrid.Iterator()
+	for it.Next() && itp.Next() {
+		if it.Cell() == itp.Cell() {
+			continue
+		}
+		frame.Cells = append(frame.Cells, gruid.FrameCell{P: it.P(), Cell: it.Cell()})
+	}
+	a.frames = append(a.frames, frame)
+	a.pgrid.Copy(a.grid)
+}
 
 func (md *model) DrawAtPosition(p gruid.Point, targ bool, r rune, fg, bg gruid.Color) {
 	// TODO
@@ -433,14 +530,14 @@ func (md *model) PushAnimation(path []gruid.Point) {
 		// should not happen
 		return
 	}
-	//	md.DrawDungeonView(AnimationMode)
+	md.startAnimSeq()
 	_, _, bg := md.positionDrawing(path[0])
 	for _, pos := range path[:len(path)-1] {
-		md.DrawAtPosition(pos, false, '×', ColorFgPlayer, bg)
+		md.anims.Draw(pos, '×', ColorFgPlayer, bg)
 	}
-	md.DrawAtPosition(path[len(path)-1], false, '@', ColorFgPlayer, bg)
-	//ui.Flush()
-	//	Sleep(AnimDurMediumLong)
+	md.anims.Draw(path[len(path)-1], '@', ColorFgPlayer, bg)
+	md.anims.Frame(AnimDurMediumLong)
+	//log.Print("anims: %+v", md.anims)
 }
 
 func (md *model) MagicMappingAnimation(border []int) {

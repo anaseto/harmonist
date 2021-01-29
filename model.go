@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"log"
+	//"log"
 	"strings"
 
 	"github.com/anaseto/gruid"
@@ -83,6 +83,7 @@ type model struct {
 	quit        bool
 	finished    bool
 	statusFocus bool
+	anims       Animations
 }
 
 type mapUI struct {
@@ -254,6 +255,7 @@ func (md *model) init() gruid.Effect {
 	md.updateStatusInfo()
 	md.mp.ex = &examination{}
 	md.CancelExamine()
+	md.initAnimations()
 	return nil
 }
 
@@ -268,6 +270,16 @@ func (md *model) more(msg gruid.Msg) bool {
 	return false
 }
 
+func (md *model) interrupt(msg gruid.Msg) bool {
+	switch msg := msg.(type) {
+	case gruid.MsgKeyDown:
+		return true
+	case gruid.MsgMouse:
+		return msg.Action != gruid.MouseMove
+	}
+	return false
+}
+
 func (md *model) Update(msg gruid.Msg) gruid.Effect {
 	if _, ok := msg.(gruid.MsgInit); ok {
 		return md.init()
@@ -277,6 +289,34 @@ func (md *model) Update(msg gruid.Msg) gruid.Effect {
 		md.g.Save() // TODO: log error ?
 		return gruid.End()
 	}
+	//log.Printf("msg %+v", msg)
+	md.anims.draw = false
+	if msg, ok := msg.(msgAnim); ok {
+		if int(msg) != md.anims.idx {
+			return nil
+		}
+		if !md.anims.Done() {
+			md.anims.draw = true
+			return md.animNext()
+		}
+		md.resetAnimations()
+		return nil
+	}
+	anims := !md.anims.Done()
+	if anims && md.interrupt(msg) {
+		md.resetAnimations()
+	}
+	eff := md.update(msg)
+	if !anims {
+		cmd := md.animCmd()
+		if cmd != nil {
+			return gruid.Batch(eff, cmd)
+		}
+	}
+	return eff
+}
+
+func (md *model) update(msg gruid.Msg) gruid.Effect {
 	var eff gruid.Effect
 	switch md.mode {
 	case modeWelcome:
@@ -660,8 +700,8 @@ func (md *model) dump(err error) {
 		stts = append(stts, ui.Text(l))
 	}
 	md.pager.SetLines(stts)
-	log.Printf("%v", s)
-	log.Printf("%v", stts)
+	//log.Printf("%v", s)
+	//log.Printf("%v", stts)
 }
 
 func (md *model) applyConfig() {

@@ -252,7 +252,7 @@ func (g *game) WallJump(pos gruid.Point) error {
 	g.Stats.WallJumps++
 	g.Print("You jump by propulsing yourself against the wall.")
 	// TODO: animation
-	//g.ui.PushAnimation(path)
+	g.ui.PushAnimation(path)
 	if g.Stats.Jumps+g.Stats.WallJumps == 15 {
 		AchAcrobat.Get(g)
 	}
