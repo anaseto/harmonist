@@ -259,8 +259,7 @@ func (g *game) ActivateQueenStone() {
 		targets = append(targets, m)
 	}
 	g.Print("The stone releases confusing sounds.")
-	// TODO: animation
-	//g.ui.LOSWavesAnimation(DefaultLOSRange, WaveMagicNoise, g.Player.Pos)
+	g.ui.LOSWavesAnimation(DefaultLOSRange, WaveMagicNoise, g.Player.Pos)
 	for _, m := range targets {
 		m.EnterConfusion(g)
 		if m.Search == InvalidPos {
@@ -283,8 +282,7 @@ func (g *game) ActivateNightStone() error {
 		return errors.New("There are no suitable monsters in sight.")
 	}
 	g.Print("The stone releases hypnotic harmonies.")
-	// TODO: animation
-	//g.ui.LOSWavesAnimation(DefaultLOSRange, WaveSleeping, g.Player.Pos)
+	g.ui.LOSWavesAnimation(DefaultLOSRange, WaveSleeping, g.Player.Pos)
 	for _, mons := range targets {
 		g.Printf("%s falls asleep.", mons.Kind.Definite(true))
 		mons.State = Resting
@@ -306,8 +304,7 @@ func (g *game) ActivateTreeStone() error {
 		return errors.New("There are no suitable monsters in sight.")
 	}
 	g.Print("The stone releases magical spores.")
-	// TODO: animation
-	//g.ui.LOSWavesAnimation(DefaultLOSRange, WaveTree, g.Player.Pos)
+	g.ui.LOSWavesAnimation(DefaultLOSRange, WaveTree, g.Player.Pos)
 	for _, mons := range targets {
 		mons.EnterLignification(g)
 		if mons.Search == InvalidPos {
@@ -343,10 +340,9 @@ func (g *game) TeleportToBarrel() {
 		barrels = append(barrels, pos)
 	}
 	pos := barrels[RandInt(len(barrels))]
-	//opos := g.Player.Pos
+	opos := g.Player.Pos
 	g.Print("You teleport away.")
-	// TODO: animation
-	//g.ui.TeleportAnimation(opos, pos, true)
+	g.ui.TeleportAnimation(opos, pos, true)
 	g.PlacePlayerAt(pos)
 }
 
@@ -363,25 +359,27 @@ func (g *game) MagicMapping(maxdist int) error {
 		dists = append(dists, dist)
 	}
 	sort.Ints(dists)
-	// TODO: magic mapping animation
-	//g.ui.DrawDungeonView(NormalMode)
+	if !DisableAnimations {
+		// magic mapping animation
+		g.ui.startAnimSeq()
+	}
 	for _, d := range dists {
 		if maxdist > 0 && d > maxdist {
 			continue
 		}
-		//draw := false
+		draw := false
 		for _, i := range cdists[d] {
 			pos := idxtopos(i)
 			c := g.Dungeon.Cell(pos)
 			if !c.Explored {
 				g.Dungeon.SetExplored(pos)
 				g.SeeNotable(c, pos)
-				//draw = true
+				draw = true
 			}
 		}
-		//if draw {
-		//g.ui.MagicMappingAnimation(cdists[d])
-		//}
+		if draw {
+			g.ui.MagicMappingAnimation(cdists[d])
+		}
 	}
 	g.Printf("You feel aware of your surroundings..")
 	return nil

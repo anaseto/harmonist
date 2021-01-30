@@ -23,11 +23,10 @@ func (m *monster) InflictDamage(g *game, damage, max int) {
 	g.Stats.ReceivedHits++
 	oldHP := g.Player.HP
 	g.DamagePlayer(damage)
-	// TODO: animation
-	//g.ui.WoundedAnimation()
+	g.ui.WoundedAnimation()
 	if oldHP > max && g.Player.HP <= max {
 		g.StoryPrintf("Critical hit by %s (HP: %d)", m.Kind, g.Player.HP)
-		// TODO: animation
+		g.ui.WoundedAnimation() // twice
 		g.ui.criticalHPWarning()
 	} else if g.Player.HP > 0 {
 		g.StoryPrintf("Hit by %s (HP: %d)", m.Kind, g.Player.HP)
@@ -252,7 +251,6 @@ func (g *game) WallJump(pos gruid.Point) error {
 	g.PlacePlayerAt(tpos)
 	g.Stats.WallJumps++
 	g.Print("You jump by propulsing yourself against the wall.")
-	// TODO: animation
 	if g.Stats.Jumps+g.Stats.WallJumps == 15 {
 		AchAcrobat.Get(g)
 	}

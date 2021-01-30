@@ -612,8 +612,7 @@ func (m *monster) TeleportAway(g *game) {
 	opos := m.Pos
 	m.MoveTo(g, pos)
 	if g.Player.Sees(opos) {
-		// TODO: animation
-		//g.ui.TeleportAnimation(opos, pos, false)
+		g.ui.TeleportAnimation(opos, pos, false)
 	}
 }
 
@@ -711,8 +710,7 @@ func (m *monster) Explode(g *game) {
 	m.Dead = true
 	neighbors := ValidCardinalNeighbors(m.Pos)
 	g.Printf("%s %s explodes with a loud boom.", g.ExplosionSound(), m.Kind.Definite(true))
-	// TODO: animation
-	//g.ui.ExplosionAnimation(FireExplosion, m.Pos)
+	g.ui.ExplosionAnimation(FireExplosion, m.Pos)
 	g.MakeNoise(ExplosionNoise, m.Pos)
 	for _, pos := range append(neighbors, m.Pos) {
 		c := g.Dungeon.Cell(pos)
@@ -739,8 +737,7 @@ func (m *monster) Explode(g *game) {
 			g.Stats.Digs++
 			g.UpdateKnowledge(pos, c.T)
 			if g.Player.Sees(pos) {
-				// TODO: animation
-				//g.ui.WallExplosionAnimation(pos)
+				g.ui.WallExplosionAnimation(pos)
 			}
 			g.MakeNoise(WallNoise, pos)
 			g.Fog(pos, 1)
@@ -1408,11 +1405,10 @@ func (m *monster) PushPlayer(g *game, dist int) {
 			cs = " out of confusion"
 		}
 	}
+	g.ui.PushAnimation(path)
 	g.PlacePlayerAt(pos)
 	g.Printf("%s pushes you%s.", m.Kind.Definite(true), cs)
 	g.StoryPrintf("Pushed by %s%s", m.Kind.Definite(true), cs)
-	// TODO: animation
-	//g.ui.PushAnimation(path)
 	if c.T == ChasmCell {
 		g.PushAgainEvent(&simpleEvent{ERank: g.Ev.Rank(), EAction: AbyssFall})
 	}
@@ -1598,8 +1594,7 @@ func (m *monster) ThrowJavelin(g *game) bool {
 	}
 	g.Printf("%s throws a javelin at you (%d dmg).%s", m.Kind.Definite(true), dmg, sclang)
 	g.StoryPrintf("Targeted by %s javelin", m.Kind)
-	// TODO: animation
-	//g.ui.MonsterJavelinAnimation(g.Ray(m.Pos), true)
+	g.ui.MonsterJavelinAnimation(g.Ray(m.Pos), true)
 	g.MakeNoise(noise, g.Player.Pos)
 	m.InflictDamage(g, dmg, dmg)
 	m.ExhaustTime(g, 10+RandInt(5))
@@ -1632,8 +1627,7 @@ func (m *monster) ThrowAcid(g *game) bool {
 	dmg := DmgNormal
 	noise := g.HitNoise(false) // no clang with acid projectiles
 	g.Printf("%s throws acid at you (%d dmg).", m.Kind.Definite(true), dmg)
-	// TODO: animation
-	//g.ui.MonsterProjectileAnimation(g.Ray(m.Pos), '*', ColorGreen)
+	g.ui.MonsterProjectileAnimation(g.Ray(m.Pos), '*', ColorGreen)
 	g.MakeNoise(noise, g.Player.Pos)
 	m.InflictDamage(g, dmg, dmg)
 	m.Corrode(g)
@@ -1651,12 +1645,10 @@ func (m *monster) NixeAttraction(g *game) bool {
 	g.PrintfStyled("%s lures you to her.", logMonsterHit, m.Kind.Definite(true))
 	g.StoryPrintf("Lured by %s", m.Kind)
 	ray := g.Ray(m.Pos)
-	// TODO: animation
-	//g.ui.MonsterProjectileAnimation(ray, '*', ColorCyan)
+	g.ui.MonsterProjectileAnimation(ray, '*', ColorCyan)
 	if len(ray) > 1 {
 		// should always be the case
-		// TODO: animation
-		//g.ui.TeleportAnimation(g.Player.Pos, ray[1], true)
+		g.ui.TeleportAnimation(g.Player.Pos, ray[1], true)
 		g.PlacePlayerAt(ray[1])
 	}
 	m.Exhaust(g)
@@ -1718,10 +1710,9 @@ func (m *monster) Blink(g *game) {
 	if !valid(npos) || npos == g.Player.Pos || npos == m.Pos {
 		return
 	}
-	//opos := m.Pos
+	opos := m.Pos
 	g.Printf("The %s blinks away.", m.Kind)
-	// TODO: animation
-	//g.ui.TeleportAnimation(opos, npos, true)
+	g.ui.TeleportAnimation(opos, npos, true)
 	m.MoveTo(g, npos)
 }
 
