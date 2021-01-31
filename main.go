@@ -97,6 +97,9 @@ func RunReplay(file string) {
 	}
 	defer replay.Close()
 	fd, err := gruid.NewFrameDecoder(replay)
+	if err != nil {
+		log.Printf("frame decoder: %v", err)
+	}
 	gd := gruid.NewGrid(UIWidth, UIHeight)
 	rep := ui.NewReplay(ui.ReplayConfig{
 		Grid:         gd,

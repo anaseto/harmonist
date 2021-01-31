@@ -215,28 +215,28 @@ func (m *monster) traits() string {
 	var info string
 	info += fmt.Sprintf("Their size is %s.", m.Kind.Size())
 	if m.Kind.Peaceful() {
-		info += " " + fmt.Sprint("They are peaceful.")
+		info += "They are peaceful."
 	}
 	if m.Kind.CanOpenDoors() {
-		info += " " + fmt.Sprint("They can open doors.")
+		info += " " + "They can open doors."
 	}
 	if m.Kind.CanFly() {
-		info += " " + fmt.Sprint("They can fly.")
+		info += " " + "They can fly."
 	}
 	if m.Kind.CanSwim() {
-		info += " " + fmt.Sprint("They can swim.")
+		info += " " + "They can swim."
 	}
 	if m.Kind.ShallowSleep() {
-		info += " " + fmt.Sprint("They have very shallow sleep.")
+		info += " " + "They have very shallow sleep."
 	}
 	if m.Kind.ResistsLignification() {
-		info += " " + fmt.Sprint("They are unaffected by lignification.")
+		info += " " + "They are unaffected by lignification."
 	}
 	if m.Kind.ReflectsTeleport() {
-		info += " " + fmt.Sprint("They partially reflect back oric teleport magic.")
+		info += " " + "They partially reflect back oric teleport magic."
 	}
 	if m.Kind.GoodFlair() {
-		info += " " + fmt.Sprint("They have good flair.")
+		info += " " + "They have good flair."
 	}
 	return info
 }

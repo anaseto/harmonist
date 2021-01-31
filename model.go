@@ -68,7 +68,6 @@ type model struct {
 	pagerMode   pagerMode
 	menu        *ui.Menu
 	keysMenu    *ui.Menu
-	help        *ui.Menu
 	status      *ui.Menu
 	log         *ui.Label
 	description *ui.Label
@@ -80,7 +79,6 @@ type model struct {
 	logs        []ui.StyledText
 	keysNormal  map[gruid.Key]action
 	keysTarget  map[gruid.Key]action
-	quit        bool
 	finished    bool
 	statusFocus bool
 	anims       Animations

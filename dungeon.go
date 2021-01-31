@@ -1119,7 +1119,7 @@ func (dg *dgen) AddSpecial(g *game, ml maplayout) {
 	switch ml {
 	case RandomSmallWalkCaveUrbanised:
 		if RandInt(4) > 0 {
-			nhw++
+			nwin++
 		}
 	}
 	dg.PutWindows(g, nwin)

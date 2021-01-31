@@ -24,15 +24,6 @@ func CardinalNeighbors(pos gruid.Point, nb []gruid.Point, keep func(gruid.Point)
 	return nb
 }
 
-func OutsideNeighbors(pos gruid.Point) []gruid.Point {
-	nb := make([]gruid.Point, 0, 8)
-	nb = Neighbors(pos, nb, func(npos gruid.Point) bool {
-		return !valid(npos)
-	})
-
-	return nb
-}
-
 func ValidNeighbors(pos gruid.Point) []gruid.Point {
 	nb := make([]gruid.Point, 0, 8)
 	nb = Neighbors(pos, nb, func(npos gruid.Point) bool { return valid(npos) })

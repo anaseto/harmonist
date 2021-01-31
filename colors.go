@@ -319,7 +319,6 @@ func Simple8ColorPalette() {
 }
 
 const (
-	AttrText gruid.AttrMask = iota
-	AttrInMap
+	AttrInMap gruid.AttrMask = 1 + iota
 	AttrReverse
 )

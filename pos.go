@@ -21,16 +21,6 @@ func MaxCardinalDist(from, to gruid.Point) int {
 	return deltaY
 }
 
-func DistanceX(from, to gruid.Point) int {
-	deltaX := Abs(to.X - from.X)
-	return deltaX
-}
-
-func DistanceY(from, to gruid.Point) int {
-	deltaY := Abs(to.Y - from.Y)
-	return deltaY
-}
-
 type direction int
 
 const (

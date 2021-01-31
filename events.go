@@ -219,13 +219,13 @@ func (mev *monsterEvent) Rank() int {
 	return mev.ERank
 }
 
-var MonsStatusEndMsgs = [...]string{
-	MonsConfusionEnd:     "confused",
-	MonsLignificationEnd: "lignified",
-	MonsParalysedEnd:     "slowed",
-	MonsExhaustionEnd:    "exhausted",
-	MonsSatiatedEnd:      "satiated",
-}
+//var MonsStatusEndMsgs = [...]string{
+//MonsConfusionEnd:     "confused",
+//MonsLignificationEnd: "lignified",
+//MonsParalysedEnd:     "slowed",
+//MonsExhaustionEnd:    "exhausted",
+//MonsSatiatedEnd:      "satiated",
+//}
 
 var MonsEndStatuses = [...]monsterStatus{
 	MonsConfusionEnd:     MonsConfused,

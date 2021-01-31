@@ -407,7 +407,6 @@ const (
 	SpecialLoneNixe
 	SpecialLoneMilfid
 	SpecialLoneOricCelmist
-	SpecialArtifactBand
 	SpecialLoneHarmonicCelmist
 	SpecialLoneHighGuard
 	SpecialLoneHarpy
@@ -1604,7 +1603,7 @@ func (m *monster) ThrowJavelin(g *game) bool {
 
 func (m *monster) Corrode(g *game) {
 	count := 0
-	for i, _ := range g.Player.Magaras {
+	for i := range g.Player.Magaras {
 		n := RandInt(2)
 		g.Player.Magaras[i].Charges -= n
 		if g.Player.Magaras[i].Charges < 0 {
