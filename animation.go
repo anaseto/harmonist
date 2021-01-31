@@ -66,8 +66,9 @@ func (md *model) startAnimSeq() {
 	if md.anims.Done() {
 		md.resetAnimations()
 	}
-	for i := range md.g.Dungeon.Cells {
-		p := idxtopos(i)
+	it := md.g.Dungeon.Grid.Iterator()
+	for it.Next() {
+		p := it.P()
 		r, fg, bg := md.positionDrawing(p)
 		attrs := AttrInMap
 		if md.g.Highlight[p] || p == md.mp.ex.pos {

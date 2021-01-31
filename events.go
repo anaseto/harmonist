@@ -361,8 +361,10 @@ func (cev *posEvent) Action(g *game) {
 		g.StoryPrint("Special event: earthquake!")
 		g.MakeNoise(EarthquakeNoise, cev.Pos)
 		g.NoiseIllusion[cev.Pos] = true
-		for i, c := range g.Dungeon.Cells {
-			pos := idxtopos(i)
+		it := g.Dungeon.Grid.Iterator()
+		for it.Next() {
+			pos := it.P()
+			c := cell(it.Cell())
 			if !c.IsDiggable() || !g.Dungeon.HasFreeNeighbor(pos) {
 				continue
 			}

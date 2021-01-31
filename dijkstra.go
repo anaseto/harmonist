@@ -76,7 +76,7 @@ func (g *game) AutoExploreDijkstra(dij Dijkstrer, sources []int) {
 		cpos := idxtopos(cidx)
 		for _, npos := range dij.Neighbors(cpos) {
 			nidx := idx(npos)
-			if !valid(npos) || d.Cells[nidx].IsWall() { // XXX: IsWall ?
+			if !valid(npos) || d.Cell(npos).IsWall() { // XXX: IsWall ?
 				continue
 			}
 			if !visited[nidx] {

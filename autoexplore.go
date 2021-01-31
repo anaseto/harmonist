@@ -33,8 +33,10 @@ func (g *game) Autoexplore() error {
 
 func (g *game) AllExplored() bool {
 	np := &noisePath{state: g}
-	for i, c := range g.Dungeon.Cells {
-		pos := idxtopos(i)
+	it := g.Dungeon.Grid.Iterator()
+	for it.Next() {
+		pos := it.P()
+		c := cell(it.Cell())
 		if c.IsWall() {
 			if len(np.Neighbors(pos)) == 0 {
 				continue
@@ -50,8 +52,10 @@ func (g *game) AllExplored() bool {
 func (g *game) AutoexploreSources() []int {
 	sources := []int{}
 	np := &noisePath{state: g}
-	for i, c := range g.Dungeon.Cells {
-		pos := idxtopos(i)
+	it := g.Dungeon.Grid.Iterator()
+	for i := 0; it.Next(); i++ {
+		pos := it.P()
+		c := cell(it.Cell())
 		if c.IsWall() {
 			if len(np.Neighbors(pos)) == 0 {
 				continue

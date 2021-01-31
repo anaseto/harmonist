@@ -546,12 +546,13 @@ func (g *game) CleanEvents() {
 func (g *game) StairsSlice() []gruid.Point {
 	// TODO: use cache?
 	stairs := []gruid.Point{}
-	for i, c := range g.Dungeon.Cells {
+	it := g.Dungeon.Grid.Iterator()
+	for it.Next() {
+		c := cell(it.Cell())
 		if (terrain(c) != StairCell && terrain(c) != FakeStairCell) || !explored(c) {
 			continue
 		}
-		pos := idxtopos(i)
-		stairs = append(stairs, pos)
+		stairs = append(stairs, it.P())
 	}
 	return stairs
 }

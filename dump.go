@@ -288,7 +288,11 @@ func (g *game) DumpStory() string {
 
 func (g *game) DumpDungeon() string {
 	buf := bytes.Buffer{}
-	for i, c := range g.Dungeon.Cells {
+	it := g.Dungeon.Grid.Iterator()
+	i := 0
+	for it.Next() {
+		pos := it.P()
+		c := cell(it.Cell())
 		if i%DungeonWidth == 0 {
 			if i == 0 {
 				buf.WriteRune('│')
@@ -296,12 +300,12 @@ func (g *game) DumpDungeon() string {
 				buf.WriteString("│\n│")
 			}
 		}
-		pos := idxtopos(i)
 		if !explored(c) {
 			buf.WriteRune(' ')
-			if i == len(g.Dungeon.Cells)-1 {
+			if i == DungeonNCells-1 {
 				buf.WriteString("│\n")
 			}
+			i++
 			continue
 		}
 		var r rune
@@ -325,9 +329,10 @@ func (g *game) DumpDungeon() string {
 			}
 		}
 		buf.WriteRune(r)
-		if i == len(g.Dungeon.Cells)-1 {
+		if i == DungeonNCells-1 {
 			buf.WriteString("│\n")
 		}
+		i++
 	}
 	return buf.String()
 }

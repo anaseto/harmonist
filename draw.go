@@ -107,8 +107,9 @@ func drawWelcome(gd gruid.Grid) gruid.Grid {
 }
 
 func (md *model) drawMap(gd gruid.Grid) {
-	for i := range md.g.Dungeon.Cells {
-		p := idxtopos(i)
+	it := md.g.Dungeon.Grid.Iterator()
+	for it.Next() {
+		p := it.P()
 		r, fg, bg := md.positionDrawing(p)
 		attrs := AttrInMap
 		if md.g.Highlight[p] || p == md.mp.ex.pos {

@@ -9,14 +9,16 @@ import (
 	"strings"
 
 	"github.com/anaseto/gruid"
+	"github.com/anaseto/gruid/rl"
 )
 
 type dungeon struct {
-	Cells []cell
+	Grid rl.Grid
+	//Cells []cell
 }
 
 func (d *dungeon) Cell(pos gruid.Point) cell {
-	return d.Cells[idx(pos)]
+	return cell(d.Grid.At(pos))
 }
 
 func (d *dungeon) Border(pos gruid.Point) bool {
@@ -24,11 +26,13 @@ func (d *dungeon) Border(pos gruid.Point) bool {
 }
 
 func (d *dungeon) SetCell(pos gruid.Point, c cell) {
-	d.Cells[idx(pos)] = c | d.Cells[idx(pos)]&Explored
+	oc := d.Cell(pos)
+	d.Grid.Set(pos, rl.Cell(c|oc&Explored))
 }
 
 func (d *dungeon) SetExplored(pos gruid.Point) {
-	d.Cells[idx(pos)] |= Explored
+	oc := d.Cell(pos)
+	d.Grid.Set(pos, rl.Cell(oc|Explored))
 }
 
 func (d *dungeon) Area(area []gruid.Point, pos gruid.Point, radius int) []gruid.Point {
@@ -136,8 +140,10 @@ func (dg *dgen) ComputeConnectedComponents(nf func(gruid.Point) bool) {
 	index := 1
 	stack := []gruid.Point{}
 	nb := make([]gruid.Point, 0, 8)
-	for i := range dg.d.Cells {
-		pos := idxtopos(i)
+	it := dg.d.Grid.Iterator()
+	i := 0
+	for it.Next() {
+		pos := it.P()
 		if dg.cc[i] != 0 || !nf(pos) {
 			continue
 		}
@@ -156,6 +162,7 @@ func (dg *dgen) ComputeConnectedComponents(nf func(gruid.Point) bool) {
 				}
 			}
 		}
+		i++
 	}
 }
 
@@ -183,8 +190,9 @@ func (d *dungeon) Connected(pos gruid.Point, nf func(gruid.Point) bool) (map[gru
 func (d *dungeon) connex() bool {
 	pos := d.FreePassableCell()
 	conn, _ := d.Connected(pos, d.NotWallCell)
-	for i, c := range d.Cells {
-		if c.IsPassable() && !conn[idxtopos(i)] {
+	it := d.Grid.Iterator()
+	for it.Next() {
+		if cell(it.Cell()).IsPassable() && !conn[it.P()] {
 			return false
 		}
 	}
@@ -685,8 +693,9 @@ func (g *game) DoorCandidate(pos gruid.Point) bool {
 
 func (dg *dgen) PutHoledWalls(g *game, n int) {
 	candidates := []gruid.Point{}
-	for i := range g.Dungeon.Cells {
-		pos := idxtopos(i)
+	it := dg.d.Grid.Iterator()
+	for it.Next() {
+		pos := it.P()
 		if dg.room[pos] && g.HoledWallCandidate(pos) {
 			candidates = append(candidates, pos)
 		}
@@ -702,8 +711,9 @@ func (dg *dgen) PutHoledWalls(g *game, n int) {
 
 func (dg *dgen) PutWindows(g *game, n int) {
 	candidates := []gruid.Point{}
-	for i := range g.Dungeon.Cells {
-		pos := idxtopos(i)
+	it := dg.d.Grid.Iterator()
+	for it.Next() {
+		pos := it.P()
 		if dg.room[pos] && g.HoledWallCandidate(pos) {
 			candidates = append(candidates, pos)
 		}
@@ -860,7 +870,7 @@ func (g *game) GenRoomTunnels(ml maplayout) {
 	dg := dgen{}
 	dg.layout = ml
 	d := &dungeon{}
-	d.Cells = make([]cell, DungeonNCells)
+	d.Grid = rl.NewGrid(DungeonWidth, DungeonHeight)
 	dg.d = d
 	dg.tunnel = make(map[gruid.Point]bool)
 	dg.room = make(map[gruid.Point]bool)
@@ -982,9 +992,10 @@ func (g *game) GenRoomTunnels(ml maplayout) {
 func (dg *dgen) PutCavernCells(g *game) {
 	d := dg.d
 	// TODO: improve handling and placement of this
-	for i, c := range d.Cells {
-		pos := idxtopos(i)
-		if terrain(c) == GroundCell && !dg.room[pos] && !dg.tunnel[pos] {
+	it := dg.d.Grid.Iterator()
+	for it.Next() {
+		pos := it.P()
+		if terrain(cell(it.Cell())) == GroundCell && !dg.room[pos] && !dg.tunnel[pos] {
 			d.SetCell(pos, CavernCell)
 		}
 	}
@@ -993,9 +1004,10 @@ func (dg *dgen) PutCavernCells(g *game) {
 func (dg *dgen) ClearUnconnected(g *game) {
 	d := dg.d
 	conn, _ := d.Connected(g.Player.Pos, d.IsFreeCell)
-	for i, c := range d.Cells {
-		pos := idxtopos(i)
-		if c.IsPassable() && !conn[pos] {
+	it := dg.d.Grid.Iterator()
+	for it.Next() {
+		pos := it.P()
+		if cell(it.Cell()).IsPassable() && !conn[pos] {
 			d.SetCell(pos, WallCell)
 		}
 	}
@@ -1680,42 +1692,40 @@ func (dg *dgen) GenCellularAutomataCaveMap() {
 			break
 		}
 		// refresh cells
-		dg.d.Cells = make([]cell, DungeonNCells)
+		dg.d.Grid = rl.NewGrid(DungeonWidth, DungeonHeight)
 	}
 	dg.Foliage(false)
 }
 
 func (dg *dgen) RunCellularAutomataCave() bool {
 	d := dg.d // TODO: reset
-	for i := range d.Cells {
+	dg.d.Grid.FillFunc(func() rl.Cell {
 		r := RandInt(100)
-		pos := idxtopos(i)
 		if r >= 45 {
-			d.SetCell(pos, GroundCell)
-		} else {
-			d.SetCell(pos, WallCell)
+			return rl.Cell(GroundCell)
 		}
-	}
+		return rl.Cell(WallCell)
+	})
 	bufm := &dungeon{}
-	bufm.Cells = make([]cell, DungeonNCells)
+	bufm.Grid = rl.NewGrid(DungeonWidth, DungeonHeight)
 	area := make([]gruid.Point, 0, 25)
 	for i := 0; i < 5; i++ {
-		for j := range bufm.Cells {
-			pos := idxtopos(j)
+		bufm.Grid.Map(func(pos gruid.Point, c rl.Cell) rl.Cell {
 			c1 := d.WallAreaCount(area, pos, 1)
 			if c1 >= 5 {
-				bufm.SetCell(pos, WallCell)
+				c = rl.Cell(WallCell)
 			} else {
-				bufm.SetCell(pos, GroundCell)
+				c = rl.Cell(GroundCell)
 			}
 			if i == 3 {
 				c2 := d.WallAreaCount(area, pos, 2)
 				if c2 <= 2 {
-					bufm.SetCell(pos, WallCell)
+					c = rl.Cell(WallCell)
 				}
 			}
-		}
-		copy(d.Cells, bufm.Cells)
+			return c
+		})
+		d.Grid.Copy(bufm.Grid)
 	}
 	return true
 }
@@ -1788,62 +1798,57 @@ func (dg *dgen) Foliage(less bool) {
 	// use same structure as for the dungeon
 	// walls will become foliage
 	d := &dungeon{}
-	d.Cells = make([]cell, DungeonNCells)
+	d.Grid = rl.NewGrid(DungeonWidth, DungeonHeight)
 	limit := 47
 	if less {
 		limit = 45
 	}
-	for i := range d.Cells {
+	d.Grid.FillFunc(func() rl.Cell {
 		r := RandInt(100)
-		pos := idxtopos(i)
 		if r >= limit {
-			d.SetCell(pos, WallCell)
-		} else {
-			d.SetCell(pos, GroundCell)
+			return rl.Cell(WallCell)
 		}
-	}
+		return rl.Cell(GroundCell)
+	})
 	area := make([]gruid.Point, 0, 25)
+	bufm := &dungeon{}
+	bufm.Grid = rl.NewGrid(DungeonWidth, DungeonHeight)
 	for i := 0; i < 6; i++ {
-		bufm := &dungeon{}
-		bufm.Cells = make([]cell, DungeonNCells)
-		copy(bufm.Cells, d.Cells)
-		for j := range bufm.Cells {
-			pos := idxtopos(j)
+		bufm.Grid.Map(func(pos gruid.Point, c rl.Cell) rl.Cell {
 			c1 := d.WallAreaCount(area, pos, 1)
 			if i < 4 {
 				if c1 <= 4 {
-					bufm.SetCell(pos, GroundCell)
+					c = rl.Cell(GroundCell)
 				} else {
-					bufm.SetCell(pos, WallCell)
+					c = rl.Cell(WallCell)
 				}
 			}
 			if i == 4 {
 				if c1 > 6 {
-					bufm.SetCell(pos, WallCell)
+					c = rl.Cell(WallCell)
 				}
 			}
 			if i == 5 {
 				c2 := d.WallAreaCount(area, pos, 2)
 				if c2 < 5 && c1 <= 2 {
-					bufm.SetCell(pos, GroundCell)
+					c = rl.Cell(GroundCell)
 				}
 			}
-		}
-		d.Cells = bufm.Cells
+			return c
+		})
+		d.Grid.Copy(bufm.Grid)
 	}
-	for i, c := range dg.d.Cells {
-		if terrain(c) == GroundCell && terrain(d.Cells[i]) == GroundCell {
-			dg.d.SetCell(idxtopos(i), FoliageCell)
+	it := dg.d.Grid.Iterator()
+	for it.Next() {
+		if terrain(cell(it.Cell())) == GroundCell && terrain(d.Cell(it.P())) == GroundCell {
+			dg.d.SetCell(it.P(), FoliageCell)
 		}
 	}
 }
 
 func (dg *dgen) GenCaveMap(size int) {
 	d := dg.d
-	for i := range d.Cells {
-		pos := idxtopos(i)
-		d.SetCell(pos, WallCell)
-	}
+	dg.d.Grid.Fill(rl.Cell(WallCell))
 	max := size
 	cells := 0
 	for cells < max {

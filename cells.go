@@ -1,11 +1,13 @@
 package main
 
 import (
-	"github.com/anaseto/gruid"
 	"strings"
+
+	"github.com/anaseto/gruid"
+	"github.com/anaseto/gruid/rl"
 )
 
-type cell int
+type cell rl.Cell
 
 const (
 	WallCell cell = iota
