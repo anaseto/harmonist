@@ -57,7 +57,7 @@ func RunGame() {
 				return
 			}
 			if err := os.Rename(filepath.Join(dir, "replay.part"), filepath.Join(dir, "replay")); err != nil {
-				log.Print("writing replay file: %v", err)
+				log.Printf("writing replay file: %v", err)
 			}
 		}
 	}()

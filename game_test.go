@@ -2,7 +2,7 @@ package main
 
 import "testing"
 
-func TestInitLevel(t *terrain(testing)) {
+func TestInitLevel(t *testing.T) {
 	Testing = true
 	for i := 0; i < 50; i++ {
 		g := &game{}
