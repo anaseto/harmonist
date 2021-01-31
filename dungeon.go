@@ -5,8 +5,10 @@ package main
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/anaseto/gruid"
 	"github.com/anaseto/gruid/rl"
@@ -14,7 +16,6 @@ import (
 
 type dungeon struct {
 	Grid rl.Grid
-	//Cells []cell
 }
 
 func (d *dungeon) Cell(pos gruid.Point) cell {
@@ -1846,41 +1847,34 @@ func (dg *dgen) Foliage(less bool) {
 	}
 }
 
-func (dg *dgen) GenCaveMap(size int) {
-	d := dg.d
-	dg.d.Grid.Fill(rl.Cell(WallCell))
-	max := size
-	cells := 0
-	for cells < max {
-		pos := d.WallCell()
-		d.SetCell(pos, GroundCell)
-		cells++
-		curcells := 1
-		notValid := 0
-		lastValid := pos
-		for cells < max && curcells < 150 {
-			npos := RandomNeighbor(pos, false)
-			if !valid(pos) && valid(npos) && terrain(d.Cell(npos)) == WallCell {
-				pos = lastValid
-				continue
-			}
-			pos = npos
-			if valid(pos) {
-				if terrain(d.Cell(pos)) != GroundCell {
-					d.SetCell(pos, GroundCell)
-					cells++
-					curcells++
-				}
-				lastValid = pos
-			} else {
-				notValid++
-			}
-			if notValid > 200 {
-				notValid = 0
-				pos = lastValid
-			}
-		}
+// walker implements rl.RandomWalker.
+type walker struct {
+	rand *rand.Rand
+}
+
+// Neighbor returns a random neighbor position, favoring horizontal directions
+// (because the maps we use are longer in that direction).
+func (w walker) Neighbor(p gruid.Point) gruid.Point {
+	switch w.rand.Intn(6) {
+	case 0, 1:
+		return p.Shift(1, 0)
+	case 2, 3:
+		return p.Shift(-1, 0)
+	case 4:
+		return p.Shift(0, 1)
+	default:
+		return p.Shift(0, -1)
 	}
+}
+
+func (dg *dgen) GenCaveMap(size int) {
+	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
+	mg := rl.MapGen{
+		Rand: rng,
+		Grid: dg.d.Grid,
+	}
+	wlk := walker{rand: rng}
+	mg.RandomWalkCave(wlk, rl.Cell(GroundCell), float64(size)/float64(DungeonNCells), 8)
 	dg.Foliage(false)
 }
 
