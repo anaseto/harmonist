@@ -23,12 +23,12 @@ func (d *dungeon) Border(pos gruid.Point) bool {
 	return pos.X == DungeonWidth-1 || pos.Y == DungeonHeight-1 || pos.X == 0 || pos.Y == 0
 }
 
-func (d *dungeon) SetCell(pos gruid.Point, t terrain) {
-	d.Cells[idx(pos)].T = t
+func (d *dungeon) SetCell(pos gruid.Point, c cell) {
+	d.Cells[idx(pos)] = c | d.Cells[idx(pos)]&Explored
 }
 
 func (d *dungeon) SetExplored(pos gruid.Point) {
-	d.Cells[idx(pos)].Explored = true
+	d.Cells[idx(pos)] |= Explored
 }
 
 func (d *dungeon) Area(area []gruid.Point, pos gruid.Point, radius int) []gruid.Point {
@@ -48,7 +48,7 @@ func (d *dungeon) WallAreaCount(area []gruid.Point, pos gruid.Point, radius int)
 	area = d.Area(area, pos, radius)
 	count := 0
 	for _, npos := range area {
-		if d.Cell(npos).T == WallCell {
+		if terrain(d.Cell(npos)) == WallCell {
 			count++
 		}
 	}
@@ -89,7 +89,7 @@ func (d *dungeon) WallCell() gruid.Point {
 		y := RandInt(DungeonHeight)
 		pos := gruid.Point{x, y}
 		c := d.Cell(pos)
-		if c.T == WallCell {
+		if terrain(c) == WallCell {
 			return pos
 		}
 	}
@@ -122,9 +122,9 @@ func (g *game) HasNonWallExploredNeighbor(pos gruid.Point) bool {
 	for _, pos := range neighbors {
 		c := d.Cell(pos)
 		if t, ok := g.TerrainKnowledge[pos]; ok {
-			c.T = t
+			c = t
 		}
-		if !c.IsWall() && c.Explored {
+		if !c.IsWall() && explored(c) {
 			return true
 		}
 	}
@@ -207,7 +207,7 @@ func (d *dungeon) IsAreaWall(pos gruid.Point, h, w int) bool {
 	for i := pos.X; i < pos.X+w; i++ {
 		for j := pos.Y; j < pos.Y+h; j++ {
 			rpos := gruid.Point{i, j}
-			if valid(rpos) && d.Cell(rpos).T != WallCell {
+			if valid(rpos) && terrain(d.Cell(rpos)) != WallCell {
 				return false
 			}
 		}
@@ -287,7 +287,7 @@ func (dg *dgen) WallAreaCount(area []gruid.Point, pos gruid.Point, radius int) i
 	area = d.Area(area, pos, radius)
 	count := 0
 	for _, npos := range area {
-		if d.Cell(npos).T == WallCell || dg.tunnel[npos] {
+		if terrain(d.Cell(npos)) == WallCell || dg.tunnel[npos] {
 			count++
 		}
 	}
@@ -337,7 +337,7 @@ func (dg *dgen) ConnectRoomsShortestPath(i, j int) bool {
 		if !valid(pos) {
 			panic(fmt.Sprintf("gruid.Point %v from %v to %v", pos, e1pos, e2pos))
 		}
-		t := dg.d.Cell(pos).T
+		t := terrain(dg.d.Cell(pos))
 		if t == WallCell || t == ChasmCell || t == GroundCell || t == FoliageCell {
 			dg.d.SetCell(pos, GroundCell)
 			dg.tunnel[pos] = true
@@ -667,16 +667,16 @@ func (g *game) DoorCandidate(pos gruid.Point) bool {
 	}
 	return valid(pos.Add(gruid.Point{-1, 0})) && valid(pos.Add(gruid.Point{1, 0})) &&
 		d.Cell(pos.Add(gruid.Point{-1, 0})).IsGround() && d.Cell(pos.Add(gruid.Point{1, 0})).IsGround() &&
-		(!valid(pos.Add(gruid.Point{0, -1})) || d.Cell(pos.Add(gruid.Point{0, -1})).T == WallCell) &&
-		(!valid(pos.Add(gruid.Point{0, 1})) || d.Cell(pos.Add(gruid.Point{0, 1})).T == WallCell) &&
+		(!valid(pos.Add(gruid.Point{0, -1})) || terrain(d.Cell(pos.Add(gruid.Point{0, -1}))) == WallCell) &&
+		(!valid(pos.Add(gruid.Point{0, 1})) || terrain(d.Cell(pos.Add(gruid.Point{0, 1}))) == WallCell) &&
 		((valid(pos.Add(gruid.Point{-1, -1})) && d.Cell(pos.Add(gruid.Point{-1, -1})).IsPassable()) ||
 			(valid(pos.Add(gruid.Point{-1, 1})) && d.Cell(pos.Add(gruid.Point{-1, 1})).IsPassable()) ||
 			(valid(pos.Add(gruid.Point{1, -1})) && d.Cell(pos.Add(gruid.Point{1, -1})).IsPassable()) ||
 			(valid(pos.Add(gruid.Point{1, 1})) && d.Cell(pos.Add(gruid.Point{1, 1})).IsPassable())) ||
 		valid(pos.Add(gruid.Point{0, -1})) && valid(pos.Add(gruid.Point{0, 1})) &&
 			d.Cell(pos.Add(gruid.Point{0, -1})).IsGround() && d.Cell(pos.Add(gruid.Point{0, 1})).IsGround() &&
-			(!valid(pos.Add(gruid.Point{1, 0})) || d.Cell(pos.Add(gruid.Point{1, 0})).T == WallCell) &&
-			(!valid(pos.Add(gruid.Point{-1, 0})) || d.Cell(pos.Add(gruid.Point{-1, 0})).T == WallCell) &&
+			(!valid(pos.Add(gruid.Point{1, 0})) || terrain(d.Cell(pos.Add(gruid.Point{1, 0}))) == WallCell) &&
+			(!valid(pos.Add(gruid.Point{-1, 0})) || terrain(d.Cell(pos.Add(gruid.Point{-1, 0}))) == WallCell) &&
 			((valid(pos.Add(gruid.Point{-1, -1})) && d.Cell(pos.Add(gruid.Point{-1, -1})).IsPassable()) ||
 				(valid(pos.Add(gruid.Point{-1, 1})) && d.Cell(pos.Add(gruid.Point{-1, 1})).IsPassable()) ||
 				(valid(pos.Add(gruid.Point{1, -1})) && d.Cell(pos.Add(gruid.Point{1, -1})).IsPassable()) ||
@@ -946,15 +946,15 @@ func (g *game) GenRoomTunnels(ml maplayout) {
 	dg.PlayerStartCell(g, places)
 	dg.ClearUnconnected(g)
 	if RandInt(10) > 0 {
-		var t terrain
+		var c cell
 		if RandInt(5) > 1 {
-			t = ChasmCell
+			c = ChasmCell
 		} else {
-			t = WaterCell
+			c = WaterCell
 		}
-		dg.GenLake(t)
+		dg.GenLake(c)
 		if RandInt(5) == 0 {
-			dg.GenLake(t)
+			dg.GenLake(c)
 		}
 	}
 	if g.Depth < MaxDepth {
@@ -984,7 +984,7 @@ func (dg *dgen) PutCavernCells(g *game) {
 	// TODO: improve handling and placement of this
 	for i, c := range d.Cells {
 		pos := idxtopos(i)
-		if c.T == GroundCell && !dg.room[pos] && !dg.tunnel[pos] {
+		if terrain(c) == GroundCell && !dg.room[pos] && !dg.tunnel[pos] {
 			d.SetCell(pos, CavernCell)
 		}
 	}
@@ -1274,7 +1274,7 @@ func (dg *dgen) GenBanana(g *game) {
 		y := RandInt(DungeonHeight)
 		pos := gruid.Point{x, y}
 		c := dg.d.Cell(pos)
-		if c.T == GroundCell && !dg.room[pos] {
+		if terrain(c) == GroundCell && !dg.room[pos] {
 			dg.d.SetCell(pos, BananaCell)
 			g.Objects.Bananas[pos] = true
 			break
@@ -1311,7 +1311,7 @@ func (dg *dgen) OutsideGroundCell(g *game) gruid.Point {
 			continue
 		}
 		c := dg.d.Cell(pos)
-		if c.T == GroundCell && !dg.room[pos] {
+		if terrain(c) == GroundCell && !dg.room[pos] {
 			return pos
 		}
 	}
@@ -1332,10 +1332,10 @@ func (dg *dgen) OutsideCavernMiddleCell(g *game) gruid.Point {
 			continue
 		}
 		c := dg.d.Cell(pos)
-		if c.T == GroundCell && count < 400 || c.T == FoliageCell && count < 350 {
+		if terrain(c) == GroundCell && count < 400 || terrain(c) == FoliageCell && count < 350 {
 			continue
 		}
-		if (c.IsGround() || c.T == FoliageCell) && !dg.room[pos] && !dg.d.HasTooManyWallNeighbors(pos) {
+		if (c.IsGround() || terrain(c) == FoliageCell) && !dg.room[pos] && !dg.d.HasTooManyWallNeighbors(pos) {
 			return pos
 		}
 	}
@@ -1356,7 +1356,7 @@ func (dg *dgen) SatowalgaCell(g *game) gruid.Point {
 			continue
 		}
 		c := dg.d.Cell(pos)
-		if c.T == GroundCell && count < 400 {
+		if terrain(c) == GroundCell && count < 400 {
 			continue
 		}
 		if c.IsGround() && !dg.room[pos] && !dg.d.HasTooManyWallNeighbors(pos) {
@@ -1383,7 +1383,7 @@ func (dg *dgen) FoliageCell(g *game) gruid.Point {
 			continue
 		}
 		c := dg.d.Cell(pos)
-		if c.T == FoliageCell {
+		if terrain(c) == FoliageCell {
 			return pos
 		}
 	}
@@ -1404,7 +1404,7 @@ func (dg *dgen) OutsideCell(g *game) gruid.Point {
 			continue
 		}
 		c := dg.d.Cell(pos)
-		if !dg.room[pos] && (c.T == FoliageCell || c.T == GroundCell) {
+		if !dg.room[pos] && (terrain(c) == FoliageCell || terrain(c) == GroundCell) {
 			return pos
 		}
 	}
@@ -1428,7 +1428,7 @@ func (dg *dgen) InsideCell(g *game) gruid.Point {
 			continue
 		}
 		c := dg.d.Cell(pos)
-		if dg.room[pos] && (c.T == FoliageCell || c.T == GroundCell) {
+		if dg.room[pos] && (terrain(c) == FoliageCell || terrain(c) == GroundCell) {
 			return pos
 		}
 	}
@@ -1521,7 +1521,7 @@ func (dg *dgen) GenFakeStairs(g *game) {
 loop:
 	for i, r := range dg.rooms {
 		for _, pl := range r.places {
-			if dg.d.Cell(pl.pos).T == StairCell {
+			if terrain(dg.d.Cell(pl.pos)) == StairCell {
 				continue loop
 			}
 		}
@@ -1587,7 +1587,7 @@ func (dg *dgen) CaveGroundCell(g *game) gruid.Point {
 		y := RandInt(DungeonHeight)
 		pos := gruid.Point{x, y}
 		c := dg.d.Cell(pos)
-		if (c.T == GroundCell || c.T == CavernCell || c.T == QueenRockCell) && !dg.room[pos] {
+		if (terrain(c) == GroundCell || terrain(c) == CavernCell || terrain(c) == QueenRockCell) && !dg.room[pos] {
 			return pos
 		}
 	}
@@ -1720,7 +1720,7 @@ func (dg *dgen) RunCellularAutomataCave() bool {
 	return true
 }
 
-func (dg *dgen) GenLake(t terrain) {
+func (dg *dgen) GenLake(c cell) {
 	walls := []gruid.Point{}
 	xshift := 10 + RandInt(5)
 	yshift := 5 + RandInt(3)
@@ -1730,7 +1730,7 @@ func (dg *dgen) GenLake(t terrain) {
 			continue
 		}
 		c := dg.d.Cell(pos)
-		if c.T == WallCell && !dg.room[pos] {
+		if terrain(c) == WallCell && !dg.room[pos] {
 			walls = append(walls, pos)
 		}
 	}
@@ -1741,7 +1741,7 @@ func (dg *dgen) GenLake(t terrain) {
 	for {
 		pos := walls[RandInt(len(walls))]
 		_, size := d.Connected(pos, func(npos gruid.Point) bool {
-			return valid(npos) && dg.d.Cell(npos).T == WallCell && !dg.room[npos] && Distance(pos, npos) < 10+RandInt(10)
+			return valid(npos) && terrain(dg.d.Cell(npos)) == WallCell && !dg.room[npos] && Distance(pos, npos) < 10+RandInt(10)
 		})
 		count++
 		if Abs(bestsize-90) > Abs(size-90) {
@@ -1753,10 +1753,10 @@ func (dg *dgen) GenLake(t terrain) {
 		}
 	}
 	conn, _ := d.Connected(bestpos, func(npos gruid.Point) bool {
-		return valid(npos) && dg.d.Cell(npos).T == WallCell && !dg.room[npos] && Distance(bestpos, npos) < 10+RandInt(10)
+		return valid(npos) && terrain(dg.d.Cell(npos)) == WallCell && !dg.room[npos] && Distance(bestpos, npos) < 10+RandInt(10)
 	})
 	for pos := range conn {
-		d.SetCell(pos, t)
+		d.SetCell(pos, c)
 	}
 }
 
@@ -1765,7 +1765,7 @@ func (dg *dgen) GenQueenRock() {
 	for i := 0; i < DungeonNCells; i++ {
 		pos := idxtopos(i)
 		c := dg.d.Cell(pos)
-		if c.T == CavernCell {
+		if terrain(c) == CavernCell {
 			cavern = append(cavern, pos)
 		}
 	}
@@ -1775,7 +1775,7 @@ func (dg *dgen) GenQueenRock() {
 	for i := 0; i < 1+RandInt(2); i++ {
 		pos := cavern[RandInt(len(cavern))]
 		conn, _ := dg.d.Connected(pos, func(npos gruid.Point) bool {
-			return valid(npos) && dg.d.Cell(npos).T == CavernCell && Distance(npos, pos) < 15+RandInt(5)
+			return valid(npos) && terrain(dg.d.Cell(npos)) == CavernCell && Distance(npos, pos) < 15+RandInt(5)
 		})
 		for pos := range conn {
 			dg.d.SetCell(pos, QueenRockCell)
@@ -1832,7 +1832,7 @@ func (dg *dgen) Foliage(less bool) {
 		d.Cells = bufm.Cells
 	}
 	for i, c := range dg.d.Cells {
-		if c.T == GroundCell && d.Cells[i].T == GroundCell {
+		if terrain(c) == GroundCell && terrain(d.Cells[i]) == GroundCell {
 			dg.d.SetCell(idxtopos(i), FoliageCell)
 		}
 	}
@@ -1855,13 +1855,13 @@ func (dg *dgen) GenCaveMap(size int) {
 		lastValid := pos
 		for cells < max && curcells < 150 {
 			npos := RandomNeighbor(pos, false)
-			if !valid(pos) && valid(npos) && d.Cell(npos).T == WallCell {
+			if !valid(pos) && valid(npos) && terrain(d.Cell(npos)) == WallCell {
 				pos = lastValid
 				continue
 			}
 			pos = npos
 			if valid(pos) {
-				if d.Cell(pos).T != GroundCell {
+				if terrain(d.Cell(pos)) != GroundCell {
 					d.SetCell(pos, GroundCell)
 					cells++
 					curcells++
@@ -1931,7 +1931,7 @@ loop:
 			continue loop
 		}
 		for _, pos := range block {
-			if d.Cell(pos).T != GroundCell {
+			if terrain(d.Cell(pos)) != GroundCell {
 				d.SetCell(pos, GroundCell)
 				cells++
 			}

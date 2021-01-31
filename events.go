@@ -171,7 +171,7 @@ func (sev *simpleEvent) Action(g *game) {
 		g.ComputeLOS()
 		g.ui.TakingArtifactAnimation()
 	case AbyssFall:
-		if g.Dungeon.Cell(g.Player.Pos).T == ChasmCell {
+		if terrain(g.Dungeon.Cell(g.Player.Pos)) == ChasmCell {
 			g.FallAbyss(DescendFall)
 		}
 	default:
@@ -183,7 +183,7 @@ func (sev *simpleEvent) Action(g *game) {
 			//g.ui.StatusEndAnimation()
 			switch sev.EAction {
 			case LevitationEnd:
-				if g.Dungeon.Cell(g.Player.Pos).T == ChasmCell {
+				if terrain(g.Dungeon.Cell(g.Player.Pos)) == ChasmCell {
 					g.FallAbyss(DescendFall)
 				}
 			case LignificationEnd:
@@ -305,14 +305,14 @@ func (cev *posEvent) Action(g *game) {
 		g.ComputeLOS()
 	case ObstructionEnd:
 		t := g.MagicalBarriers[cev.Pos]
-		if !g.Player.Sees(cev.Pos) && g.Dungeon.Cell(cev.Pos).T == BarrierCell {
+		if !g.Player.Sees(cev.Pos) && terrain(g.Dungeon.Cell(cev.Pos)) == BarrierCell {
 			// XXX does not handle all cases
 			g.UpdateKnowledge(cev.Pos, BarrierCell)
 		} else {
 			delete(g.MagicalBarriers, cev.Pos)
 			delete(g.TerrainKnowledge, cev.Pos)
 		}
-		if g.Dungeon.Cell(cev.Pos).T != BarrierCell {
+		if terrain(g.Dungeon.Cell(cev.Pos)) != BarrierCell {
 			break
 		}
 		g.Dungeon.SetCell(cev.Pos, t)
@@ -363,14 +363,14 @@ func (cev *posEvent) Action(g *game) {
 		g.NoiseIllusion[cev.Pos] = true
 		for i, c := range g.Dungeon.Cells {
 			pos := idxtopos(i)
-			if !c.T.IsDiggable() || !g.Dungeon.HasFreeNeighbor(pos) {
+			if !c.IsDiggable() || !g.Dungeon.HasFreeNeighbor(pos) {
 				continue
 			}
 			if Distance(cev.Pos, pos) > RandInt(35) || RandInt(2) == 0 {
 				continue
 			}
 			g.Dungeon.SetCell(pos, RubbleCell)
-			g.UpdateKnowledge(pos, c.T)
+			g.UpdateKnowledge(pos, terrain(c))
 			g.Fog(pos, 1)
 		}
 	case DelayedHarmonicNoiseEvent:
@@ -393,10 +393,10 @@ func (cev *posEvent) Action(g *game) {
 			g.MakeNoise(OricExplosionNoise, cev.Pos)
 			nm := Dijkstra(dij, []gruid.Point{cev.Pos}, 7)
 			fogs := []gruid.Point{}
-			terrains := []terrain{}
+			terrains := []cell{}
 			nm.iter(cev.Pos, func(n *node) {
 				c := g.Dungeon.Cell(n.Pos)
-				if !c.T.IsDiggable() {
+				if !c.IsDiggable() {
 					return
 				}
 				g.Dungeon.SetCell(n.Pos, RubbleCell)
@@ -405,7 +405,7 @@ func (cev *posEvent) Action(g *game) {
 					g.ui.WallExplosionAnimation(n.Pos)
 				}
 				fogs = append(fogs, n.Pos)
-				terrains = append(terrains, c.T)
+				terrains = append(terrains, terrain(c))
 			})
 			for _, pos := range fogs {
 				g.Fog(pos, 1)
@@ -468,7 +468,7 @@ func (g *game) Burn(pos gruid.Point) {
 		return
 	}
 	g.Stats.Burns++
-	switch c.T {
+	switch terrain(c) {
 	case DoorCell:
 		g.Print("The door vanishes in magical flames.")
 	case TableCell:
@@ -482,7 +482,7 @@ func (g *game) Burn(pos gruid.Point) {
 	g.Dungeon.SetCell(pos, GroundCell)
 	g.Clouds[pos] = CloudFire
 	if !g.Player.Sees(pos) {
-		g.UpdateKnowledge(pos, c.T)
+		g.UpdateKnowledge(pos, terrain(c))
 	} else {
 		g.ComputeLOS()
 	}

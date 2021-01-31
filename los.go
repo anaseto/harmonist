@@ -62,7 +62,7 @@ func (g *game) DiagonalOpaque(from, to gruid.Point, rs raystyle) bool {
 			continue
 		}
 		c := g.Dungeon.Cell(pos)
-		switch c.T {
+		switch terrain(c) {
 		case WallCell, HoledWallCell, WindowCell:
 			count++
 		case BarrierCell:
@@ -99,7 +99,7 @@ func (g *game) DiagonalDifficult(from, to gruid.Point) bool {
 			count++
 			continue
 		}
-		switch g.Dungeon.Cell(pos).T {
+		switch terrain(g.Dungeon.Cell(pos)) {
 		case WallCell, FoliageCell, HoledWallCell:
 			count++
 		}
@@ -132,13 +132,13 @@ func (g *game) LOSCost(from, pos, to gruid.Point, rs raystyle) int {
 	}
 	// pos terrain specific costs
 	c := g.Dungeon.Cell(pos)
-	if c.T == WallCell {
+	if terrain(c) == WallCell {
 		return wallcost
 	}
 	if _, ok := g.Clouds[pos]; ok {
 		return wallcost
 	}
-	if c.T == DoorCell {
+	if terrain(c) == DoorCell {
 		if pos != from {
 			mons := g.MonsterAt(pos)
 			if !mons.Exists() && pos != g.Player.Pos {
@@ -146,10 +146,10 @@ func (g *game) LOSCost(from, pos, to gruid.Point, rs raystyle) int {
 			}
 		}
 	}
-	if c.T == FoliageCell || c.T == HoledWallCell {
+	if terrain(c) == FoliageCell || terrain(c) == HoledWallCell {
 		switch rs {
 		case TreePlayerRay:
-			if c.T == FoliageCell {
+			if terrain(c) == FoliageCell {
 				break
 			}
 			fallthrough
@@ -164,7 +164,7 @@ func (g *game) LOSCost(from, pos, to gruid.Point, rs raystyle) int {
 		}
 		return cost
 	}
-	if rs == TreePlayerRay && c.T == WindowCell && Distance(from, pos) >= DefaultLOSRange {
+	if rs == TreePlayerRay && terrain(c) == WindowCell && Distance(from, pos) >= DefaultLOSRange {
 		return wallcost - Distance(from, pos) - 1
 	}
 	return Distance(to, pos)
@@ -254,7 +254,7 @@ func (g *game) ComputeLOS() {
 	}
 	c := g.Dungeon.Cell(g.Player.Pos)
 	rs := NormalPlayerRay
-	if c.T == TreeCell {
+	if terrain(c) == TreeCell {
 		rs = TreePlayerRay
 	}
 	g.BuildRayMap(g.Player.Pos, rs, g.Player.Rays)
@@ -262,8 +262,8 @@ func (g *game) ComputeLOS() {
 	for pos, n := range g.Player.Rays {
 		if n.Cost <= DefaultLOSRange {
 			g.Player.LOS[pos] = true
-		} else if c.T == TreeCell && g.Illuminated[idx(pos)] && n.Cost <= TreeRange {
-			if g.Dungeon.Cell(pos).T == WallCell {
+		} else if terrain(c) == TreeCell && g.Illuminated[idx(pos)] && n.Cost <= TreeRange {
+			if terrain(g.Dungeon.Cell(pos)) == WallCell {
 				// this is just an approximation, but ok in practice
 				nb = Neighbors(pos, nb, func(npos gruid.Point) bool {
 					if !valid(npos) || !g.Illuminated[idx(npos)] || g.Dungeon.Cell(npos).IsWall() {
@@ -317,7 +317,7 @@ func (m *monster) ComputeLOS(g *game) {
 			m.LOS[pos] = true
 			continue
 		}
-		if n.Cost <= losRange && g.Dungeon.Cell(pos).T != BarrelCell {
+		if n.Cost <= losRange && terrain(g.Dungeon.Cell(pos)) != BarrelCell {
 			ppos, _ := g.BestParent(g.RaysCache, m.Pos, pos, MonsterRay)
 			if !g.Dungeon.Cell(ppos).Hides() {
 				m.LOS[pos] = true
@@ -327,7 +327,7 @@ func (m *monster) ComputeLOS(g *game) {
 }
 
 func (g *game) SeeNotable(c cell, pos gruid.Point) {
-	switch c.T {
+	switch terrain(c) {
 	case MagaraCell:
 		mag := g.Objects.Magaras[pos]
 		dp := &mappingPath{state: g}
@@ -380,7 +380,7 @@ func (g *game) SeeNotable(c cell, pos gruid.Point) {
 func (g *game) SeePosition(pos gruid.Point) {
 	c := g.Dungeon.Cell(pos)
 	t, okT := g.TerrainKnowledge[pos]
-	if !c.Explored {
+	if !explored(c) {
 		see := "see"
 		if c.IsNotable() {
 			g.Printf("You %s %s.", see, c.ShortDesc(g, pos))
@@ -391,7 +391,7 @@ func (g *game) SeePosition(pos gruid.Point) {
 		g.DijkstraMapRebuild = true
 	} else {
 		// XXX this can be improved to handle more terrain types changes
-		if okT && t == WallCell && c.T != WallCell {
+		if okT && t == WallCell && terrain(c) != WallCell {
 			g.Printf("There is no longer a wall there.")
 			g.StopAuto()
 			g.DijkstraMapRebuild = true
@@ -404,7 +404,7 @@ func (g *game) SeePosition(pos gruid.Point) {
 	}
 	if okT {
 		delete(g.TerrainKnowledge, pos)
-		if c.T.IsPlayerPassable() {
+		if c.IsPlayerPassable() {
 			delete(g.MagicalBarriers, pos)
 		}
 	}
@@ -487,7 +487,7 @@ func (g *game) ComputeNoise() {
 		}
 		mons := g.MonsterAt(pos)
 		if mons.Exists() && mons.State != Resting && mons.State != Watching &&
-			(RandInt(rmax) > 0 || g.Dungeon.Cell(mons.Pos).T == QueenRockCell) {
+			(RandInt(rmax) > 0 || terrain(g.Dungeon.Cell(mons.Pos)) == QueenRockCell) {
 			switch mons.Kind {
 			case MonsMirrorSpecter, MonsSatowalgaPlant, MonsButterfly:
 				if mons.Kind == MonsMirrorSpecter && g.Player.Inventory.Body == CloakHear {
@@ -564,7 +564,7 @@ func (m *monster) Sees(g *game, pos gruid.Point) bool {
 	if (!g.Illuminated[idx(pos)] && !g.Player.HasStatus(StatusIlluminated) || !c.IsIlluminable()) && Distance(m.Pos, pos) > darkRange {
 		return false
 	}
-	if c.T == TableCell && Distance(m.Pos, pos) > tableRange {
+	if terrain(c) == TableCell && Distance(m.Pos, pos) > tableRange {
 		return false
 	}
 	if g.Player.HasStatus(StatusTransparent) && g.Illuminated[idx(pos)] && Distance(m.Pos, pos) > 1 {
@@ -613,7 +613,7 @@ func (g *game) ComputeLights() {
 		if !on {
 			continue
 		}
-		if Distance(lpos, g.Player.Pos) > DefaultLOSRange+LightRange && g.Dungeon.Cell(g.Player.Pos).T != TreeCell {
+		if Distance(lpos, g.Player.Pos) > DefaultLOSRange+LightRange && terrain(g.Dungeon.Cell(g.Player.Pos)) != TreeCell {
 			continue
 		}
 		g.BuildRayMap(lpos, LightRay, g.RaysCache)
@@ -627,7 +627,7 @@ func (g *game) ComputeLights() {
 		if !mons.Exists() || mons.Kind != MonsButterfly || mons.Status(MonsConfused) || mons.Status(MonsParalysed) {
 			continue
 		}
-		if Distance(mons.Pos, g.Player.Pos) > DefaultLOSRange+LightRange && g.Dungeon.Cell(g.Player.Pos).T != TreeCell {
+		if Distance(mons.Pos, g.Player.Pos) > DefaultLOSRange+LightRange && terrain(g.Dungeon.Cell(g.Player.Pos)) != TreeCell {
 			continue
 		}
 		g.BuildRayMap(mons.Pos, LightRay, g.RaysCache)

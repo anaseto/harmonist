@@ -2,7 +2,7 @@ package main
 
 import "testing"
 
-func TestInitLevel(t *testing.T) {
+func TestInitLevel(t *terrain(testing)) {
 	Testing = true
 	for i := 0; i < 50; i++ {
 		g := &game{}
@@ -11,14 +11,14 @@ func TestInitLevel(t *testing.T) {
 			if g.Player.Pos == InvalidPos {
 				t.Errorf("Player starting cell is not valid")
 			}
-			if !g.Dungeon.Cell(g.Player.Pos).T.IsPlayerPassable() {
+			if !terrain(g.Dungeon.Cell(g.Player.Pos)).IsPlayerPassable() {
 				t.Errorf("Player starting cell is not passable: %+v", g.Dungeon.Cell(g.Player.Pos).ShortDesc(g, g.Player.Pos))
 			}
-			if g.Dungeon.Cell(g.Player.Pos).T != GroundCell {
+			if terrain(g.Dungeon.Cell(g.Player.Pos)) != GroundCell {
 				t.Errorf("Player starting cell is not ground: %+v", g.Dungeon.Cell(g.Player.Pos).ShortDesc(g, g.Player.Pos))
 			}
 			if g.Depth == WinDepth {
-				if g.Dungeon.Cell(g.Places.Shaedra).T != StoryCell {
+				if terrain(g.Dungeon.Cell(g.Places.Shaedra)) != StoryCell {
 					t.Errorf("Shaedra not there: %+v", g.Places.Shaedra)
 				}
 				if g.Objects.Story[g.Places.Shaedra] != StoryShaedra {
@@ -26,7 +26,7 @@ func TestInitLevel(t *testing.T) {
 				}
 			}
 			if g.Depth == MaxDepth {
-				if g.Dungeon.Cell(g.Places.Artifact).T != StoryCell {
+				if terrain(g.Dungeon.Cell(g.Places.Artifact)) != StoryCell {
 					t.Errorf("Artifact not there: %+v", g.Places.Artifact)
 				}
 				if g.Objects.Story[g.Places.Artifact] != StoryArtifactSealed {
@@ -34,7 +34,7 @@ func TestInitLevel(t *testing.T) {
 				}
 			}
 			if g.Depth == MaxDepth || g.Depth == WinDepth {
-				if g.Dungeon.Cell(g.Places.Marevor).T != StoryCell {
+				if terrain(g.Dungeon.Cell(g.Places.Marevor)) != StoryCell {
 					t.Errorf("Marevor not there: %+v", g.Places.Artifact)
 				}
 				if g.Objects.Story[g.Places.Marevor] != NoStory {
@@ -42,7 +42,7 @@ func TestInitLevel(t *testing.T) {
 				}
 			}
 			if g.Depth == MaxDepth || g.Depth == WinDepth {
-				if g.Dungeon.Cell(g.Places.Monolith).T != StoryCell {
+				if terrain(g.Dungeon.Cell(g.Places.Monolith)) != StoryCell {
 					t.Errorf("Monolith not there: %+v", g.Places.Artifact)
 				}
 				if g.Objects.Story[g.Places.Monolith] != NoStory {

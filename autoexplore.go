@@ -40,7 +40,7 @@ func (g *game) AllExplored() bool {
 				continue
 			}
 		}
-		if !c.Explored {
+		if !explored(c) {
 			return false
 		}
 	}
@@ -60,7 +60,7 @@ func (g *game) AutoexploreSources() []int {
 		if g.ExclusionsMap[pos] {
 			continue
 		}
-		if !c.Explored {
+		if !explored(c) {
 			sources = append(sources, i)
 		}
 

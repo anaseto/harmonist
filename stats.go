@@ -75,11 +75,11 @@ func (g *game) LevelStats() {
 	free := 0
 	exp := 0
 	for _, c := range g.Dungeon.Cells {
-		if c.IsWall() || c.T == ChasmCell {
+		if c.IsWall() || terrain(c) == ChasmCell {
 			continue
 		}
 		free++
-		if c.Explored {
+		if explored(c) {
 			exp++
 		}
 	}
@@ -169,8 +169,8 @@ func (ach achievement) Get(g *game) {
 	}
 }
 
-func (t terrain) ReachNotable() bool {
-	switch t {
+func (c cell) ReachNotable() bool {
+	switch terrain(c) {
 	case TreeCell, TableCell, HoledWallCell, DoorCell, BarrelCell:
 		return true
 	default:
@@ -184,7 +184,7 @@ func (g *game) Reach(pos gruid.Point) {
 	}
 	g.Stats.AtNotablePos[pos] = true
 	c := g.Dungeon.Cell(pos)
-	switch c.T {
+	switch terrain(c) {
 	case TreeCell:
 		g.Stats.ClimbedTree++
 		if g.Stats.ClimbedTree == 12 {

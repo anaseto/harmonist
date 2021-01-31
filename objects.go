@@ -371,7 +371,7 @@ func (g *game) MagicMapping(maxdist int) error {
 		for _, i := range cdists[d] {
 			pos := idxtopos(i)
 			c := g.Dungeon.Cell(pos)
-			if !c.Explored {
+			if !explored(c) {
 				g.Dungeon.SetExplored(pos)
 				g.SeeNotable(c, pos)
 				draw = true
@@ -483,7 +483,7 @@ const (
 func (st story) Desc(g *game, pos gruid.Point) (desc string) {
 	switch st {
 	case NoStory:
-		desc = cell{T: GroundCell}.Desc(g, pos)
+		desc = GroundCell.Desc(g, pos)
 	case StoryShaedra:
 		desc = "Shaedra is the friend you came here to rescue, a human-like creature with claws, a ternian. Many other human-like creatures consider them as savages."
 	case StoryMarevor:
@@ -499,7 +499,7 @@ func (st story) Desc(g *game, pos gruid.Point) (desc string) {
 func (st story) ShortDesc(g *game, pos gruid.Point) (desc string) {
 	switch st {
 	case NoStory:
-		desc = cell{T: GroundCell}.ShortDesc(g, pos)
+		desc = GroundCell.ShortDesc(g, pos)
 	case StoryShaedra:
 		desc = "Shaedra"
 	case StoryMarevor:

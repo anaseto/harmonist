@@ -25,13 +25,13 @@ type game struct {
 	Highlight          map[gruid.Point]bool // highlighted positions (e.g. targeted ray)
 	Objects            objects
 	Clouds             map[gruid.Point]cloud
-	MagicalBarriers    map[gruid.Point]terrain
+	MagicalBarriers    map[gruid.Point]cell
 	GeneratedLore      map[int]bool
 	GeneratedMagaras   []magaraKind
 	GeneratedCloaks    []item
 	GeneratedAmulets   []item
 	GenPlan            [MaxDepth + 1]genFlavour
-	TerrainKnowledge   map[gruid.Point]terrain
+	TerrainKnowledge   map[gruid.Point]cell
 	ExclusionsMap      map[gruid.Point]bool
 	Noise              map[gruid.Point]bool
 	NoiseIllusion      map[gruid.Point]bool
@@ -441,9 +441,9 @@ func (g *game) InitFirstLevel() {
 func (g *game) InitLevelStructures() {
 	g.MonstersPosCache = make([]int, DungeonNCells)
 	g.Noise = map[gruid.Point]bool{}
-	g.TerrainKnowledge = map[gruid.Point]terrain{}
+	g.TerrainKnowledge = map[gruid.Point]cell{}
 	g.ExclusionsMap = map[gruid.Point]bool{}
-	g.MagicalBarriers = map[gruid.Point]terrain{}
+	g.MagicalBarriers = map[gruid.Point]cell{}
 	g.LastMonsterKnownAt = map[gruid.Point]*monster{}
 	g.Objects.Magaras = map[gruid.Point]magara{}
 	g.Objects.Lore = map[gruid.Point]int{}
@@ -547,7 +547,7 @@ func (g *game) StairsSlice() []gruid.Point {
 	// TODO: use cache?
 	stairs := []gruid.Point{}
 	for i, c := range g.Dungeon.Cells {
-		if (c.T != StairCell && c.T != FakeStairCell) || !c.Explored {
+		if (terrain(c) != StairCell && terrain(c) != FakeStairCell) || !explored(c) {
 			continue
 		}
 		pos := idxtopos(i)
@@ -615,7 +615,7 @@ func (g *game) Descend(style descendstyle) bool {
 		}
 	}
 	c := g.Dungeon.Cell(g.Player.Pos)
-	if c.T == StairCell && g.Objects.Stairs[g.Player.Pos] == WinStair {
+	if terrain(c) == StairCell && g.Objects.Stairs[g.Player.Pos] == WinStair {
 		g.StoryPrint("Escaped!")
 		g.ExploredLevels = g.Depth
 		g.Depth = -1

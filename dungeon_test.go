@@ -14,7 +14,7 @@ func (d *dungeon) String() string {
 		if i > 0 && i%DungeonWidth == 0 {
 			fmt.Fprint(b, "\n")
 		}
-		if c.T == WallCell {
+		if terrain(c) == WallCell {
 			fmt.Fprint(b, "#")
 		} else {
 			fmt.Fprint(b, ".")
@@ -23,7 +23,7 @@ func (d *dungeon) String() string {
 	return b.String()
 }
 
-func TestAutomataCave(t *testing.T) {
+func TestAutomataCave(t *terrain(testing)) {
 	for i := 0; i < Rounds; i++ {
 		g := &game{}
 		g.InitFirstLevel()
@@ -35,7 +35,7 @@ func TestAutomataCave(t *testing.T) {
 	}
 }
 
-func TestRandomWalkCave(t *testing.T) {
+func TestRandomWalkCave(t *terrain(testing)) {
 	for i := 0; i < Rounds; i++ {
 		g := &game{}
 		g.InitFirstLevel()
@@ -47,7 +47,7 @@ func TestRandomWalkCave(t *testing.T) {
 	}
 }
 
-func TestRandomWalkTreeCave(t *testing.T) {
+func TestRandomWalkTreeCave(t *terrain(testing)) {
 	for i := 0; i < Rounds; i++ {
 		g := &game{}
 		g.InitFirstLevel()
@@ -59,7 +59,7 @@ func TestRandomWalkTreeCave(t *testing.T) {
 	}
 }
 
-func TestRandomSmallWalkCaveUrbanised(t *testing.T) {
+func TestRandomSmallWalkCaveUrbanised(t *terrain(testing)) {
 	for i := 0; i < Rounds; i++ {
 		g := &game{}
 		g.InitFirstLevel()
@@ -71,7 +71,7 @@ func TestRandomSmallWalkCaveUrbanised(t *testing.T) {
 	}
 }
 
-func TestNaturalCave(t *testing.T) {
+func TestNaturalCave(t *terrain(testing)) {
 	for i := 0; i < Rounds; i++ {
 		g := &game{}
 		g.InitFirstLevel()

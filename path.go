@@ -18,7 +18,7 @@ func (dp *dungeonPath) Neighbors(pos gruid.Point) []gruid.Point {
 }
 
 func (dp *dungeonPath) Cost(from, to gruid.Point) int {
-	if dp.dungeon.Cell(to).T == WallCell {
+	if terrain(dp.dungeon.Cell(to)) == WallCell {
 		if dp.wcost > 0 {
 			return dp.wcost
 		}
@@ -56,7 +56,7 @@ type mappingPath struct {
 
 func (dp *mappingPath) Neighbors(pos gruid.Point) []gruid.Point {
 	d := dp.state.Dungeon
-	if d.Cell(pos).T == WallCell {
+	if terrain(d.Cell(pos)) == WallCell {
 		return nil
 	}
 	nb := dp.neighbors[:0]
@@ -93,7 +93,7 @@ func (tp *tunnelPath) Cost(from, to gruid.Point) int {
 	c := tp.dg.d.Cell(from)
 	if tp.dg.room[from] {
 		cost += 7
-	} else if !tp.dg.tunnel[from] && c.T != GroundCell {
+	} else if !tp.dg.tunnel[from] && terrain(c) != GroundCell {
 		cost++
 	}
 	if c.IsPassable() {
@@ -121,10 +121,10 @@ func (pp *playerPath) Neighbors(pos gruid.Point) []gruid.Point {
 		if cld, ok := pp.state.Clouds[npos]; ok && cld == CloudFire && (!okT || t != FoliageCell && t != DoorCell) {
 			return false
 		}
-		return valid(npos) && d.Cell(npos).Explored && (d.Cell(npos).T.IsPlayerPassable() && !okT ||
+		return valid(npos) && explored(d.Cell(npos)) && (d.Cell(npos).IsPlayerPassable() && !okT ||
 			okT && t.IsPlayerPassable() ||
 			pp.state.Player.HasStatus(StatusLevitation) && (t == BarrierCell || t == ChasmCell) ||
-			pp.state.Player.HasStatus(StatusDig) && (d.Cell(npos).T.IsDiggable() && !okT || (okT && t.IsDiggable())))
+			pp.state.Player.HasStatus(StatusDig) && (d.Cell(npos).IsDiggable() && !okT || (okT && t.IsDiggable())))
 	}
 	nb = CardinalNeighbors(pos, nb, keep)
 	sort.Slice(nb, func(i, j int) bool {
@@ -176,7 +176,7 @@ func (fp *noisePath) Neighbors(pos gruid.Point) []gruid.Point {
 	nb := fp.neighbors[:0]
 	d := fp.state.Dungeon
 	keep := func(npos gruid.Point) bool {
-		return valid(npos) && d.Cell(npos).T != WallCell
+		return valid(npos) && terrain(d.Cell(npos)) != WallCell
 	}
 	return CardinalNeighbors(pos, nb, keep)
 }
@@ -202,7 +202,7 @@ func (ap *autoexplorePath) Neighbors(pos gruid.Point) []gruid.Point {
 			// XXX little info leak
 			return false
 		}
-		return valid(npos) && (d.Cell(npos).T.IsPlayerPassable() && (!okT || t != WallCell)) &&
+		return valid(npos) && (d.Cell(npos).IsPlayerPassable() && (!okT || t != WallCell)) &&
 			!ap.state.ExclusionsMap[npos]
 	}
 	nb = CardinalNeighbors(pos, nb, keep)

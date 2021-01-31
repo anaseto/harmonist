@@ -297,7 +297,7 @@ func (g *game) DumpDungeon() string {
 			}
 		}
 		pos := idxtopos(i)
-		if !c.Explored {
+		if !explored(c) {
 			buf.WriteRune(' ')
 			if i == len(g.Dungeon.Cells)-1 {
 				buf.WriteString("│\n")
@@ -306,7 +306,7 @@ func (g *game) DumpDungeon() string {
 		}
 		var r rune
 		// XXX this can be simplified
-		switch c.T {
+		switch terrain(c) {
 		case WallCell:
 			r = '#'
 		default:

@@ -432,7 +432,7 @@ func (g *game) BlinkPos(mpassable bool) gruid.Point {
 			continue
 		}
 		c := g.Dungeon.Cell(pos)
-		if !c.T.IsPlayerPassable() || mpassable && !c.IsPassable() || c.T == StoryCell {
+		if !c.IsPlayerPassable() || mpassable && !c.IsPassable() || terrain(c) == StoryCell {
 			continue
 		}
 		mons := g.MonsterAt(pos)
@@ -592,7 +592,7 @@ func (g *game) SwapWithMonster(mons *monster) {
 	mons.MoveTo(g, g.Player.Pos)
 	g.PlacePlayerAt(ompos)
 	mons.MakeAware(g)
-	if g.Dungeon.Cell(g.Player.Pos).T == ChasmCell {
+	if terrain(g.Dungeon.Cell(g.Player.Pos)) == ChasmCell {
 		g.PushEvent(&simpleEvent{ERank: g.Ev.Rank(), EAction: AbyssFall})
 	}
 }
@@ -850,16 +850,16 @@ func (g *game) EvokeObstruction() error {
 }
 
 func (g *game) MagicalBarrierAt(pos gruid.Point) {
-	if g.Dungeon.Cell(pos).T == WallCell || g.Dungeon.Cell(pos).T == BarrierCell {
+	if terrain(g.Dungeon.Cell(pos)) == WallCell || terrain(g.Dungeon.Cell(pos)) == BarrierCell {
 		return
 	}
-	g.UpdateKnowledge(pos, g.Dungeon.Cell(pos).T)
+	g.UpdateKnowledge(pos, terrain(g.Dungeon.Cell(pos)))
 	g.CreateMagicalBarrierAt(pos)
 	g.ComputeLOS()
 }
 
 func (g *game) CreateMagicalBarrierAt(pos gruid.Point) {
-	t := g.Dungeon.Cell(pos).T
+	t := terrain(g.Dungeon.Cell(pos))
 	g.Dungeon.SetCell(pos, BarrierCell)
 	delete(g.Clouds, pos)
 	g.MagicalBarriers[pos] = t

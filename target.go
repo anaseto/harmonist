@@ -247,7 +247,7 @@ func (md *model) updatePosInfo() {
 	pos := md.mp.ex.pos
 	pi.Pos = pos
 	switch {
-	case !g.Dungeon.Cell(pos).Explored:
+	case !explored(g.Dungeon.Cell(pos)):
 		pi.Unknown = true
 		if g.Noise[pos] || g.NoiseIllusion[pos] {
 			pi.Noise = true
@@ -267,7 +267,7 @@ func (md *model) updatePosInfo() {
 	}
 	c := g.Dungeon.Cell(pos)
 	if t, ok := g.TerrainKnowledge[pos]; ok {
-		c.T = t
+		c = t | c&Explored
 	}
 	if mons.Exists() && g.Player.Sees(pos) {
 		pi.Monster = mons
@@ -300,17 +300,17 @@ func (g *game) computePathHighlight(pos gruid.Point) {
 func (md *model) target() error {
 	g := md.g
 	pos := md.mp.ex.pos
-	if !g.Dungeon.Cell(pos).Explored {
+	if !explored(g.Dungeon.Cell(pos)) {
 		return errors.New("You do not know this place.")
 	}
-	if g.Dungeon.Cell(pos).T == WallCell && !g.Player.HasStatus(StatusDig) {
+	if terrain(g.Dungeon.Cell(pos)) == WallCell && !g.Player.HasStatus(StatusDig) {
 		return errors.New("You cannot travel into a wall.")
 	}
 	path := g.PlayerPath(g.Player.Pos, pos)
 	if len(path) == 0 {
 		return errors.New("There is no safe path to this place.")
 	}
-	if c := g.Dungeon.Cell(pos); c.Explored && c.T != WallCell {
+	if c := g.Dungeon.Cell(pos); explored(c) && terrain(c) != WallCell {
 		g.AutoTarget = pos
 		return nil
 	}
@@ -395,7 +395,7 @@ func (md *model) nextObject(pos gruid.Point, data *examination) {
 		if nobject > len(data.objects)-1 {
 			nobject = 0
 		}
-		if g.Dungeon.Cell(p).Explored {
+		if explored(g.Dungeon.Cell(p)) {
 			pos = p
 			break
 		}
@@ -406,7 +406,7 @@ func (md *model) nextObject(pos gruid.Point, data *examination) {
 
 func (md *model) excludeZone(pos gruid.Point) {
 	g := md.g
-	if !g.Dungeon.Cell(pos).Explored {
+	if !explored(g.Dungeon.Cell(pos)) {
 		g.Print("You cannot choose an unexplored cell for exclusion.")
 	} else {
 		toggle := !g.ExclusionsMap[pos]

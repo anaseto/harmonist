@@ -320,9 +320,9 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		}
 	case ActionInteract:
 		c := g.Dungeon.Cell(g.Player.Pos)
-		switch c.T {
+		switch terrain(c) {
 		case StairCell:
-			if g.Dungeon.Cell(g.Player.Pos).T == StairCell && g.Objects.Stairs[g.Player.Pos] != BlockedStair {
+			if terrain(g.Dungeon.Cell(g.Player.Pos)) == StairCell && g.Objects.Stairs[g.Player.Pos] != BlockedStair {
 				// TODO: animation
 				//ui.MenuSelectedAnimation(MenuInteract, true)
 				strt := g.Objects.Stairs[g.Player.Pos]
@@ -335,7 +335,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 					return again, eff, err
 				}
 				//ui.DrawDungeonView(NormalMode)
-			} else if g.Dungeon.Cell(g.Player.Pos).T == StairCell && g.Objects.Stairs[g.Player.Pos] == BlockedStair {
+			} else if terrain(g.Dungeon.Cell(g.Player.Pos)) == StairCell && g.Objects.Stairs[g.Player.Pos] == BlockedStair {
 				err = errors.New("The stairs are blocked by a magical stone barrier energies.")
 			} else {
 				err = errors.New("No stairs here.")
@@ -1026,7 +1026,7 @@ func (md *model) EnterWizard() {
 
 func (md *model) checkShaedra(st stair) (err error) {
 	g := md.g
-	if g.Depth == WinDepth && st == NormalStair && g.Dungeon.Cell(g.Places.Shaedra).T == StoryCell {
+	if g.Depth == WinDepth && st == NormalStair && terrain(g.Dungeon.Cell(g.Places.Shaedra)) == StoryCell {
 		err = errors.New("You have to rescue Shaedra first!")
 	}
 	return err

@@ -536,7 +536,7 @@ func (m *monster) CanPass(g *game, pos gruid.Point) bool {
 		c.IsDoorPassable() && m.Kind.CanOpenDoors() ||
 		c.IsLevitatePassable() && m.Kind.CanFly() ||
 		c.IsSwimPassable() && (m.Kind.CanSwim() || m.Kind.CanFly()) ||
-		c.T == HoledWallCell && m.Kind.Size() == MonsSmall
+		terrain(c) == HoledWallCell && m.Kind.Size() == MonsSmall
 }
 
 func (m *monster) CanPassDestruct(g *game, pos gruid.Point) bool {
@@ -630,18 +630,18 @@ func (m *monster) MoveTo(g *game, pos gruid.Point) {
 		}
 		g.StopAuto()
 	}
-	recomputeLOS := g.Player.Sees(m.Pos) && g.Dungeon.Cell(m.Pos).T == DoorCell ||
-		g.Player.Sees(pos) && g.Dungeon.Cell(pos).T == DoorCell
+	recomputeLOS := g.Player.Sees(m.Pos) && terrain(g.Dungeon.Cell(m.Pos)) == DoorCell ||
+		g.Player.Sees(pos) && terrain(g.Dungeon.Cell(pos)) == DoorCell
 	m.PlaceAt(g, pos)
 	if recomputeLOS {
 		g.ComputeLOS()
 	}
 	c := g.Dungeon.Cell(pos)
-	if c.T == ChasmCell && !m.Kind.CanFly() || c.T == WaterCell && !m.Kind.CanSwim() && !m.Kind.CanFly() {
+	if terrain(c) == ChasmCell && !m.Kind.CanFly() || terrain(c) == WaterCell && !m.Kind.CanSwim() && !m.Kind.CanFly() {
 		m.Dead = true
 		if g.Player.Sees(m.Pos) {
 			g.HandleKill(m)
-			switch c.T {
+			switch terrain(c) {
 			case ChasmCell:
 				g.Printf("%s falls into the abyss.", m.Kind.Definite(true))
 			case WaterCell:
@@ -726,16 +726,16 @@ func (m *monster) Explode(g *game) {
 		} else if g.Player.Pos == pos {
 			m.InflictDamage(g, 1, 1)
 		} else if c.IsDestructible() && RandInt(3) > 0 {
-			if c.T.IsDiggable() {
+			if c.IsDiggable() {
 				g.Dungeon.SetCell(pos, RubbleCell)
 			} else {
 				g.Dungeon.SetCell(pos, GroundCell)
 			}
-			if c.T == BarrelCell {
+			if terrain(c) == BarrelCell {
 				delete(g.Objects.Barrels, pos)
 			}
 			g.Stats.Digs++
-			g.UpdateKnowledge(pos, c.T)
+			g.UpdateKnowledge(pos, terrain(c))
 			if g.Player.Sees(pos) {
 				g.ui.WallExplosionAnimation(pos)
 			}
@@ -1061,18 +1061,18 @@ func (m *monster) HandleMove(g *game) {
 	case !mons.Exists():
 		if m.Kind == MonsEarthDragon && c.IsDestructible() {
 			g.Dungeon.SetCell(target, RubbleCell)
-			if c.T == BarrelCell {
+			if terrain(c) == BarrelCell {
 				delete(g.Objects.Barrels, target)
 			}
 			g.Stats.Digs++
-			g.UpdateKnowledge(target, c.T)
+			g.UpdateKnowledge(target, terrain(c))
 			g.MakeNoise(WallNoise, m.Pos)
 			g.Fog(m.Pos, 1)
 			if Distance(g.Player.Pos, target) < 12 {
 				// XXX use dijkstra distance ?
 				if c.IsWall() {
 					g.Printf("%s You hear an earth-splitting noise.", g.CrackSound())
-				} else if c.T == BarrelCell || c.T == DoorCell || c.T == TableCell {
+				} else if terrain(c) == BarrelCell || terrain(c) == DoorCell || terrain(c) == TableCell {
 					g.Printf("%s You hear an wood-splitting noise.", g.CrackSound())
 				}
 				g.StopAuto()
@@ -1160,13 +1160,13 @@ func (m *monster) HandleTurn(g *game) {
 	if m.HandleMonsSpecifics(g) {
 		return
 	}
-	if Distance(mpos, ppos) == 1 && g.Dungeon.Cell(ppos).T != BarrelCell && !m.Peaceful(g) {
+	if Distance(mpos, ppos) == 1 && terrain(g.Dungeon.Cell(ppos)) != BarrelCell && !m.Peaceful(g) {
 		if m.Status(MonsConfused) {
 			g.Printf("%s appears too confused to attack.", m.Kind.Definite(true))
 			g.RenewEvent(DurationTurn) // wait
 			return
 		}
-		if g.Dungeon.Cell(ppos).T == TreeCell && !m.Kind.CanAttackOnTree() {
+		if terrain(g.Dungeon.Cell(ppos)) == TreeCell && !m.Kind.CanAttackOnTree() {
 			g.Printf("%s watches you from below.", m.Kind.Definite(true))
 			g.RenewEvent(DurationTurn) // wait
 			return
@@ -1197,10 +1197,10 @@ func (m *monster) InvertFoliage(g *game) {
 	}
 	invert := false
 	c := g.Dungeon.Cell(m.Pos)
-	if c.T == CavernCell {
+	if terrain(c) == CavernCell {
 		g.Dungeon.SetCell(m.Pos, FoliageCell)
 		invert = true
-	} else if c.T == FoliageCell {
+	} else if terrain(c) == FoliageCell {
 		g.Dungeon.SetCell(m.Pos, CavernCell)
 		invert = true
 	}
@@ -1208,7 +1208,7 @@ func (m *monster) InvertFoliage(g *game) {
 		if g.Player.Sees(m.Pos) {
 			g.ComputeLOS()
 		} else {
-			g.UpdateKnowledge(m.Pos, c.T)
+			g.UpdateKnowledge(m.Pos, terrain(c))
 		}
 	}
 }
@@ -1345,7 +1345,7 @@ func (m *monster) HitSideEffects(g *game) {
 		g.Print("The flying milfid makes you swap positions.")
 		g.StoryPrintf("Position swap by %s", m.Kind)
 		m.ExhaustTime(g, 5+RandInt(5))
-		if g.Dungeon.Cell(g.Player.Pos).T == ChasmCell {
+		if terrain(g.Dungeon.Cell(g.Player.Pos)) == ChasmCell {
 			g.PushAgainEvent(&simpleEvent{ERank: g.Ev.Rank(), EAction: AbyssFall})
 		}
 	case MonsTinyHarpy:
@@ -1409,7 +1409,7 @@ func (m *monster) PushPlayer(g *game, dist int) {
 	g.PlacePlayerAt(pos)
 	g.Printf("%s pushes you%s.", m.Kind.Definite(true), cs)
 	g.StoryPrintf("Pushed by %s%s", m.Kind.Definite(true), cs)
-	if c.T == ChasmCell {
+	if terrain(c) == ChasmCell {
 		g.PushAgainEvent(&simpleEvent{ERank: g.Ev.Rank(), EAction: AbyssFall})
 	}
 }

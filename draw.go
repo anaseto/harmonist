@@ -124,7 +124,7 @@ func (md *model) positionDrawing(pos gruid.Point) (r rune, fgColor, bgColor grui
 	c := m.Cell(pos)
 	fgColor = ColorFg
 	bgColor = ColorBg
-	if !c.Explored && (!g.Wizard || g.WizardMode == WizardNormal) {
+	if !explored(c) && (!g.Wizard || g.WizardMode == WizardNormal) {
 		r = ' '
 		bgColor = ColorBgDark
 		if g.HasNonWallExploredNeighbor(pos) {
@@ -145,13 +145,13 @@ func (md *model) positionDrawing(pos gruid.Point) (r rune, fgColor, bgColor grui
 		return
 	}
 	if g.Wizard && g.WizardMode != WizardNormal {
-		if !c.Explored && g.HasNonWallExploredNeighbor(pos) && g.WizardMode == WizardSeeAll {
+		if !explored(c) && g.HasNonWallExploredNeighbor(pos) && g.WizardMode == WizardSeeAll {
 			r = '¤'
 			fgColor = ColorFgDark
 			bgColor = ColorBgDark
 			return
 		}
-		if c.T == WallCell {
+		if terrain(c) == WallCell {
 			if len(g.Dungeon.CardinalNonWallNeighbors(pos)) == 0 {
 				r = ' '
 				return
@@ -165,11 +165,11 @@ func (md *model) positionDrawing(pos gruid.Point) (r rune, fgColor, bgColor grui
 		fgColor = ColorFgDark
 		bgColor = ColorBgDark
 	}
-	if g.ExclusionsMap[pos] && c.T.IsPlayerPassable() {
+	if g.ExclusionsMap[pos] && c.IsPlayerPassable() {
 		fgColor = ColorFgExcluded
 	}
 	if trkn, okTrkn := g.TerrainKnowledge[pos]; okTrkn && (!g.Wizard || g.WizardMode == WizardNormal) {
-		c.T = trkn
+		c = trkn | c&Explored
 	}
 	var fgTerrain gruid.Color
 	switch {

@@ -141,7 +141,7 @@ func (g *game) MonsterCount() (count int) {
 }
 
 func (g *game) Rest() error {
-	if g.Dungeon.Cell(g.Player.Pos).T != BarrelCell {
+	if terrain(g.Dungeon.Cell(g.Player.Pos)) != BarrelCell {
 		return fmt.Errorf("This place is not safe for sleeping.")
 	}
 	if cld, ok := g.Clouds[g.Player.Pos]; ok && cld == CloudFire {
@@ -215,7 +215,7 @@ func (g *game) CollectGround() {
 	if c.IsNotable() {
 		g.DijkstraMapRebuild = true
 	switchcell:
-		switch c.T {
+		switch terrain(c) {
 		case BarrelCell:
 			// TODO: move here message
 		case BananaCell:
@@ -255,10 +255,10 @@ func (g *game) CollectGround() {
 		default:
 			g.Printf("You are standing over %s.", c.ShortDesc(g, pos))
 		}
-	} else if c.T == DoorCell {
+	} else if terrain(c) == DoorCell {
 		g.Print("You stand at the door.")
 	}
-	if c.T.ReachNotable() {
+	if terrain(c).ReachNotable() {
 		g.Reach(pos)
 	}
 }
@@ -313,11 +313,11 @@ func (g *game) PlayerBump(pos gruid.Point) error {
 	}
 	c := g.Dungeon.Cell(pos)
 	switch {
-	case c.T == BarrierCell && !g.Player.HasStatus(StatusLevitation):
+	case terrain(c) == BarrierCell && !g.Player.HasStatus(StatusLevitation):
 		return errors.New("You cannot move into a magical barrier.")
-	case c.T == WindowCell && !g.Player.HasStatus(StatusDig):
+	case terrain(c) == WindowCell && !g.Player.HasStatus(StatusDig):
 		return errors.New("You cannot pass through the closed window.")
-	case c.T == BarrelCell && g.MonsterLOS[g.Player.Pos]:
+	case terrain(c) == BarrelCell && g.MonsterLOS[g.Player.Pos]:
 		return errors.New("You cannot enter a barrel while seen.")
 	}
 	mons := g.MonsterAt(pos)
@@ -330,19 +330,19 @@ func (g *game) PlayerBump(pos gruid.Point) error {
 		if g.Player.HasStatus(StatusLignification) {
 			return errors.New("You cannot move while lignified.")
 		}
-		if c.T == ChasmCell && !g.Player.HasStatus(StatusLevitation) {
+		if terrain(c) == ChasmCell && !g.Player.HasStatus(StatusLevitation) {
 			return g.AbyssJump()
 		}
-		if c.T == BarrelCell {
+		if terrain(c) == BarrelCell {
 			g.Print("You hide yourself inside the barrel.")
-		} else if c.T == TableCell {
+		} else if terrain(c) == TableCell {
 			g.Print("You hide yourself under the table.")
-		} else if c.T == TreeCell {
+		} else if terrain(c) == TreeCell {
 			g.Print("You climb to the top.")
-		} else if c.T == HoledWallCell {
+		} else if terrain(c) == HoledWallCell {
 			g.Print("You crawl under the wall.")
 		}
-		if c.T.IsDiggable() && c.T != HoledWallCell {
+		if c.IsDiggable() && terrain(c) != HoledWallCell {
 			g.Dungeon.SetCell(pos, RubbleCell)
 			g.MakeNoise(WallNoise, pos)
 			g.Print(g.CrackSound())
@@ -422,7 +422,7 @@ func (g *game) PlacePlayerAt(pos gruid.Point) {
 		g.Player.Dir = S
 	}
 	g.Player.Pos = pos
-	if g.Dungeon.Cell(pos).T == QueenRockCell && !g.Player.HasStatus(StatusLevitation) {
+	if terrain(g.Dungeon.Cell(pos)) == QueenRockCell && !g.Player.HasStatus(StatusLevitation) {
 		g.MakeNoise(QueenRockFootstepNoise, pos)
 		g.Print("Tap-tap.")
 	}
@@ -477,13 +477,13 @@ func (g *game) PutFakeStatus(st status, duration int) bool {
 	return true
 }
 
-func (g *game) UpdateKnowledge(pos gruid.Point, t terrain) {
+func (g *game) UpdateKnowledge(pos gruid.Point, c cell) {
 	if g.Player.Sees(pos) {
 		return
 	}
 	_, ok := g.TerrainKnowledge[pos]
 	if !ok {
-		g.TerrainKnowledge[pos] = t
+		g.TerrainKnowledge[pos] = c
 	}
 }
 
@@ -492,9 +492,9 @@ func (g *game) PlayerCanPass(pos gruid.Point) bool {
 		return false
 	}
 	c := g.Dungeon.Cell(pos)
-	return c.T.IsPlayerPassable() ||
-		g.Player.HasStatus(StatusLevitation) && (c.T == BarrierCell || c.IsLevitatePassable()) ||
-		g.Player.HasStatus(StatusDig) && c.T.IsDiggable()
+	return c.IsPlayerPassable() ||
+		g.Player.HasStatus(StatusLevitation) && (terrain(c) == BarrierCell || c.IsLevitatePassable()) ||
+		g.Player.HasStatus(StatusDig) && c.IsDiggable()
 }
 
 func (g *game) PlayerCanJumpPass(pos gruid.Point) bool {
@@ -503,5 +503,5 @@ func (g *game) PlayerCanJumpPass(pos gruid.Point) bool {
 	}
 	c := g.Dungeon.Cell(pos)
 	return c.IsJumpPassable() ||
-		g.Player.HasStatus(StatusLevitation) && c.T == BarrierCell
+		g.Player.HasStatus(StatusLevitation) && terrain(c) == BarrierCell
 }

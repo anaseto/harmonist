@@ -46,7 +46,7 @@ func ValidCardinalNeighbors(pos gruid.Point) []gruid.Point {
 }
 
 func (d *dungeon) IsFreeCell(pos gruid.Point) bool {
-	return valid(pos) && d.Cell(pos).T.IsPlayerPassable()
+	return valid(pos) && d.Cell(pos).IsPlayerPassable()
 }
 
 func (d *dungeon) NotWallCell(pos gruid.Point) bool {
@@ -68,7 +68,7 @@ func (d *dungeon) CardinalFreeNeighbors(pos gruid.Point) []gruid.Point {
 func (d *dungeon) CardinalNonWallNeighbors(pos gruid.Point) []gruid.Point {
 	nb := make([]gruid.Point, 0, 4)
 	nb = CardinalNeighbors(pos, nb, func(npos gruid.Point) bool {
-		return valid(npos) && d.Cell(npos).T != WallCell
+		return valid(npos) && terrain(d.Cell(npos)) != WallCell
 	})
 
 	return nb

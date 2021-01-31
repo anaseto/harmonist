@@ -140,7 +140,7 @@ func (g *game) FindJumpTarget(m *monster) gruid.Point {
 func (g *game) Jump(mons *monster) error {
 	if mons.Peaceful(g) && mons.Kind != MonsEarthDragon {
 		ompos := mons.Pos
-		if g.Dungeon.Cell(ompos).T == ChasmCell && !g.Player.HasStatus(StatusLevitation) {
+		if terrain(g.Dungeon.Cell(ompos)) == ChasmCell && !g.Player.HasStatus(StatusLevitation) {
 			if g.DeepChasmDepth() {
 				return errors.New("You cannot jump into deep chasm.")
 			}
@@ -275,7 +275,7 @@ func (g *game) HandleKill(mons *monster) {
 	if g.Player.Sees(mons.Pos) {
 		AchAssassin.Get(g)
 	}
-	if g.Dungeon.Cell(mons.Pos).T == DoorCell {
+	if terrain(g.Dungeon.Cell(mons.Pos)) == DoorCell {
 		g.ComputeLOS()
 	}
 	g.StoryPrintf("Death of %s", mons.Kind.Indefinite(false))
