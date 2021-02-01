@@ -109,8 +109,8 @@ func (g *game) MoveToTarget() bool {
 	}
 	var err error
 	if len(path) > 1 {
-		err = g.PlayerBump(path[len(path)-2])
-		if g.ExclusionsMap[path[len(path)-2]] {
+		err = g.PlayerBump(path[1])
+		if g.ExclusionsMap[path[1]] {
 			g.AutoTarget = InvalidPos
 		}
 	} else {

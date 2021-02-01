@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/anaseto/gruid"
+	"github.com/anaseto/gruid/paths"
 	"github.com/anaseto/gruid/rl"
 )
 
@@ -292,6 +293,7 @@ type dgen struct {
 	special specialRoom
 	layout  maplayout
 	cc      []int
+	PR      *paths.PathRange
 }
 
 func (dg *dgen) WallAreaCount(area []gruid.Point, pos gruid.Point, radius int) int {
@@ -340,8 +342,8 @@ func (dg *dgen) ConnectRoomsShortestPath(i, j int) bool {
 	e2i = r2.UnusedEntry()
 	e2pos = r2.entries[e2i].pos
 	tp := &tunnelPath{dg: dg}
-	path, _, found := AstarPath(tp, e1pos, e2pos)
-	if !found {
+	path := dg.PR.AstarPath(tp, e1pos, e2pos)
+	if len(path) == 0 {
 		log.Println(fmt.Sprintf("no path from %v to %v", e1pos, e2pos))
 		return false
 	}
@@ -872,6 +874,7 @@ func (dg *dgen) GenArtifactPlace(g *game) {
 
 func (g *game) GenRoomTunnels(ml maplayout) {
 	dg := dgen{}
+	dg.PR = paths.NewPathRange(gruid.NewRange(0, 0, DungeonWidth, DungeonHeight))
 	dg.layout = ml
 	d := &dungeon{}
 	d.Grid = rl.NewGrid(DungeonWidth, DungeonHeight)

@@ -271,8 +271,8 @@ func (mp *monPath) Estimation(from, to gruid.Point) int {
 
 func (m *monster) APath(g *game, from, to gruid.Point) []gruid.Point {
 	mp := &monPath{state: g, monster: m}
-	path, _, found := AstarPath(mp, from, to)
-	if !found {
+	path := g.PR.AstarPath(mp, from, to)
+	if len(path) == 0 {
 		return nil
 	}
 	return path
@@ -280,8 +280,8 @@ func (m *monster) APath(g *game, from, to gruid.Point) []gruid.Point {
 
 func (g *game) PlayerPath(from, to gruid.Point) []gruid.Point {
 	pp := &playerPath{state: g, goal: to}
-	path, _, found := AstarPath(pp, from, to)
-	if !found {
+	path := g.PR.AstarPath(pp, from, to)
+	if len(path) == 0 {
 		return nil
 	}
 	return path
@@ -291,9 +291,9 @@ func (g *game) SortedNearestTo(cells []gruid.Point, to gruid.Point) []gruid.Poin
 	ps := posSlice{}
 	for _, pos := range cells {
 		pp := &dungeonPath{dungeon: g.Dungeon, wcost: unreachable}
-		_, cost, found := AstarPath(pp, pos, to)
-		if found {
-			ps = append(ps, posCost{pos, cost})
+		path := g.PR.AstarPath(pp, pos, to)
+		if len(path) > 0 {
+			ps = append(ps, posCost{pos, len(path)})
 		}
 	}
 	sort.Sort(ps)

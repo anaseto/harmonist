@@ -24,8 +24,6 @@
 package main
 
 import (
-	"container/heap"
-
 	"github.com/anaseto/gruid"
 )
 
@@ -99,62 +97,6 @@ type Astar interface {
 	Neighbors(gruid.Point) []gruid.Point
 	Cost(gruid.Point, gruid.Point) int
 	Estimation(gruid.Point, gruid.Point) int
-}
-
-func AstarPath(ast Astar, from, to gruid.Point) (path []gruid.Point, length int, found bool) {
-	nodeCache.Index++
-	nqs := queueCache[:0]
-	nq := &nqs
-	heap.Init(nq)
-	fromNode := nodeCache.get(from)
-	fromNode.Open = true
-	num := 0
-	fromNode.Num = num
-	heap.Push(nq, fromNode)
-	for {
-		if nq.Len() == 0 {
-			// There's no path, return found false.
-			return
-		}
-		current := heap.Pop(nq).(*node)
-		current.Open = false
-		current.Closed = true
-
-		if current.Pos == to {
-			// Found a path to the goal.
-			p := []gruid.Point{}
-			curr := current
-			for {
-				p = append(p, curr.Pos)
-				if curr.Parent == nil {
-					break
-				}
-				curr, _ = nodeCache.at(*curr.Parent)
-			}
-			return p, current.Cost, true
-		}
-
-		for _, neighbor := range ast.Neighbors(current.Pos) {
-			cost := current.Cost + ast.Cost(current.Pos, neighbor)
-			neighborNode := nodeCache.get(neighbor)
-			if cost < neighborNode.Cost {
-				if neighborNode.Open {
-					heap.Remove(nq, neighborNode.Index)
-				}
-				neighborNode.Open = false
-				neighborNode.Closed = false
-			}
-			if !neighborNode.Open && !neighborNode.Closed {
-				neighborNode.Cost = cost
-				neighborNode.Open = true
-				neighborNode.Rank = cost + ast.Estimation(neighbor, to)
-				neighborNode.Parent = &current.Pos
-				num++
-				neighborNode.Num = num
-				heap.Push(nq, neighborNode)
-			}
-		}
-	}
 }
 
 // A priorityQueue implements heap.Interface and holds Nodes.  The

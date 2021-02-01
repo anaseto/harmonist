@@ -295,35 +295,35 @@ func (g *game) SeeNotable(c cell, pos gruid.Point) {
 	case MagaraCell:
 		mag := g.Objects.Magaras[pos]
 		dp := &mappingPath{state: g}
-		_, l, ok := AstarPath(dp, g.Player.Pos, pos)
-		if ok {
-			g.StoryPrintf("Spotted %s (distance: %d)", mag, l)
+		path := g.PR.AstarPath(dp, g.Player.Pos, pos)
+		if len(path) > 0 {
+			g.StoryPrintf("Spotted %s (distance: %d)", mag, len(path))
 		} else {
 			g.StoryPrintf("Spotted %s", mag)
 		}
 	case ItemCell:
 		it := g.Objects.Items[pos]
 		dp := &mappingPath{state: g}
-		_, l, ok := AstarPath(dp, g.Player.Pos, pos)
-		if ok {
-			g.StoryPrintf("Spotted %s (distance: %d)", it.ShortDesc(g), l)
+		path := g.PR.AstarPath(dp, g.Player.Pos, pos)
+		if len(path) > 0 {
+			g.StoryPrintf("Spotted %s (distance: %d)", it.ShortDesc(g), len(path))
 		} else {
 			g.StoryPrintf("Spotted %s", it.ShortDesc(g))
 		}
 	case StairCell:
 		st := g.Objects.Stairs[pos]
 		dp := &mappingPath{state: g}
-		_, l, ok := AstarPath(dp, g.Player.Pos, pos)
-		if ok {
-			g.StoryPrintf("Discovered %s (distance: %d)", st, l)
+		path := g.PR.AstarPath(dp, g.Player.Pos, pos)
+		if len(path) > 0 {
+			g.StoryPrintf("Discovered %s (distance: %d)", st, len(path))
 		} else {
 			g.StoryPrintf("Discovered %s", st)
 		}
 	case FakeStairCell:
 		dp := &mappingPath{state: g}
-		_, l, ok := AstarPath(dp, g.Player.Pos, pos)
-		if ok {
-			g.StoryPrintf("Discovered %s (distance: %d)", NormalStairShortDesc, l)
+		path := g.PR.AstarPath(dp, g.Player.Pos, pos)
+		if len(path) > 0 {
+			g.StoryPrintf("Discovered %s (distance: %d)", NormalStairShortDesc, len(path))
 		} else {
 			g.StoryPrintf("Discovered %s", NormalStairShortDesc)
 		}
@@ -331,9 +331,9 @@ func (g *game) SeeNotable(c cell, pos gruid.Point) {
 		st := g.Objects.Story[pos]
 		if st == StoryArtifactSealed {
 			dp := &mappingPath{state: g}
-			_, l, ok := AstarPath(dp, g.Player.Pos, pos)
-			if ok {
-				g.StoryPrintf("Discovered Portal Moon Gem Artifact (distance: %d)", l)
+			path := g.PR.AstarPath(dp, g.Player.Pos, pos)
+			if len(path) > 0 {
+				g.StoryPrintf("Discovered Portal Moon Gem Artifact (distance: %d)", len(path))
 			} else {
 				g.StoryPrint("Discovered Portal Moon Gem Artifact")
 			}

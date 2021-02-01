@@ -973,7 +973,7 @@ func (m *monster) HandleWatching(g *game) {
 
 func (m *monster) ComputePath(g *game) {
 
-	if !(len(m.Path) > 0 && m.Path[0] == m.Target && m.Path[len(m.Path)-1] == m.Pos) {
+	if !(len(m.Path) > 0 && m.Path[len(m.Path)-1] == m.Target && m.Path[0] == m.Pos) {
 		m.Path = m.APath(g, m.Pos, m.Target)
 		if len(m.Path) == 0 && !m.Status(MonsConfused) {
 			// if target is not accessible, try free neighbor cells
@@ -1041,11 +1041,11 @@ func (m *monster) MakeWander() {
 }
 
 func (m *monster) HandleMove(g *game) {
-	target := m.Path[len(m.Path)-2]
+	target := m.Path[1]
 	mons := g.MonsterAt(target)
 	monstarget := InvalidPos
 	if mons.Exists() && len(mons.Path) >= 2 {
-		monstarget = mons.Path[len(mons.Path)-2]
+		monstarget = mons.Path[1]
 	}
 	c := g.Dungeon.Cell(target)
 	switch {
@@ -1077,7 +1077,7 @@ func (m *monster) HandleMove(g *game) {
 				g.StopAuto()
 			}
 			m.MoveTo(g, target)
-			m.Path = m.Path[:len(m.Path)-1]
+			m.Path = m.Path[1:]
 		} else if !m.CanPass(g, target) {
 			m.Path = m.APath(g, m.Pos, m.Target)
 		} else {
@@ -1086,16 +1086,16 @@ func (m *monster) HandleMove(g *game) {
 			if (m.Kind.Ranged() || m.Kind.Smiting()) && !m.FireReady && m.SeesPlayer(g) {
 				m.FireReady = true
 			}
-			m.Path = m.Path[:len(m.Path)-1]
+			m.Path = m.Path[1:]
 		}
 	case (mons.Pos == target && m.Pos == monstarget || m.Waiting > 5+RandInt(2)) && !mons.Status(MonsLignified):
 		target := mons.Pos
 		monstarget := m.Pos
 		m.MoveTo(g, target)
-		m.Path = m.Path[:len(m.Path)-1]
+		m.Path = m.Path[1:]
 		mons.MoveTo(g, monstarget)
 		if len(mons.Path) > 0 {
-			mons.Path = mons.Path[:len(mons.Path)-1]
+			mons.Path = mons.Path[1:]
 		}
 		g.MonstersPosCache[idx(m.Pos)] = m.Index + 1
 		mons.Swapped = true

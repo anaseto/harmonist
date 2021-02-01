@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/anaseto/gruid"
+	"github.com/anaseto/gruid/paths"
 	"github.com/anaseto/gruid/rl"
 )
 
@@ -67,6 +68,7 @@ type game struct {
 	LiberatedArtifact bool
 	PlayerAgain       bool
 	mfov              *rl.FOV
+	PR                *paths.PathRange
 }
 
 type specialEvent int
@@ -437,6 +439,7 @@ func (g *game) InitFirstLevel() {
 		g.GenPlan[MaxDepth-1], g.GenPlan[MaxDepth] = g.GenPlan[MaxDepth], g.GenPlan[MaxDepth-1]
 	}
 	g.Params.CrazyImp = 2 + RandInt(MaxDepth-2)
+	g.PR = paths.NewPathRange(gruid.NewRange(0, 0, DungeonWidth, DungeonHeight))
 }
 
 func (g *game) InitLevelStructures() {
