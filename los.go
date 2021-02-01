@@ -15,7 +15,10 @@
 
 package main
 
-import "github.com/anaseto/gruid"
+import (
+	"github.com/anaseto/gruid"
+	"github.com/anaseto/gruid/rl"
+)
 
 type raynode struct {
 	Cost int
@@ -23,15 +26,77 @@ type raynode struct {
 
 type rayMap map[gruid.Point]raynode
 
-func (g *game) BestParent(rm rayMap, from, pos gruid.Point, rs raystyle) (gruid.Point, int) {
-	var parents [2]gruid.Point
-	p := parents[:0]
-	p = Parents(pos, from, p)
-	b := p[0]
-	if len(p) > 1 && rm[p[1]].Cost+g.LOSCost(from, p[1], pos, rs) < rm[b].Cost+g.LOSCost(from, b, pos, rs) {
-		b = p[1]
+type lighter struct {
+	rs raystyle
+	g  *game
+}
+
+func (lt *lighter) Cost(src, from, to gruid.Point) int {
+	g := lt.g
+	rs := lt.rs
+	wallcost := lt.MaxCost(src)
+	// diagonal costs
+	if g.DiagonalOpaque(from, to, rs) {
+		return wallcost
 	}
-	return b, rm[b].Cost + g.LOSCost(from, b, pos, rs)
+	// no terrain cost on origin
+	if src == from {
+		if rs != TreePlayerRay && g.DiagonalDifficult(from, to) {
+			return wallcost - 1
+		}
+		return Distance(to, from)
+	}
+	// from terrain specific costs
+	c := g.Dungeon.Cell(from)
+	if terrain(c) == WallCell {
+		return wallcost
+	}
+	if _, ok := g.Clouds[from]; ok {
+		return wallcost
+	}
+	if terrain(c) == DoorCell {
+		if from != src {
+			mons := g.MonsterAt(from)
+			if !mons.Exists() && from != g.Player.Pos {
+				return wallcost
+			}
+		}
+	}
+	if terrain(c) == FoliageCell || terrain(c) == HoledWallCell {
+		switch rs {
+		case TreePlayerRay:
+			if terrain(c) == FoliageCell {
+				break
+			}
+			fallthrough
+		default:
+			return wallcost + Distance(to, from) - 3
+		}
+	}
+	if rs != TreePlayerRay && g.DiagonalDifficult(from, to) {
+		cost := wallcost - Distance(from, src) - 1
+		if cost < 1 {
+			cost = 1
+		}
+		return cost
+	}
+	if rs == TreePlayerRay && terrain(c) == WindowCell && Distance(src, from) >= DefaultLOSRange {
+		return wallcost - Distance(src, from) - 1
+	}
+	return Distance(to, from)
+}
+
+func (lt *lighter) MaxCost(src gruid.Point) int {
+	switch lt.rs {
+	case TreePlayerRay:
+		return TreeRange + 1
+	case MonsterRay:
+		return DefaultMonsterLOSRange + 1
+	case LightRay:
+		return LightRange
+	default:
+		return lt.g.LosRange() + 1
+	}
 }
 
 func (g *game) DiagonalOpaque(from, to gruid.Point, rs raystyle) bool {
@@ -65,10 +130,6 @@ func (g *game) DiagonalOpaque(from, to gruid.Point, rs raystyle) bool {
 		switch terrain(c) {
 		case WallCell, HoledWallCell, WindowCell:
 			count++
-		case BarrierCell:
-			if rs == TargetingRay {
-				count++
-			}
 		}
 	}
 	return count > 1
@@ -107,123 +168,16 @@ func (g *game) DiagonalDifficult(from, to gruid.Point) bool {
 	return count > 1
 }
 
-// LOSCost gives cost of expanding from 'pos' to 'to' light ray originated at
-// 'from', for particular circumstances rs of light ray.
-func (g *game) LOSCost(from, pos, to gruid.Point, rs raystyle) int {
-	var wallcost int
-	switch rs {
-	case TreePlayerRay:
-		wallcost = TreeRange + 1
-	case MonsterRay:
-		wallcost = DefaultMonsterLOSRange + 1
-	default:
-		wallcost = g.LosRange() + 1
-	}
-	// diagonal costs
-	if g.DiagonalOpaque(pos, to, rs) {
-		return wallcost
-	}
-	// no terrain cost on origin
-	if from == pos {
-		if rs != TreePlayerRay && g.DiagonalDifficult(pos, to) {
-			return wallcost - 1
-		}
-		return Distance(to, pos)
-	}
-	// pos terrain specific costs
-	c := g.Dungeon.Cell(pos)
-	if terrain(c) == WallCell {
-		return wallcost
-	}
-	if _, ok := g.Clouds[pos]; ok {
-		return wallcost
-	}
-	if terrain(c) == DoorCell {
-		if pos != from {
-			mons := g.MonsterAt(pos)
-			if !mons.Exists() && pos != g.Player.Pos {
-				return wallcost
-			}
-		}
-	}
-	if terrain(c) == FoliageCell || terrain(c) == HoledWallCell {
-		switch rs {
-		case TreePlayerRay:
-			if terrain(c) == FoliageCell {
-				break
-			}
-			fallthrough
-		default:
-			return wallcost + Distance(to, pos) - 3
-		}
-	}
-	if rs != TreePlayerRay && g.DiagonalDifficult(pos, to) {
-		cost := wallcost - Distance(pos, from) - 1
-		if cost < 1 {
-			cost = 1
-		}
-		return cost
-	}
-	if rs == TreePlayerRay && terrain(c) == WindowCell && Distance(from, pos) >= DefaultLOSRange {
-		return wallcost - Distance(from, pos) - 1
-	}
-	return Distance(to, pos)
-}
-
 type raystyle int
 
 const (
 	NormalPlayerRay raystyle = iota
 	MonsterRay
 	TreePlayerRay
-	TargetingRay
 	LightRay
 )
 
 const LightRange = 6
-
-func (g *game) BuildRayMap(from gruid.Point, rs raystyle, rm rayMap) {
-	var wallcost int
-	switch rs {
-	case TreePlayerRay:
-		wallcost = TreeRange
-	case MonsterRay:
-		wallcost = DefaultMonsterLOSRange
-	case LightRay:
-		wallcost = LightRange
-	default:
-		wallcost = g.LosRange()
-	}
-	for k := range rm {
-		delete(rm, k)
-	}
-	rm[from] = raynode{Cost: 0}
-	var childs [2]gruid.Point
-	for d := 1; d <= wallcost; d++ {
-		for x := -d + from.X; x <= d+from.X; x++ {
-			childs[0] = gruid.Point{x, from.Y + d}
-			childs[1] = gruid.Point{x, from.Y - d}
-			for _, pos := range childs {
-				if !valid(pos) {
-					continue
-				}
-				_, c := g.BestParent(rm, from, pos, rs)
-				rm[pos] = raynode{Cost: c}
-			}
-		}
-		for y := -d + 1 + from.Y; y <= d-1+from.Y; y++ {
-			childs[0] = gruid.Point{from.X + d, y}
-			childs[1] = gruid.Point{from.X - d, y}
-			for _, pos := range childs {
-				if !valid(pos) {
-					continue
-				}
-				_, c := g.BestParent(rm, from, pos, rs)
-				rm[pos] = raynode{Cost: c}
-			}
-		}
-	}
-}
 
 const DefaultLOSRange = 12
 const DefaultMonsterLOSRange = 12
@@ -247,6 +201,11 @@ func (g *game) StopAuto() {
 
 const TreeRange = 50
 
+func (g *game) Illuminated(p gruid.Point) bool {
+	c, ok := g.LightFOV.At(p)
+	return ok && c <= LightRange
+}
+
 func (g *game) ComputeLOS() {
 	g.ComputeLights()
 	for k := range g.Player.LOS {
@@ -257,16 +216,17 @@ func (g *game) ComputeLOS() {
 	if terrain(c) == TreeCell {
 		rs = TreePlayerRay
 	}
-	g.BuildRayMap(g.Player.Pos, rs, g.Player.Rays)
+	lt := &lighter{rs: rs, g: g}
+	lnodes := g.Player.FOV.VisionMap(lt, g.Player.Pos)
 	nb := make([]gruid.Point, 8)
-	for pos, n := range g.Player.Rays {
+	for _, n := range lnodes {
 		if n.Cost <= DefaultLOSRange {
-			g.Player.LOS[pos] = true
-		} else if terrain(c) == TreeCell && g.Illuminated[idx(pos)] && n.Cost <= TreeRange {
-			if terrain(g.Dungeon.Cell(pos)) == WallCell {
+			g.Player.LOS[n.P] = true
+		} else if terrain(c) == TreeCell && g.Illuminated(n.P) && n.Cost <= TreeRange {
+			if terrain(g.Dungeon.Cell(n.P)) == WallCell {
 				// this is just an approximation, but ok in practice
-				nb = Neighbors(pos, nb, func(npos gruid.Point) bool {
-					if !valid(npos) || !g.Illuminated[idx(npos)] || g.Dungeon.Cell(npos).IsWall() {
+				nb = Neighbors(n.P, nb, func(npos gruid.Point) bool {
+					if !valid(npos) || !g.Illuminated(npos) || g.Dungeon.Cell(npos).IsWall() {
 						return false
 					}
 					node, ok := g.Player.Rays[npos]
@@ -277,7 +237,7 @@ func (g *game) ComputeLOS() {
 					continue
 				}
 			}
-			g.Player.LOS[pos] = true
+			g.Player.LOS[n.P] = true
 		}
 	}
 	for pos := range g.Player.LOS {
@@ -310,17 +270,21 @@ func (m *monster) ComputeLOS(g *game) {
 	for k := range m.LOS {
 		delete(m.LOS, k)
 	}
+	if g.mfov == nil {
+		g.mfov = rl.NewFOV(gruid.NewRange(0, 0, DungeonWidth, DungeonHeight))
+	}
 	losRange := DefaultMonsterLOSRange
-	g.BuildRayMap(m.Pos, MonsterRay, g.RaysCache)
-	for pos, n := range g.RaysCache {
-		if pos == m.Pos {
-			m.LOS[pos] = true
+	lt := &lighter{rs: MonsterRay, g: g}
+	lnodes := g.mfov.VisionMap(lt, m.Pos)
+	for _, n := range lnodes {
+		if n.P == m.Pos {
+			m.LOS[n.P] = true
 			continue
 		}
-		if n.Cost <= losRange && terrain(g.Dungeon.Cell(pos)) != BarrelCell {
-			ppos, _ := g.BestParent(g.RaysCache, m.Pos, pos, MonsterRay)
-			if !g.Dungeon.Cell(ppos).Hides() {
-				m.LOS[pos] = true
+		if n.Cost <= losRange && terrain(g.Dungeon.Cell(n.P)) != BarrelCell {
+			pnode := g.mfov.From(lt, m.Pos, n.P)
+			if pnode.Cost < 0 || !g.Dungeon.Cell(pnode.P).Hides() {
+				m.LOS[n.P] = true
 			}
 		}
 	}
@@ -448,15 +412,18 @@ func (g *game) ComputeExclusion(pos gruid.Point, toggle bool) {
 }
 
 func (g *game) Ray(pos gruid.Point) []gruid.Point {
-	if !g.Player.LOS[pos] {
-		return nil
+	c := g.Dungeon.Cell(g.Player.Pos)
+	rs := NormalPlayerRay
+	if terrain(c) == TreeCell {
+		rs = TreePlayerRay
 	}
-	ray := []gruid.Point{}
-	for pos != g.Player.Pos {
-		ray = append(ray, pos)
-		pos, _ = g.BestParent(g.Player.Rays, g.Player.Pos, pos, TargetingRay)
+	lt := &lighter{rs: rs, g: g}
+	lnodes := g.Player.FOV.Ray(lt, pos)
+	ps := []gruid.Point{}
+	for _, n := range lnodes {
+		ps = append(ps, n.P)
 	}
-	return ray
+	return ps
 }
 
 func (g *game) ComputeRayHighlight(pos gruid.Point) {
@@ -561,13 +528,13 @@ func (m *monster) Sees(g *game, pos gruid.Point) bool {
 		return false
 	}
 	c := g.Dungeon.Cell(pos)
-	if (!g.Illuminated[idx(pos)] && !g.Player.HasStatus(StatusIlluminated) || !c.IsIlluminable()) && Distance(m.Pos, pos) > darkRange {
+	if (!g.Illuminated(pos) && !g.Player.HasStatus(StatusIlluminated) || !c.IsIlluminable()) && Distance(m.Pos, pos) > darkRange {
 		return false
 	}
 	if terrain(c) == TableCell && Distance(m.Pos, pos) > tableRange {
 		return false
 	}
-	if g.Player.HasStatus(StatusTransparent) && g.Illuminated[idx(pos)] && Distance(m.Pos, pos) > 1 {
+	if g.Player.HasStatus(StatusTransparent) && g.Illuminated(pos) && Distance(m.Pos, pos) > 1 {
 		return false
 	}
 	return true
@@ -597,7 +564,7 @@ func (g *game) ComputeMonsterLOS() {
 		g.Player.Statuses[StatusUnhidden] = 0
 		g.Player.Statuses[StatusHidden] = 1
 	}
-	if g.Illuminated[idx(g.Player.Pos)] && g.Dungeon.Cell(g.Player.Pos).IsIlluminable() {
+	if g.Illuminated(g.Player.Pos) && g.Dungeon.Cell(g.Player.Pos).IsIlluminable() {
 		g.Player.Statuses[StatusLight] = 1
 	} else {
 		g.Player.Statuses[StatusLight] = 0
@@ -605,10 +572,10 @@ func (g *game) ComputeMonsterLOS() {
 }
 
 func (g *game) ComputeLights() {
-	// XXX: could be optimized further to avoid unnecessary recalculations
-	for i := 0; i < DungeonNCells; i++ {
-		g.Illuminated[i] = false
+	if g.LightFOV == nil {
+		g.LightFOV = rl.NewFOV(gruid.NewRange(0, 0, DungeonWidth, DungeonHeight))
 	}
+	sources := []gruid.Point{}
 	for lpos, on := range g.Objects.Lights {
 		if !on {
 			continue
@@ -616,12 +583,7 @@ func (g *game) ComputeLights() {
 		if Distance(lpos, g.Player.Pos) > DefaultLOSRange+LightRange && terrain(g.Dungeon.Cell(g.Player.Pos)) != TreeCell {
 			continue
 		}
-		g.BuildRayMap(lpos, LightRay, g.RaysCache)
-		for pos, n := range g.RaysCache {
-			if n.Cost <= LightRange {
-				g.Illuminated[idx(pos)] = true
-			}
-		}
+		sources = append(sources, lpos)
 	}
 	for _, mons := range g.Monsters {
 		if !mons.Exists() || mons.Kind != MonsButterfly || mons.Status(MonsConfused) || mons.Status(MonsParalysed) {
@@ -630,13 +592,10 @@ func (g *game) ComputeLights() {
 		if Distance(mons.Pos, g.Player.Pos) > DefaultLOSRange+LightRange && terrain(g.Dungeon.Cell(g.Player.Pos)) != TreeCell {
 			continue
 		}
-		g.BuildRayMap(mons.Pos, LightRay, g.RaysCache)
-		for pos, n := range g.RaysCache {
-			if n.Cost <= LightRange {
-				g.Illuminated[idx(pos)] = true
-			}
-		}
+		sources = append(sources, mons.Pos)
 	}
+	lt := &lighter{rs: LightRay, g: g}
+	g.LightFOV.LightMap(lt, sources)
 }
 
 func (g *game) ComputeMonsterCone(m *monster) {

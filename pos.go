@@ -173,44 +173,6 @@ func Dir(from, to gruid.Point) direction {
 	}
 }
 
-func Parents(pos, from gruid.Point, p []gruid.Point) []gruid.Point {
-	switch Dir(from, pos) {
-	case E:
-		p = append(p, pos.Add(gruid.Point{-1, 0}))
-	case ENE:
-		p = append(p, pos.Add(gruid.Point{-1, 0}), pos.Add(gruid.Point{-1, 1}))
-	case NE:
-		p = append(p, pos.Add(gruid.Point{-1, 1}))
-	case NNE:
-		p = append(p, pos.Add(gruid.Point{0, 1}), pos.Add(gruid.Point{-1, 1}))
-	case N:
-		p = append(p, pos.Add(gruid.Point{0, 1}))
-	case NNW:
-		p = append(p, pos.Add(gruid.Point{0, 1}), pos.Add(gruid.Point{1, 1}))
-	case NW:
-		p = append(p, pos.Add(gruid.Point{1, 1}))
-	case WNW:
-		p = append(p, pos.Add(gruid.Point{1, 0}), pos.Add(gruid.Point{1, 1}))
-	case W:
-		p = append(p, pos.Add(gruid.Point{1, 0}))
-	case WSW:
-		p = append(p, pos.Add(gruid.Point{1, 0}), pos.Add(gruid.Point{1, -1}))
-	case SW:
-		p = append(p, pos.Add(gruid.Point{1, -1}))
-	case SSW:
-		p = append(p, pos.Add(gruid.Point{0, -1}), pos.Add(gruid.Point{1, -1}))
-	case S:
-		p = append(p, pos.Add(gruid.Point{0, -1}))
-	case SSE:
-		p = append(p, pos.Add(gruid.Point{0, -1}), pos.Add(gruid.Point{-1, -1}))
-	case SE:
-		p = append(p, pos.Add(gruid.Point{-1, -1}))
-	case ESE:
-		p = append(p, pos.Add(gruid.Point{-1, 0}), pos.Add(gruid.Point{-1, -1}))
-	}
-	return p
-}
-
 func RandomNeighbor(pos gruid.Point, diag bool) gruid.Point {
 	if diag {
 		return RandomNeighborDiagonals(pos)

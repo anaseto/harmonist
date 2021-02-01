@@ -276,7 +276,7 @@ func (md *model) updatePosInfo() {
 		pi.Cloud = cld.String()
 	}
 	pi.Cell = c
-	if g.Illuminated[idx(pos)] && c.IsIlluminable() && g.Player.Sees(pos) {
+	if g.Illuminated(pos) && c.IsIlluminable() && g.Player.Sees(pos) {
 		pi.Lighted = true
 	}
 	if g.Noise[pos] || g.NoiseIllusion[pos] {

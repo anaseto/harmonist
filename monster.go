@@ -512,7 +512,7 @@ type monster struct {
 func (m *monster) Init() {
 	m.Attack = m.Kind.BaseAttack()
 	m.Pos = InvalidPos
-	m.LOS = map[gruid.Point]bool{}
+	m.LOS = make(map[gruid.Point]bool)
 	m.LastKnownPos = InvalidPos
 	m.Search = InvalidPos
 	if RandInt(2) == 0 {

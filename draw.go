@@ -235,7 +235,7 @@ func (md *model) positionDrawing(pos gruid.Point) (r rune, fgColor, bgColor grui
 				}
 			}
 		}
-		if fgColor == ColorFgLOS && g.Illuminated[idx(pos)] && c.IsIlluminable() {
+		if fgColor == ColorFgLOS && g.Illuminated(pos) && c.IsIlluminable() {
 			fgColor = ColorFgLOSLight
 		}
 	}

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/anaseto/gruid"
+	"github.com/anaseto/gruid/rl"
 )
 
 var Version string = "v0.3"
@@ -38,7 +39,7 @@ type game struct {
 	LastMonsterKnownAt map[gruid.Point]*monster
 	MonsterLOS         map[gruid.Point]bool
 	MonsterTargLOS     map[gruid.Point]bool
-	Illuminated        []bool
+	LightFOV           *rl.FOV
 	RaysCache          rayMap
 	Resting            bool
 	RestingTurns       int
@@ -65,6 +66,7 @@ type game struct {
 	LiberatedShaedra  bool
 	LiberatedArtifact bool
 	PlayerAgain       bool
+	mfov              *rl.FOV
 }
 
 type specialEvent int
@@ -258,6 +260,7 @@ func (g *game) InitPlayer() {
 	g.Player.Magaras[0] = g.RandomStartingMagara()
 	g.GeneratedMagaras = append(g.GeneratedMagaras, g.Player.Magaras[0].Kind)
 	g.Player.Inventory.Misc = MarevorMagara
+	g.Player.FOV = rl.NewFOV(gruid.NewRange(0, 0, DungeonWidth, DungeonHeight))
 	// Testing
 	//g.Player.Magaras[1] = magara{Kind: DispersalMagara, Charges: 10}
 	//g.Player.Magaras[2] = magara{Kind: DelayedOricExplosionMagara, Charges: 10}
@@ -289,7 +292,6 @@ func (g *game) InitFirstLevel() {
 	g.Depth++ // start at 1
 	g.InitPlayer()
 	g.AutoTarget = InvalidPos
-	g.Illuminated = make([]bool, DungeonNCells)
 	g.RaysCache = rayMap{}
 	g.GeneratedLore = map[int]bool{}
 	g.Stats.KilledMons = map[monsterKind]int{}

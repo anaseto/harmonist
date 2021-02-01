@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/anaseto/gruid"
+	"github.com/anaseto/gruid/rl"
 )
 
 type player struct {
@@ -21,6 +22,7 @@ type player struct {
 	Target    gruid.Point
 	LOS       map[gruid.Point]bool
 	Rays      rayMap
+	FOV       *rl.FOV
 	Inventory inventory
 }
 
