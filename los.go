@@ -229,8 +229,8 @@ func (g *game) ComputeLOS() {
 					if !valid(npos) || !g.Illuminated(npos) || g.Dungeon.Cell(npos).IsWall() {
 						return false
 					}
-					node, ok := g.Player.Rays[npos]
-					return ok && node.Cost < TreeRange
+					cost, ok := g.Player.FOV.At(npos)
+					return ok && cost < TreeRange
 				})
 
 				if len(nb) == 0 {

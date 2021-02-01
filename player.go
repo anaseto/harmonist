@@ -21,7 +21,6 @@ type player struct {
 	Pos       gruid.Point
 	Target    gruid.Point
 	LOS       map[gruid.Point]bool
-	Rays      rayMap
 	FOV       *rl.FOV
 	Inventory inventory
 }

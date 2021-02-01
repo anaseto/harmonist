@@ -246,7 +246,6 @@ func (g *game) InitPlayer() {
 		MP:      DefaultMPmax,
 		Bananas: 1,
 	}
-	g.Player.Rays = rayMap{}
 	g.Player.LOS = map[gruid.Point]bool{}
 	g.Player.Statuses = map[status]int{}
 	g.Player.Expire = map[status]int{}
