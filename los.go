@@ -282,8 +282,8 @@ func (m *monster) ComputeLOS(g *game) {
 			continue
 		}
 		if n.Cost <= losRange && terrain(g.Dungeon.Cell(n.P)) != BarrelCell {
-			pnode := g.mfov.From(lt, m.Pos, n.P)
-			if pnode.Cost < 0 || !g.Dungeon.Cell(pnode.P).Hides() {
+			pnode, ok := g.mfov.From(lt, n.P)
+			if !ok || !g.Dungeon.Cell(pnode.P).Hides() {
 				m.LOS[n.P] = true
 			}
 		}
