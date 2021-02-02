@@ -387,15 +387,14 @@ func (g *game) PlayerBump(pos gruid.Point) error {
 
 func (g *game) SwiftFog() {
 	dij := &noisePath{state: g}
-	nm := Dijkstra(dij, []gruid.Point{g.Player.Pos}, 2)
-	nm.iter(g.Player.Pos, func(n *node) {
-		pos := n.Pos
-		_, ok := g.Clouds[pos]
-		if !ok && g.Dungeon.Cell(pos).AllowsFog() {
-			g.Clouds[pos] = CloudFog
-			g.PushEvent(&posEvent{ERank: g.Ev.Rank() + DurationFog + RandInt(DurationFog/2), EAction: CloudEnd, Pos: pos})
+	nodes := g.PR.DijkstraMap(dij, []gruid.Point{g.Player.Pos}, 2)
+	for _, n := range nodes {
+		_, ok := g.Clouds[n.P]
+		if !ok && g.Dungeon.Cell(n.P).AllowsFog() {
+			g.Clouds[n.P] = CloudFog
+			g.PushEvent(&posEvent{ERank: g.Ev.Rank() + DurationFog + RandInt(DurationFog/2), EAction: CloudEnd, Pos: n.P})
 		}
-	})
+	}
 	g.PutStatus(StatusSwift, DurationShortSwiftness)
 	g.ComputeLOS()
 	g.Print("You feel an energy burst and smoke comes out from you.")

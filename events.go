@@ -393,22 +393,22 @@ func (cev *posEvent) Action(g *game) {
 			g.NoiseIllusion[cev.Pos] = true
 			dij := &gridPath{dungeon: g.Dungeon}
 			g.MakeNoise(OricExplosionNoise, cev.Pos)
-			nm := Dijkstra(dij, []gruid.Point{cev.Pos}, 7)
+			nodes := g.PR.DijkstraMap(dij, []gruid.Point{cev.Pos}, 7)
 			fogs := []gruid.Point{}
 			terrains := []cell{}
-			nm.iter(cev.Pos, func(n *node) {
-				c := g.Dungeon.Cell(n.Pos)
+			for _, n := range nodes {
+				c := g.Dungeon.Cell(n.P)
 				if !c.IsDiggable() {
-					return
+					continue
 				}
-				g.Dungeon.SetCell(n.Pos, RubbleCell)
+				g.Dungeon.SetCell(n.P, RubbleCell)
 				g.Stats.Digs++
-				if g.Player.Sees(n.Pos) {
-					g.ui.WallExplosionAnimation(n.Pos)
+				if g.Player.Sees(n.P) {
+					g.ui.WallExplosionAnimation(n.P)
 				}
-				fogs = append(fogs, n.Pos)
+				fogs = append(fogs, n.P)
 				terrains = append(terrains, terrain(c))
-			})
+			}
 			for _, pos := range fogs {
 				g.Fog(pos, 1)
 			}
@@ -426,17 +426,16 @@ func (cev *posEvent) Action(g *game) {
 
 func (g *game) NightFog(at gruid.Point, radius int, ev event) {
 	dij := &noisePath{state: g}
-	nm := Dijkstra(dij, []gruid.Point{at}, radius)
-	nm.iter(at, func(n *node) {
-		pos := n.Pos
-		_, ok := g.Clouds[pos]
+	nodes := g.PR.DijkstraMap(dij, []gruid.Point{at}, radius)
+	for _, n := range nodes {
+		_, ok := g.Clouds[n.P]
 		if !ok {
-			g.Clouds[pos] = CloudNight
+			g.Clouds[n.P] = CloudNight
 			g.PushEvent(&posEvent{ERank: ev.Rank() + DurationCloudProgression, EAction: NightProgression,
-				Pos: pos, Timer: DurationNightFog})
-			g.MakeCreatureSleep(pos)
+				Pos: n.P, Timer: DurationNightFog})
+			g.MakeCreatureSleep(n.P)
 		}
-	})
+	}
 	g.ComputeLOS()
 }
 

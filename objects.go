@@ -243,7 +243,7 @@ const (
 func (g *game) ActivateQueenStone() {
 	g.MakeNoise(QueenStoneNoise, g.Player.Pos)
 	dij := &noisePath{state: g}
-	nm := Dijkstra(dij, []gruid.Point{g.Player.Pos}, QueenStoneDistance)
+	g.PR.DijkstraMap(dij, []gruid.Point{g.Player.Pos}, QueenStoneDistance)
 	targets := []*monster{}
 	for _, m := range g.Monsters {
 		if !m.Exists() {
@@ -252,8 +252,8 @@ func (g *game) ActivateQueenStone() {
 		if m.State == Resting {
 			continue
 		}
-		_, ok := nm.at(m.Pos)
-		if !ok {
+		c := g.PR.DijkstraMapAt(m.Pos)
+		if c > QueenStoneDistance {
 			continue
 		}
 		targets = append(targets, m)
@@ -348,12 +348,11 @@ func (g *game) TeleportToBarrel() {
 
 func (g *game) MagicMapping(maxdist int) error {
 	dp := &mappingPath{state: g}
-	nm := Dijkstra(dp, []gruid.Point{g.Player.Pos}, maxdist)
+	nodes := g.PR.DijkstraMap(dp, []gruid.Point{g.Player.Pos}, maxdist)
 	cdists := make(map[int][]int)
-	nm.iter(g.Player.Pos, func(n *node) {
-		pos := n.Pos
-		cdists[n.Cost] = append(cdists[n.Cost], idx(pos))
-	})
+	for _, n := range nodes {
+		cdists[n.Cost] = append(cdists[n.Cost], idx(n.P))
+	}
 	var dists []int
 	for dist := range cdists {
 		dists = append(dists, dist)

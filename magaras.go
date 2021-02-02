@@ -625,15 +625,14 @@ func (g *game) EvokeFog() error {
 
 func (g *game) Fog(at gruid.Point, radius int) {
 	dij := &noisePath{state: g}
-	nm := Dijkstra(dij, []gruid.Point{at}, radius)
-	nm.iter(at, func(n *node) {
-		pos := n.Pos
-		_, ok := g.Clouds[pos]
-		if !ok && g.Dungeon.Cell(pos).AllowsFog() {
-			g.Clouds[pos] = CloudFog
-			g.PushEvent(&posEvent{ERank: g.Ev.Rank() + DurationFog + RandInt(DurationFog/2), EAction: CloudEnd, Pos: pos})
+	nodes := g.PR.DijkstraMap(dij, []gruid.Point{at}, radius)
+	for _, n := range nodes {
+		_, ok := g.Clouds[n.P]
+		if !ok && g.Dungeon.Cell(n.P).AllowsFog() {
+			g.Clouds[n.P] = CloudFog
+			g.PushEvent(&posEvent{ERank: g.Ev.Rank() + DurationFog + RandInt(DurationFog/2), EAction: CloudEnd, Pos: n.P})
 		}
-	})
+	}
 	g.ComputeLOS()
 }
 
@@ -738,15 +737,16 @@ func (g *game) EvokeLignification() error {
 
 func (g *game) EvokeNoise() error {
 	dij := &noisePath{state: g}
-	nm := Dijkstra(dij, []gruid.Point{g.Player.Pos}, 23)
+	const noiseDist = 23
+	g.PR.DijkstraMap(dij, []gruid.Point{g.Player.Pos}, noiseDist)
 	noises := []gruid.Point{}
 	g.NoiseIllusion = map[gruid.Point]bool{}
 	for _, mons := range g.Monsters {
 		if !mons.Exists() {
 			continue
 		}
-		n, ok := nm.at(mons.Pos)
-		if !ok || n.Cost > DefaultLOSRange {
+		c := g.PR.DijkstraMapAt(mons.Pos)
+		if c > DefaultLOSRange {
 			continue
 		}
 		if mons.SeesPlayer(g) {
@@ -754,15 +754,15 @@ func (g *game) EvokeNoise() error {
 		}
 		mp := &monPath{state: g, monster: mons}
 		target := mons.Pos
-		best := n.Cost
+		best := c
 		for {
 			ncost := best
 			for _, pos := range mp.Neighbors(target) {
-				node, ok := nm.at(pos)
-				if !ok {
+				c := g.PR.DijkstraMapAt(pos)
+				if c > noiseDist {
 					continue
 				}
-				ncost := node.Cost
+				ncost := c
 				if ncost > best {
 					target = pos
 					best = ncost

@@ -1,61 +1,14 @@
 package main
 
 import (
-	"container/heap"
-
-	"github.com/anaseto/gruid"
+	"github.com/anaseto/gruid/paths"
 )
-
-type Dijkstrer interface {
-	Neighbors(gruid.Point) []gruid.Point
-	Cost(gruid.Point, gruid.Point) int
-}
-
-func Dijkstra(dij Dijkstrer, sources []gruid.Point, maxCost int) nodeMap {
-	nodeCache.Index++
-	nqs := queueCache[:0]
-	nq := &nqs
-	heap.Init(nq)
-	for _, f := range sources {
-		n := nodeCache.get(f)
-		n.Open = true
-		heap.Push(nq, n)
-	}
-	for {
-		if nq.Len() == 0 {
-			return nodeCache
-		}
-		current := heap.Pop(nq).(*node)
-		current.Open = false
-		current.Closed = true
-
-		for _, neighbor := range dij.Neighbors(current.Pos) {
-			cost := current.Cost + dij.Cost(current.Pos, neighbor)
-			neighborNode := nodeCache.get(neighbor)
-			if cost < neighborNode.Cost {
-				if neighborNode.Open {
-					heap.Remove(nq, neighborNode.Index)
-				}
-				neighborNode.Open = false
-				neighborNode.Closed = false
-			}
-			if !neighborNode.Open && !neighborNode.Closed {
-				neighborNode.Cost = cost
-				if cost < maxCost {
-					neighborNode.Open = true
-					neighborNode.Rank = cost
-					heap.Push(nq, neighborNode)
-				}
-			}
-		}
-	}
-}
 
 const unreachable = 9999
 
 // AutoExploreDijkstra is an optimized version of the dijkstra algorithm for
 // auto-exploration.
-func (g *game) AutoExploreDijkstra(dij Dijkstrer, sources []int) {
+func (g *game) AutoExploreDijkstra(dij paths.Dijkstra, sources []int) {
 	d := g.Dungeon
 	dmap := DijkstraMapCache[:]
 	var visited [DungeonNCells]bool

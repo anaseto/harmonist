@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/anaseto/gruid"
+	"github.com/anaseto/gruid/paths"
 )
 
 const (
@@ -254,19 +255,18 @@ func (md *model) ExplosionAnimation(es explosionStyle, pos gruid.Point) {
 }
 
 func (g *game) Waves(maxCost int, ws wavestyle, center gruid.Point) (dists []int, cdists map[int][]int) {
-	var dij Dijkstrer
+	var dij paths.Dijkstra
 	switch ws {
 	case WaveMagicNoise:
 		dij = &gridPath{dungeon: g.Dungeon}
 	default:
 		dij = &noisePath{state: g}
 	}
-	nm := Dijkstra(dij, []gruid.Point{center}, maxCost)
+	nodes := g.PR.DijkstraMap(dij, []gruid.Point{center}, maxCost)
 	cdists = make(map[int][]int)
-	nm.iter(g.Player.Pos, func(n *node) {
-		pos := n.Pos
-		cdists[n.Cost] = append(cdists[n.Cost], idx(pos))
-	})
+	for _, n := range nodes {
+		cdists[n.Cost] = append(cdists[n.Cost], idx(n.P))
+	}
 	for dist := range cdists {
 		dists = append(dists, dist)
 	}

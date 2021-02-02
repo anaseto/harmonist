@@ -59,7 +59,7 @@ func (g *game) MakeMonstersAware() {
 
 func (g *game) MakeNoise(noise int, at gruid.Point) {
 	dij := &noisePath{state: g}
-	nm := Dijkstra(dij, []gruid.Point{at}, noise)
+	g.PR.DijkstraMap(dij, []gruid.Point{at}, noise)
 	//if at.Distance(g.Player.Pos)-noise < DefaultLOSRange && noise > 4 {
 	//g.ui.LOSWavesAnimation(noise, WaveNoise, at)
 	//}
@@ -70,11 +70,10 @@ func (g *game) MakeNoise(noise int, at gruid.Point) {
 		if m.State == Hunting {
 			continue
 		}
-		n, ok := nm.at(m.Pos)
-		if !ok {
+		d := g.PR.DijkstraMapAt(m.Pos)
+		if d > noise {
 			continue
 		}
-		d := n.Cost
 		if m.State == Resting && 3*d > 2*noise || m.Status(MonsExhausted) && m.State == Resting && 3*d > noise {
 			continue
 		}
@@ -89,50 +88,50 @@ func (g *game) MakeNoise(noise int, at gruid.Point) {
 
 func (m *monster) LeaveRoomForPlayer(g *game) gruid.Point {
 	dij := &monPath{state: g, monster: m}
-	nm := Dijkstra(dij, []gruid.Point{m.Pos}, 10)
+	nodes := g.PR.DijkstraMap(dij, []gruid.Point{m.Pos}, 10)
 	free := InvalidPos
 	dist := unreachable
-	nm.iter(m.Pos, func(n *node) {
-		if !m.CanPass(g, n.Pos) {
-			return
+	for _, n := range nodes {
+		if !m.CanPass(g, n.P) {
+			continue
 		}
-		if n.Pos == g.Player.Pos || n.Pos == m.Pos {
-			return
+		if n.P == g.Player.Pos || n.P == m.Pos {
+			continue
 		}
-		mons := g.MonsterAt(n.Pos)
+		mons := g.MonsterAt(n.P)
 		if mons.Exists() {
-			return
+			continue
 		}
-		if Distance(n.Pos, m.Pos) < dist {
-			free = n.Pos
-			dist = Distance(n.Pos, m.Pos)
+		if Distance(n.P, m.Pos) < dist {
+			free = n.P
+			dist = Distance(n.P, m.Pos)
 		}
-	})
+	}
 	// free should be valid except in really rare cases
 	return free
 }
 
 func (g *game) FindJumpTarget(m *monster) gruid.Point {
 	dij := &jumpPath{state: g}
-	nm := Dijkstra(dij, []gruid.Point{m.Pos}, 10)
+	nodes := g.PR.DijkstraMap(dij, []gruid.Point{m.Pos}, 10)
 	free := InvalidPos
 	dist := unreachable
-	nm.iter(m.Pos, func(n *node) {
-		if !g.PlayerCanPass(n.Pos) {
-			return
+	for _, n := range nodes {
+		if !g.PlayerCanPass(n.P) {
+			continue
 		}
-		if n.Pos == g.Player.Pos || n.Pos == m.Pos {
-			return
+		if n.P == g.Player.Pos || n.P == m.Pos {
+			continue
 		}
-		mons := g.MonsterAt(n.Pos)
+		mons := g.MonsterAt(n.P)
 		if mons.Exists() {
-			return
+			continue
 		}
-		if Distance(n.Pos, m.Pos) < dist {
-			free = n.Pos
-			dist = Distance(n.Pos, m.Pos)
+		if Distance(n.P, m.Pos) < dist {
+			free = n.P
+			dist = Distance(n.P, m.Pos)
 		}
-	})
+	}
 	// free should be valid except in really rare cases
 	return free
 }
