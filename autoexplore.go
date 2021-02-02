@@ -5,8 +5,6 @@ import (
 	"github.com/anaseto/gruid"
 )
 
-var DijkstraMapCache [DungeonNCells]int
-
 func (g *game) Autoexplore() error {
 	if mons := g.MonsterInLOS(); mons.Exists() {
 		return errors.New("You cannot auto-explore while there are monsters in view.")
@@ -49,38 +47,40 @@ func (g *game) AllExplored() bool {
 	return true
 }
 
-func (g *game) AutoexploreSources() []int {
-	sources := []int{}
+func (g *game) AutoexploreSources() []gruid.Point {
+	g.autosources = g.autosources[:0]
 	np := &noisePath{state: g}
 	it := g.Dungeon.Grid.Iterator()
-	for i := 0; it.Next(); i++ {
-		pos := it.P()
+	for it.Next() {
+		p := it.P()
 		c := cell(it.Cell())
 		if c.IsWall() {
-			if len(np.Neighbors(pos)) == 0 {
+			if len(np.Neighbors(p)) == 0 {
 				continue
 			}
 		}
-		if g.ExclusionsMap[pos] {
+		if g.ExclusionsMap[p] {
 			continue
 		}
 		if !explored(c) {
-			sources = append(sources, i)
+			g.autosources = append(g.autosources, p)
 		}
 
 	}
-	return sources
+	return g.autosources
 }
 
-func (g *game) BuildAutoexploreMap(sources []int) {
+const unreachable = 9999
+
+func (g *game) BuildAutoexploreMap(sources []gruid.Point) {
 	ap := &autoexplorePath{state: g}
-	g.AutoExploreDijkstra(ap, sources)
-	g.DijkstraMapRebuild = false
+	g.PR.BreadthFirstMap(ap, sources, unreachable)
+	g.AutoexploreMapRebuild = false
 }
 
 func (g *game) NextAuto() (next *gruid.Point, finished bool) {
 	ap := &autoexplorePath{state: g}
-	if DijkstraMapCache[idx(g.Player.Pos)] == unreachable {
+	if g.PR.BreadthFirstMapAt(g.Player.Pos) > unreachable {
 		return nil, false
 	}
 	neighbors := ap.Neighbors(g.Player.Pos)
@@ -88,15 +88,15 @@ func (g *game) NextAuto() (next *gruid.Point, finished bool) {
 		return nil, false
 	}
 	n := neighbors[0]
-	ncost := DijkstraMapCache[idx(n)]
+	ncost := g.PR.BreadthFirstMapAt(n)
 	for _, pos := range neighbors[1:] {
-		cost := DijkstraMapCache[idx(pos)]
+		cost := g.PR.BreadthFirstMapAt(pos)
 		if cost < ncost {
 			n = pos
 			ncost = cost
 		}
 	}
-	if ncost >= DijkstraMapCache[idx(g.Player.Pos)] {
+	if ncost >= g.PR.BreadthFirstMapAt(g.Player.Pos) {
 		finished = true
 	}
 	next = &n

@@ -352,18 +352,18 @@ func (g *game) SeePosition(pos gruid.Point) {
 		}
 		g.Dungeon.SetExplored(pos)
 		g.SeeNotable(c, pos)
-		g.DijkstraMapRebuild = true
+		g.AutoexploreMapRebuild = true
 	} else {
 		// XXX this can be improved to handle more terrain types changes
 		if okT && t == WallCell && terrain(c) != WallCell {
 			g.Printf("There is no longer a wall there.")
 			g.StopAuto()
-			g.DijkstraMapRebuild = true
+			g.AutoexploreMapRebuild = true
 		}
 		if cld, ok := g.Clouds[pos]; ok && cld == CloudFire && okT && (t == FoliageCell || t == DoorCell) {
 			g.Printf("There are flames there.")
 			g.StopAuto()
-			g.DijkstraMapRebuild = true
+			g.AutoexploreMapRebuild = true
 		}
 	}
 	if okT {

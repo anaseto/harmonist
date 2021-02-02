@@ -202,7 +202,11 @@ func (ap *autoexplorePath) Neighbors(pos gruid.Point) []gruid.Point {
 			// XXX little info leak
 			return false
 		}
-		return valid(npos) && (d.Cell(npos).IsPlayerPassable() && (!okT || t != WallCell)) &&
+		if !valid(npos) {
+			return false
+		}
+		c := d.Cell(npos)
+		return c.IsPlayerPassable() && (!okT && !c.IsWall() || !t.IsWall()) &&
 			!ap.state.ExclusionsMap[npos]
 	}
 	nb = CardinalNeighbors(pos, nb, keep)

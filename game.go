@@ -12,56 +12,56 @@ import (
 var Version string = "v0.3"
 
 type game struct {
-	Dungeon            *dungeon
-	Player             *player
-	Monsters           []*monster
-	MonstersPosCache   []int // monster (dungeon index + 1) / no monster (0)
-	Bands              []bandInfo
-	Events             *eventQueue
-	Ev                 event
-	EventIndex         int
-	Depth              int
-	ExploredLevels     int
-	DepthPlayerTurn    int
-	Turn               int
-	Highlight          map[gruid.Point]bool // highlighted positions (e.g. targeted ray)
-	Objects            objects
-	Clouds             map[gruid.Point]cloud
-	MagicalBarriers    map[gruid.Point]cell
-	GeneratedLore      map[int]bool
-	GeneratedMagaras   []magaraKind
-	GeneratedCloaks    []item
-	GeneratedAmulets   []item
-	GenPlan            [MaxDepth + 1]genFlavour
-	TerrainKnowledge   map[gruid.Point]cell
-	ExclusionsMap      map[gruid.Point]bool
-	Noise              map[gruid.Point]bool
-	NoiseIllusion      map[gruid.Point]bool
-	LastMonsterKnownAt map[gruid.Point]*monster
-	MonsterLOS         map[gruid.Point]bool
-	MonsterTargLOS     map[gruid.Point]bool
-	LightFOV           *rl.FOV
-	RaysCache          rayMap
-	Resting            bool
-	RestingTurns       int
-	Autoexploring      bool
-	DijkstraMapRebuild bool
-	AutoTarget         gruid.Point
-	AutoDir            direction
-	AutoHalt           bool
-	AutoNext           bool
-	Log                []logEntry
-	LogIndex           int
-	LogNextTick        int
-	InfoEntry          string
-	Stats              stats
-	Boredom            int
-	Quit               bool
-	Wizard             bool
-	WizardMode         wizardMode
-	Version            string
-	Places             places
-	Params             startParams
+	Dungeon               *dungeon
+	Player                *player
+	Monsters              []*monster
+	MonstersPosCache      []int // monster (dungeon index + 1) / no monster (0)
+	Bands                 []bandInfo
+	Events                *eventQueue
+	Ev                    event
+	EventIndex            int
+	Depth                 int
+	ExploredLevels        int
+	DepthPlayerTurn       int
+	Turn                  int
+	Highlight             map[gruid.Point]bool // highlighted positions (e.g. targeted ray)
+	Objects               objects
+	Clouds                map[gruid.Point]cloud
+	MagicalBarriers       map[gruid.Point]cell
+	GeneratedLore         map[int]bool
+	GeneratedMagaras      []magaraKind
+	GeneratedCloaks       []item
+	GeneratedAmulets      []item
+	GenPlan               [MaxDepth + 1]genFlavour
+	TerrainKnowledge      map[gruid.Point]cell
+	ExclusionsMap         map[gruid.Point]bool
+	Noise                 map[gruid.Point]bool
+	NoiseIllusion         map[gruid.Point]bool
+	LastMonsterKnownAt    map[gruid.Point]*monster
+	MonsterLOS            map[gruid.Point]bool
+	MonsterTargLOS        map[gruid.Point]bool
+	LightFOV              *rl.FOV
+	RaysCache             rayMap
+	Resting               bool
+	RestingTurns          int
+	Autoexploring         bool
+	AutoexploreMapRebuild bool
+	AutoTarget            gruid.Point
+	AutoDir               direction
+	AutoHalt              bool
+	AutoNext              bool
+	Log                   []logEntry
+	LogIndex              int
+	LogNextTick           int
+	InfoEntry             string
+	Stats                 stats
+	Boredom               int
+	Quit                  bool
+	Wizard                bool
+	WizardMode            wizardMode
+	Version               string
+	Places                places
+	Params                startParams
 	//Opts                startOpts
 	ui                *model
 	LiberatedShaedra  bool
@@ -69,6 +69,7 @@ type game struct {
 	PlayerAgain       bool
 	mfov              *rl.FOV
 	PR                *paths.PathRange
+	autosources       []gruid.Point // cache
 }
 
 type specialEvent int
@@ -684,7 +685,7 @@ func (g *game) AutoPlayer() bool {
 		default:
 			var n *gruid.Point
 			var finished bool
-			if g.DijkstraMapRebuild {
+			if g.AutoexploreMapRebuild {
 				if g.AllExplored() {
 					g.Print("You finished exploring.")
 					break

@@ -214,7 +214,7 @@ func (g *game) CollectGround() {
 	pos := g.Player.Pos
 	c := g.Dungeon.Cell(pos)
 	if c.IsNotable() {
-		g.DijkstraMapRebuild = true
+		g.AutoexploreMapRebuild = true
 	switchcell:
 		switch terrain(c) {
 		case BarrelCell:
