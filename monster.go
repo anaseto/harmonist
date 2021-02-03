@@ -1345,7 +1345,7 @@ func (m *monster) HitSideEffects(g *game) {
 		g.StoryPrintf("Position swap by %s", m.Kind)
 		m.ExhaustTime(g, 5+RandInt(5))
 		if terrain(g.Dungeon.Cell(g.Player.Pos)) == ChasmCell {
-			g.PushAgainEvent(&simpleEvent{ERank: g.Ev.Rank(), EAction: AbyssFall})
+			g.PushEventFirst(&simpleEvent{ERank: g.Ev.Rank(), EAction: AbyssFall})
 		}
 	case MonsTinyHarpy:
 		if m.Status(MonsSatiated) {
@@ -1409,7 +1409,7 @@ func (m *monster) PushPlayer(g *game, dist int) {
 	g.Printf("%s pushes you%s.", m.Kind.Definite(true), cs)
 	g.StoryPrintf("Pushed by %s%s", m.Kind.Definite(true), cs)
 	if terrain(c) == ChasmCell {
-		g.PushAgainEvent(&simpleEvent{ERank: g.Ev.Rank(), EAction: AbyssFall})
+		g.PushEventFirst(&simpleEvent{ERank: g.Ev.Rank(), EAction: AbyssFall})
 	}
 }
 

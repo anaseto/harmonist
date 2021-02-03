@@ -1,8 +1,6 @@
 package main
 
 import (
-	"container/heap"
-
 	"github.com/anaseto/gruid"
 )
 
@@ -10,39 +8,6 @@ type event interface {
 	Rank() int
 	Action(*game)
 	Renew(*game, int)
-}
-
-type iEvent struct {
-	Event event
-	Index int
-}
-
-type eventQueue []iEvent
-
-func (evq eventQueue) Len() int {
-	return len(evq)
-}
-
-func (evq eventQueue) Less(i, j int) bool {
-	return evq[i].Event.Rank() < evq[j].Event.Rank() ||
-		evq[i].Event.Rank() == evq[j].Event.Rank() && evq[i].Index < evq[j].Index
-}
-
-func (evq eventQueue) Swap(i, j int) {
-	evq[i], evq[j] = evq[j], evq[i]
-}
-
-func (evq *eventQueue) Push(x interface{}) {
-	no := x.(iEvent)
-	*evq = append(*evq, no)
-}
-
-func (evq *eventQueue) Pop() interface{} {
-	old := *evq
-	n := len(old)
-	no := old[n-1]
-	*evq = old[0 : n-1]
-	return no
 }
 
 type simpleAction int
@@ -68,26 +33,11 @@ const (
 )
 
 func (g *game) PushEvent(ev event) {
-	iev := iEvent{Event: ev, Index: g.EventIndex}
-	g.EventIndex++
-	heap.Push(g.Events, iev)
+	g.Events.Push(ev, ev.Rank())
 }
 
-// PushEventRandomIndex pushes a new even to the heap, with randomised Index.
-// Used so that monster turn order is not predictable.
-func (g *game) PushEventRandomIndex(ev event) {
-	iev := iEvent{Event: ev, Index: RandInt(10)}
-	heap.Push(g.Events, iev)
-}
-
-func (g *game) PushAgainEvent(ev event) {
-	iev := iEvent{Event: ev, Index: 0}
-	heap.Push(g.Events, iev)
-}
-
-func (g *game) PopIEvent() iEvent {
-	iev := heap.Pop(g.Events).(iEvent)
-	return iev
+func (g *game) PushEventFirst(ev event) {
+	g.Events.PushFirst(ev, ev.Rank())
 }
 
 type simpleEvent struct {
@@ -102,7 +52,7 @@ func (sev *simpleEvent) Rank() int {
 func (sev *simpleEvent) Renew(g *game, delay int) {
 	sev.ERank += delay
 	if delay == 0 {
-		g.PushAgainEvent(sev)
+		g.PushEventFirst(sev)
 		if sev.EAction == PlayerTurn {
 			g.PlayerAgain = true
 		}

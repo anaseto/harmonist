@@ -1,7 +1,7 @@
 package main
 
 import (
-	"container/heap"
+	"math/rand"
 	"time"
 
 	"github.com/anaseto/gruid"
@@ -17,7 +17,7 @@ type game struct {
 	Monsters              []*monster
 	MonstersPosCache      []int // monster (dungeon index + 1) / no monster (0)
 	Bands                 []bandInfo
-	Events                *eventQueue
+	Events                *rl.EventQueue
 	Ev                    event
 	EventIndex            int
 	Depth                 int
@@ -484,8 +484,7 @@ func (g *game) InitLevel() {
 	// Events
 	if g.Depth == 1 {
 		g.StoryPrintf("Started with %s", g.Player.Magaras[0])
-		g.Events = &eventQueue{}
-		heap.Init(g.Events)
+		g.Events = rl.NewEventQueue()
 		//g.PushEvent(&simpleEvent{ERank: 0, EAction: PlayerTurn})
 	} else {
 		g.CleanEvents()
@@ -495,8 +494,13 @@ func (g *game) InitLevel() {
 			}
 		}
 	}
-	for i := range g.Monsters {
-		g.PushEventRandomIndex(&monsterEvent{ERank: g.Turn, EAction: MonsterTurn, NMons: i})
+	monsters := make([]*monster, len(g.Monsters))
+	copy(monsters, g.Monsters)
+	rand.Shuffle(len(monsters), func(i, j int) {
+		monsters[i], monsters[j] = monsters[j], monsters[i]
+	})
+	for i := range monsters {
+		g.PushEvent(&monsterEvent{ERank: g.Turn, EAction: MonsterTurn, NMons: i})
 	}
 	switch g.Params.Event[g.Depth] {
 	case UnstableLevel:
@@ -535,17 +539,14 @@ func (g *game) InitLevel() {
 }
 
 func (g *game) CleanEvents() {
-	evq := &eventQueue{}
-	for g.Events.Len() > 0 {
-		iev := g.PopIEvent()
-		switch iev.Event.(type) {
-		case *monsterEvent:
-		case *posEvent:
+	g.Events.Filter(func(ev rl.Event) bool {
+		switch ev.(type) {
+		case *monsterEvent, *posEvent:
+			return false
 		default:
-			heap.Push(evq, iev)
+			return true
 		}
-	}
-	g.Events = evq
+	})
 }
 
 func (g *game) StairsSlice() []gruid.Point {
@@ -745,13 +746,13 @@ loop:
 				break loop
 			}
 		}
-		if g.Events.Len() == 0 {
+		if g.Events.Empty() {
 			break loop
 		}
-		ev := g.PopIEvent().Event
-		g.Turn = ev.Rank()
-		g.Ev = ev
-		ev.Action(g)
+		ev, r := g.Events.PopR()
+		g.Turn = r
+		g.Ev = ev.(event)
+		g.Ev.Action(g)
 		if g.AutoNext {
 			continue loop
 		}
@@ -786,14 +787,14 @@ func (g *game) EndTurn() gruid.Effect {
 		if g.Died() {
 			return nil
 		}
-		if g.Events.Len() == 0 {
+		if g.Events.Empty() {
 			return nil
 		}
-		ev := g.PopIEvent().Event
-		g.Turn = ev.Rank()
-		g.Ev = ev
-		ev.Action(g)
-		switch ev := ev.(type) {
+		ev, r := g.Events.PopR()
+		g.Turn = r
+		g.Ev = ev.(event)
+		g.Ev.Action(g)
+		switch ev := g.Ev.(type) {
 		case *simpleEvent:
 			if ev.EAction == PlayerTurn {
 				if g.AutoNext {
