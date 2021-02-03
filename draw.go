@@ -29,7 +29,7 @@ func (md *model) Draw() gruid.Grid {
 	// Draw map in all other cases, as it may be covered only partially by
 	// other modes.
 	md.drawMap(md.gd.Slice(md.gd.Range().Shift(0, 2, 0, -1)))
-	md.log.StyledText = md.DrawLog()
+	md.log.Content = md.DrawLog()
 	md.log.Draw(md.gd.Slice(md.gd.Range().Lines(0, 2)))
 	if md.mp.ex.pos != InvalidPos {
 		md.drawPosInfo()
@@ -39,7 +39,7 @@ func (md *model) Draw() gruid.Grid {
 		if md.statusFocus {
 			rg := md.status.ActiveBounds()
 			x := (rg.Min.X + rg.Max.X) / 2
-			w := md.statusDesc.StyledText.Size().X
+			w := md.statusDesc.Content.Size().X
 			x -= w / 2
 			if x+w > UIWidth {
 				x = UIWidth - w

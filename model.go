@@ -601,11 +601,11 @@ func (md *model) updateMenu(msg gruid.Msg) gruid.Effect {
 		case modeInventory:
 			items := []item{md.g.Player.Inventory.Body, md.g.Player.Inventory.Neck, md.g.Player.Inventory.Misc}
 			it := items[md.menu.Active()]
-			md.description.StyledText = ui.Text(it.Desc(md.g)).Format(UIWidth/2 - 1 - 2)
+			md.description.Content = ui.Text(it.Desc(md.g)).Format(UIWidth/2 - 1 - 2)
 		case modeEvokation:
 			items := md.g.Player.Magaras
 			it := items[md.menu.Active()]
-			md.description.StyledText = ui.Text(it.Desc(md.g)).Format(UIWidth/2 - 1 - 2)
+			md.description.Content = ui.Text(it.Desc(md.g)).Format(UIWidth/2 - 1 - 2)
 			if act != ui.MenuInvoke {
 				break
 			}
@@ -619,7 +619,7 @@ func (md *model) updateMenu(msg gruid.Msg) gruid.Effect {
 		case modeEquip:
 			items := md.g.Player.Magaras
 			it := items[md.menu.Active()]
-			md.description.StyledText = ui.Text(it.Desc(md.g)).Format(UIWidth/2 - 1 - 2)
+			md.description.Content = ui.Text(it.Desc(md.g)).Format(UIWidth/2 - 1 - 2)
 			if act != ui.MenuInvoke {
 				break
 			}

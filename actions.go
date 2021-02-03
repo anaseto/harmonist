@@ -682,7 +682,7 @@ func (md *model) openIventory() {
 	md.menu.SetEntries(entries)
 	md.mode = modeMenu
 	md.menuMode = modeInventory
-	md.description.StyledText = ui.Text(items[md.menu.Active()].Desc(md.g)).Format(UIWidth/2 - 1 - 2)
+	md.description.Content = ui.Text(items[md.menu.Active()].Desc(md.g)).Format(UIWidth/2 - 1 - 2)
 }
 
 func (md *model) evokeMagaraMenu() {
@@ -701,7 +701,7 @@ func (md *model) evokeMagaraMenu() {
 	md.menu.SetEntries(entries)
 	md.mode = modeMenu
 	md.menuMode = modeEvokation
-	md.description.StyledText = ui.Text(items[md.menu.Active()].Desc(md.g)).Format(UIWidth/2 - 1 - 2)
+	md.description.Content = ui.Text(items[md.menu.Active()].Desc(md.g)).Format(UIWidth/2 - 1 - 2)
 }
 
 func (md *model) equipMagaraMenu() {
@@ -720,7 +720,7 @@ func (md *model) equipMagaraMenu() {
 	md.menu.SetEntries(entries)
 	md.mode = modeMenu
 	md.menuMode = modeEquip
-	md.description.StyledText = ui.Text(items[md.menu.Active()].Desc(md.g)).Format(UIWidth/2 - 1 - 2)
+	md.description.Content = ui.Text(items[md.menu.Active()].Desc(md.g)).Format(UIWidth/2 - 1 - 2)
 }
 
 //func (ui *model) HandleKey(rka runeKeyAction) (again bool, quit bool, err error) {
