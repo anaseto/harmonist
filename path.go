@@ -113,20 +113,21 @@ type playerPath struct {
 	goal      gruid.Point
 }
 
-func (pp *playerPath) Neighbors(pos gruid.Point) []gruid.Point {
-	d := pp.state.Dungeon
-	nb := pp.neighbors[:0]
-	keep := func(npos gruid.Point) bool {
-		t, okT := pp.state.TerrainKnowledge[npos]
-		if cld, ok := pp.state.Clouds[npos]; ok && cld == CloudFire && (!okT || t != FoliageCell && t != DoorCell) {
-			return false
-		}
-		return valid(npos) && explored(d.Cell(npos)) && (d.Cell(npos).IsPlayerPassable() && !okT ||
-			okT && t.IsPlayerPassable() ||
-			pp.state.Player.HasStatus(StatusLevitation) && (t == BarrierCell || t == ChasmCell) ||
-			pp.state.Player.HasStatus(StatusDig) && (d.Cell(npos).IsDiggable() && !okT || (okT && t.IsDiggable())))
+func (g *game) ppPassable(p gruid.Point) bool {
+	d := g.Dungeon
+	t, okT := g.TerrainKnowledge[p]
+	if cld, ok := g.Clouds[p]; ok && cld == CloudFire && (!okT || t != FoliageCell && t != DoorCell) {
+		return false
 	}
-	nb = CardinalNeighbors(pos, nb, keep)
+	return valid(p) && explored(d.Cell(p)) && (d.Cell(p).IsPlayerPassable() && !okT ||
+		okT && t.IsPlayerPassable() ||
+		g.Player.HasStatus(StatusLevitation) && (t == BarrierCell || t == ChasmCell) ||
+		g.Player.HasStatus(StatusDig) && (d.Cell(p).IsDiggable() && !okT || (okT && t.IsDiggable())))
+}
+
+func (pp *playerPath) Neighbors(pos gruid.Point) []gruid.Point {
+	nb := pp.neighbors[:0]
+	nb = CardinalNeighbors(pos, nb, pp.state.ppPassable)
 	sort.Slice(nb, func(i, j int) bool {
 		return MaxCardinalDist(nb[i], pp.goal) <= MaxCardinalDist(nb[j], pp.goal)
 	})
@@ -283,8 +284,13 @@ func (m *monster) APath(g *game, from, to gruid.Point) []gruid.Point {
 }
 
 func (g *game) PlayerPath(from, to gruid.Point) []gruid.Point {
-	pp := &playerPath{state: g, goal: to}
-	path := g.PR.AstarPath(pp, from, to)
+	path := []gruid.Point{}
+	if !g.ExclusionsMap[from] && g.ExclusionsMap[to] {
+		pp := &playerPath{state: g, goal: to}
+		path = g.PR.AstarPath(pp, from, to)
+	} else {
+		path = g.PR.JPSPath(path, from, to, g.ppPassable, false)
+	}
 	if len(path) == 0 {
 		return nil
 	}
