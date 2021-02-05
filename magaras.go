@@ -738,14 +738,14 @@ func (g *game) EvokeLignification() error {
 func (g *game) EvokeNoise() error {
 	dij := &noisePath{state: g}
 	const noiseDist = 23
-	g.PR.DijkstraMap(dij, []gruid.Point{g.Player.Pos}, noiseDist)
+	g.PR.BreadthFirstMap(dij, []gruid.Point{g.Player.Pos}, noiseDist)
 	noises := []gruid.Point{}
 	g.NoiseIllusion = map[gruid.Point]bool{}
 	for _, mons := range g.Monsters {
 		if !mons.Exists() {
 			continue
 		}
-		c := g.PR.DijkstraMapAt(mons.Pos)
+		c := g.PR.BreadthFirstMapAt(mons.Pos)
 		if c > DefaultLOSRange {
 			continue
 		}
@@ -758,7 +758,7 @@ func (g *game) EvokeNoise() error {
 		for {
 			ncost := best
 			for _, pos := range mp.Neighbors(target) {
-				c := g.PR.DijkstraMapAt(pos)
+				c := g.PR.BreadthFirstMapAt(pos)
 				if c > noiseDist {
 					continue
 				}

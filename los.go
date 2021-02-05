@@ -437,7 +437,7 @@ func (g *game) ComputeRayHighlight(pos gruid.Point) {
 func (g *game) ComputeNoise() {
 	dij := &noisePath{state: g}
 	rg := DefaultLOSRange
-	nodes := g.PR.DijkstraMap(dij, []gruid.Point{g.Player.Pos}, rg)
+	nodes := g.PR.BreadthFirstMap(dij, []gruid.Point{g.Player.Pos}, rg)
 	count := 0
 	for k := range g.Noise {
 		delete(g.Noise, k)

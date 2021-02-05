@@ -243,7 +243,7 @@ const (
 func (g *game) ActivateQueenStone() {
 	g.MakeNoise(QueenStoneNoise, g.Player.Pos)
 	dij := &noisePath{state: g}
-	g.PR.DijkstraMap(dij, []gruid.Point{g.Player.Pos}, QueenStoneDistance)
+	g.PR.BreadthFirstMap(dij, []gruid.Point{g.Player.Pos}, QueenStoneDistance)
 	targets := []*monster{}
 	for _, m := range g.Monsters {
 		if !m.Exists() {
@@ -252,7 +252,7 @@ func (g *game) ActivateQueenStone() {
 		if m.State == Resting {
 			continue
 		}
-		c := g.PR.DijkstraMapAt(m.Pos)
+		c := g.PR.BreadthFirstMapAt(m.Pos)
 		if c > QueenStoneDistance {
 			continue
 		}

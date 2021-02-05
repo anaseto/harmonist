@@ -59,7 +59,7 @@ func (g *game) MakeMonstersAware() {
 
 func (g *game) MakeNoise(noise int, at gruid.Point) {
 	dij := &noisePath{state: g}
-	g.PR.DijkstraMap(dij, []gruid.Point{at}, noise)
+	g.PR.BreadthFirstMap(dij, []gruid.Point{at}, noise)
 	//if at.Distance(g.Player.Pos)-noise < DefaultLOSRange && noise > 4 {
 	//g.ui.LOSWavesAnimation(noise, WaveNoise, at)
 	//}
@@ -70,7 +70,7 @@ func (g *game) MakeNoise(noise int, at gruid.Point) {
 		if m.State == Hunting {
 			continue
 		}
-		d := g.PR.DijkstraMapAt(m.Pos)
+		d := g.PR.BreadthFirstMapAt(m.Pos)
 		if d > noise {
 			continue
 		}

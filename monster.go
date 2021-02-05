@@ -1778,13 +1778,13 @@ func (m *monster) GatherBand(g *game) {
 		return
 	}
 	dij := &noisePath{state: g}
-	g.PR.DijkstraMap(dij, []gruid.Point{m.Pos}, 4)
+	g.PR.BreadthFirstMap(dij, []gruid.Point{m.Pos}, 4)
 	for _, mons := range g.Monsters {
 		if mons.Band == m.Band {
 			if mons.State == Hunting && m.State != Hunting {
 				continue
 			}
-			c := g.PR.DijkstraMapAt(mons.Pos)
+			c := g.PR.BreadthFirstMapAt(mons.Pos)
 			if c > 4 || mons.State == Resting && mons.Status(MonsExhausted) {
 				continue
 			}
