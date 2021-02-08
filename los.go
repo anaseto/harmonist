@@ -411,28 +411,28 @@ func (g *game) ComputeExclusion(pos gruid.Point, toggle bool) {
 	}
 }
 
-func (g *game) Ray(pos gruid.Point) []gruid.Point {
+func (g *game) Ray(p gruid.Point) []gruid.Point {
 	c := g.Dungeon.Cell(g.Player.Pos)
 	rs := NormalPlayerRay
 	if terrain(c) == TreeCell {
 		rs = TreePlayerRay
 	}
 	lt := &lighter{rs: rs, g: g}
-	lnodes := g.Player.FOV.Ray(lt, pos)
+	lnodes := g.Player.FOV.Ray(lt, p)
 	ps := []gruid.Point{}
-	for _, n := range lnodes {
-		ps = append(ps, n.P)
+	for i := len(lnodes) - 1; i >= 0; i-- {
+		ps = append(ps, lnodes[i].P)
 	}
 	return ps
 }
 
-func (g *game) ComputeRayHighlight(pos gruid.Point) {
-	g.Highlight = map[gruid.Point]bool{}
-	ray := g.Ray(pos)
-	for _, p := range ray {
-		g.Highlight[p] = true
-	}
-}
+//func (g *game) ComputeRayHighlight(pos gruid.Point) {
+//g.Highlight = map[gruid.Point]bool{}
+//ray := g.Ray(pos)
+//for _, p := range ray {
+//g.Highlight[p] = true
+//}
+//}
 
 func (g *game) ComputeNoise() {
 	dij := &noisePath{state: g}
