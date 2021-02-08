@@ -5,24 +5,24 @@ import (
 	"github.com/anaseto/gruid"
 )
 
-func (g *game) Autoexplore() error {
+func (g *game) Autoexplore() (again bool, err error) {
 	if mons := g.MonsterInLOS(); mons.Exists() {
-		return errors.New("You cannot auto-explore while there are monsters in view.")
+		return again, errors.New("You cannot auto-explore while there are monsters in view.")
 	}
 	if g.ExclusionsMap[g.Player.Pos] {
-		return errors.New("You cannot auto-explore while in an excluded area.")
+		return again, errors.New("You cannot auto-explore while in an excluded area.")
 	}
 	if g.AllExplored() {
-		return errors.New("Nothing left to explore.")
+		return again, errors.New("Nothing left to explore.")
 	}
 	sources := g.AutoexploreSources()
 	if len(sources) == 0 {
-		return errors.New("Some excluded places remain unexplored.")
+		return again, errors.New("Some excluded places remain unexplored.")
 	}
 	g.BuildAutoexploreMap(sources)
 	n, finished := g.NextAuto()
 	if finished || n == nil {
-		return errors.New("You cannot reach safely some places.")
+		return again, errors.New("You cannot reach safely some places.")
 	}
 	g.Autoexploring = true
 	g.AutoHalt = false

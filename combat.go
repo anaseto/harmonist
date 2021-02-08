@@ -136,17 +136,12 @@ func (g *game) FindJumpTarget(m *monster) gruid.Point {
 	return free
 }
 
-func (g *game) Jump(mons *monster) error {
+func (g *game) Jump(mons *monster) (bool, error) {
 	if mons.Peaceful(g) && mons.Kind != MonsEarthDragon {
 		ompos := mons.Pos
 		if terrain(g.Dungeon.Cell(ompos)) == ChasmCell && !g.Player.HasStatus(StatusLevitation) {
-			if g.DeepChasmDepth() {
-				return errors.New("You cannot jump into deep chasm.")
-			}
-			if !g.AbyssJumpConfirmation() {
-				return errors.New(doNothing)
-			}
-			g.PushEvent(&simpleEvent{ERank: g.Ev.Rank(), EAction: AbyssFall})
+			return true, g.AbyssJump()
+			//g.PushEvent(&simpleEvent{ERank: g.Ev.Rank(), EAction: AbyssFall})
 		}
 		if !mons.CanPass(g, g.Player.Pos) {
 			pos := mons.LeaveRoomForPlayer(g)
@@ -154,17 +149,17 @@ func (g *game) Jump(mons *monster) error {
 				mons.MoveTo(g, pos)
 				mons.Swapped = true
 				g.PlacePlayerAt(ompos)
-				return nil
+				return false, nil
 			}
 			// otherwise (which should not happen in practice), swap anyways
 		}
 		mons.MoveTo(g, g.Player.Pos)
 		mons.Swapped = true
 		g.PlacePlayerAt(ompos)
-		return nil
+		return false, nil
 	}
 	if g.Player.HasStatus(StatusExhausted) {
-		return errors.New("You cannot jump while exhausted.")
+		return false, errors.New("You cannot jump while exhausted.")
 	}
 	dir := Dir(g.Player.Pos, mons.Pos)
 	pos := g.Player.Pos
@@ -183,7 +178,7 @@ func (g *game) Jump(mons *monster) error {
 		if !g.PlayerCanPass(pos) {
 			// should not happen in practice, but better safe than sorry
 			g.Teleportation()
-			return nil
+			return false, nil
 		}
 	}
 	if !g.Player.HasStatus(StatusSwift) && g.Player.Inventory.Body != CloakAcrobat {
@@ -199,7 +194,7 @@ func (g *game) Jump(mons *monster) error {
 	if g.Stats.Jumps+g.Stats.WallJumps == 15 {
 		AchAcrobat.Get(g)
 	}
-	return nil
+	return false, nil
 }
 
 func (g *game) WallJump(pos gruid.Point) error {

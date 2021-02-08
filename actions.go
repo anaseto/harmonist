@@ -247,7 +247,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		again = true
 	case ActionW, ActionS, ActionN, ActionE:
 		if !md.mp.kbTargeting {
-			err = g.PlayerBump(To(KeyToDir(action), g.Player.Pos))
+			again, err = g.PlayerBump(To(KeyToDir(action), g.Player.Pos))
 		} else {
 			p := To(KeyToDir(action), md.mp.ex.pos)
 			if valid(p) {
@@ -257,7 +257,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		}
 	case ActionRunW, ActionRunS, ActionRunN, ActionRunE:
 		if !md.mp.kbTargeting {
-			err = g.GoToDir(KeyToDir(action))
+			again, err = g.GoToDir(KeyToDir(action))
 		} else {
 			q := InvalidPos
 			for i := 0; i < 5; i++ {
@@ -382,7 +382,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		again = true
 		md.openIventory()
 	case ActionExplore:
-		err = g.Autoexplore()
+		again, err = g.Autoexplore()
 	case ActionExamine:
 		again = true
 		md.KeyboardExamine()

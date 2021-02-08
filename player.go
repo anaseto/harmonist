@@ -62,10 +62,13 @@ func (g *game) AutoToDir() bool {
 	if g.MonsterInLOS() == nil {
 		pos := To(g.AutoDir, g.Player.Pos)
 		if g.PlayerCanPass(pos) {
-			err := g.PlayerBump(To(g.AutoDir, g.Player.Pos))
+			again, err := g.PlayerBump(To(g.AutoDir, g.Player.Pos))
 			if err != nil {
 				g.Print(err.Error())
 				g.AutoDir = NoDir
+				return false
+			}
+			if again {
 				return false
 			}
 		} else {
@@ -78,21 +81,21 @@ func (g *game) AutoToDir() bool {
 	return false
 }
 
-func (g *game) GoToDir(dir direction) error {
+func (g *game) GoToDir(dir direction) (again bool, err error) {
 	if g.MonsterInLOS() != nil {
 		g.AutoDir = NoDir
-		return errors.New("You cannot travel while there are monsters in view.")
+		return again, errors.New("You cannot travel while there are monsters in view.")
 	}
 	pos := To(dir, g.Player.Pos)
 	if !g.PlayerCanPass(pos) {
-		return errors.New("You cannot move in that direction.")
+		return again, errors.New("You cannot move in that direction.")
 	}
-	err := g.PlayerBump(pos)
-	if err != nil {
-		return err
+	again, err = g.PlayerBump(pos)
+	if err != nil || again {
+		return again, err
 	}
 	g.AutoDir = dir
-	return nil
+	return again, err
 }
 
 func (g *game) MoveToTarget() bool {
@@ -108,8 +111,9 @@ func (g *game) MoveToTarget() bool {
 		return false
 	}
 	var err error
+	var again bool
 	if len(path) > 1 {
-		err = g.PlayerBump(path[1])
+		again, err = g.PlayerBump(path[1])
 		if g.ExclusionsMap[path[1]] {
 			g.AutoTarget = InvalidPos
 		}
@@ -124,7 +128,7 @@ func (g *game) MoveToTarget() bool {
 	if valid(g.AutoTarget) && g.Player.Pos == g.AutoTarget {
 		g.AutoTarget = InvalidPos
 	}
-	return true
+	return !again
 }
 
 func (g *game) WaitTurn() {
@@ -286,11 +290,11 @@ func (g *game) FallAbyss(style descendstyle) {
 	g.Descend(style)
 }
 
-func (g *game) AbyssJumpConfirmation() bool {
+func (g *game) AbyssJumpConfirmation() {
 	g.Print("Do you really want to jump into the abyss? (DANGEROUS) [y/N]")
+	g.ui.mode = modeJumpConfirmation
 	// TODO confirmation prompt abyss
 	//return g.ui.PromptConfirmation()
-	return false
 }
 
 func (g *game) DeepChasmDepth() bool {
@@ -301,38 +305,36 @@ func (g *game) AbyssJump() error {
 	if g.DeepChasmDepth() {
 		return errors.New("You cannot jump into deep chasm.")
 	}
-	if !g.AbyssJumpConfirmation() {
-		return errors.New(doNothing)
-	}
-	g.FallAbyss(DescendJump) // last action
+	g.AbyssJumpConfirmation()
 	return nil
 }
 
-func (g *game) PlayerBump(pos gruid.Point) error {
+func (g *game) PlayerBump(pos gruid.Point) (again bool, err error) {
 	if !valid(pos) {
-		return errors.New("You cannot move there.")
+		return again, errors.New("You cannot move there.")
 	}
 	c := g.Dungeon.Cell(pos)
 	switch {
 	case terrain(c) == BarrierCell && !g.Player.HasStatus(StatusLevitation):
-		return errors.New("You cannot move into a magical barrier.")
+		return again, errors.New("You cannot move into a magical barrier.")
 	case terrain(c) == WindowCell && !g.Player.HasStatus(StatusDig):
-		return errors.New("You cannot pass through the closed window.")
+		return again, errors.New("You cannot pass through the closed window.")
 	case terrain(c) == BarrelCell && g.MonsterLOS[g.Player.Pos]:
-		return errors.New("You cannot enter a barrel while seen.")
+		return again, errors.New("You cannot enter a barrel while seen.")
 	}
 	mons := g.MonsterAt(pos)
 	if c.IsJumpPropulsion() && !g.Player.HasStatus(StatusDig) {
 		err := g.WallJump(pos)
 		if err != nil {
-			return err
+			return again, err
 		}
 	} else if !mons.Exists() {
 		if g.Player.HasStatus(StatusLignification) {
-			return errors.New("You cannot move while lignified.")
+			return again, errors.New("You cannot move while lignified.")
 		}
 		if terrain(c) == ChasmCell && !g.Player.HasStatus(StatusLevitation) {
-			return g.AbyssJump()
+			again = true
+			return again, g.AbyssJump()
 		}
 		if terrain(c) == BarrelCell {
 			g.Print("You hide yourself inside the barrel.")
@@ -370,8 +372,8 @@ func (g *game) PlayerBump(pos gruid.Point) error {
 		//}
 		g.Stats.Moves++
 		g.PlacePlayerAt(pos)
-	} else if err := g.Jump(mons); err != nil {
-		return err
+	} else if again, err = g.Jump(mons); err != nil {
+		return again, err
 	}
 	if g.Player.HasStatus(StatusSwift) {
 		g.RenewEvent(0)
@@ -379,10 +381,10 @@ func (g *game) PlayerBump(pos gruid.Point) error {
 		if !g.Player.HasStatus(StatusSwift) {
 			g.Print("You no longer feel swift.")
 		}
-		return nil
+		return again, nil
 	}
 	g.RenewEvent(DurationTurn)
-	return nil
+	return again, nil
 }
 
 func (g *game) SwiftFog() {

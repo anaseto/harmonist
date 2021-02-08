@@ -701,12 +701,12 @@ func (g *game) AutoPlayer() bool {
 				g.Print("You could not safely reach some places.")
 			}
 			if n != nil {
-				err := g.PlayerBump(*n)
+				again, err := g.PlayerBump(*n)
 				if err != nil {
 					g.Print(err.Error())
 					break
 				}
-				return true
+				return !again
 			}
 		}
 		g.Autoexploring = false

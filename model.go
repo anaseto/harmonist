@@ -35,6 +35,7 @@ const (
 	modeMenu
 	modeQuit
 	modeQuitConfirmation
+	modeJumpConfirmation
 	modeDump // simplified dump visualization after end
 	modeEnd  // win or death
 	modeHPCritical
@@ -347,6 +348,9 @@ func (md *model) update(msg gruid.Msg) gruid.Effect {
 			}
 		}
 		return eff
+	case modeJumpConfirmation:
+		md.updateJumpConfirmation(msg)
+		return nil
 	case modeHPCritical:
 		if md.more(msg) {
 			md.mode = modeNormal
@@ -381,6 +385,16 @@ func (md *model) updateQuitConfirmation(msg gruid.Msg) gruid.Effect {
 		}
 	}
 	return nil
+}
+
+func (md *model) updateJumpConfirmation(msg gruid.Msg) {
+	switch msg := msg.(type) {
+	case gruid.MsgKeyDown:
+		md.mode = modeNormal
+		if msg.Key == "y" || msg.Key == "Y" {
+			md.g.FallAbyss(DescendFall)
+		}
+	}
 }
 
 func (md *model) updateNormal(msg gruid.Msg) gruid.Effect {
