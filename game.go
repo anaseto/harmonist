@@ -540,13 +540,28 @@ func (g *game) InitLevel() {
 
 func (g *game) CleanEvents() {
 	g.Events.Filter(func(ev rl.Event) bool {
-		switch ev.(type) {
+		switch ev := ev.(type) {
 		case *monsterEvent, *posEvent:
 			return false
+		case *simpleEvent:
+			// When falling into the abyss after being pushed a
+			// player turn can still be in the queue.
+			return ev.EAction != PlayerTurn
 		default:
 			return true
 		}
 	})
+	// finish current turn other effects (like status progression)
+	turn := g.Turn
+	for !g.Events.Empty() {
+		ev, r := g.Events.PopR()
+		if r == turn {
+			continue
+		}
+		g.Events.PushFirst(ev, r)
+		break
+	}
+	g.Turn++
 }
 
 func (g *game) StairsSlice() []gruid.Point {
