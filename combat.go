@@ -23,11 +23,11 @@ func (m *monster) InflictDamage(g *game, damage, max int) {
 	g.Stats.ReceivedHits++
 	oldHP := g.Player.HP
 	g.DamagePlayer(damage)
-	g.ui.WoundedAnimation()
+	g.md.WoundedAnimation()
 	if oldHP > max && g.Player.HP <= max {
 		g.StoryPrintf("Critical hit by %s (HP: %d)", m.Kind, g.Player.HP)
-		g.ui.WoundedAnimation() // twice
-		g.ui.criticalHPWarning()
+		g.md.WoundedAnimation() // twice
+		g.md.criticalHPWarning()
 	} else if g.Player.HP > 0 {
 		g.StoryPrintf("Hit by %s (HP: %d)", m.Kind, g.Player.HP)
 	} else {
@@ -241,7 +241,7 @@ func (g *game) WallJump(pos gruid.Point) error {
 	if !g.Player.HasStatus(StatusSwift) && g.Player.Inventory.Body != CloakAcrobat {
 		g.PutStatus(StatusExhausted, 5)
 	}
-	g.ui.PushAnimation(path)
+	g.md.PushAnimation(path)
 	g.PlacePlayerAt(tpos)
 	g.Stats.WallJumps++
 	g.Print("You jump by propulsing yourself against the wall.")

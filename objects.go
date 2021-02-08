@@ -259,7 +259,7 @@ func (g *game) ActivateQueenStone() {
 		targets = append(targets, m)
 	}
 	g.Print("The stone releases confusing sounds.")
-	g.ui.LOSWavesAnimation(DefaultLOSRange, WaveMagicNoise, g.Player.Pos)
+	g.md.LOSWavesAnimation(DefaultLOSRange, WaveMagicNoise, g.Player.Pos)
 	for _, m := range targets {
 		m.EnterConfusion(g)
 		if m.Search == InvalidPos {
@@ -282,7 +282,7 @@ func (g *game) ActivateNightStone() error {
 		return errors.New("There are no suitable monsters in sight.")
 	}
 	g.Print("The stone releases hypnotic harmonies.")
-	g.ui.LOSWavesAnimation(DefaultLOSRange, WaveSleeping, g.Player.Pos)
+	g.md.LOSWavesAnimation(DefaultLOSRange, WaveSleeping, g.Player.Pos)
 	for _, mons := range targets {
 		g.Printf("%s falls asleep.", mons.Kind.Definite(true))
 		mons.State = Resting
@@ -304,7 +304,7 @@ func (g *game) ActivateTreeStone() error {
 		return errors.New("There are no suitable monsters in sight.")
 	}
 	g.Print("The stone releases magical spores.")
-	g.ui.LOSWavesAnimation(DefaultLOSRange, WaveTree, g.Player.Pos)
+	g.md.LOSWavesAnimation(DefaultLOSRange, WaveTree, g.Player.Pos)
 	for _, mons := range targets {
 		mons.EnterLignification(g)
 		if mons.Search == InvalidPos {
@@ -342,7 +342,7 @@ func (g *game) TeleportToBarrel() {
 	pos := barrels[RandInt(len(barrels))]
 	opos := g.Player.Pos
 	g.Print("You teleport away.")
-	g.ui.TeleportAnimation(opos, pos, true)
+	g.md.TeleportAnimation(opos, pos, true)
 	g.PlacePlayerAt(pos)
 }
 
@@ -360,7 +360,7 @@ func (g *game) MagicMapping(maxdist int) error {
 	sort.Ints(dists)
 	if !DisableAnimations {
 		// magic mapping animation
-		g.ui.startAnimSeq()
+		g.md.startAnimSeq()
 	}
 	for _, d := range dists {
 		if maxdist > 0 && d > maxdist {
@@ -377,7 +377,7 @@ func (g *game) MagicMapping(maxdist int) error {
 			}
 		}
 		if draw {
-			g.ui.MagicMappingAnimation(cdists[d])
+			g.md.MagicMappingAnimation(cdists[d])
 		}
 	}
 	g.Printf("You feel aware of your surroundings..")

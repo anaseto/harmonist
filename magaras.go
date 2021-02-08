@@ -419,7 +419,7 @@ func (g *game) Blink() bool {
 	} else {
 		g.Print("You blink away.")
 	}
-	g.ui.TeleportAnimation(opos, npos, true)
+	g.md.TeleportAnimation(opos, npos, true)
 	g.PlacePlayerAt(npos)
 	return true
 }
@@ -467,7 +467,7 @@ func (g *game) EvokeDig() error {
 		return errors.New("You are already digging.")
 	}
 	g.Print("You feel like an earth dragon.")
-	g.ui.PlayerGoodEffectAnimation()
+	g.md.PlayerGoodEffectAnimation()
 	return nil
 }
 
@@ -528,14 +528,14 @@ func (g *game) EvokeTeleportOther() error {
 func (g *game) EvokeHealWounds() error {
 	g.Player.HP = g.Player.HPMax()
 	g.Print("Your feel healthy again.")
-	g.ui.PlayerGoodEffectAnimation()
+	g.md.PlayerGoodEffectAnimation()
 	return nil
 }
 
 func (g *game) EvokeRefillMagic() error {
 	g.Player.MP = g.Player.MPMax()
 	g.Print("Your magic forces return.")
-	g.ui.PlayerGoodEffectAnimation()
+	g.md.PlayerGoodEffectAnimation()
 	return nil
 }
 
@@ -545,7 +545,7 @@ func (g *game) EvokeSwiftness() error {
 	}
 	g.Player.Statuses[StatusSwift] += DurationSwiftness
 	g.Printf("You feel swift.")
-	g.ui.PlayerGoodEffectAnimation()
+	g.md.PlayerGoodEffectAnimation()
 	return nil
 }
 
@@ -554,7 +554,7 @@ func (g *game) EvokeLevitation() error {
 		return errors.New("You are already levitating.")
 	}
 	g.Printf("You feel light.")
-	g.ui.PlayerGoodEffectAnimation()
+	g.md.PlayerGoodEffectAnimation()
 	return nil
 }
 
@@ -588,7 +588,7 @@ func (g *game) EvokeSwapping() error {
 func (g *game) SwapWithMonster(mons *monster) {
 	ompos := mons.Pos
 	g.Printf("You swap positions with the %s.", mons.Kind)
-	g.ui.SwappingAnimation(mons.Pos, g.Player.Pos)
+	g.md.SwappingAnimation(mons.Pos, g.Player.Pos)
 	mons.MoveTo(g, g.Player.Pos)
 	g.PlacePlayerAt(ompos)
 	mons.MakeAware(g)
@@ -662,7 +662,7 @@ func (g *game) EvokeParalysis() error {
 		return errors.New("No suitable targets in view.")
 	}
 	g.Print("Whoosh! A slowing luminous wave emerges.")
-	g.ui.LOSWavesAnimation(DefaultLOSRange, WaveSlowing, g.Player.Pos)
+	g.md.LOSWavesAnimation(DefaultLOSRange, WaveSlowing, g.Player.Pos)
 	return nil
 }
 
@@ -697,7 +697,7 @@ func (g *game) EvokeSleeping() error {
 	} else {
 		g.Print("Two beams of sleeping emerge.")
 	}
-	g.ui.BeamsAnimation(targets, BeamSleeping)
+	g.md.BeamsAnimation(targets, BeamSleeping)
 
 	return nil
 }
@@ -731,7 +731,7 @@ func (g *game) EvokeLignification() error {
 	} else {
 		g.Print("Two beams of lignification emerge.")
 	}
-	g.ui.BeamsAnimation(targets, BeamLignification)
+	g.md.BeamsAnimation(targets, BeamLignification)
 	return nil
 }
 
@@ -781,7 +781,7 @@ func (g *game) EvokeNoise() error {
 		noises = append(noises, target)
 		g.NoiseIllusion[target] = true
 	}
-	g.ui.NoiseAnimation(noises)
+	g.md.NoiseAnimation(noises)
 	g.Print("Monsters are tricked by magical sounds.")
 	return nil
 }
@@ -801,7 +801,7 @@ func (g *game) EvokeConfusion() error {
 		return errors.New("No suitable targets in view.")
 	}
 	g.Print("Whoosh! A confusing luminous wave emerges.")
-	g.ui.LOSWavesAnimation(DefaultLOSRange, WaveConfusion, g.Player.Pos)
+	g.md.LOSWavesAnimation(DefaultLOSRange, WaveConfusion, g.Player.Pos)
 	return nil
 }
 
@@ -845,7 +845,7 @@ func (g *game) EvokeObstruction() error {
 		return errors.New("No targetable monsters in view.")
 	}
 	g.Print("Magical barriers emerged.")
-	g.ui.BeamsAnimation(targets, BeamObstruction)
+	g.md.BeamsAnimation(targets, BeamObstruction)
 	return nil
 }
 
@@ -871,7 +871,7 @@ func (g *game) EvokeEnergyMagara() error {
 		return errors.New("You are already full of energy.")
 	}
 	g.Print("The magara glows.")
-	g.ui.PlayerGoodEffectAnimation()
+	g.md.PlayerGoodEffectAnimation()
 	g.Player.MP = g.Player.MPMax()
 	g.Player.HP = g.Player.HPMax()
 	return nil

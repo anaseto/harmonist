@@ -233,7 +233,7 @@ func (md *model) init() gruid.Effect {
 	md.applyConfig()
 	//ui.DrawWelcome()
 	load, err = g.Load()
-	md.g.ui = md // TODO: avoid this? (though it's handy)
+	md.g.md = md // TODO: avoid this? (though it's handy)
 	if !load {
 		g.InitLevel()
 	} else if err != nil {

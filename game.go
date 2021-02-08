@@ -11,6 +11,11 @@ import (
 
 var Version string = "v0.3"
 
+// game contains the game logic's state, without ui stuff. Everything could be
+// in the model struct instead, with only the game logic's fiend exported, as
+// some game functions need the model anyway (like animations), but this allows
+// to differenciate a bit things that are mainly game-logic from the stuff that
+// is more about ui.
 type game struct {
 	Dungeon               *dungeon
 	Player                *player
@@ -63,7 +68,7 @@ type game struct {
 	Places                places
 	Params                startParams
 	//Opts                startOpts
-	ui                *model
+	md                *model // needed for animations and a few more cases
 	LiberatedShaedra  bool
 	LiberatedArtifact bool
 	PlayerAgain       bool
@@ -536,6 +541,8 @@ func (g *game) InitLevel() {
 	}
 	g.ComputeLOS()
 	g.MakeMonstersAware()
+	g.ComputeMonsterLOS()
+	g.md.updateStatusInfo()
 }
 
 func (g *game) CleanEvents() {

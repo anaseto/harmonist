@@ -53,9 +53,6 @@ func (sev *simpleEvent) Renew(g *game, delay int) {
 	sev.ERank += delay
 	if delay == 0 {
 		g.PushEventFirst(sev)
-		if sev.EAction == PlayerTurn {
-			g.PlayerAgain = true
-		}
 	} else {
 		g.PushEvent(sev)
 	}
@@ -105,21 +102,18 @@ var StatusEndActions = [...]simpleAction{
 func (sev *simpleEvent) Action(g *game) {
 	switch sev.EAction {
 	case PlayerTurn:
-		if !g.PlayerAgain {
-			g.ComputeNoise()
-			g.ComputeLOS() // TODO: optimize? most of the time almost redundant (unless on a tree)
-			g.ComputeMonsterLOS()
-		}
-		g.PlayerAgain = false
+		g.ComputeNoise()
+		g.ComputeLOS() // TODO: optimize? most of the time almost redundant (unless on a tree)
+		g.ComputeMonsterLOS()
 		g.LogNextTick = g.LogIndex
 		g.AutoNext = g.AutoPlayer()
 		g.TurnStats()
 	case ShaedraAnimation:
 		g.ComputeLOS()
-		g.ui.FreeingShaedraAnimation()
+		g.md.FreeingShaedraAnimation()
 	case ArtifactAnimation:
 		g.ComputeLOS()
-		g.ui.TakingArtifactAnimation()
+		g.md.TakingArtifactAnimation()
 	case AbyssFall:
 		if terrain(g.Dungeon.Cell(g.Player.Pos)) == ChasmCell {
 			g.FallAbyss(DescendFall)
@@ -354,7 +348,7 @@ func (cev *posEvent) Action(g *game) {
 				g.Dungeon.SetCell(n.P, RubbleCell)
 				g.Stats.Digs++
 				if g.Player.Sees(n.P) {
-					g.ui.WallExplosionAnimation(n.P)
+					g.md.WallExplosionAnimation(n.P)
 				}
 				fogs = append(fogs, n.P)
 				terrains = append(terrains, terrain(c))

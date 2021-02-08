@@ -204,7 +204,7 @@ func (g *game) Teleportation() {
 		// should always happen
 		opos := g.Player.Pos
 		g.Print("You teleport away.")
-		g.ui.TeleportAnimation(opos, pos, true)
+		g.md.TeleportAnimation(opos, pos, true)
 		g.PlacePlayerAt(pos)
 	} else {
 		// should not happen
@@ -254,7 +254,7 @@ func (g *game) CollectGround() {
 			g.PrintStyled("You stand over fake stairs.", logSpecial)
 			g.PrintStyled("Harmonic illusions!", logSpecial)
 			g.StoryPrint("Found harmonic fake stairs!")
-			g.ui.FoundFakeStairsAnimation()
+			g.md.FoundFakeStairsAnimation()
 		case PotionCell:
 			g.DrinkPotion(pos)
 		default:
@@ -292,7 +292,7 @@ func (g *game) FallAbyss(style descendstyle) {
 
 func (g *game) AbyssJumpConfirmation() {
 	g.Print("Do you really want to jump into the abyss? (DANGEROUS) [y/N]")
-	g.ui.mode = modeJumpConfirmation
+	g.md.mode = modeJumpConfirmation
 	// TODO confirmation prompt abyss
 	//return g.ui.PromptConfirmation()
 }
