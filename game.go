@@ -639,9 +639,6 @@ func (g *game) Descend(style descendstyle) bool {
 	g.Depth++
 	g.DepthPlayerTurn = 0
 	g.Boredom = 0
-	if style != DescendFall {
-		g.PushEvent(&simpleEvent{ERank: g.Ev.Rank(), EAction: PlayerTurn})
-	}
 	g.InitLevel()
 	g.Save()
 	return false

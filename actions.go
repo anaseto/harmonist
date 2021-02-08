@@ -330,9 +330,9 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 				if err != nil {
 					break
 				}
+				again = true
 				if g.Descend(DescendNormal) {
 					md.win()
-					return again, eff, err
 				}
 				//ui.DrawDungeonView(NormalMode)
 			} else if terrain(g.Dungeon.Cell(g.Player.Pos)) == StairCell && g.Objects.Stairs[g.Player.Pos] == BlockedStair {
@@ -364,7 +364,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 			err = g.ExtinguishFire()
 		case StoryCell:
 			if g.Objects.Story[g.Player.Pos] == StoryArtifact && !g.LiberatedArtifact {
-				g.PushEvent(&simpleEvent{ERank: g.Ev.Rank(), EAction: ArtifactAnimation})
+				g.PushEventFirst(&simpleEvent{ERank: g.Ev.Rank(), EAction: ArtifactAnimation})
 				g.LiberatedArtifact = true
 				g.Ev.Renew(g, DurationTurn)
 			} else if g.Objects.Story[g.Player.Pos] == StoryArtifactSealed {
@@ -387,19 +387,20 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		again = true
 		md.KeyboardExamine()
 	case ActionHelp, ActionMenuCommandHelp:
+		again = true
 		if md.mp.kbTargeting {
 			md.ExamineHelp()
 		} else {
 			md.KeysHelp()
 		}
-		again = true
 	case ActionMenuTargetingHelp:
+		again = true
 		md.ExamineHelp()
-		again = true
 	case ActionMenu:
-		md.openMenu()
 		again = true
+		md.openMenu()
 	case ActionLogs:
+		again = true
 		if len(md.logs) > 0 {
 			md.logs = md.logs[:len(md.logs)-1]
 		}
@@ -409,7 +410,6 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		md.pager.SetLines(md.logs)
 		md.mode = modePager
 		md.pagerMode = modeLogs
-		again = true
 	case ActionSave:
 		again = true
 		errsave := g.Save()
@@ -422,6 +422,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 			eff = gruid.End()
 		}
 	case ActionDump:
+		again = true
 		errdump := g.WriteDump()
 		if errdump != nil {
 			g.PrintfStyled("Error: %v", logError, errdump)
@@ -433,11 +434,10 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 				g.Print("Game statistics written.")
 			}
 		}
-		again = true
 	case ActionWizardInfo:
 		if g.Wizard {
-			err = md.HandleWizardAction()
 			again = true
+			err = md.HandleWizardAction()
 		} else {
 			err = actionErrorUnknown
 		}
@@ -447,10 +447,9 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		}
 		if g.Wizard && g.Depth < MaxDepth {
 			g.StoryPrint("Descended wizardly")
+			again = true
 			if g.Descend(DescendNormal) {
-				md.win() // TODO: win
-				//quit = true
-				return again, eff, err
+				md.win()
 			}
 		} else {
 			err = actionErrorUnknown
@@ -459,11 +458,11 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		md.EnterWizard()
 		return true, eff, nil
 	case ActionQuit:
+		again = true
 		md.Quit()
-		again = true
 	case ActionSettings:
-		md.openSettings()
 		again = true
+		md.openSettings()
 	case ActionSetKeys:
 		again = true
 		md.openKeyBindings()
