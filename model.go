@@ -40,6 +40,7 @@ const (
 	modeEnd  // win or death
 	modeHPCritical
 	modeWelcome
+	modeStory
 )
 
 type pagerMode int
@@ -83,6 +84,7 @@ type model struct {
 	finished    bool
 	statusFocus bool
 	anims       Animations
+	story       int
 }
 
 type mapUI struct {
@@ -359,6 +361,10 @@ func (md *model) update(msg gruid.Msg) gruid.Effect {
 		return nil
 	case modeNormal:
 		eff = md.updateNormal(msg)
+	case modeStory:
+		if md.more(msg) {
+			md.Story()
+		}
 	case modePager:
 		eff = md.updatePager(msg)
 	case modeSmallPager:

@@ -14,8 +14,7 @@ type simpleAction int
 
 const (
 	PlayerTurn simpleAction = iota
-	ShaedraAnimation
-	ArtifactAnimation
+	StorySequence
 	AbyssFall
 	ExhaustionEnd
 	SwiftEnd
@@ -108,12 +107,9 @@ func (sev *simpleEvent) Action(g *game) {
 		g.LogNextTick = g.LogIndex
 		g.AutoNext = g.AutoPlayer()
 		g.TurnStats()
-	case ShaedraAnimation:
+	case StorySequence:
 		g.ComputeLOS()
-		g.md.FreeingShaedraAnimation()
-	case ArtifactAnimation:
-		g.ComputeLOS()
-		g.md.TakingArtifactAnimation()
+		g.md.Story()
 	case AbyssFall:
 		if terrain(g.Dungeon.Cell(g.Player.Pos)) == ChasmCell {
 			g.FallAbyss(DescendFall)

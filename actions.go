@@ -364,7 +364,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 			err = g.ExtinguishFire()
 		case StoryCell:
 			if g.Objects.Story[g.Player.Pos] == StoryArtifact && !g.LiberatedArtifact {
-				g.PushEventFirst(&simpleEvent{ERank: g.Ev.Rank(), EAction: ArtifactAnimation})
+				g.PushEventFirst(&simpleEvent{ERank: g.Ev.Rank(), EAction: StorySequence})
 				g.LiberatedArtifact = true
 				g.Ev.Renew(g, DurationTurn)
 			} else if g.Objects.Story[g.Player.Pos] == StoryArtifactSealed {
