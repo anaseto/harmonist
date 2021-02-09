@@ -539,15 +539,15 @@ func (md *model) MagicMappingAnimation(border []int) {
 func (md *model) Story() {
 	switch md.g.Depth {
 	case WinDepth:
-		md.FreeingShaedraAnimation()
+		md.FreeingShaedra()
 	case MaxDepth:
-		md.TakingArtifactAnimation()
+		md.TakingArtifact()
 	default:
 		md.mode = modeNormal // should not happen
 	}
 }
 
-func (md *model) FreeingShaedraAnimation() {
+func (md *model) FreeingShaedra() {
 	g := md.g
 	switch md.story {
 	case 0:
@@ -594,8 +594,6 @@ func (md *model) FreeingShaedraAnimation() {
 			md.anims.Draw(g.Places.Shaedra, 'Φ', ColorFgMagicPlace, bg)
 			md.anims.Frame(AnimDurMediumLong)
 		}
-		//ui.Flush()
-		//	Sleep(AnimDurMediumLong)
 		g.Dungeon.SetCell(g.Places.Shaedra, GroundCell)
 		g.Dungeon.SetCell(g.Places.Marevor, ScrollCell)
 		g.Objects.Scrolls[g.Places.Marevor] = ScrollExtended
@@ -619,7 +617,7 @@ func (g *game) RescuedShaedra() {
 	AchRescuedShaedra.Get(g)
 }
 
-func (md *model) TakingArtifactAnimation() {
+func (md *model) TakingArtifact() {
 	g := md.g
 	switch md.story {
 	case 0:
