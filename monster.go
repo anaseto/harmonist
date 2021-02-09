@@ -774,6 +774,7 @@ func (m *monster) RandomFreeNeighbor(g *game) gruid.Point {
 	}
 	samedir := fnb[RandInt(len(fnb))]
 	for _, pos := range fnb {
+		// invariant: pos != m.Pos
 		if m.Dir.InViewCone(m.Pos, To(Dir(m.Pos, pos), pos)) {
 			samedir = pos
 			break

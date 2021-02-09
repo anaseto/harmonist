@@ -420,7 +420,7 @@ func (g *game) Ray(p gruid.Point) []gruid.Point {
 	lt := &lighter{rs: rs, g: g}
 	lnodes := g.Player.FOV.Ray(lt, p)
 	ps := []gruid.Point{}
-	for i := len(lnodes) - 1; i >= 0; i-- {
+	for i := len(lnodes) - 1; i > 0; i-- {
 		ps = append(ps, lnodes[i].P)
 	}
 	return ps

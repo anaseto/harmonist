@@ -169,7 +169,7 @@ func Dir(from, to gruid.Point) direction {
 			return ESE
 		}
 	default:
-		panic(fmt.Sprintf("internal error: invalid gruid.Point:%+v-%+v", to, from))
+		return NoDir
 	}
 }
 

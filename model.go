@@ -399,6 +399,8 @@ func (md *model) updateJumpConfirmation(msg gruid.Msg) {
 		md.mode = modeNormal
 		if msg.Key == "y" || msg.Key == "Y" {
 			md.g.FallAbyss(DescendFall)
+		} else {
+			md.g.Print("No jump, then.")
 		}
 	}
 }
