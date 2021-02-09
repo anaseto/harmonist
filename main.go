@@ -54,6 +54,7 @@ func RunGame() {
 		if m.finished && dir != "" {
 			_, err := os.Stat(filepath.Join(dir, "replay.part"))
 			if err != nil {
+				log.Printf("no replay file: %v", err)
 				return
 			}
 			if err := os.Rename(filepath.Join(dir, "replay.part"), filepath.Join(dir, "replay")); err != nil {

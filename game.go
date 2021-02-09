@@ -757,11 +757,6 @@ loop:
 				g.PrintStyled("You died.", logSpecial)
 				g.StoryPrint("You died (wizard mode)")
 			} else {
-				g.LevelStats()
-				err := g.RemoveSaveFile()
-				if err != nil {
-					g.PrintfStyled("Error removing save file: %v", logError, err.Error())
-				}
 				break loop
 			}
 		}
@@ -789,10 +784,6 @@ func (g *game) Died() bool {
 			g.StoryPrint("You died (wizard mode)")
 		} else {
 			g.LevelStats()
-			err := g.RemoveSaveFile()
-			if err != nil {
-				g.PrintfStyled("Error removing save file: %v", logError, err.Error())
-			}
 			return true
 		}
 	}

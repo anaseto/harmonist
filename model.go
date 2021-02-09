@@ -348,6 +348,8 @@ func (md *model) update(msg gruid.Msg) gruid.Effect {
 			if err != nil {
 				md.g.PrintfStyled("Error removing save file: %v", logError, err)
 			}
+			md.g.RemoveDataFile("replay.part")
+			return eff
 		}
 		return eff
 	case modeJumpConfirmation:
@@ -691,6 +693,7 @@ func (md *model) normalModeKeyDown(key gruid.Key) (again bool, eff gruid.Effect,
 
 func (md *model) death() {
 	g := md.g
+	g.LevelStats()
 	if len(g.Stats.Achievements) == 0 {
 		NoAchievement.Get(g)
 	}
@@ -700,10 +703,6 @@ func (md *model) death() {
 
 func (md *model) win() {
 	g := md.g
-	err := g.RemoveSaveFile()
-	if err != nil {
-		g.PrintfStyled("Error removing save file: %v", logError, err)
-	}
 	if g.Wizard {
 		g.Print("You escape by the magic portal! **WIZARD** [(x) to continue]")
 	} else {
