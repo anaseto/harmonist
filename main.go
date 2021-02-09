@@ -106,6 +106,7 @@ func RunReplay(file string) {
 		Grid:         gd,
 		FrameDecoder: fd,
 	})
+	initConfig()
 	app := gruid.NewApp(gruid.AppConfig{
 		Driver: driver,
 		Model:  rep,

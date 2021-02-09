@@ -18,3 +18,8 @@ func init() {
 	//dr.PreventQuit()
 	driver = dr
 }
+
+func clearCache() {
+	dr := driver.(*js.Driver)
+	dr.ClearCache()
+}

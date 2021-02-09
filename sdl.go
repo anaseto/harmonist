@@ -17,3 +17,8 @@ func init() {
 	//dr.PreventQuit()
 	driver = dr
 }
+
+func clearCache() {
+	dr := driver.(*sdl.Driver)
+	dr.ClearCache()
+}

@@ -14,6 +14,19 @@ import (
 	"github.com/anaseto/gruid"
 )
 
+func init() {
+	settingsActions = append(settingsActions, ActionToggleTiles)
+}
+
+func (md *model) ApplyToggleTiles() {
+	GameConfig.Tiles = !GameConfig.Tiles
+	err := SaveConfig()
+	if err != nil {
+		md.g.Printf("Error saving config changes: %v", err)
+	}
+	clearCache()
+}
+
 //func (c gruid.Color) String() string {
 //color := "#002b36"
 //switch c {

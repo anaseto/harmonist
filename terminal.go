@@ -1,4 +1,4 @@
-// +build !js,!tk
+// +build !js,!sdl
 
 package main
 

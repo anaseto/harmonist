@@ -63,7 +63,7 @@ func (g *game) DecodeGameSave(data []byte) (*game, error) {
 	return lg, nil
 }
 
-func (g *game) DecodeConfigSave(data []byte) (*config, error) {
+func DecodeConfigSave(data []byte) (*config, error) {
 	buf := bytes.NewBuffer(data)
 	dec := gob.NewDecoder(buf)
 	c := &config{}

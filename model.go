@@ -208,33 +208,38 @@ func (md *model) initWidgets() {
 	})
 }
 
-func (md *model) init() gruid.Effect {
-	md.mode = modeWelcome
-	SolarizedPalette()
+func initConfig() (string, string) {
 	GameConfig.DarkLOS = true
 	GameConfig.Version = Version
 	GameConfig.Tiles = true
-	LinkColors()
-	md.initKeys()
-	md.initWidgets()
-
-	g := md.g
-
-	load, err := g.LoadConfig()
+	load, err := LoadConfig()
 	var cfgerrstr string
 	var cfgreseterr string
 	if load && err != nil {
 		cfgerrstr = fmt.Sprintf("Error loading config: %s", err.Error())
-		err = g.SaveConfig()
+		err = SaveConfig()
 		if err != nil {
 			cfgreseterr = fmt.Sprintf("Error resetting config: %s", err.Error())
 		}
 	} else if load {
 		CustomKeys = true
 	}
+	return cfgerrstr, cfgreseterr
+}
+
+func (md *model) init() gruid.Effect {
+	md.mode = modeWelcome
+	SolarizedPalette()
+	LinkColors()
+	md.initKeys()
+	md.initWidgets()
+
+	g := md.g
+
+	cfgerrstr, cfgreseterr := initConfig()
 	md.applyConfig()
 	//ui.DrawWelcome()
-	load, err = g.Load()
+	load, err := g.Load()
 	md.g.md = md // TODO: avoid this? (though it's handy)
 	if !load {
 		g.InitLevel()
@@ -581,7 +586,7 @@ func (md *model) updateKeysMenu(msg gruid.Msg) gruid.Effect {
 			}
 			GameConfig.NormalModeKeys = md.keysNormal
 			GameConfig.TargetModeKeys = md.keysTarget
-			err := md.g.SaveConfig()
+			err := SaveConfig()
 			if err != nil {
 				md.g.PrintStyled("Error while saving config changes.", logCritic)
 			}
@@ -605,7 +610,7 @@ func (md *model) updateKeysMenu(msg gruid.Msg) gruid.Effect {
 			md.initKeys()
 			GameConfig.NormalModeKeys = md.keysNormal
 			GameConfig.TargetModeKeys = md.keysTarget
-			err := md.g.SaveConfig()
+			err := SaveConfig()
 			if err != nil {
 				md.g.PrintStyled("Error while resetting config changes.", logCritic)
 			}
@@ -668,6 +673,7 @@ func (md *model) updateMenu(msg gruid.Msg) gruid.Effect {
 			if act != ui.MenuInvoke {
 				break
 			}
+			md.g.Printf("%v", settingsActions[md.menu.Active()])
 			_, eff, err := md.normalModeAction(settingsActions[md.menu.Active()])
 			if err != nil {
 				// should not happen

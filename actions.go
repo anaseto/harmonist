@@ -469,7 +469,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 	case ActionInvertLOS:
 		again = true
 		GameConfig.DarkLOS = !GameConfig.DarkLOS
-		err := g.SaveConfig()
+		err := SaveConfig()
 		if err != nil {
 			g.Print(err.Error())
 		}
@@ -482,14 +482,16 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 	case ActionToggleTiles:
 		again = true
 		md.ApplyToggleTiles()
-		err := g.SaveConfig()
+		eff = gruid.Cmd(func() gruid.Msg { return gruid.MsgScreen{} })
+		err := SaveConfig()
 		if err != nil {
 			g.Print(err.Error())
 		}
+		md.mode = modeNormal
 	case ActionToggleShowNumbers:
 		again = true
 		GameConfig.ShowNumbers = !GameConfig.ShowNumbers
-		err := g.SaveConfig()
+		err := SaveConfig()
 		if err != nil {
 			g.Print(err.Error())
 		}

@@ -81,27 +81,24 @@ func (g *game) Load() (bool, error) {
 	return true, nil
 }
 
-func (g *game) SaveConfig() error {
+func SaveConfig() error {
 	dataDir, err := DataDir()
 	if err != nil {
-		g.Print(err.Error())
 		return err
 	}
 	saveFile := filepath.Join(dataDir, "config.gob")
 	data, err := GameConfig.ConfigSave()
 	if err != nil {
-		g.Print(err.Error())
 		return err
 	}
 	err = ioutil.WriteFile(saveFile, data, 0644)
 	if err != nil {
-		g.Print(err.Error())
 		return err
 	}
 	return nil
 }
 
-func (g *game) LoadConfig() (bool, error) {
+func LoadConfig() (bool, error) {
 	dataDir, err := DataDir()
 	if err != nil {
 		return false, err
@@ -116,7 +113,7 @@ func (g *game) LoadConfig() (bool, error) {
 	if err != nil {
 		return true, err
 	}
-	c, err := g.DecodeConfigSave(data)
+	c, err := DecodeConfigSave(data)
 	if err != nil {
 		return true, err
 	}
