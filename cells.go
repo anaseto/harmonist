@@ -227,6 +227,72 @@ func (c cell) IsNotable() bool {
 	}
 }
 
+func (c cell) ShortString(g *game, pos gruid.Point) (desc string) {
+	switch terrain(c) {
+	case WallCell:
+		desc = "wall"
+	case GroundCell:
+		desc = "paved ground"
+	case DoorCell:
+		desc = "door"
+	case FoliageCell:
+		desc = "foliage"
+	case BarrelCell:
+		desc = "barrel"
+	case StoneCell:
+		desc = g.Objects.Stones[pos].String()
+	case StairCell:
+		desc = g.Objects.Stairs[pos].ShortString(g)
+	case MagaraCell:
+		desc = g.Objects.Magaras[pos].String()
+	case BananaCell:
+		desc = "banana"
+	case LightCell:
+		desc = "campfire"
+	case ExtinguishedLightCell:
+		desc = "extinguished campfire"
+	case TableCell:
+		desc = "table"
+	case TreeCell:
+		desc = "banana tree"
+	case HoledWallCell:
+		desc = "holed wall"
+	case ScrollCell:
+		desc = g.Objects.Scrolls[pos].String()
+	case StoryCell:
+		desc = g.Objects.Story[pos].String()
+	case ItemCell:
+		desc = g.Objects.Items[pos].String()
+	case BarrierCell:
+		desc = "magical barrier"
+	case WindowCell:
+		desc = "closed window"
+	case ChasmCell:
+		if g.Depth == MaxDepth || g.Depth == WinDepth {
+			desc = "deep chasm"
+		} else {
+			desc = "chasm"
+		}
+	case WaterCell:
+		desc = "shallow water"
+	case RubbleCell:
+		desc = "rubblestone"
+	case CavernCell:
+		desc = "cave ground"
+	case FakeStairCell:
+		if g.Depth == WinDepth {
+			desc = DeepStairShortDesc
+		} else {
+			desc = NormalStairShortDesc
+		}
+	case PotionCell:
+		desc = g.Objects.Potions[pos].String()
+	case QueenRockCell:
+		desc = "queen rock"
+	}
+	return desc
+}
+
 func (c cell) ShortDesc(g *game, pos gruid.Point) (desc string) {
 	switch terrain(c) {
 	case WallCell:
@@ -258,9 +324,9 @@ func (c cell) ShortDesc(g *game, pos gruid.Point) (desc string) {
 	case HoledWallCell:
 		desc = "a holed wall"
 	case ScrollCell:
-		desc = g.Objects.Scrolls[pos].ShortDesc(g)
+		desc = g.Objects.Scrolls[pos].ShortDesc()
 	case StoryCell:
-		desc = g.Objects.Story[pos].ShortDesc(g, pos)
+		desc = g.Objects.Story[pos].String()
 	case ItemCell:
 		desc = g.Objects.Items[pos].ShortDesc(g)
 	case BarrierCell:

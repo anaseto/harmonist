@@ -91,7 +91,7 @@ func (md *model) KeyboardExamine() {
 			pos = md.mp.ex.pos
 		}
 	}
-	md.Examine(pos)
+	md.examine(pos)
 }
 
 type posInfo struct {
@@ -124,7 +124,7 @@ func (md *model) drawPosInfo() {
 
 	features := []string{}
 	if !info.Unknown {
-		features = append(features, info.Cell.ShortDesc(g, info.Pos))
+		features = append(features, info.Cell.ShortString(g, info.Pos))
 		if info.Cloud != "" && info.Sees {
 			features = append(features, info.Cloud)
 		}

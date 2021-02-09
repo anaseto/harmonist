@@ -45,6 +45,22 @@ func (st stair) String() (desc string) {
 const NormalStairShortDesc = "stairs downwards"
 const DeepStairShortDesc = "deep stairs downwards"
 
+func (st stair) ShortString(g *game) (desc string) {
+	switch st {
+	case NormalStair:
+		if g.Depth == WinDepth {
+			desc = DeepStairShortDesc
+		} else {
+			desc = NormalStairShortDesc
+		}
+	case WinStair:
+		desc = "monolith portal"
+	case BlockedStair:
+		desc = "blocked " + NormalStair.ShortDesc(g)
+	}
+	return desc
+}
+
 func (st stair) ShortDesc(g *game) (desc string) {
 	switch st {
 	case NormalStair:
@@ -419,7 +435,17 @@ const (
 	ScrollLore
 )
 
-func (sc scroll) ShortDesc(g *game) (desc string) {
+func (sc scroll) String() (desc string) {
+	switch sc {
+	case ScrollLore:
+		desc = "message"
+	default:
+		desc = "story message"
+	}
+	return desc
+}
+
+func (sc scroll) ShortDesc() (desc string) {
 	switch sc {
 	case ScrollLore:
 		desc = "a message"
@@ -495,10 +521,10 @@ func (st story) Desc(g *game, pos gruid.Point) (desc string) {
 	return desc
 }
 
-func (st story) ShortDesc(g *game, pos gruid.Point) (desc string) {
+func (st story) String() (desc string) {
 	switch st {
 	case NoStory:
-		desc = GroundCell.ShortDesc(g, pos)
+		desc = "paved ground"
 	case StoryShaedra:
 		desc = "Shaedra"
 	case StoryMarevor:
@@ -575,7 +601,7 @@ func (it item) IsAmulet() bool {
 	return false
 }
 
-func (it item) ShortDesc(g *game) (desc string) {
+func (it item) String() (desc string) {
 	switch it {
 	case NoItem:
 		desc = "empty slot"
@@ -607,6 +633,10 @@ func (it item) ShortDesc(g *game) (desc string) {
 		desc = "Moon Portal Artifact"
 	}
 	return desc
+}
+
+func (it item) ShortDesc(g *game) string {
+	return it.String()
 }
 
 func (it item) Desc(g *game) (desc string) {
