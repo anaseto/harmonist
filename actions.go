@@ -37,7 +37,7 @@ const (
 	ActionSave
 	ActionQuit
 	ActionWizard
-	ActionWizardInfo
+	ActionWizardMenu
 	ActionWizardDescend
 
 	ActionPreviousMonster
@@ -57,6 +57,9 @@ const (
 	ActionInvertLOS
 	ActionToggleTiles
 	ActionToggleShowNumbers
+
+	ActionWizardInfo
+	ActionWizardToggleMode
 )
 
 var ConfigurableKeyActions = [...]action{
@@ -109,7 +112,9 @@ func (k action) normalModeAction() bool {
 		ActionQuit,
 		ActionSettings,
 		ActionWizard,
-		ActionWizardInfo:
+		ActionWizardMenu,
+		ActionWizardInfo,
+		ActionWizardToggleMode:
 		return true
 	default:
 		return false
@@ -168,7 +173,7 @@ func (k action) String() (text string) {
 		text = "Settings and key bindings"
 	case ActionWizard:
 		text = "Wizard (debug) mode"
-	case ActionWizardInfo:
+	case ActionWizardMenu:
 		text = "Wizard (debug) mode information"
 	case ActionMenu:
 		text = "Action Menu"
@@ -180,6 +185,10 @@ func (k action) String() (text string) {
 		text = "Toggle tiles/ascii display"
 	case ActionToggleShowNumbers:
 		text = "Toggle hearts/numbers"
+	case ActionWizardInfo:
+		text = "Info"
+	case ActionWizardToggleMode:
+		text = "toggle normal/map/all wizard mode"
 	}
 	return text
 }
@@ -434,10 +443,10 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 				g.Print("Game statistics written.")
 			}
 		}
-	case ActionWizardInfo:
+	case ActionWizardMenu:
 		if g.Wizard {
 			again = true
-			err = md.HandleWizardAction()
+			md.openWizardMenu()
 		} else {
 			err = actionErrorUnknown
 		}
@@ -455,8 +464,9 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 			err = actionErrorUnknown
 		}
 	case ActionWizard:
-		md.EnterWizard()
-		return true, eff, nil
+		again = true
+		md.g.Print("Do you really want to enter wizard mode (irreversible)? [y/N]")
+		md.mode = modeWizardConfirmation
 	case ActionQuit:
 		again = true
 		md.Quit()
@@ -497,6 +507,19 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		}
 		md.updateStatusInfo()
 		md.mode = modeNormal
+	case ActionWizardInfo:
+		again = true
+		md.wizardInfo()
+	case ActionWizardToggleMode:
+		switch g.WizardMode {
+		case WizardNormal:
+			g.WizardMode = WizardMap
+		case WizardMap:
+			g.WizardMode = WizardSeeAll
+		case WizardSeeAll:
+			g.WizardMode = WizardNormal
+		}
+		md.mode = modeNormal
 	default:
 		err = actionErrorUnknown
 	}
@@ -504,6 +527,15 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		again = true
 	}
 	return again, eff, err
+}
+
+func (md *model) wizardInfo() {
+	md.mode = modeSmallPager
+	st := gruid.Style{}
+	md.smallPager.SetBox(&ui.Box{Title: ui.Text("Wizard Info").WithStyle(st.WithFg(ColorCyan))})
+	stts := []ui.StyledText{}
+	stts = append(stts, ui.Textf("Monsters: %d \n", len(md.g.Monsters)))
+	md.smallPager.SetLines(stts)
 }
 
 func (md *model) readScroll() {
@@ -724,225 +756,26 @@ func (md *model) equipMagaraMenu() {
 	md.description.Content = ui.Text(items[md.menu.Active()].Desc(md.g)).Format(UIWidth/2 - 1 - 2)
 }
 
-//func (ui *model) HandleKey(rka runeKeyAction) (again bool, quit bool, err error) {
-//g := ui.st
-//switch rka.k {
-//case ActionW, ActionS, ActionN, ActionE:
-//err = g.PlayerBump(To(KeyToDir(rka.k), g.Player.Pos))
-//case ActionRunW, ActionRunS, ActionRunN, ActionRunE:
-//err = g.GoToDir(KeyToDir(rka.k))
-//case ActionWaitTurn:
-//g.WaitTurn()
-//case ActionGoToStairs:
-//stairs := g.StairsSlice()
-//sortedStairs := g.SortedNearestTo(stairs, g.Player.Pos)
-//if len(sortedStairs) > 0 {
-//stair := sortedStairs[0]
-//if g.Player.Pos == stair {
-//err = errors.New("You are already on the stairs.")
-//break
-//}
-//ex := &examiner{stairs: true}
-//err = ex.Action(g, stair)
-//if err == nil && !g.MoveToTarget() {
-//err = errors.New("You could not move toward stairs.")
-//}
-//if ex.Done() {
-//g.Targeting = InvalidPos
-//}
-//} else {
-//err = errors.New("You cannot go to any stairs.")
-//}
-//case ActionInteract:
-//c := g.Dungeon.Cell(g.Player.Pos)
-//switch c.T {
-//case StairCell:
-//if g.Dungeon.Cell(g.Player.Pos).T == StairCell && g.Objects.Stairs[g.Player.Pos] != BlockedStair {
-//// TODO: animation
-////ui.MenuSelectedAnimation(MenuInteract, true)
-//strt := g.Objects.Stairs[g.Player.Pos]
-//err = ui.OptionalDescendConfirmation(strt)
-//if err != nil {
-//break
-//}
-//if g.Descend(DescendNormal) {
-//ui.Win()
-//quit = true
-//return again, quit, err
-//}
-////ui.DrawDungeonView(NormalMode)
-//} else if g.Dungeon.Cell(g.Player.Pos).T == StairCell && g.Objects.Stairs[g.Player.Pos] == BlockedStair {
-//err = errors.New("The stairs are blocked by a magical stone barrier energies.")
-//} else {
-//err = errors.New("No stairs here.")
-//}
-//case BarrelCell:
-////ui.MenuSelectedAnimation(MenuInteract, true)
-//err = g.Rest()
-//if err != nil {
-////ui.MenuSelectedAnimation(MenuInteract, false)
-//}
-//case MagaraCell:
-//err = ui.EquipMagara()
-//err = ui.CleanError(err)
-//case StoneCell:
-////ui.MenuSelectedAnimation(MenuInteract, true)
-//err = g.ActivateStone()
-//if err != nil {
-////ui.MenuSelectedAnimation(MenuInteract, false)
-//}
-//case ScrollCell:
-//err = ui.ReadScroll()
-//err = ui.CleanError(err)
-//case ItemCell:
-//err = ui.st.EquipItem()
-//case LightCell:
-//err = g.ExtinguishFire()
-//case StoryCell:
-//if g.Objects.Story[g.Player.Pos] == StoryArtifact && !g.LiberatedArtifact {
-//g.PushEvent(&simpleEvent{ERank: g.Ev.Rank(), EAction: ArtifactAnimation})
-//g.LiberatedArtifact = true
-//g.Ev.Renew(g, DurationTurn)
-//} else if g.Objects.Story[g.Player.Pos] == StoryArtifactSealed {
-//err = errors.New("The artifact is protected by a magical stone barrier.")
-//} else {
-//err = errors.New("You cannot interact with anything here.")
-//}
-//default:
-//err = errors.New("You cannot interact with anything here.")
-//}
-//case ActionEvoke:
-//err = ui.SelectMagara()
-//err = ui.CleanError(err)
-//case ActionInventory:
-//err = ui.SelectItem()
-//err = ui.CleanError(err)
-//case ActionExplore:
-//err = g.Autoexplore()
-//case ActionExamine:
-//again, quit, err = ui.Examine(nil)
-//case ActionHelp, ActionMenuCommandHelp:
-//ui.KeysHelp()
-//again = true
-//case ActionMenuTargetingHelp:
-//ui.ExamineHelp()
-//again = true
-//case ActionLogs:
-////ui.DrawPreviousLogs()
-//again = true
-//case ActionSave:
-//g.Ev.Renew(g, 0)
-//errsave := g.Save()
-//if errsave != nil {
-//g.PrintfStyled("Error: %v", logError, errsave)
-//g.PrintStyled("Could not save state.", logError)
-//} else {
-//quit = true
-//}
-//case ActionDump:
-//errdump := g.WriteDump()
-//if errdump != nil {
-//g.PrintfStyled("Error: %v", logError, errdump)
-//} else {
-//dataDir, _ := g.DataDir()
-//if dataDir != "" {
-//g.Printf("Game statistics written to %s.", filepath.Join(dataDir, "dump"))
-//} else {
-//g.Print("Game statistics written.")
-//}
-//}
-//again = true
-//case ActionWizardInfo:
-//if g.Wizard {
-//err = ui.HandleWizardAction()
-//again = true
-//} else {
-//err = errors.New("Unknown key. Type ? for help.")
-//}
-//case ActionWizardDescend:
-//if g.Wizard && g.Depth == WinDepth {
-//g.RescuedShaedra()
-//}
-//if g.Wizard && g.Depth < MaxDepth {
-//g.StoryPrint("Descended wizardly")
-//if g.Descend(DescendNormal) {
-//ui.Win()
-//quit = true
-//return again, quit, err
-//}
-//} else {
-//err = errors.New("Unknown key. Type ? for help.")
-//}
-//case ActionWizard:
-//ui.EnterWizard()
-//return true, false, nil
-//case ActionQuit:
-////if ui.Quit() {
-////return false, true, nil
-////}
-//return true, false, nil
-//case ActionConfigure:
-//err = ui.HandleSettingAction()
-//again = true
-//case ActionDescription:
-////ui.MenuSelectedAnimation(MenuView, false)
-//err = fmt.Errorf("You must choose a target to describe.")
-//case ActionExclude:
-//err = fmt.Errorf("You must choose a target for exclusion.")
-//default:
-//err = fmt.Errorf("Unknown key '%c'. Type ? for help.", rka.r)
-//}
-//if err != nil {
-//again = true
-//}
-//return again, quit, err
-//}
+var wizardActions = []action{
+	ActionWizardInfo,
+	ActionWizardToggleMode,
+}
 
-type wizardAction int
-
-const (
-	WizardInfoAction wizardAction = iota
-	WizardToggleMode
-)
-
-func (a wizardAction) String() (text string) {
-	switch a {
-	case WizardInfoAction:
-		text = "Info"
-	case WizardToggleMode:
-		text = "toggle normal/map/all wizard mode"
+func (md *model) openWizardMenu() {
+	entries := []ui.MenuEntry{}
+	r := 'a'
+	for _, it := range wizardActions {
+		entries = append(entries, ui.MenuEntry{
+			Text: ui.Textf("%c - %s", r, it),
+			Keys: []gruid.Key{gruid.Key(r)},
+		})
+		r++
 	}
-	return text
-}
-
-var WizardActions = []wizardAction{
-	WizardInfoAction,
-	WizardToggleMode,
-}
-
-func (md *model) HandleWizardAction() error {
-	// TODO: rewrite
-	//g := ui.st
-	//s, err := ui.SelectWizardMagic(WizardActions)
-	//if err != nil {
-	//return err
-	//}
-	//switch s {
-	//case WizardInfoAction:
-	//ui.WizardInfo()
-	//case WizardToggleMode:
-	//switch g.WizardMode {
-	//case WizardNormal:
-	//g.WizardMode = WizardMap
-	//case WizardMap:
-	//g.WizardMode = WizardSeeAll
-	//case WizardSeeAll:
-	//g.WizardMode = WizardNormal
-	//}
-	//g.StoryPrint("Toggle wizard mode.")
-	////ui.DrawDungeonView(NoFlushMode)
-	//}
-	return nil
+	altBgEntries(entries)
+	md.menu.SetBox(&ui.Box{Title: ui.Text("Wizard Menu").WithStyle(gruid.Style{}.WithFg(ColorYellow))})
+	md.menu.SetEntries(entries)
+	md.mode = modeMenu
+	md.menuMode = modeWizard
 }
 
 func (md *model) updateKeysDescription(title string, actions []string) {
@@ -1000,29 +833,6 @@ func (md *model) ExamineHelp() {
 		"Cycle through objects", "o",
 		"Toggle exclude area from auto-travel", "e or mouse middle",
 	})
-}
-
-func (md *model) WizardInfo() {
-	// TODO
-	//g := ui.st
-	//ui.Clear()
-	//b := &bytes.Buffer{}
-	//fmt.Fprintf(b, "Monsters: %d (%d)\n", len(g.Monsters), g.MaxMonsters())
-	//fmt.Fprintf(b, "Danger: %d (%d)\n", g.Danger(), g.MaxDanger())
-	//ui.DrawText(b.String(), 0, 0)
-	//ui.Flush()
-	//ui.WaitForContinue(-1)
-}
-
-func (md *model) EnterWizard() {
-	// TODO
-	//g := ui.st
-	//if ui.Wizard() {
-	//g.EnterWizardMode()
-	//ui.DrawDungeonView(NoFlushMode)
-	//} else {
-	//g.Print(DoNothing)
-	//}
 }
 
 func (md *model) checkShaedra(st stair) (err error) {

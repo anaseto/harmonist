@@ -246,7 +246,7 @@ func (tm *monochromeTileManager) TileSize() gruid.Point {
 	return gruid.Point{16, 24}
 }
 
-func (tm *monochromeTileManager) GetImage(gc gruid.Cell) *image.RGBA {
+func (tm *monochromeTileManager) GetImage(gc gruid.Cell) image.Image {
 	var pngImg []byte
 	hastile := false
 	if gc.Style.Attrs&AttrInMap != 0 && GameConfig.Tiles {

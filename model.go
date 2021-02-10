@@ -36,6 +36,7 @@ const (
 	modeQuit
 	modeQuitConfirmation
 	modeJumpConfirmation
+	modeWizardConfirmation
 	modeDump // simplified dump visualization after end
 	modeEnd  // win or death
 	modeHPCritical
@@ -60,6 +61,7 @@ const (
 	modeGameMenu
 	modeEvokation
 	modeEquip
+	modeWizard
 )
 
 type model struct {
@@ -126,7 +128,7 @@ func (md *model) initKeys() {
 		"S":             ActionSave,
 		"Q":             ActionQuit,
 		"W":             ActionWizard,
-		"@":             ActionWizardInfo,
+		"@":             ActionWizardMenu,
 		">":             ActionWizardDescend,
 		"=":             ActionSettings,
 		gruid.KeyEscape: ActionEscape,
@@ -360,6 +362,9 @@ func (md *model) update(msg gruid.Msg) gruid.Effect {
 	case modeJumpConfirmation:
 		md.updateJumpConfirmation(msg)
 		return nil
+	case modeWizardConfirmation:
+		md.updateWizardConfirmation(msg)
+		return nil
 	case modeHPCritical:
 		if md.more(msg) {
 			md.mode = modeNormal
@@ -408,6 +413,18 @@ func (md *model) updateJumpConfirmation(msg gruid.Msg) {
 			md.g.FallAbyss(DescendFall)
 		} else {
 			md.g.Print("No jump, then.")
+		}
+	}
+}
+
+func (md *model) updateWizardConfirmation(msg gruid.Msg) {
+	switch msg := msg.(type) {
+	case gruid.MsgKeyDown:
+		md.mode = modeNormal
+		if msg.Key == "y" || msg.Key == "Y" {
+			md.g.EnterWizardMode()
+		} else {
+			md.g.Print("Continuing normally, then.")
 		}
 	}
 }
@@ -675,6 +692,17 @@ func (md *model) updateMenu(msg gruid.Msg) gruid.Effect {
 			}
 			md.g.Printf("%v", settingsActions[md.menu.Active()])
 			_, eff, err := md.normalModeAction(settingsActions[md.menu.Active()])
+			if err != nil {
+				// should not happen
+				md.g.Printf("%v", err)
+			}
+			return eff
+		case modeWizard:
+			if act != ui.MenuInvoke {
+				break
+			}
+			md.g.Printf("%v", wizardActions[md.menu.Active()])
+			_, eff, err := md.normalModeAction(wizardActions[md.menu.Active()])
 			if err != nil {
 				// should not happen
 				md.g.Printf("%v", err)
