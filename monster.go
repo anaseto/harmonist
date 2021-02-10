@@ -688,14 +688,18 @@ func (m *monster) CorrectDir() {
 	}
 }
 
-func (m *monster) AttackAction(g *game) {
+func (m *monster) EndTurn(g *game) {
+	g.PushEvent(&monsterEvent{ERank: g.Turn + 1, Mons: m, EAction: MonsterTurn})
+}
+
+func (m *monster) AttackAction(g *game) bool {
 	m.Dir = Dir(m.Pos, g.Player.Pos)
 	m.CorrectDir()
 	switch m.Kind {
 	case MonsExplosiveNadre:
 		g.StoryPrint("Nadre explosion")
 		m.Explode(g)
-		return
+		return false
 	default:
 		if g.Player.HasStatus(StatusDispersal) {
 			m.Blink(g)
@@ -703,7 +707,7 @@ func (m *monster) AttackAction(g *game) {
 			m.HitPlayer(g)
 		}
 	}
-	g.RenewEvent(DurationTurn)
+	return true
 }
 
 func (m *monster) Explode(g *game) {
@@ -904,7 +908,6 @@ func (m *monster) HandleMonsSpecifics(g *game) (done bool) {
 			}
 		}
 		// oklob plants are static ranged-only
-		g.Ev.Renew(g, DurationTurn)
 		return true
 	case MonsGuard, MonsHighGuard:
 		if m.State != Wandering && m.State != Watching {
@@ -914,7 +917,6 @@ func (m *monster) HandleMonsSpecifics(g *game) (done bool) {
 			if !on && pos == m.Pos {
 				g.Dungeon.SetCell(m.Pos, LightCell)
 				g.Objects.Lights[m.Pos] = true
-				g.Ev.Renew(g, DurationTurn)
 				if g.Player.Sees(m.Pos) {
 					g.Printf("%s makes a new fire.", m.Kind.Definite(true))
 				} else {
@@ -970,7 +972,6 @@ func (m *monster) HandleWatching(g *game) {
 			m.GatherBand(g)
 		}
 	}
-	g.Ev.Renew(g, DurationTurn)
 }
 
 func (m *monster) ComputePath(g *game) {
@@ -1022,7 +1023,6 @@ func (m *monster) HandleEndPath(g *game) {
 			m.Target = m.NextTarget(g)
 		}
 	}
-	g.Ev.Renew(g, DurationTurn)
 }
 
 func (m *monster) MakeWanderAt(target gruid.Point) {
@@ -1042,7 +1042,7 @@ func (m *monster) MakeWander() {
 	}
 }
 
-func (m *monster) HandleMove(g *game) {
+func (m *monster) HandleMove(g *game) bool {
 	target := m.Path[1]
 	mons := g.MonsterAt(target)
 	monstarget := InvalidPos
@@ -1054,8 +1054,7 @@ func (m *monster) HandleMove(g *game) {
 	case m.Peaceful(g) && target == g.Player.Pos:
 		switch m.Kind {
 		case MonsEarthDragon:
-			m.AttackAction(g)
-			return
+			return m.AttackAction(g)
 		default:
 			m.Path = m.APath(g, m.Pos, m.Target)
 		}
@@ -1124,17 +1123,22 @@ func (m *monster) HandleMove(g *game) {
 		m.Path = m.APath(g, m.Pos, m.Target)
 		m.Waiting++
 	}
-	g.Ev.Renew(g, DurationTurn)
+	return true
 }
 
 func (m *monster) HandleTurn(g *game) {
+	m.handleTurn(g)
+	if m.Exists() {
+		m.EndTurn(g)
+	}
+}
+
+func (m *monster) handleTurn(g *game) {
 	if m.Status(MonsParalysed) {
-		g.RenewEvent(DurationTurn)
 		return
 	}
 	if m.Swapped {
 		m.Swapped = false
-		g.RenewEvent(DurationTurn)
 		return
 	}
 	ppos := g.Player.Pos
@@ -1149,7 +1153,6 @@ func (m *monster) HandleTurn(g *game) {
 		if RandInt(3000) == 0 || m.Kind.ShallowSleep() && RandInt(10) == 0 {
 			m.NaturalAwake(g)
 		}
-		g.RenewEvent(DurationTurn)
 		return
 	}
 	if m.State == Hunting && m.RangedAttack(g) {
@@ -1164,19 +1167,16 @@ func (m *monster) HandleTurn(g *game) {
 	if Distance(mpos, ppos) == 1 && terrain(g.Dungeon.Cell(ppos)) != BarrelCell && !m.Peaceful(g) {
 		if m.Status(MonsConfused) {
 			g.Printf("%s appears too confused to attack.", m.Kind.Definite(true))
-			g.RenewEvent(DurationTurn) // wait
 			return
 		}
 		if terrain(g.Dungeon.Cell(ppos)) == TreeCell && !m.Kind.CanAttackOnTree() {
 			g.Printf("%s watches you from below.", m.Kind.Definite(true))
-			g.RenewEvent(DurationTurn) // wait
 			return
 		}
 		m.AttackAction(g)
 		return
 	}
 	if m.Status(MonsLignified) {
-		g.RenewEvent(DurationTurn) // wait
 		return
 	}
 	switch m.State {
@@ -1287,7 +1287,7 @@ func (m *monster) PutStatus(g *game, st monsterStatus, duration int) bool {
 	m.Statuses[st] += duration
 	g.PushEvent(&monsterEvent{
 		ERank:   g.Ev.Rank() + DurationStatusStep,
-		NMons:   m.Index,
+		Mons:    m,
 		EAction: MonsStatusEndActions[st]})
 	return true
 }
@@ -1433,7 +1433,6 @@ func (m *monster) RangedAttack(g *game) bool {
 	if !m.FireReady {
 		m.FireReady = true
 		if Distance(m.Pos, g.Player.Pos) <= 3 {
-			g.RenewEvent(DurationTurn)
 			return true
 		} else {
 			return false
@@ -1538,7 +1537,6 @@ func (m *monster) CreateBarrier(g *game) bool {
 	if !done {
 		return false
 	}
-	g.RenewEvent(DurationTurn)
 	m.Exhaust(g)
 	return true
 }
@@ -1548,7 +1546,6 @@ func (m *monster) Illuminate(g *game) bool {
 		g.Print("The harmonic celmist casts magical harmonies on you.")
 		g.StoryPrintf("Illuminated by %s", m.Kind)
 		g.MakeNoise(HarmonicNoise, g.Player.Pos)
-		g.RenewEvent(DurationTurn)
 		m.Exhaust(g)
 		return true
 	}
@@ -1564,7 +1561,6 @@ func (m *monster) VampireSpit(g *game) bool {
 	g.Print("A vampire spitted at you.")
 	g.Confusion()
 	m.Exhaust(g)
-	g.RenewEvent(DurationTurn)
 	return true
 }
 
@@ -1577,7 +1573,6 @@ func (m *monster) ThrowSpores(g *game) bool {
 	g.StoryPrintf("Lignified by %s", m.Kind)
 	g.EnterLignification()
 	m.Exhaust(g)
-	g.RenewEvent(DurationTurn)
 	return true
 }
 
@@ -1599,7 +1594,6 @@ func (m *monster) ThrowJavelin(g *game) bool {
 	g.MakeNoise(noise, g.Player.Pos)
 	m.InflictDamage(g, dmg, dmg)
 	m.ExhaustTime(g, 10+RandInt(5))
-	g.RenewEvent(DurationTurn)
 	return true
 }
 
@@ -1633,7 +1627,6 @@ func (m *monster) ThrowAcid(g *game) bool {
 	m.InflictDamage(g, dmg, dmg)
 	m.Corrode(g)
 	m.ExhaustTime(g, 2)
-	g.RenewEvent(DurationTurn)
 	return true
 }
 
@@ -1653,7 +1646,6 @@ func (m *monster) NixeAttraction(g *game) bool {
 		g.PlacePlayerAt(ray[1])
 	}
 	m.Exhaust(g)
-	g.RenewEvent(DurationTurn)
 	return true
 }
 
@@ -1672,7 +1664,6 @@ func (m *monster) SmitingAttack(g *game) bool {
 	if !m.FireReady {
 		m.FireReady = true
 		if Distance(m.Pos, g.Player.Pos) <= 3 {
-			g.RenewEvent(DurationTurn)
 			return true
 		} else {
 			return false
@@ -1702,7 +1693,6 @@ func (m *monster) AbsorbMana(g *game) bool {
 	g.Printf("%s absorbs your mana.", m.Kind.Definite(true))
 	g.StoryPrintf("Mana absorbed by %s (MP: %d)", m.Kind, g.Player.MP)
 	m.ExhaustTime(g, 1+RandInt(2))
-	g.RenewEvent(DurationTurn)
 	return true
 }
 

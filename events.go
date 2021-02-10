@@ -7,7 +7,6 @@ import (
 type event interface {
 	Rank() int
 	Action(*game)
-	Renew(*game, int)
 }
 
 type simpleAction int
@@ -46,15 +45,6 @@ type simpleEvent struct {
 
 func (sev *simpleEvent) Rank() int {
 	return sev.ERank
-}
-
-func (sev *simpleEvent) Renew(g *game, delay int) {
-	sev.ERank += delay
-	if delay == 0 {
-		g.PushEventFirst(sev)
-	} else {
-		g.PushEvent(sev)
-	}
 }
 
 var StatusEndMsgs = [...]string{
@@ -133,7 +123,8 @@ func (sev *simpleEvent) Action(g *game) {
 				}
 			}
 		} else {
-			sev.Renew(g, DurationStatusStep)
+			sev.ERank += DurationStatusStep
+			g.PushEvent(sev)
 		}
 	}
 }
@@ -151,7 +142,7 @@ const (
 
 type monsterEvent struct {
 	ERank   int
-	NMons   int
+	Mons    *monster
 	EAction monsterAction
 }
 
@@ -186,12 +177,12 @@ var MonsStatusEndActions = [...]monsterAction{
 func (mev *monsterEvent) Action(g *game) {
 	switch mev.EAction {
 	case MonsterTurn:
-		mons := g.Monsters[mev.NMons]
+		mons := mev.Mons
 		if mons.Exists() {
 			mons.HandleTurn(g)
 		}
 	default:
-		mons := g.Monsters[mev.NMons]
+		mons := mev.Mons
 		mons.Statuses[MonsEndStatuses[mev.EAction]] -= DurationStatusStep
 		if mons.Statuses[MonsEndStatuses[mev.EAction]] <= 0 {
 			mons.Statuses[MonsEndStatuses[mev.EAction]] = 0
@@ -203,14 +194,9 @@ func (mev *monsterEvent) Action(g *game) {
 				mons.Path = mons.APath(g, mons.Pos, mons.Target)
 			}
 		} else {
-			g.PushEvent(&monsterEvent{NMons: mev.NMons, ERank: mev.Rank() + DurationStatusStep, EAction: mev.EAction})
+			g.PushEvent(&monsterEvent{Mons: mev.Mons, ERank: mev.Rank() + DurationStatusStep, EAction: mev.EAction})
 		}
 	}
-}
-
-func (mev *monsterEvent) Renew(g *game, delay int) {
-	mev.ERank += delay
-	g.PushEvent(mev)
 }
 
 type posAction int
@@ -465,7 +451,3 @@ const (
 	DurationStatusStep             = 1
 	DurationNightFog               = 15
 )
-
-func (g *game) RenewEvent(delay int) {
-	g.Ev.Renew(g, delay)
-}

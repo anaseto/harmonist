@@ -504,8 +504,8 @@ func (g *game) InitLevel() {
 	rand.Shuffle(len(monsters), func(i, j int) {
 		monsters[i], monsters[j] = monsters[j], monsters[i]
 	})
-	for i := range monsters {
-		g.PushEvent(&monsterEvent{ERank: g.Turn, EAction: MonsterTurn, NMons: i})
+	for _, m := range monsters {
+		g.PushEvent(&monsterEvent{ERank: g.Turn, EAction: MonsterTurn, Mons: m})
 	}
 	switch g.Params.Event[g.Depth] {
 	case UnstableLevel:
