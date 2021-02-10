@@ -61,7 +61,6 @@ type game struct {
 	InfoEntry             string
 	Stats                 stats
 	Boredom               int
-	Quit                  bool
 	Wizard                bool
 	WizardMode            wizardMode
 	Version               string
@@ -788,9 +787,6 @@ func (g *game) EndTurn() gruid.Effect {
 				}
 				return nil
 			}
-		}
-		if g.Quit {
-			return nil
 		}
 	}
 }
