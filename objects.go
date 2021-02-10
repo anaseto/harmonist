@@ -246,7 +246,6 @@ func (g *game) ActivateStone() (err error) {
 		return err
 	}
 	g.UseStone(oppos)
-	g.Ev.Renew(g, DurationTurn)
 	return nil
 }
 
@@ -714,7 +713,6 @@ func (g *game) EquipItem() error {
 	case it.IsAmulet():
 		AchAmulet.Get(g)
 	}
-	g.Ev.Renew(g, DurationTurn)
 	return nil
 }
 

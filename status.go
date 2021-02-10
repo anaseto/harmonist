@@ -321,7 +321,7 @@ func (md *model) updateStatusInfo() {
 	// menus
 	entries = append(entries, ui.MenuEntry{Text: stt.WithText("[M]")})
 	entries = append(entries, ui.MenuEntry{Text: stt.WithText("[I]")})
-	interact := md.interact()
+	_, interact := md.interact()
 	interactstt := stt.WithText("")
 	if interact {
 		interactstt = stt.WithText("[E]")

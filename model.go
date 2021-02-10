@@ -120,7 +120,9 @@ func (md *model) initKeys() {
 		"v":             ActionEvoke,
 		"z":             ActionEvoke,
 		"e":             ActionInteract,
+		"E":             ActionInteract,
 		"i":             ActionInventory,
+		"I":             ActionInventory,
 		"m":             ActionLogs,
 		"M":             ActionMenu,
 		"#":             ActionDump,
@@ -446,7 +448,6 @@ func (md *model) updateNormal(msg gruid.Msg) gruid.Effect {
 
 func (md *model) updateKeyDown(msg gruid.MsgKeyDown) gruid.Effect {
 	md.statusFocus = false
-	md.g.Ev = &simpleEvent{EAction: PlayerTurn, ERank: md.g.Turn}
 	if !md.mp.kbTargeting && valid(md.mp.ex.pos) {
 		md.CancelExamine()
 	}
@@ -564,11 +565,12 @@ func (md *model) updateStatusMouse(msg gruid.MsgMouse) gruid.Effect {
 			md.statusDesc.SetText("Click to open inventory.")
 			md.statusFocus = true
 		case i == statusInteract:
-			if !md.interact() {
+			s, ok := md.interact()
+			if !ok {
 				break
 			}
 			md.statusDesc.Box = &ui.Box{Title: ui.Text("Interact")}
-			md.statusDesc.SetText("Click to interact with current position.")
+			md.statusDesc.SetText(fmt.Sprintf("Click to %v.", s))
 			md.statusFocus = true
 		case i >= statusIndex:
 			i := md.status.Active() - int(statusIndex)
@@ -588,11 +590,17 @@ func (md *model) updateStatusMouse(msg gruid.MsgMouse) gruid.Effect {
 // turn.
 func (md *model) EndTurn() gruid.Effect {
 	md.mode = modeNormal
+	md.g.PushPlayerTurn()
 	eff := md.g.EndTurn()
 	if md.g.Player.HP <= 0 {
 		md.death()
 		return eff
 	}
+	md.updateMapInfo()
+	return eff
+}
+
+func (md *model) updateMapInfo() {
 	md.g.ComputeNoise()
 	md.g.ComputeLOS()
 	md.g.ComputeMonsterLOS()
@@ -600,7 +608,6 @@ func (md *model) EndTurn() gruid.Effect {
 	if md.g.Highlight != nil {
 		md.examine(md.mp.ex.pos)
 	}
-	return eff
 }
 
 func (md *model) updatePager(msg gruid.Msg) gruid.Effect {

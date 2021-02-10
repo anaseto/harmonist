@@ -125,7 +125,6 @@ func (g *game) EquipMagara(i int) (err error) {
 	g.Printf("You take the %s.", g.Player.Magaras[i])
 	g.Printf("You leave the %s.", omagara)
 	g.StoryPrintf("Took %s (%d), left %s (%d)", g.Player.Magaras[i], g.Player.Magaras[i].Charges, omagara, omagara.Charges)
-	g.RenewEvent(DurationTurn)
 	return nil
 }
 
@@ -239,7 +238,6 @@ func (g *game) UseMagara(n int) (err error) {
 			AchTeleport.Get(g)
 		}
 	}
-	g.RenewEvent(DurationTurn)
 	return nil
 }
 

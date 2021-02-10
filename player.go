@@ -133,7 +133,6 @@ func (g *game) MoveToTarget() bool {
 
 func (g *game) WaitTurn() {
 	g.Stats.Waits++
-	g.RenewEvent(DurationTurn)
 }
 
 func (g *game) MonsterCount() (count int) {
@@ -160,7 +159,6 @@ func (g *game) Rest() error {
 	}
 	// TODO: animation
 	//g.ui.DrawMessage("Resting...")
-	g.RenewEvent(DurationTurn)
 	g.Resting = true
 	g.RestingTurns = RandInt(5) // you do not wake up when you want
 	g.Player.Bananas--
@@ -376,15 +374,19 @@ func (g *game) PlayerBump(pos gruid.Point) (again bool, err error) {
 		return again, err
 	}
 	if g.Player.HasStatus(StatusSwift) {
-		g.RenewEvent(0)
+		again = true
 		g.Player.Statuses[StatusSwift]--
 		if !g.Player.HasStatus(StatusSwift) {
 			g.Print("You no longer feel swift.")
 		}
+		g.md.updateMapInfo()
 		return again, nil
 	}
-	g.RenewEvent(DurationTurn)
 	return again, nil
+}
+
+func (g *game) PushPlayerTurn() {
+	g.PushEvent(&simpleEvent{EAction: PlayerTurn, ERank: g.Turn + DurationTurn})
 }
 
 func (g *game) SwiftFog() {
@@ -450,7 +452,6 @@ func (g *game) ExtinguishFire() error {
 		AchExtinguisher.Get(g)
 	}
 	g.Print("You extinguish the fire.")
-	g.Ev.Renew(g, DurationTurn)
 	return nil
 }
 

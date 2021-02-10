@@ -690,7 +690,6 @@ func (g *game) AutoPlayer() bool {
 	case g.Resting:
 		const enoughRestTurns = 25
 		if g.RestingTurns < enoughRestTurns {
-			g.RenewEvent(DurationTurn)
 			g.RestingTurns++
 			return true
 		}
@@ -746,34 +745,6 @@ func (g *game) AutoPlayer() bool {
 		}
 	}
 	return false
-}
-
-func (g *game) EventLoop() {
-loop:
-	for {
-		if g.Player.HP <= 0 {
-			if g.Wizard {
-				g.Player.HP = g.Player.HPMax()
-				g.PrintStyled("You died.", logSpecial)
-				g.StoryPrint("You died (wizard mode)")
-			} else {
-				break loop
-			}
-		}
-		if g.Events.Empty() {
-			break loop
-		}
-		ev, r := g.Events.PopR()
-		g.Turn = r
-		g.Ev = ev.(event)
-		g.Ev.Action(g)
-		if g.AutoNext {
-			continue loop
-		}
-		if g.Quit {
-			break loop
-		}
-	}
 }
 
 func (g *game) Died() bool {

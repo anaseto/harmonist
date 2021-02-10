@@ -248,31 +248,36 @@ func (k action) targetingModeAction() bool {
 	}
 }
 
-func (md *model) interact() bool {
+func (md *model) interact() (string, bool) {
 	g := md.g
 	c := g.Dungeon.Cell(g.Player.Pos)
 	switch terrain(c) {
 	case StairCell:
 		if terrain(g.Dungeon.Cell(g.Player.Pos)) == StairCell && g.Objects.Stairs[g.Player.Pos] != BlockedStair ||
 			terrain(g.Dungeon.Cell(g.Player.Pos)) == StairCell && g.Objects.Stairs[g.Player.Pos] == BlockedStair {
-			return true
+			return "descend", true
 		}
-		return false
-	case BarrelCell,
-		MagaraCell,
-		StoneCell,
-		ScrollCell,
-		ItemCell,
-		LightCell:
-		return true
+		return "", false
+	case BarrelCell:
+		return "rest", true
+	case MagaraCell:
+		return "equip magara", true
+	case StoneCell:
+		return "activate stone", true
+	case ScrollCell:
+		return "read scroll", true
+	case ItemCell:
+		return "equip item", true
+	case LightCell:
+		return "extinguish light", true
 	case StoryCell:
 		if g.Objects.Story[g.Player.Pos] == StoryArtifact && !g.LiberatedArtifact ||
 			g.Objects.Story[g.Player.Pos] == StoryArtifactSealed {
-			return true
+			return "take artifact", true
 		}
-		return false
+		return "", false
 	}
-	return false
+	return "", false
 }
 
 func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, err error) {
@@ -402,7 +407,6 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 			if g.Objects.Story[g.Player.Pos] == StoryArtifact && !g.LiberatedArtifact {
 				g.PushEventFirst(&simpleEvent{ERank: g.Ev.Rank(), EAction: StorySequence})
 				g.LiberatedArtifact = true
-				g.Ev.Renew(g, DurationTurn)
 			} else if g.Objects.Story[g.Player.Pos] == StoryArtifactSealed {
 				err = errors.New("The artifact is protected by a magical stone barrier.")
 			} else {
