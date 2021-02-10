@@ -351,11 +351,11 @@ func (md *model) update(msg gruid.Msg) gruid.Effect {
 	case modeQuitConfirmation:
 		eff := md.updateQuitConfirmation(msg)
 		if md.mode == modeQuit {
-			err := md.g.RemoveSaveFile()
+			err := RemoveSaveFile()
 			if err != nil {
 				md.g.PrintfStyled("Error removing save file: %v", logError, err)
 			}
-			md.g.RemoveDataFile("replay.part")
+			RemoveDataFile("replay.part")
 			return eff
 		}
 		return eff
@@ -489,6 +489,16 @@ func (md *model) updateMouse(msg gruid.MsgMouse) gruid.Effect {
 	return nil
 }
 
+type statusItem int
+
+const (
+	statusDepth statusItem = iota
+	statusTurns
+	statusHP
+	statusMP
+	statusBananas
+)
+
 func (md *model) updateStatusMouse(msg gruid.MsgMouse) gruid.Effect {
 	md.CancelExamine()
 	md.status.Update(md.gd.Range().Line(UIHeight - 1).RelMsg(msg))
@@ -498,34 +508,32 @@ func (md *model) updateStatusMouse(msg gruid.MsgMouse) gruid.Effect {
 		update = true
 	}
 	if update {
-		const statusIndex = 6
-		const bananaIndex = 4
-		i := md.status.Active()
+		const statusIndex = statusBananas + 2
+		i := statusItem(md.status.Active())
+		md.statusFocus = false
 		switch {
-		case i == 0:
+		case i == statusDepth:
 			md.statusDesc.Box = &ui.Box{Title: ui.Text("Depth")}
 			md.statusDesc.SetText("Dungeon depth.")
 			md.statusFocus = true
-		case i == 1:
+		case i == statusTurns:
 			md.statusDesc.Box = &ui.Box{Title: ui.Text("Turns")}
 			md.statusDesc.SetText("Number of turns since the beginning.")
 			md.statusFocus = true
-		case i == 2:
+		case i == statusHP:
 			md.statusDesc.Box = &ui.Box{Title: ui.Text("Health")}
 			md.statusDesc.SetText("Your hit points.")
 			md.statusFocus = true
-		case i == 3:
+		case i == statusMP:
 			md.statusDesc.Box = &ui.Box{Title: ui.Text("Magic Points")}
 			md.statusDesc.SetText("Your magic points. Needed for evoking magaras.")
 			md.statusFocus = true
-		case i == 4:
+		case i == statusBananas:
 			md.statusDesc.Box = &ui.Box{Title: ui.Text("Bananas")}
 			md.statusDesc.SetText("Need to eat one before sleeping in barrels.")
 			md.statusFocus = true
-		case i == 5:
-			md.statusFocus = false
 		case i >= statusIndex:
-			i := md.status.Active() - statusIndex
+			i := md.status.Active() - int(statusIndex)
 			sts := md.sortedStatuses()
 			if i > len(sts)-1 {
 				break
