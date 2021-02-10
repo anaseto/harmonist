@@ -11,7 +11,7 @@
 .\" WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-.Dd May 05, 2019
+.Dd Feb 10, 2021
 .Dt HARMONIST 6
 .Os
 .Sh NAME
@@ -21,7 +21,6 @@
 .Nm
 .Op Fl c
 .Op Fl n
-.Op Fl o
 .Op Fl s
 .Op Fl v
 .Op Fl x
@@ -50,12 +49,8 @@ will go smoothly...”
 .Pp
 The options are as follows:
 .Bl -tag -width Ds
-.It Fl c
-Use a centered camera.
 .It Fl n
 No animations.
-.It Fl o
-Use 8-color palette.
 .It Fl r Ar file
 Watch replay file
 .Ar file
@@ -79,11 +74,12 @@ and
 .Cm Q
 for exiting the program.
 .It Fl s
-Use the 16-color solarized palette.
+Use the 16-color simple palette.
 .It Fl v
 Print version number.
 .It Fl x
-Use xterm 256-color palette (solarized approximation). This is the default.
+Use xterm 256-color palette (solarized approximation). This is the default on
+non-windows platforms.
 .El
 .Sh FILES
 .Bl -tag -width Ds -compact
@@ -92,7 +88,9 @@ Last saved game.
 .It Pa "$XDG_DATA_HOME/harmonist/dump"
 Last game character and statistics.
 .It Pa "$XDG_DATA_HOME/harmonist/config.gob"
-Key bindings configuration.
+Configuration file.
 .It Pa "$XDG_DATA_HOME/harmonist/replay"
-Last game replay file.
+Last finished game replay file.
+.It Pa "$XDG_DATA_HOME/harmonist/replay.part"
+Current's game replay file.
 .El

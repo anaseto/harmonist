@@ -10,6 +10,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
 
 	"github.com/anaseto/gruid"
 	"github.com/anaseto/gruid/ui"
@@ -19,8 +20,10 @@ func main() {
 	optVersion := flag.Bool("v", false, "print version number")
 	optNoAnim := flag.Bool("n", false, "no animations")
 	optReplay := flag.String("r", "", "path to replay file (_ means default location)")
+	opt16colors := new(bool)
 	opt256colors := new(bool)
 	if Terminal {
+		opt16colors = flag.Bool("s", false, "use 16-color simple palette")
 		opt256colors = flag.Bool("x", false, "use xterm 256-color palette (solarized approximation)")
 	}
 	flag.Parse()
@@ -32,8 +35,15 @@ func main() {
 	if *optNoAnim {
 		DisableAnimations = true
 	}
+	if runtime.GOOS != "windows" {
+		Xterm256Color = true
+	} else {
+		Xterm256Color = false
+	}
 	if *opt256colors {
 		Xterm256Color = true // TODO: map the colors
+	} else if *opt16colors {
+		Xterm256Color = false
 	}
 	if *optReplay != "" {
 		RunReplay(*optReplay)
@@ -52,6 +62,7 @@ func RunGame() {
 			repw.Close()
 		}
 		if m.finished && dir != "" {
+			RemoveSaveFile()
 			_, err := os.Stat(filepath.Join(dir, "replay.part"))
 			if err != nil {
 				log.Printf("no replay file: %v", err)

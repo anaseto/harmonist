@@ -8,11 +8,12 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"runtime"
 )
 
 func DataDir() (string, error) {
 	var xdg string
-	if os.Getenv("GOOS") == "windows" {
+	if runtime.GOOS == "windows" {
 		xdg = os.Getenv("LOCALAPPDATA")
 	} else {
 		xdg = os.Getenv("XDG_DATA_HOME")
@@ -51,8 +52,8 @@ func (g *game) Save() error {
 	return nil
 }
 
-func (g *game) RemoveSaveFile() error {
-	return g.RemoveDataFile("save")
+func RemoveSaveFile() error {
+	return RemoveDataFile("save")
 }
 
 func (g *game) Load() (bool, error) {
@@ -124,7 +125,7 @@ func LoadConfig() (bool, error) {
 	return true, nil
 }
 
-func (g *game) RemoveDataFile(file string) error {
+func RemoveDataFile(file string) error {
 	dataDir, err := DataDir()
 	if err != nil {
 		return err
