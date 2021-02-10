@@ -206,7 +206,7 @@ func (md *model) initWidgets() {
 	})
 	md.status = ui.NewMenu(ui.MenuConfig{
 		Grid:  gruid.NewGrid(UIWidth, 1),
-		Style: ui.MenuStyle{Layout: gruid.Point{0, 1}},
+		Style: ui.MenuStyle{Layout: gruid.Point{0, 1}, Active: style.Active},
 	})
 }
 
@@ -497,6 +497,9 @@ const (
 	statusHP
 	statusMP
 	statusBananas
+	statusMenu
+	statusInventory
+	statusInteract
 )
 
 func (md *model) updateStatusMouse(msg gruid.MsgMouse) gruid.Effect {
@@ -506,9 +509,29 @@ func (md *model) updateStatusMouse(msg gruid.MsgMouse) gruid.Effect {
 	switch md.status.Action() {
 	case ui.MenuMove:
 		update = true
+	case ui.MenuInvoke:
+		i := statusItem(md.status.Active())
+		var action action
+		switch i {
+		case statusMenu:
+			action = ActionMenu
+		case statusInventory:
+			action = ActionInventory
+		case statusInteract:
+			action = ActionInteract
+			md.statusFocus = false
+		}
+		again, eff, err := md.normalModeAction(action)
+		if err != nil {
+			md.g.Printf("%v", err)
+		}
+		if again {
+			return eff
+		}
+		return md.EndTurn()
 	}
 	if update {
-		const statusIndex = statusBananas + 2
+		const statusIndex = statusInteract + 2
 		i := statusItem(md.status.Active())
 		md.statusFocus = false
 		switch {
@@ -531,6 +554,21 @@ func (md *model) updateStatusMouse(msg gruid.MsgMouse) gruid.Effect {
 		case i == statusBananas:
 			md.statusDesc.Box = &ui.Box{Title: ui.Text("Bananas")}
 			md.statusDesc.SetText("Need to eat one before sleeping in barrels.")
+			md.statusFocus = true
+		case i == statusMenu:
+			md.statusDesc.Box = &ui.Box{Title: ui.Text("Menu")}
+			md.statusDesc.SetText("Click to open menu.")
+			md.statusFocus = true
+		case i == statusInventory:
+			md.statusDesc.Box = &ui.Box{Title: ui.Text("Inventory")}
+			md.statusDesc.SetText("Click to open inventory.")
+			md.statusFocus = true
+		case i == statusInteract:
+			if !md.interact() {
+				break
+			}
+			md.statusDesc.Box = &ui.Box{Title: ui.Text("Interact")}
+			md.statusDesc.SetText("Click to interact with current position.")
 			md.statusFocus = true
 		case i >= statusIndex:
 			i := md.status.Active() - int(statusIndex)

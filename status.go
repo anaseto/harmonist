@@ -318,7 +318,17 @@ func (md *model) updateStatusInfo() {
 	bananas := fmt.Sprintf("@M)@N:%1d/%1d ", g.Player.Bananas, MaxBananas)
 	entries = append(entries, ui.MenuEntry{Text: stt.WithText(bananas), Disabled: true})
 
-	// statuses (TODO: add description)
+	// menus
+	entries = append(entries, ui.MenuEntry{Text: stt.WithText("[M]")})
+	entries = append(entries, ui.MenuEntry{Text: stt.WithText("[I]")})
+	interact := md.interact()
+	interactstt := stt.WithText("")
+	if interact {
+		interactstt = stt.WithText("[E]")
+	}
+	entries = append(entries, ui.MenuEntry{Text: interactstt, Disabled: !interact})
+
+	// statuses
 	sts := md.sortedStatuses()
 
 	if len(sts) > 0 {

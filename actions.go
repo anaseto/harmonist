@@ -248,6 +248,33 @@ func (k action) targetingModeAction() bool {
 	}
 }
 
+func (md *model) interact() bool {
+	g := md.g
+	c := g.Dungeon.Cell(g.Player.Pos)
+	switch terrain(c) {
+	case StairCell:
+		if terrain(g.Dungeon.Cell(g.Player.Pos)) == StairCell && g.Objects.Stairs[g.Player.Pos] != BlockedStair ||
+			terrain(g.Dungeon.Cell(g.Player.Pos)) == StairCell && g.Objects.Stairs[g.Player.Pos] == BlockedStair {
+			return true
+		}
+		return false
+	case BarrelCell,
+		MagaraCell,
+		StoneCell,
+		ScrollCell,
+		ItemCell,
+		LightCell:
+		return true
+	case StoryCell:
+		if g.Objects.Story[g.Player.Pos] == StoryArtifact && !g.LiberatedArtifact ||
+			g.Objects.Story[g.Player.Pos] == StoryArtifactSealed {
+			return true
+		}
+		return false
+	}
+	return false
+}
+
 func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, err error) {
 	g := md.g
 	switch action {
