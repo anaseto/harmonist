@@ -255,7 +255,7 @@ func (md *model) updateStatusInfo() {
 		'B': st.WithFg(ColorCyan),
 		'M': st.WithFg(ColorYellow).WithAttrs(AttrInMap),
 	})
-	// depth: entries[0]
+	// depth
 	var depth string
 	if g.Depth == -1 {
 		depth = "D: Out! "
@@ -264,10 +264,10 @@ func (md *model) updateStatusInfo() {
 	}
 	entries = append(entries, ui.MenuEntry{Text: stt.WithText(depth), Disabled: true})
 
-	// turns: entries[1]
+	// turns
 	entries = append(entries, ui.MenuEntry{Text: stt.WithTextf("T: %d ", g.Turn), Disabled: true})
 
-	// HP: entries[2]
+	// HP
 	nWounds := g.Player.HPMax() - g.Player.HP - g.Player.HPbonus
 	if nWounds <= 0 {
 		nWounds = 0
@@ -295,7 +295,7 @@ func (md *model) updateStatusInfo() {
 	}
 	entries = append(entries, ui.MenuEntry{Text: stt.WithText(hps), Disabled: true})
 
-	// MP: entries[3]
+	// MP
 	MPspent := g.Player.MPMax() - g.Player.MP
 	if MPspent <= 0 {
 		MPspent = 0
@@ -314,11 +314,11 @@ func (md *model) updateStatusInfo() {
 	}
 	entries = append(entries, ui.MenuEntry{Text: stt.WithText(mps), Disabled: true})
 
-	// bananas: entries[4]
+	// bananas
 	bananas := fmt.Sprintf("@M)@N:%1d/%1d ", g.Player.Bananas, MaxBananas)
 	entries = append(entries, ui.MenuEntry{Text: stt.WithText(bananas), Disabled: true})
 
-	// statuses (TODO: add description) entries[6+]
+	// statuses (TODO: add description)
 	sts := md.sortedStatuses()
 
 	if len(sts) > 0 {
