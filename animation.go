@@ -114,10 +114,6 @@ func (a *Animations) Frame(d time.Duration) {
 	a.pgrid.Copy(a.grid)
 }
 
-func (md *model) DrawAtPosition(p gruid.Point, targ bool, r rune, fg, bg gruid.Color) {
-	// TODO
-}
-
 func (md *model) SwappingAnimation(mpos, ppos gruid.Point) {
 	if DisableAnimations {
 		return
@@ -488,7 +484,6 @@ func (md *model) FoundFakeStairsAnimation() {
 	r, _, bg := md.positionDrawing(g.Player.Pos)
 	md.anims.Draw(g.Player.Pos, r, ColorMagenta, bg)
 	md.anims.Frame(AnimDurMediumLong)
-	//md.DrawAtPosition(g.Player.Pos, false, r, fg, bg)
 }
 
 func (md *model) MusicAnimation(pos gruid.Point) {
@@ -623,7 +618,7 @@ func (md *model) TakingArtifact() {
 		if !DisableAnimations {
 			md.startAnimSeq()
 			_, _, bg := md.positionDrawing(g.Places.Monolith)
-			md.DrawAtPosition(g.Places.Monolith, false, 'Φ', ColorFgMagicPlace, bg)
+			md.anims.Draw(g.Places.Monolith, 'Φ', ColorFgMagicPlace, bg)
 			md.anims.Frame(AnimDurMediumLong)
 		}
 		g.Objects.Stairs[g.Places.Monolith] = WinStair
@@ -631,7 +626,7 @@ func (md *model) TakingArtifact() {
 		if !DisableAnimations {
 			md.startAnimSeq()
 			_, _, bg := md.positionDrawing(g.Places.Marevor)
-			md.DrawAtPosition(g.Places.Marevor, false, 'Φ', ColorFgMagicPlace, bg)
+			md.anims.Draw(g.Places.Marevor, 'Φ', ColorFgMagicPlace, bg)
 			md.anims.Frame(AnimDurMediumLong)
 		}
 		g.Objects.Story[g.Places.Marevor] = StoryMarevor
