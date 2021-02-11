@@ -64,9 +64,9 @@ func (md *model) Draw() gruid.Grid {
 		case modeKeys, modeKeysChange:
 			gd := md.keysMenu.Draw()
 			max := gd.Size()
-			t := ui.Text("(R) reset (Enter) change")
+			t := ui.Text("(R) reset (Enter) change").WithStyle(gruid.Style{}.WithFg(ColorCyan))
 			if md.menuMode == modeKeysChange {
-				t = ui.Text(" Press new key... ").WithStyle(gruid.Style{}.WithFg(ColorCyan))
+				t = t.WithText(" Press new key... ")
 			}
 			t.Draw(gd.Slice(gd.Range().Line(max.Y-1).Shift(2, 0, 0, 0)))
 			md.gd.Copy(gd)
