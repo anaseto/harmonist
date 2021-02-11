@@ -9,27 +9,6 @@ type event interface {
 	Action(*game)
 }
 
-type simpleAction int
-
-const (
-	PlayerTurn simpleAction = iota
-	StorySequence
-	AbyssFall
-	ExhaustionEnd
-	SwiftEnd
-	EvasionEnd
-	LignificationEnd
-	ConfusionEnd
-	NauseaEnd
-	DigEnd
-	LevitationEnd
-	ShadowsEnd
-	IlluminatedEnd
-	TransparentEnd
-	DisguisedEnd
-	DispersalEnd
-)
-
 func (g *game) PushEvent(ev event) {
 	g.Events.Push(ev, ev.Rank())
 }
@@ -38,57 +17,24 @@ func (g *game) PushEventFirst(ev event) {
 	g.Events.PushFirst(ev, ev.Rank())
 }
 
-type simpleEvent struct {
+type playerEventAction int
+
+const (
+	PlayerTurn playerEventAction = iota
+	StorySequence
+	AbyssFall
+)
+
+type playerEvent struct {
 	ERank   int
-	EAction simpleAction
+	EAction playerEventAction
 }
 
-func (sev *simpleEvent) Rank() int {
+func (sev *playerEvent) Rank() int {
 	return sev.ERank
 }
 
-var StatusEndMsgs = [...]string{
-	ExhaustionEnd:    "You no longer feel exhausted.",
-	SwiftEnd:         "You no longer feel speedy.",
-	LignificationEnd: "You no longer feel attached to the ground.",
-	ConfusionEnd:     "You no longer feel confused.",
-	NauseaEnd:        "You no longer feel sick.",
-	DigEnd:           "You no longer feel like an earth dragon.",
-	LevitationEnd:    "You no longer levitate.",
-	ShadowsEnd:       "You are no longer surrounded by shadows.",
-	IlluminatedEnd:   "You are no longer illuminated.",
-	TransparentEnd:   "You are no longer transparent.",
-	DisguisedEnd:     "You are no longer disguised.",
-	DispersalEnd:     "You are no longer unstable.",
-}
-
-var EndStatuses = [...]status{
-	ExhaustionEnd:    StatusExhausted,
-	LignificationEnd: StatusLignification,
-	ConfusionEnd:     StatusConfusion,
-	DigEnd:           StatusDig,
-	LevitationEnd:    StatusLevitation,
-	ShadowsEnd:       StatusShadows,
-	IlluminatedEnd:   StatusIlluminated,
-	TransparentEnd:   StatusTransparent,
-	DisguisedEnd:     StatusDisguised,
-	DispersalEnd:     StatusDispersal,
-}
-
-var StatusEndActions = [...]simpleAction{
-	StatusExhausted:     ExhaustionEnd,
-	StatusLignification: LignificationEnd,
-	StatusConfusion:     ConfusionEnd,
-	StatusDig:           DigEnd,
-	StatusLevitation:    LevitationEnd,
-	StatusShadows:       ShadowsEnd,
-	StatusIlluminated:   IlluminatedEnd,
-	StatusTransparent:   TransparentEnd,
-	StatusDisguised:     DisguisedEnd,
-	StatusDispersal:     DispersalEnd,
-}
-
-func (sev *simpleEvent) Action(g *game) {
+func (sev *playerEvent) Action(g *game) {
 	switch sev.EAction {
 	case PlayerTurn:
 		g.ComputeNoise()
@@ -104,98 +50,97 @@ func (sev *simpleEvent) Action(g *game) {
 		if terrain(g.Dungeon.Cell(g.Player.Pos)) == ChasmCell {
 			g.FallAbyss(DescendFall)
 		}
-	default:
-		st := EndStatuses[sev.EAction]
-		g.Player.Statuses[st] -= DurationStatusStep
-		if g.Player.Statuses[st] <= 0 {
-			g.Player.Statuses[st] = 0
-			g.PrintStyled(StatusEndMsgs[sev.EAction], logStatusEnd)
-			//g.ui.StatusEndAnimation()
-			switch sev.EAction {
-			case LevitationEnd:
-				if terrain(g.Dungeon.Cell(g.Player.Pos)) == ChasmCell {
-					g.FallAbyss(DescendFall)
-				}
-			case LignificationEnd:
-				g.Player.HPbonus -= LignificationHPbonus
-				if g.Player.HPbonus < 0 {
-					g.Player.HPbonus = 0
-				}
-			}
-		} else {
-			sev.ERank += DurationStatusStep
-			g.PushEvent(sev)
-		}
 	}
 }
 
-type monsterAction int
-
-const (
-	MonsterTurn monsterAction = iota
-	MonsConfusionEnd
-	MonsExhaustionEnd
-	MonsParalysedEnd
-	MonsSatiatedEnd
-	MonsLignificationEnd
-)
-
-type monsterEvent struct {
-	ERank   int
-	Mons    *monster
-	EAction monsterAction
+type statusEvent struct {
+	ERank  int
+	Status status
 }
 
-func (mev *monsterEvent) Rank() int {
+var StatusEndMsgs = [...]string{
+	StatusExhausted:     "You no longer feel exhausted.",
+	StatusSwift:         "You no longer feel speedy.",
+	StatusLignification: "You no longer feel attached to the ground.",
+	StatusConfusion:     "You no longer feel confused.",
+	StatusDig:           "You no longer feel like an earth dragon.",
+	StatusLevitation:    "You no longer levitate.",
+	StatusShadows:       "You are no longer surrounded by shadows.",
+	StatusIlluminated:   "You are no longer illuminated.",
+	StatusTransparent:   "You are no longer transparent.",
+	StatusDisguised:     "You are no longer disguised.",
+	StatusDispersal:     "You are no longer unstable.",
+}
+
+func (sev *statusEvent) Rank() int {
+	return sev.ERank
+}
+
+func (sev *statusEvent) Action(g *game) {
+	st := sev.Status
+	g.Player.Statuses[st] -= DurationStatusStep
+	if g.Player.Statuses[st] <= 0 {
+		g.Player.Statuses[st] = 0
+		g.PrintStyled(StatusEndMsgs[st], logStatusEnd)
+		g.md.StatusEndAnimation()
+		switch st {
+		case StatusLevitation:
+			if terrain(g.Dungeon.Cell(g.Player.Pos)) == ChasmCell {
+				g.FallAbyss(DescendFall)
+			}
+		case StatusLignification:
+			g.Player.HPbonus -= LignificationHPbonus
+			if g.Player.HPbonus < 0 {
+				g.Player.HPbonus = 0
+			}
+		}
+	} else {
+		sev.ERank += DurationStatusStep
+		g.PushEvent(sev)
+	}
+}
+
+type monsterTurnEvent struct {
+	ERank int
+	Mons  *monster
+}
+
+func (mev *monsterTurnEvent) Rank() int {
 	return mev.ERank
 }
 
-//var MonsStatusEndMsgs = [...]string{
-//MonsConfusionEnd:     "confused",
-//MonsLignificationEnd: "lignified",
-//MonsParalysedEnd:     "slowed",
-//MonsExhaustionEnd:    "exhausted",
-//MonsSatiatedEnd:      "satiated",
-//}
-
-var MonsEndStatuses = [...]monsterStatus{
-	MonsConfusionEnd:     MonsConfused,
-	MonsLignificationEnd: MonsLignified,
-	MonsParalysedEnd:     MonsParalysed,
-	MonsExhaustionEnd:    MonsExhausted,
-	MonsSatiatedEnd:      MonsSatiated,
+func (mev *monsterTurnEvent) Action(g *game) {
+	mons := mev.Mons
+	if mons.Exists() {
+		mons.HandleTurn(g)
+	}
 }
 
-var MonsStatusEndActions = [...]monsterAction{
-	MonsConfused:  MonsConfusionEnd,
-	MonsLignified: MonsLignificationEnd,
-	MonsParalysed: MonsParalysedEnd,
-	MonsExhausted: MonsExhaustionEnd,
-	MonsSatiated:  MonsSatiatedEnd,
+type monsterStatusEvent struct {
+	ERank  int
+	Mons   *monster
+	Status monsterStatus
 }
 
-func (mev *monsterEvent) Action(g *game) {
-	switch mev.EAction {
-	case MonsterTurn:
-		mons := mev.Mons
-		if mons.Exists() {
-			mons.HandleTurn(g)
+func (mev *monsterStatusEvent) Rank() int {
+	return mev.ERank
+}
+
+func (mev *monsterStatusEvent) Action(g *game) {
+	mons := mev.Mons
+	st := mev.Status
+	mons.Statuses[st] -= DurationStatusStep
+	if mons.Statuses[st] <= 0 {
+		mons.Statuses[st] = 0
+		if g.Player.Sees(mons.Pos) {
+			g.Printf("%s is no longer %s.", mons.Kind.Definite(true), st)
 		}
-	default:
-		mons := mev.Mons
-		mons.Statuses[MonsEndStatuses[mev.EAction]] -= DurationStatusStep
-		if mons.Statuses[MonsEndStatuses[mev.EAction]] <= 0 {
-			mons.Statuses[MonsEndStatuses[mev.EAction]] = 0
-			if g.Player.Sees(mons.Pos) {
-				g.Printf("%s is no longer %s.", mons.Kind.Definite(true), StatusEndMsgs[mev.EAction])
-			}
-			switch mev.EAction {
-			case MonsConfusionEnd, MonsLignificationEnd:
-				mons.Path = mons.APath(g, mons.Pos, mons.Target)
-			}
-		} else {
-			g.PushEvent(&monsterEvent{Mons: mev.Mons, ERank: mev.Rank() + DurationStatusStep, EAction: mev.EAction})
+		switch st {
+		case MonsConfused, MonsLignified:
+			mons.Path = mons.APath(g, mons.Pos, mons.Target)
 		}
+	} else {
+		g.PushEvent(&monsterStatusEvent{Mons: mev.Mons, ERank: mev.Rank() + DurationStatusStep, Status: st})
 	}
 }
 
@@ -262,7 +207,7 @@ func (cev *posEvent) Action(g *game) {
 			g.Burn(pos)
 		}
 		delete(g.Clouds, cev.Pos)
-		g.NightFog(cev.Pos, 1, &simpleEvent{ERank: cev.Rank()})
+		g.NightFog(cev.Pos, 1, &playerEvent{ERank: cev.Rank()})
 		g.ComputeLOS()
 	case NightProgression:
 		if _, ok := g.Clouds[cev.Pos]; !ok {

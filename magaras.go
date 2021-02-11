@@ -591,7 +591,7 @@ func (g *game) SwapWithMonster(mons *monster) {
 	g.PlacePlayerAt(ompos)
 	mons.MakeAware(g)
 	if terrain(g.Dungeon.Cell(g.Player.Pos)) == ChasmCell {
-		g.PushEvent(&simpleEvent{ERank: g.Ev.Rank(), EAction: AbyssFall})
+		g.PushEvent(&playerEvent{ERank: g.Ev.Rank(), EAction: AbyssFall})
 	}
 }
 

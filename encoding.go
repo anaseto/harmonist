@@ -9,8 +9,10 @@ import (
 )
 
 func init() {
-	gob.Register(&simpleEvent{})
-	gob.Register(&monsterEvent{})
+	gob.Register(&playerEvent{})
+	gob.Register(&statusEvent{})
+	gob.Register(&monsterTurnEvent{})
+	gob.Register(&monsterStatusEvent{})
 	gob.Register(&posEvent{})
 }
 

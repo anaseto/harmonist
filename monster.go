@@ -689,7 +689,7 @@ func (m *monster) CorrectDir() {
 }
 
 func (m *monster) EndTurn(g *game) {
-	g.PushEvent(&monsterEvent{ERank: g.Turn + 1, Mons: m, EAction: MonsterTurn})
+	g.PushEvent(&monsterTurnEvent{ERank: g.Turn + 1, Mons: m})
 }
 
 func (m *monster) AttackAction(g *game) bool {
@@ -1285,10 +1285,10 @@ func (m *monster) PutStatus(g *game, st monsterStatus, duration int) bool {
 		return false
 	}
 	m.Statuses[st] += duration
-	g.PushEvent(&monsterEvent{
-		ERank:   g.Ev.Rank() + DurationStatusStep,
-		Mons:    m,
-		EAction: MonsStatusEndActions[st]})
+	g.PushEvent(&monsterStatusEvent{
+		ERank:  g.Ev.Rank() + DurationStatusStep,
+		Mons:   m,
+		Status: st})
 	return true
 }
 
@@ -1347,7 +1347,7 @@ func (m *monster) HitSideEffects(g *game) {
 		g.StoryPrintf("Position swap by %s", m.Kind)
 		m.ExhaustTime(g, 5+RandInt(5))
 		if terrain(g.Dungeon.Cell(g.Player.Pos)) == ChasmCell {
-			g.PushEventFirst(&simpleEvent{ERank: g.Ev.Rank(), EAction: AbyssFall})
+			g.PushEventFirst(&playerEvent{ERank: g.Ev.Rank(), EAction: AbyssFall})
 		}
 	case MonsTinyHarpy:
 		if m.Status(MonsSatiated) {
@@ -1411,7 +1411,7 @@ func (m *monster) PushPlayer(g *game, dist int) {
 	g.Printf("%s pushes you%s.", m.Kind.Definite(true), cs)
 	g.StoryPrintf("Pushed by %s%s", m.Kind.Definite(true), cs)
 	if terrain(c) == ChasmCell {
-		g.PushEventFirst(&simpleEvent{ERank: g.Ev.Rank(), EAction: AbyssFall})
+		g.PushEventFirst(&playerEvent{ERank: g.Ev.Rank(), EAction: AbyssFall})
 	}
 }
 

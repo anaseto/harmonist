@@ -504,7 +504,7 @@ func (g *game) InitLevel() {
 		monsters[i], monsters[j] = monsters[j], monsters[i]
 	})
 	for _, m := range monsters {
-		g.PushEvent(&monsterEvent{ERank: g.Turn, EAction: MonsterTurn, Mons: m})
+		g.PushEvent(&monsterTurnEvent{ERank: g.Turn, Mons: m})
 	}
 	switch g.Params.Event[g.Depth] {
 	case UnstableLevel:
@@ -547,9 +547,9 @@ func (g *game) InitLevel() {
 func (g *game) CleanEvents() {
 	g.Events.Filter(func(ev rl.Event) bool {
 		switch ev := ev.(type) {
-		case *monsterEvent, *posEvent:
+		case *monsterTurnEvent, *posEvent:
 			return false
-		case *simpleEvent:
+		case *playerEvent:
 			// When falling into the abyss after being pushed a
 			// player turn can still be in the queue.
 			return ev.EAction != PlayerTurn
@@ -775,7 +775,7 @@ func (g *game) EndTurn() gruid.Effect {
 		g.Ev = ev.(event)
 		g.Ev.Action(g)
 		switch ev := g.Ev.(type) {
-		case *simpleEvent:
+		case *playerEvent:
 			if ev.EAction == PlayerTurn {
 				if g.AutoNext {
 					n := g.Turn

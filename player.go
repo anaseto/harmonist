@@ -386,7 +386,7 @@ func (g *game) PlayerBump(pos gruid.Point) (again bool, err error) {
 }
 
 func (g *game) PushPlayerTurn() {
-	g.PushEvent(&simpleEvent{EAction: PlayerTurn, ERank: g.Turn + DurationTurn})
+	g.PushEvent(&playerEvent{EAction: PlayerTurn, ERank: g.Turn + DurationTurn})
 }
 
 func (g *game) SwiftFog() {
@@ -460,7 +460,7 @@ func (g *game) PutStatus(st status, duration int) bool {
 		return false
 	}
 	g.Player.Statuses[st] += duration
-	g.PushEvent(&simpleEvent{ERank: g.Ev.Rank() + DurationStatusStep, EAction: StatusEndActions[st]})
+	g.PushEvent(&statusEvent{ERank: g.Ev.Rank() + DurationStatusStep, Status: st})
 	g.Stats.Statuses[st]++
 	if st.Good() {
 		g.Player.Expire[st] = g.Ev.Rank() + duration
