@@ -591,7 +591,7 @@ func (g *game) SwapWithMonster(mons *monster) {
 	g.PlacePlayerAt(ompos)
 	mons.MakeAware(g)
 	if terrain(g.Dungeon.Cell(g.Player.Pos)) == ChasmCell {
-		g.PushEvent(&playerEvent{ERank: g.Turn, EAction: AbyssFall})
+		g.PushEvent(&playerEvent{EAction: AbyssFall}, g.Turn)
 	}
 }
 
@@ -628,7 +628,7 @@ func (g *game) Fog(at gruid.Point, radius int) {
 		_, ok := g.Clouds[n.P]
 		if !ok && g.Dungeon.Cell(n.P).AllowsFog() {
 			g.Clouds[n.P] = CloudFog
-			g.PushEvent(&posEvent{ERank: g.Turn + DurationFog + RandInt(DurationFog/2), EAction: CloudEnd, Pos: n.P})
+			g.PushEvent(&posEvent{Pos: n.P, EAction: CloudEnd}, g.Turn+DurationFog+RandInt(DurationFog/2))
 		}
 	}
 	g.ComputeLOS()
@@ -861,7 +861,7 @@ func (g *game) CreateMagicalBarrierAt(pos gruid.Point) {
 	g.Dungeon.SetCell(pos, BarrierCell)
 	delete(g.Clouds, pos)
 	g.MagicalBarriers[pos] = t
-	g.PushEvent(&posEvent{ERank: g.Turn + DurationMagicalBarrier + RandInt(DurationMagicalBarrier/2), Pos: pos, EAction: ObstructionEnd})
+	g.PushEvent(&posEvent{Pos: pos, EAction: ObstructionEnd}, g.Turn+DurationMagicalBarrier+RandInt(DurationMagicalBarrier/2))
 }
 
 func (g *game) EvokeEnergyMagara() error {
@@ -895,9 +895,8 @@ func (g *game) EvokeDelayedNoiseMagara() error {
 	if !g.PutFakeStatus(StatusDelay, DurationHarmonicNoiseDelay) {
 		return errors.New("You are already using delayed magic.")
 	}
-	g.PushEvent(&posEvent{ERank: g.Turn + DurationTurn,
-		Pos: g.Player.Pos, EAction: DelayedHarmonicNoiseEvent,
-		Timer: DurationHarmonicNoiseDelay})
+	g.PushEvent(&posEvent{Pos: g.Player.Pos, EAction: DelayedHarmonicNoiseEvent,
+		Timer: DurationHarmonicNoiseDelay}, g.Turn+DurationTurn)
 	g.Print("Timer activated.")
 	return nil
 }
@@ -914,9 +913,8 @@ func (g *game) EvokeOricExplosionMagara() error {
 	if !g.PutFakeStatus(StatusDelay, DurationHarmonicNoiseDelay) {
 		return errors.New("You are already using delayed magic.")
 	}
-	g.PushEvent(&posEvent{ERank: g.Turn + DurationTurn,
-		Pos: g.Player.Pos, EAction: DelayedOricExplosionEvent,
-		Timer: DurationOricExplosionDelay})
+	g.PushEvent(&posEvent{Pos: g.Player.Pos, EAction: DelayedOricExplosionEvent,
+		Timer: DurationOricExplosionDelay}, g.Turn+DurationTurn)
 	g.Print("Timer activated.")
 	return nil
 }

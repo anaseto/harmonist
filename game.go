@@ -503,29 +503,27 @@ func (g *game) InitLevel() {
 		monsters[i], monsters[j] = monsters[j], monsters[i]
 	})
 	for _, m := range monsters {
-		g.PushEvent(&monsterTurnEvent{ERank: g.Turn, Mons: m})
+		g.PushEvent(&monsterTurnEvent{Mons: m}, g.Turn)
 	}
 	switch g.Params.Event[g.Depth] {
 	case UnstableLevel:
 		g.PrintStyled("Uncontrolled oric magic fills the air on this level.", logSpecial)
 		g.StoryPrint("Special event: magically unstable level")
 		for i := 0; i < 7; i++ {
-			g.PushEvent(&posEvent{ERank: g.Turn + DurationObstructionProgression + RandInt(DurationObstructionProgression/2),
-				EAction: ObstructionProgression})
+			g.PushEvent(&posEvent{EAction: ObstructionProgression},
+				g.Turn+DurationObstructionProgression+RandInt(DurationObstructionProgression/2))
 		}
 	case MistLevel:
 		g.PrintStyled("The air seems dense on this level.", logSpecial)
 		g.StoryPrint("Special event: mist level")
 		for i := 0; i < 20; i++ {
-			g.PushEvent(&posEvent{ERank: g.Turn + DurationMistProgression + RandInt(DurationMistProgression/2),
-				EAction: MistProgression})
+			g.PushEvent(&posEvent{EAction: MistProgression},
+				g.Turn+DurationMistProgression+RandInt(DurationMistProgression/2))
 		}
 	case EarthquakeLevel:
-		g.PushEvent(&posEvent{
-			ERank:   g.Turn + 10 + RandInt(50),
-			EAction: Earthquake,
-			Pos:     gruid.Point{DungeonWidth/2 - 15 + RandInt(30), DungeonHeight/2 - 5 + RandInt(10)},
-		})
+		g.PushEvent(&posEvent{Pos: gruid.Point{DungeonWidth/2 - 15 + RandInt(30), DungeonHeight/2 - 5 + RandInt(10)}, EAction: Earthquake},
+			g.Turn+10+RandInt(50))
+
 	}
 
 	// initialize LOS
@@ -779,7 +777,7 @@ func (g *game) EndTurn() gruid.Effect {
 				if g.AutoNext {
 					n := g.Turn
 					return gruid.Cmd(func() gruid.Msg {
-						t := time.NewTimer(time.Millisecond * 25)
+						t := time.NewTimer(AnimDurShort)
 						<-t.C
 						return msgAuto(n)
 					})

@@ -5,16 +5,15 @@ import (
 )
 
 type event interface {
-	Rank() int
 	Action(*game)
 }
 
-func (g *game) PushEvent(ev event) {
-	g.Events.Push(ev, ev.Rank())
+func (g *game) PushEvent(ev event, r int) {
+	g.Events.Push(ev, r)
 }
 
-func (g *game) PushEventFirst(ev event) {
-	g.Events.PushFirst(ev, ev.Rank())
+func (g *game) PushEventFirst(ev event, r int) {
+	g.Events.PushFirst(ev, r)
 }
 
 type playerEventAction int
@@ -26,12 +25,7 @@ const (
 )
 
 type playerEvent struct {
-	ERank   int
 	EAction playerEventAction
-}
-
-func (sev *playerEvent) Rank() int {
-	return sev.ERank
 }
 
 func (sev *playerEvent) Action(g *game) {
@@ -54,7 +48,6 @@ func (sev *playerEvent) Action(g *game) {
 }
 
 type statusEvent struct {
-	ERank  int
 	Status status
 }
 
@@ -70,10 +63,6 @@ var StatusEndMsgs = [...]string{
 	StatusTransparent:   "You are no longer transparent.",
 	StatusDisguised:     "You are no longer disguised.",
 	StatusDispersal:     "You are no longer unstable.",
-}
-
-func (sev *statusEvent) Rank() int {
-	return sev.ERank
 }
 
 func (sev *statusEvent) Action(g *game) {
@@ -95,18 +84,12 @@ func (sev *statusEvent) Action(g *game) {
 			}
 		}
 	} else {
-		sev.ERank += DurationStatusStep
-		g.PushEvent(sev)
+		g.PushEvent(sev, g.Turn+DurationStatusStep)
 	}
 }
 
 type monsterTurnEvent struct {
-	ERank int
-	Mons  *monster
-}
-
-func (mev *monsterTurnEvent) Rank() int {
-	return mev.ERank
+	Mons *monster
 }
 
 func (mev *monsterTurnEvent) Action(g *game) {
@@ -117,13 +100,8 @@ func (mev *monsterTurnEvent) Action(g *game) {
 }
 
 type monsterStatusEvent struct {
-	ERank  int
 	Mons   *monster
 	Status monsterStatus
-}
-
-func (mev *monsterStatusEvent) Rank() int {
-	return mev.ERank
 }
 
 func (mev *monsterStatusEvent) Action(g *game) {
@@ -140,7 +118,7 @@ func (mev *monsterStatusEvent) Action(g *game) {
 			mons.Path = mons.APath(g, mons.Pos, mons.Target)
 		}
 	} else {
-		g.PushEvent(&monsterStatusEvent{Mons: mev.Mons, ERank: g.Turn + DurationStatusStep, Status: st})
+		g.PushEvent(&monsterStatusEvent{Mons: mev.Mons, Status: st}, g.Turn+DurationStatusStep)
 	}
 }
 
@@ -159,14 +137,9 @@ const (
 )
 
 type posEvent struct {
-	ERank   int
 	Pos     gruid.Point
 	EAction posAction
 	Timer   int
-}
-
-func (cev *posEvent) Rank() int {
-	return cev.ERank
 }
 
 func (cev *posEvent) Action(g *game) {
@@ -194,8 +167,8 @@ func (cev *posEvent) Action(g *game) {
 			g.Printf("You see an oric barrier appear out of thin air.")
 			g.StopAuto()
 		}
-		g.PushEvent(&posEvent{ERank: g.Turn + DurationObstructionProgression + RandInt(DurationObstructionProgression/4),
-			EAction: ObstructionProgression})
+		g.PushEvent(&posEvent{EAction: ObstructionProgression},
+			g.Turn+DurationObstructionProgression+RandInt(DurationObstructionProgression/4))
 	case FireProgression:
 		if _, ok := g.Clouds[cev.Pos]; !ok {
 			break
@@ -207,7 +180,7 @@ func (cev *posEvent) Action(g *game) {
 			g.Burn(pos)
 		}
 		delete(g.Clouds, cev.Pos)
-		g.NightFog(cev.Pos, 1, &playerEvent{ERank: g.Turn})
+		g.NightFog(cev.Pos, 1)
 		g.ComputeLOS()
 	case NightProgression:
 		if _, ok := g.Clouds[cev.Pos]; !ok {
@@ -220,12 +193,12 @@ func (cev *posEvent) Action(g *game) {
 		}
 		g.MakeCreatureSleep(cev.Pos)
 		cev.Timer--
-		cev.Renew(g, DurationTurn)
+		g.PushEvent(cev, g.Turn+DurationTurn)
 	case MistProgression:
 		pos := g.FreePassableCell()
 		g.Fog(pos, 1)
-		g.PushEvent(&posEvent{ERank: g.Turn + DurationMistProgression + RandInt(DurationMistProgression/4),
-			EAction: MistProgression})
+		g.PushEvent(&posEvent{EAction: MistProgression},
+			g.Turn+DurationMistProgression+RandInt(DurationMistProgression/4))
 	case Earthquake:
 		g.PrintStyled("The earth suddenly shakes with force!", logSpecial)
 		g.PrintStyled("Craack!", logSpecial)
@@ -255,7 +228,7 @@ func (cev *posEvent) Action(g *game) {
 		} else {
 			cev.Timer--
 			g.Player.Statuses[StatusDelay] = cev.Timer
-			cev.Renew(g, DurationTurn)
+			g.PushEvent(cev, g.Turn+DurationTurn)
 		}
 	case DelayedOricExplosionEvent:
 		if cev.Timer <= 1 {
@@ -290,20 +263,20 @@ func (cev *posEvent) Action(g *game) {
 		} else {
 			cev.Timer--
 			g.Player.Statuses[StatusDelay] = cev.Timer
-			cev.Renew(g, DurationTurn)
+			g.PushEvent(cev, g.Turn+DurationTurn)
 		}
 	}
 }
 
-func (g *game) NightFog(at gruid.Point, radius int, ev event) {
+func (g *game) NightFog(at gruid.Point, radius int) {
 	dij := &noisePath{state: g}
 	nodes := g.PR.DijkstraMap(dij, []gruid.Point{at}, radius)
 	for _, n := range nodes {
 		_, ok := g.Clouds[n.P]
 		if !ok {
 			g.Clouds[n.P] = CloudNight
-			g.PushEvent(&posEvent{ERank: g.Turn + DurationCloudProgression, EAction: NightProgression,
-				Pos: n.P, Timer: DurationNightFog})
+			g.PushEvent(&posEvent{EAction: NightProgression,
+				Pos: n.P, Timer: DurationNightFog}, g.Turn+DurationCloudProgression)
 			g.MakeCreatureSleep(n.P)
 		}
 	}
@@ -358,12 +331,7 @@ func (g *game) Burn(pos gruid.Point) {
 	} else {
 		g.ComputeLOS()
 	}
-	g.PushEvent(&posEvent{ERank: g.Turn + DurationCloudProgression, EAction: FireProgression, Pos: pos})
-}
-
-func (cev *posEvent) Renew(g *game, delay int) {
-	cev.ERank += delay
-	g.PushEvent(cev)
+	g.PushEvent(&posEvent{Pos: pos, EAction: FireProgression}, g.Turn+DurationCloudProgression)
 }
 
 const (
