@@ -554,7 +554,7 @@ func (g *game) CleanEvents() {
 			return true
 		}
 	})
-	// finish current turn other effects (like status progression)
+	// finish current turn's other effects (like status progression)
 	turn := g.Turn
 	for !g.Events.Empty() {
 		ev, r := g.Events.PopR()
@@ -568,7 +568,6 @@ func (g *game) CleanEvents() {
 }
 
 func (g *game) StairsSlice() []gruid.Point {
-	// TODO: use cache?
 	stairs := []gruid.Point{}
 	it := g.Dungeon.Grid.Iterator()
 	for it.Next() {
