@@ -14,8 +14,6 @@ const (
 	AnimDurShortMedium = 50 * time.Millisecond
 	AnimDurMedium      = 75 * time.Millisecond
 	AnimDurMediumLong  = 100 * time.Millisecond
-	AnimDurLong        = 200 * time.Millisecond
-	AnimDurExtraLong   = 300 * time.Millisecond
 )
 
 type Animations struct {
