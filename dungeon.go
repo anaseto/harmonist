@@ -40,36 +40,6 @@ func (d *dungeon) SetExplored(pos gruid.Point) {
 	d.Grid.Set(pos, rl.Cell(oc|Explored))
 }
 
-func (d *dungeon) Area(area []gruid.Point, pos gruid.Point, radius int) []gruid.Point {
-	area = area[:0]
-	for y := pos.Y - radius; y <= pos.Y+radius; y++ {
-		for x := pos.X - radius; x <= pos.X+radius; x++ {
-			pos := gruid.Point{x, y}
-			if valid(pos) {
-				area = append(area, pos)
-			}
-		}
-	}
-	return area
-}
-
-func (d *dungeon) WallAreaCount(area []gruid.Point, pos gruid.Point, radius int) int {
-	area = d.Area(area, pos, radius)
-	count := 0
-	for _, npos := range area {
-		if terrain(d.Cell(npos)) == WallCell {
-			count++
-		}
-	}
-	switch radius {
-	case 1:
-		count += 9 - len(area)
-	case 2:
-		count += 25 - len(area)
-	}
-	return count
-}
-
 func (d *dungeon) FreePassableCell() gruid.Point {
 	count := 0
 	for {
@@ -204,30 +174,6 @@ func (d *dungeon) connex() bool {
 	return true
 }
 
-func (d *dungeon) IsAreaFree(pos gruid.Point, h, w int) bool {
-	for i := pos.X; i < pos.X+w; i++ {
-		for j := pos.Y; j < pos.Y+h; j++ {
-			rpos := gruid.Point{i, j}
-			if !valid(rpos) || d.Cell(rpos).IsPassable() {
-				return false
-			}
-		}
-	}
-	return true
-}
-
-func (d *dungeon) IsAreaWall(pos gruid.Point, h, w int) bool {
-	for i := pos.X; i < pos.X+w; i++ {
-		for j := pos.Y; j < pos.Y+h; j++ {
-			rpos := gruid.Point{i, j}
-			if valid(rpos) && terrain(d.Cell(rpos)) != WallCell {
-				return false
-			}
-		}
-	}
-	return true
-}
-
 type rentry struct {
 	pos     gruid.Point
 	used    bool
@@ -294,24 +240,7 @@ type dgen struct {
 	layout  maplayout
 	cc      []int
 	PR      *paths.PathRange
-}
-
-func (dg *dgen) WallAreaCount(area []gruid.Point, pos gruid.Point, radius int) int {
-	d := dg.d
-	area = d.Area(area, pos, radius)
-	count := 0
-	for _, npos := range area {
-		if terrain(d.Cell(npos)) == WallCell || dg.tunnel[npos] {
-			count++
-		}
-	}
-	switch radius {
-	case 1:
-		count += 9 - len(area)
-	case 2:
-		count += 25 - len(area)
-	}
-	return count
+	rand    *rand.Rand
 }
 
 // UnusedEntry returns an unused entry, if possible, or a random entry
@@ -874,6 +803,7 @@ func (dg *dgen) GenArtifactPlace(g *game) {
 
 func (g *game) GenRoomTunnels(ml maplayout) {
 	dg := dgen{}
+	dg.rand = rand.New(rand.NewSource(time.Now().UnixNano()))
 	dg.PR = paths.NewPathRange(gruid.NewRange(0, 0, DungeonWidth, DungeonHeight))
 	dg.layout = ml
 	d := &dungeon{}
@@ -1689,50 +1619,20 @@ func (dg *dgen) GenStones(g *game) {
 }
 
 func (dg *dgen) GenCellularAutomataCaveMap() {
-	count := 0
-	for {
-		count++
-		if count > 100 {
-			panic("genCellularAutomataCaveMap")
-		}
-		if dg.RunCellularAutomataCave() {
-			break
-		}
-		// refresh cells
-		dg.d.Grid = rl.NewGrid(DungeonWidth, DungeonHeight)
-	}
+	dg.RunCellularAutomataCave()
 	dg.Foliage(false)
 }
 
 func (dg *dgen) RunCellularAutomataCave() bool {
-	d := dg.d // TODO: reset
-	dg.d.Grid.FillFunc(func() rl.Cell {
-		r := RandInt(100)
-		if r >= 45 {
-			return rl.Cell(GroundCell)
-		}
-		return rl.Cell(WallCell)
-	})
-	bufm := &dungeon{}
-	bufm.Grid = rl.NewGrid(DungeonWidth, DungeonHeight)
-	area := make([]gruid.Point, 0, 25)
-	for i := 0; i < 5; i++ {
-		bufm.Grid.Map(func(pos gruid.Point, c rl.Cell) rl.Cell {
-			c1 := d.WallAreaCount(area, pos, 1)
-			if c1 >= 5 {
-				c = rl.Cell(WallCell)
-			} else {
-				c = rl.Cell(GroundCell)
-			}
-			if i == 3 {
-				c2 := d.WallAreaCount(area, pos, 2)
-				if c2 <= 2 {
-					c = rl.Cell(WallCell)
-				}
-			}
-			return c
-		})
-		d.Grid.Copy(bufm.Grid)
+	rules := []rl.CellularAutomataRule{
+		{WCutoff1: 5, WCutoff2: 2, Reps: 4, WallsOutOfRange: true},
+		{WCutoff1: 5, WCutoff2: 25, Reps: 3, WallsOutOfRange: true},
+	}
+	mg := rl.MapGen{Rand: dg.rand, Grid: dg.d.Grid}
+	if dg.rand.Intn(2) == 0 {
+		mg.CellularAutomataCave(rl.Cell(WallCell), rl.Cell(GroundCell), 0.47, rules)
+	} else {
+		mg.CellularAutomataCave(rl.Cell(WallCell), rl.Cell(GroundCell), 0.43, rules)
 	}
 	return true
 }
@@ -1802,53 +1702,22 @@ func (dg *dgen) GenQueenRock() {
 }
 
 func (dg *dgen) Foliage(less bool) {
-	// use same structure as for the dungeon
-	// walls will become foliage
-	d := &dungeon{}
-	d.Grid = rl.NewGrid(DungeonWidth, DungeonHeight)
-	limit := 47
+	gd := rl.NewGrid(DungeonWidth, DungeonHeight)
+	rules := []rl.CellularAutomataRule{
+		{WCutoff1: 5, WCutoff2: 2, Reps: 4, WallsOutOfRange: true},
+		{WCutoff1: 5, WCutoff2: 25, Reps: 2, WallsOutOfRange: true},
+	}
+	mg := rl.MapGen{Rand: dg.rand, Grid: gd}
+	winit := 0.55
 	if less {
-		limit = 45
+		winit = 0.53
 	}
-	d.Grid.FillFunc(func() rl.Cell {
-		r := RandInt(100)
-		if r >= limit {
-			return rl.Cell(WallCell)
-		}
-		return rl.Cell(GroundCell)
-	})
-	area := make([]gruid.Point, 0, 25)
-	bufm := &dungeon{}
-	bufm.Grid = rl.NewGrid(DungeonWidth, DungeonHeight)
-	for i := 0; i < 6; i++ {
-		bufm.Grid.Map(func(pos gruid.Point, c rl.Cell) rl.Cell {
-			c1 := d.WallAreaCount(area, pos, 1)
-			if i < 4 {
-				if c1 <= 4 {
-					c = rl.Cell(GroundCell)
-				} else {
-					c = rl.Cell(WallCell)
-				}
-			}
-			if i == 4 {
-				if c1 > 6 {
-					c = rl.Cell(WallCell)
-				}
-			}
-			if i == 5 {
-				c2 := d.WallAreaCount(area, pos, 2)
-				if c2 < 5 && c1 <= 2 {
-					c = rl.Cell(GroundCell)
-				}
-			}
-			return c
-		})
-		d.Grid.Copy(bufm.Grid)
-	}
+	mg.CellularAutomataCave(rl.Cell(WallCell), rl.Cell(FoliageCell), winit, rules)
 	it := dg.d.Grid.Iterator()
-	for it.Next() {
-		if terrain(cell(it.Cell())) == GroundCell && terrain(d.Cell(it.P())) == GroundCell {
-			dg.d.SetCell(it.P(), FoliageCell)
+	itgd := gd.Iterator()
+	for it.Next() && itgd.Next() {
+		if terrain(cell(it.Cell())) == GroundCell && cell(itgd.Cell()) == FoliageCell {
+			it.SetCell(rl.Cell(FoliageCell))
 		}
 	}
 }
@@ -1874,12 +1743,11 @@ func (w walker) Neighbor(p gruid.Point) gruid.Point {
 }
 
 func (dg *dgen) GenCaveMap(size int) {
-	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
 	mg := rl.MapGen{
-		Rand: rng,
+		Rand: dg.rand,
 		Grid: dg.d.Grid,
 	}
-	wlk := walker{rand: rng}
+	wlk := walker{rand: dg.rand}
 	mg.RandomWalkCave(wlk, rl.Cell(GroundCell), float64(size)/float64(DungeonNCells), 8)
 	dg.Foliage(false)
 }

@@ -4,6 +4,7 @@ import (
 	"sort"
 
 	"github.com/anaseto/gruid"
+	"github.com/anaseto/gruid/rl"
 )
 
 type dungeonPath struct {
@@ -99,8 +100,27 @@ func (tp *tunnelPath) Cost(from, to gruid.Point) int {
 	if c.IsPassable() {
 		return cost
 	}
-	wc := tp.dg.WallAreaCount(tp.area[:0], from, 1)
+	wc := countWalls(tp.dg.d.Grid, from, 1, true)
 	return cost + 8 - wc
+}
+
+func countWalls(gd rl.Grid, p gruid.Point, radius int, countOut bool) int {
+	count := 0
+	rg := gruid.Range{
+		gruid.Point{p.X - radius, p.Y - radius},
+		gruid.Point{p.X + radius + 1, p.Y + radius + 1},
+	}
+	if countOut {
+		osize := rg.Size()
+		rg = rg.Intersect(gd.Range())
+		size := rg.Size()
+		count += osize.X*osize.Y - size.X*size.Y
+	} else {
+		rg = rg.Intersect(gd.Range())
+	}
+	gd = gd.Slice(rg)
+	count += gd.Count(rl.Cell(WallCell))
+	return count
 }
 
 func (tp *tunnelPath) Estimation(from, to gruid.Point) int {
