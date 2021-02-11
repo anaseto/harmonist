@@ -591,7 +591,7 @@ func (g *game) SwapWithMonster(mons *monster) {
 	g.PlacePlayerAt(ompos)
 	mons.MakeAware(g)
 	if terrain(g.Dungeon.Cell(g.Player.Pos)) == ChasmCell {
-		g.PushEvent(&playerEvent{EAction: AbyssFall}, g.Turn)
+		g.PushEventFirst(&playerEvent{EAction: AbyssFall}, g.Turn)
 	}
 }
 
@@ -895,8 +895,9 @@ func (g *game) EvokeDelayedNoiseMagara() error {
 	if !g.PutFakeStatus(StatusDelay, DurationHarmonicNoiseDelay) {
 		return errors.New("You are already using delayed magic.")
 	}
-	g.PushEvent(&posEvent{Pos: g.Player.Pos, EAction: DelayedHarmonicNoiseEvent,
-		Timer: DurationHarmonicNoiseDelay}, g.Turn+DurationTurn)
+	g.PushEventD(&posEvent{Pos: g.Player.Pos, EAction: DelayedHarmonicNoiseEvent,
+		Timer: DurationHarmonicNoiseDelay}, DurationTurn)
+
 	g.Print("Timer activated.")
 	return nil
 }
@@ -913,8 +914,9 @@ func (g *game) EvokeOricExplosionMagara() error {
 	if !g.PutFakeStatus(StatusDelay, DurationHarmonicNoiseDelay) {
 		return errors.New("You are already using delayed magic.")
 	}
-	g.PushEvent(&posEvent{Pos: g.Player.Pos, EAction: DelayedOricExplosionEvent,
-		Timer: DurationOricExplosionDelay}, g.Turn+DurationTurn)
+	g.PushEventD(&posEvent{Pos: g.Player.Pos, EAction: DelayedOricExplosionEvent,
+		Timer: DurationOricExplosionDelay}, DurationTurn)
+
 	g.Print("Timer activated.")
 	return nil
 }

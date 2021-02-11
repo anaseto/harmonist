@@ -12,6 +12,10 @@ func (g *game) PushEvent(ev event, r int) {
 	g.Events.Push(ev, r)
 }
 
+func (g *game) PushEventD(ev event, delay int) {
+	g.Events.Push(ev, g.Turn+delay)
+}
+
 func (g *game) PushEventFirst(ev event, r int) {
 	g.Events.PushFirst(ev, r)
 }
@@ -84,7 +88,7 @@ func (sev *statusEvent) Action(g *game) {
 			}
 		}
 	} else {
-		g.PushEvent(sev, g.Turn+DurationStatusStep)
+		g.PushEventD(sev, DurationStatusStep)
 	}
 }
 
@@ -118,7 +122,7 @@ func (mev *monsterStatusEvent) Action(g *game) {
 			mons.Path = mons.APath(g, mons.Pos, mons.Target)
 		}
 	} else {
-		g.PushEvent(&monsterStatusEvent{Mons: mev.Mons, Status: st}, g.Turn+DurationStatusStep)
+		g.PushEventD(&monsterStatusEvent{Mons: mev.Mons, Status: st}, DurationStatusStep)
 	}
 }
 
@@ -193,7 +197,7 @@ func (cev *posEvent) Action(g *game) {
 		}
 		g.MakeCreatureSleep(cev.Pos)
 		cev.Timer--
-		g.PushEvent(cev, g.Turn+DurationTurn)
+		g.PushEventD(cev, DurationTurn)
 	case MistProgression:
 		pos := g.FreePassableCell()
 		g.Fog(pos, 1)
@@ -228,7 +232,7 @@ func (cev *posEvent) Action(g *game) {
 		} else {
 			cev.Timer--
 			g.Player.Statuses[StatusDelay] = cev.Timer
-			g.PushEvent(cev, g.Turn+DurationTurn)
+			g.PushEventD(cev, DurationTurn)
 		}
 	case DelayedOricExplosionEvent:
 		if cev.Timer <= 1 {
@@ -263,7 +267,7 @@ func (cev *posEvent) Action(g *game) {
 		} else {
 			cev.Timer--
 			g.Player.Statuses[StatusDelay] = cev.Timer
-			g.PushEvent(cev, g.Turn+DurationTurn)
+			g.PushEventD(cev, DurationTurn)
 		}
 	}
 }
@@ -275,8 +279,9 @@ func (g *game) NightFog(at gruid.Point, radius int) {
 		_, ok := g.Clouds[n.P]
 		if !ok {
 			g.Clouds[n.P] = CloudNight
-			g.PushEvent(&posEvent{EAction: NightProgression,
-				Pos: n.P, Timer: DurationNightFog}, g.Turn+DurationCloudProgression)
+			g.PushEventD(&posEvent{EAction: NightProgression,
+				Pos: n.P, Timer: DurationNightFog}, DurationCloudProgression)
+
 			g.MakeCreatureSleep(n.P)
 		}
 	}
@@ -331,7 +336,7 @@ func (g *game) Burn(pos gruid.Point) {
 	} else {
 		g.ComputeLOS()
 	}
-	g.PushEvent(&posEvent{Pos: pos, EAction: FireProgression}, g.Turn+DurationCloudProgression)
+	g.PushEventD(&posEvent{Pos: pos, EAction: FireProgression}, DurationCloudProgression)
 }
 
 const (
