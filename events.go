@@ -5,7 +5,7 @@ import (
 )
 
 type event interface {
-	Action(*game)
+	Handle(*game)
 }
 
 func (g *game) PushEvent(ev event, r int) {
@@ -29,11 +29,11 @@ const (
 )
 
 type playerEvent struct {
-	EAction playerEventAction
+	Action playerEventAction
 }
 
-func (sev *playerEvent) Action(g *game) {
-	switch sev.EAction {
+func (sev *playerEvent) Handle(g *game) {
+	switch sev.Action {
 	case PlayerTurn:
 		g.ComputeNoise()
 		g.ComputeLOS() // TODO: optimize? most of the time almost redundant (unless on a tree)
@@ -69,7 +69,7 @@ var StatusEndMsgs = [...]string{
 	StatusDispersal:     "You are no longer unstable.",
 }
 
-func (sev *statusEvent) Action(g *game) {
+func (sev *statusEvent) Handle(g *game) {
 	st := sev.Status
 	g.Player.Statuses[st] -= DurationStatusStep
 	if g.Player.Statuses[st] <= 0 {
@@ -96,7 +96,7 @@ type monsterTurnEvent struct {
 	Mons *monster
 }
 
-func (mev *monsterTurnEvent) Action(g *game) {
+func (mev *monsterTurnEvent) Handle(g *game) {
 	mons := mev.Mons
 	if mons.Exists() {
 		mons.HandleTurn(g)
@@ -108,7 +108,7 @@ type monsterStatusEvent struct {
 	Status monsterStatus
 }
 
-func (mev *monsterStatusEvent) Action(g *game) {
+func (mev *monsterStatusEvent) Handle(g *game) {
 	mons := mev.Mons
 	st := mev.Status
 	mons.Statuses[st] -= DurationStatusStep
@@ -141,13 +141,13 @@ const (
 )
 
 type posEvent struct {
-	Pos     gruid.Point
-	EAction posAction
-	Timer   int
+	Pos    gruid.Point
+	Action posAction
+	Timer  int
 }
 
-func (cev *posEvent) Action(g *game) {
-	switch cev.EAction {
+func (cev *posEvent) Handle(g *game) {
+	switch cev.Action {
 	case CloudEnd:
 		delete(g.Clouds, cev.Pos)
 		g.ComputeLOS()
@@ -171,7 +171,7 @@ func (cev *posEvent) Action(g *game) {
 			g.Printf("You see an oric barrier appear out of thin air.")
 			g.StopAuto()
 		}
-		g.PushEvent(&posEvent{EAction: ObstructionProgression},
+		g.PushEvent(&posEvent{Action: ObstructionProgression},
 			g.Turn+DurationObstructionProgression+RandInt(DurationObstructionProgression/4))
 	case FireProgression:
 		if _, ok := g.Clouds[cev.Pos]; !ok {
@@ -201,7 +201,7 @@ func (cev *posEvent) Action(g *game) {
 	case MistProgression:
 		pos := g.FreePassableCell()
 		g.Fog(pos, 1)
-		g.PushEvent(&posEvent{EAction: MistProgression},
+		g.PushEvent(&posEvent{Action: MistProgression},
 			g.Turn+DurationMistProgression+RandInt(DurationMistProgression/4))
 	case Earthquake:
 		g.PrintStyled("The earth suddenly shakes with force!", logSpecial)
@@ -279,7 +279,7 @@ func (g *game) NightFog(at gruid.Point, radius int) {
 		_, ok := g.Clouds[n.P]
 		if !ok {
 			g.Clouds[n.P] = CloudNight
-			g.PushEventD(&posEvent{EAction: NightProgression,
+			g.PushEventD(&posEvent{Action: NightProgression,
 				Pos: n.P, Timer: DurationNightFog}, DurationCloudProgression)
 
 			g.MakeCreatureSleep(n.P)
@@ -336,7 +336,7 @@ func (g *game) Burn(pos gruid.Point) {
 	} else {
 		g.ComputeLOS()
 	}
-	g.PushEventD(&posEvent{Pos: pos, EAction: FireProgression}, DurationCloudProgression)
+	g.PushEventD(&posEvent{Pos: pos, Action: FireProgression}, DurationCloudProgression)
 }
 
 const (

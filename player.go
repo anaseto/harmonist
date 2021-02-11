@@ -364,7 +364,7 @@ func (g *game) PlayerBump(pos gruid.Point) (again bool, err error) {
 			_, ok := g.Clouds[g.Player.Pos]
 			if !ok && g.Dungeon.Cell(g.Player.Pos).AllowsFog() {
 				g.Clouds[g.Player.Pos] = CloudFog
-				g.PushEventD(&posEvent{Pos: g.Player.Pos, EAction: CloudEnd}, DurationSmokingCloakFog)
+				g.PushEventD(&posEvent{Pos: g.Player.Pos, Action: CloudEnd}, DurationSmokingCloakFog)
 			}
 		}
 		//}
@@ -386,7 +386,7 @@ func (g *game) PlayerBump(pos gruid.Point) (again bool, err error) {
 }
 
 func (g *game) PushPlayerTurn() {
-	g.PushEventD(&playerEvent{EAction: PlayerTurn}, DurationTurn)
+	g.PushEventD(&playerEvent{Action: PlayerTurn}, DurationTurn)
 }
 
 func (g *game) SwiftFog() {
@@ -396,7 +396,7 @@ func (g *game) SwiftFog() {
 		_, ok := g.Clouds[n.P]
 		if !ok && g.Dungeon.Cell(n.P).AllowsFog() {
 			g.Clouds[n.P] = CloudFog
-			g.PushEvent(&posEvent{Pos: n.P, EAction: CloudEnd}, g.Turn+DurationFog+RandInt(DurationFog/2))
+			g.PushEvent(&posEvent{Pos: n.P, Action: CloudEnd}, g.Turn+DurationFog+RandInt(DurationFog/2))
 		}
 	}
 	g.PutStatus(StatusSwift, DurationShortSwiftness)

@@ -591,7 +591,7 @@ func (g *game) SwapWithMonster(mons *monster) {
 	g.PlacePlayerAt(ompos)
 	mons.MakeAware(g)
 	if terrain(g.Dungeon.Cell(g.Player.Pos)) == ChasmCell {
-		g.PushEventFirst(&playerEvent{EAction: AbyssFall}, g.Turn)
+		g.PushEventFirst(&playerEvent{Action: AbyssFall}, g.Turn)
 	}
 }
 
@@ -628,7 +628,7 @@ func (g *game) Fog(at gruid.Point, radius int) {
 		_, ok := g.Clouds[n.P]
 		if !ok && g.Dungeon.Cell(n.P).AllowsFog() {
 			g.Clouds[n.P] = CloudFog
-			g.PushEvent(&posEvent{Pos: n.P, EAction: CloudEnd}, g.Turn+DurationFog+RandInt(DurationFog/2))
+			g.PushEvent(&posEvent{Pos: n.P, Action: CloudEnd}, g.Turn+DurationFog+RandInt(DurationFog/2))
 		}
 	}
 	g.ComputeLOS()
@@ -861,7 +861,7 @@ func (g *game) CreateMagicalBarrierAt(pos gruid.Point) {
 	g.Dungeon.SetCell(pos, BarrierCell)
 	delete(g.Clouds, pos)
 	g.MagicalBarriers[pos] = t
-	g.PushEvent(&posEvent{Pos: pos, EAction: ObstructionEnd}, g.Turn+DurationMagicalBarrier+RandInt(DurationMagicalBarrier/2))
+	g.PushEvent(&posEvent{Pos: pos, Action: ObstructionEnd}, g.Turn+DurationMagicalBarrier+RandInt(DurationMagicalBarrier/2))
 }
 
 func (g *game) EvokeEnergyMagara() error {
@@ -895,7 +895,7 @@ func (g *game) EvokeDelayedNoiseMagara() error {
 	if !g.PutFakeStatus(StatusDelay, DurationHarmonicNoiseDelay) {
 		return errors.New("You are already using delayed magic.")
 	}
-	g.PushEventD(&posEvent{Pos: g.Player.Pos, EAction: DelayedHarmonicNoiseEvent,
+	g.PushEventD(&posEvent{Pos: g.Player.Pos, Action: DelayedHarmonicNoiseEvent,
 		Timer: DurationHarmonicNoiseDelay}, DurationTurn)
 
 	g.Print("Timer activated.")
@@ -914,7 +914,7 @@ func (g *game) EvokeOricExplosionMagara() error {
 	if !g.PutFakeStatus(StatusDelay, DurationHarmonicNoiseDelay) {
 		return errors.New("You are already using delayed magic.")
 	}
-	g.PushEventD(&posEvent{Pos: g.Player.Pos, EAction: DelayedOricExplosionEvent,
+	g.PushEventD(&posEvent{Pos: g.Player.Pos, Action: DelayedOricExplosionEvent,
 		Timer: DurationOricExplosionDelay}, DurationTurn)
 
 	g.Print("Timer activated.")

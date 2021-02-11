@@ -510,18 +510,18 @@ func (g *game) InitLevel() {
 		g.PrintStyled("Uncontrolled oric magic fills the air on this level.", logSpecial)
 		g.StoryPrint("Special event: magically unstable level")
 		for i := 0; i < 7; i++ {
-			g.PushEvent(&posEvent{EAction: ObstructionProgression},
+			g.PushEvent(&posEvent{Action: ObstructionProgression},
 				g.Turn+DurationObstructionProgression+RandInt(DurationObstructionProgression/2))
 		}
 	case MistLevel:
 		g.PrintStyled("The air seems dense on this level.", logSpecial)
 		g.StoryPrint("Special event: mist level")
 		for i := 0; i < 20; i++ {
-			g.PushEvent(&posEvent{EAction: MistProgression},
+			g.PushEvent(&posEvent{Action: MistProgression},
 				g.Turn+DurationMistProgression+RandInt(DurationMistProgression/2))
 		}
 	case EarthquakeLevel:
-		g.PushEvent(&posEvent{Pos: gruid.Point{DungeonWidth/2 - 15 + RandInt(30), DungeonHeight/2 - 5 + RandInt(10)}, EAction: Earthquake},
+		g.PushEvent(&posEvent{Pos: gruid.Point{DungeonWidth/2 - 15 + RandInt(30), DungeonHeight/2 - 5 + RandInt(10)}, Action: Earthquake},
 			g.Turn+10+RandInt(50))
 
 	}
@@ -549,7 +549,7 @@ func (g *game) CleanEvents() {
 		case *playerEvent:
 			// When falling into the abyss after being pushed a
 			// player turn can still be in the queue.
-			return ev.EAction != PlayerTurn
+			return ev.Action != PlayerTurn
 		default:
 			return true
 		}
@@ -770,10 +770,10 @@ func (g *game) EndTurn() gruid.Effect {
 		ev, r := g.Events.PopR()
 		g.Turn = r
 		e := ev.(event)
-		e.Action(g)
+		e.Handle(g)
 		switch e := e.(type) {
 		case *playerEvent:
-			if e.EAction == PlayerTurn {
+			if e.Action == PlayerTurn {
 				if g.AutoNext {
 					n := g.Turn
 					return gruid.Cmd(func() gruid.Msg {
