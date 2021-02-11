@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	//"log"
+	"log"
 	"strings"
 
 	"github.com/anaseto/gruid"
@@ -385,8 +385,10 @@ func (md *model) update(msg gruid.Msg) gruid.Effect {
 		eff = md.updateSmallPager(msg)
 	case modeMenu:
 		switch md.menuMode {
-		case modeKeys, modeKeysChange:
+		case modeKeys:
 			eff = md.updateKeysMenu(msg)
+		case modeKeysChange:
+			eff = md.updateKeysChange(msg)
 		default:
 			eff = md.updateMenu(msg)
 		}
@@ -635,36 +637,38 @@ func (md *model) updateDump(msg gruid.Msg) gruid.Effect {
 	return nil
 }
 
-func (md *model) updateKeysMenu(msg gruid.Msg) gruid.Effect {
-	if md.menuMode == modeKeysChange {
-		msg, ok := msg.(gruid.MsgKeyDown)
-		if !ok {
-			return nil
-		}
-		key := msg.Key
-		switch {
-		case key == gruid.KeyEscape:
-			md.openKeyBindings()
-			return nil
-		case key.IsRune():
-			action := ConfigurableKeyActions[md.menu.Active()]
-			if action.normalModeAction() {
-				md.keysNormal[key] = action
-			}
-			if action.targetingModeAction() {
-				md.keysTarget[key] = action
-			}
-			GameConfig.NormalModeKeys = md.keysNormal
-			GameConfig.TargetModeKeys = md.keysTarget
-			err := SaveConfig()
-			if err != nil {
-				md.g.PrintStyled("Error while saving config changes.", logCritic)
-			}
-			md.openKeyBindings()
-			return nil
-		}
+func (md *model) updateKeysChange(msg gruid.Msg) gruid.Effect {
+	mkd, ok := msg.(gruid.MsgKeyDown)
+	if !ok {
 		return nil
 	}
+	key := mkd.Key
+	switch {
+	case key == gruid.KeyEscape:
+		md.openKeyBindings()
+		return nil
+	case key.IsRune():
+		action := ConfigurableKeyActions[md.keysMenu.Active()]
+		log.Printf("active %v, action %v", md.keysMenu.Active(), action)
+		if action.normalModeAction() {
+			md.keysNormal[key] = action
+		}
+		if action.targetingModeAction() {
+			md.keysTarget[key] = action
+		}
+		GameConfig.NormalModeKeys = md.keysNormal
+		GameConfig.TargetModeKeys = md.keysTarget
+		err := SaveConfig()
+		if err != nil {
+			md.g.PrintStyled("Error while saving config changes.", logCritic)
+		}
+		md.openKeyBindings()
+		return nil
+	}
+	return nil
+}
+
+func (md *model) updateKeysMenu(msg gruid.Msg) gruid.Effect {
 	md.keysMenu.Update(msg)
 	switch act := md.keysMenu.Action(); act {
 	case ui.MenuQuit:

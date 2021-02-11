@@ -62,7 +62,14 @@ func (md *model) Draw() gruid.Grid {
 		case modeGameMenu, modeSettings, modeWizard:
 			md.gd.Copy(md.menu.Draw())
 		case modeKeys, modeKeysChange:
-			md.gd.Copy(md.keysMenu.Draw())
+			gd := md.keysMenu.Draw()
+			max := gd.Size()
+			t := ui.Text("(R) reset (Enter) change")
+			if md.menuMode == modeKeysChange {
+				t = ui.Text(" Press new key... ").WithStyle(gruid.Style{}.WithFg(ColorCyan))
+			}
+			t.Draw(gd.Slice(gd.Range().Line(max.Y-1).Shift(2, 0, 0, 0)))
+			md.gd.Copy(gd)
 		}
 	}
 	md.gd.Slice(md.gd.Range().Line(UIHeight - 1)).Copy(md.status.Draw())

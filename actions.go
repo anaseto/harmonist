@@ -675,7 +675,7 @@ func (md *model) keysForAction(a action) string {
 	}
 	b := strings.Builder{}
 	b.WriteString(string(keys[0]))
-	for _, k := range keys {
+	for _, k := range keys[1:] {
 		b.WriteString(" or ")
 		b.WriteString(string(k))
 	}
