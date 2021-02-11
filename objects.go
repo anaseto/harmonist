@@ -373,10 +373,6 @@ func (g *game) MagicMapping(maxdist int) error {
 		dists = append(dists, dist)
 	}
 	sort.Ints(dists)
-	if !DisableAnimations {
-		// magic mapping animation
-		g.md.startAnimSeq()
-	}
 	for _, d := range dists {
 		if maxdist > 0 && d > maxdist {
 			continue
@@ -392,7 +388,7 @@ func (g *game) MagicMapping(maxdist int) error {
 			}
 		}
 		if draw {
-			g.md.MagicMappingAnimation(cdists[d])
+			g.md.MagicMappingAnimation()
 		}
 	}
 	g.Printf("You feel aware of your surroundings..")

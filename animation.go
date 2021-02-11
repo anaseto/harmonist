@@ -524,15 +524,11 @@ func (md *model) PushAnimation(path []gruid.Point) {
 	//log.Print("anims: %+v", md.anims)
 }
 
-func (md *model) MagicMappingAnimation(border []int) {
+func (md *model) MagicMappingAnimation() {
 	if DisableAnimations {
 		return
 	}
-	for _, i := range border {
-		pos := idxtopos(i)
-		r, fg, bg := md.positionDrawing(pos)
-		md.anims.Draw(pos, r, fg, bg)
-	}
+	md.startAnimSeq()
 	md.anims.Frame(AnimDurShort)
 }
 
