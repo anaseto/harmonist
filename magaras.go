@@ -591,7 +591,7 @@ func (g *game) SwapWithMonster(mons *monster) {
 	g.PlacePlayerAt(ompos)
 	mons.MakeAware(g)
 	if terrain(g.Dungeon.Cell(g.Player.Pos)) == ChasmCell {
-		g.PushEvent(&playerEvent{ERank: g.Ev.Rank(), EAction: AbyssFall})
+		g.PushEvent(&playerEvent{ERank: g.Turn, EAction: AbyssFall})
 	}
 }
 
@@ -628,7 +628,7 @@ func (g *game) Fog(at gruid.Point, radius int) {
 		_, ok := g.Clouds[n.P]
 		if !ok && g.Dungeon.Cell(n.P).AllowsFog() {
 			g.Clouds[n.P] = CloudFog
-			g.PushEvent(&posEvent{ERank: g.Ev.Rank() + DurationFog + RandInt(DurationFog/2), EAction: CloudEnd, Pos: n.P})
+			g.PushEvent(&posEvent{ERank: g.Turn + DurationFog + RandInt(DurationFog/2), EAction: CloudEnd, Pos: n.P})
 		}
 	}
 	g.ComputeLOS()
@@ -861,7 +861,7 @@ func (g *game) CreateMagicalBarrierAt(pos gruid.Point) {
 	g.Dungeon.SetCell(pos, BarrierCell)
 	delete(g.Clouds, pos)
 	g.MagicalBarriers[pos] = t
-	g.PushEvent(&posEvent{ERank: g.Ev.Rank() + DurationMagicalBarrier + RandInt(DurationMagicalBarrier/2), Pos: pos, EAction: ObstructionEnd})
+	g.PushEvent(&posEvent{ERank: g.Turn + DurationMagicalBarrier + RandInt(DurationMagicalBarrier/2), Pos: pos, EAction: ObstructionEnd})
 }
 
 func (g *game) EvokeEnergyMagara() error {
@@ -895,7 +895,7 @@ func (g *game) EvokeDelayedNoiseMagara() error {
 	if !g.PutFakeStatus(StatusDelay, DurationHarmonicNoiseDelay) {
 		return errors.New("You are already using delayed magic.")
 	}
-	g.PushEvent(&posEvent{ERank: g.Ev.Rank() + DurationTurn,
+	g.PushEvent(&posEvent{ERank: g.Turn + DurationTurn,
 		Pos: g.Player.Pos, EAction: DelayedHarmonicNoiseEvent,
 		Timer: DurationHarmonicNoiseDelay})
 	g.Print("Timer activated.")
@@ -914,7 +914,7 @@ func (g *game) EvokeOricExplosionMagara() error {
 	if !g.PutFakeStatus(StatusDelay, DurationHarmonicNoiseDelay) {
 		return errors.New("You are already using delayed magic.")
 	}
-	g.PushEvent(&posEvent{ERank: g.Ev.Rank() + DurationTurn,
+	g.PushEvent(&posEvent{ERank: g.Turn + DurationTurn,
 		Pos: g.Player.Pos, EAction: DelayedOricExplosionEvent,
 		Timer: DurationOricExplosionDelay})
 	g.Print("Timer activated.")

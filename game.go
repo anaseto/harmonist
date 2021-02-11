@@ -23,7 +23,6 @@ type game struct {
 	MonstersPosCache      []int // monster (dungeon index + 1) / no monster (0)
 	Bands                 []bandInfo
 	Events                *rl.EventQueue
-	Ev                    event
 	EventIndex            int
 	Depth                 int
 	ExploredLevels        int
@@ -772,11 +771,11 @@ func (g *game) EndTurn() gruid.Effect {
 		}
 		ev, r := g.Events.PopR()
 		g.Turn = r
-		g.Ev = ev.(event)
-		g.Ev.Action(g)
-		switch ev := g.Ev.(type) {
+		e := ev.(event)
+		e.Action(g)
+		switch e := e.(type) {
 		case *playerEvent:
-			if ev.EAction == PlayerTurn {
+			if e.EAction == PlayerTurn {
 				if g.AutoNext {
 					n := g.Turn
 					return gruid.Cmd(func() gruid.Msg {

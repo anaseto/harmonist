@@ -141,7 +141,6 @@ func (g *game) Jump(mons *monster) (bool, error) {
 		ompos := mons.Pos
 		if terrain(g.Dungeon.Cell(ompos)) == ChasmCell && !g.Player.HasStatus(StatusLevitation) {
 			return true, g.AbyssJump()
-			//g.PushEvent(&simpleEvent{ERank: g.Ev.Rank(), EAction: AbyssFall})
 		}
 		if !mons.CanPass(g, g.Player.Pos) {
 			pos := mons.LeaveRoomForPlayer(g)

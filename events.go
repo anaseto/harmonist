@@ -140,7 +140,7 @@ func (mev *monsterStatusEvent) Action(g *game) {
 			mons.Path = mons.APath(g, mons.Pos, mons.Target)
 		}
 	} else {
-		g.PushEvent(&monsterStatusEvent{Mons: mev.Mons, ERank: mev.Rank() + DurationStatusStep, Status: st})
+		g.PushEvent(&monsterStatusEvent{Mons: mev.Mons, ERank: g.Turn + DurationStatusStep, Status: st})
 	}
 }
 
@@ -194,7 +194,7 @@ func (cev *posEvent) Action(g *game) {
 			g.Printf("You see an oric barrier appear out of thin air.")
 			g.StopAuto()
 		}
-		g.PushEvent(&posEvent{ERank: cev.Rank() + DurationObstructionProgression + RandInt(DurationObstructionProgression/4),
+		g.PushEvent(&posEvent{ERank: g.Turn + DurationObstructionProgression + RandInt(DurationObstructionProgression/4),
 			EAction: ObstructionProgression})
 	case FireProgression:
 		if _, ok := g.Clouds[cev.Pos]; !ok {
@@ -207,7 +207,7 @@ func (cev *posEvent) Action(g *game) {
 			g.Burn(pos)
 		}
 		delete(g.Clouds, cev.Pos)
-		g.NightFog(cev.Pos, 1, &playerEvent{ERank: cev.Rank()})
+		g.NightFog(cev.Pos, 1, &playerEvent{ERank: g.Turn})
 		g.ComputeLOS()
 	case NightProgression:
 		if _, ok := g.Clouds[cev.Pos]; !ok {
@@ -224,7 +224,7 @@ func (cev *posEvent) Action(g *game) {
 	case MistProgression:
 		pos := g.FreePassableCell()
 		g.Fog(pos, 1)
-		g.PushEvent(&posEvent{ERank: cev.Rank() + DurationMistProgression + RandInt(DurationMistProgression/4),
+		g.PushEvent(&posEvent{ERank: g.Turn + DurationMistProgression + RandInt(DurationMistProgression/4),
 			EAction: MistProgression})
 	case Earthquake:
 		g.PrintStyled("The earth suddenly shakes with force!", logSpecial)
@@ -302,7 +302,7 @@ func (g *game) NightFog(at gruid.Point, radius int, ev event) {
 		_, ok := g.Clouds[n.P]
 		if !ok {
 			g.Clouds[n.P] = CloudNight
-			g.PushEvent(&posEvent{ERank: ev.Rank() + DurationCloudProgression, EAction: NightProgression,
+			g.PushEvent(&posEvent{ERank: g.Turn + DurationCloudProgression, EAction: NightProgression,
 				Pos: n.P, Timer: DurationNightFog})
 			g.MakeCreatureSleep(n.P)
 		}
@@ -358,7 +358,7 @@ func (g *game) Burn(pos gruid.Point) {
 	} else {
 		g.ComputeLOS()
 	}
-	g.PushEvent(&posEvent{ERank: g.Ev.Rank() + DurationCloudProgression, EAction: FireProgression, Pos: pos})
+	g.PushEvent(&posEvent{ERank: g.Turn + DurationCloudProgression, EAction: FireProgression, Pos: pos})
 }
 
 func (cev *posEvent) Renew(g *game, delay int) {

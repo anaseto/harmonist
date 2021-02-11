@@ -340,7 +340,7 @@ func (md *model) updateStatusInfo() {
 		if st.Good() {
 			r = 's'
 			t := DurationTurn
-			if g.Ev != nil && g.Player.Expire[st] >= g.Ev.Rank() && g.Player.Expire[st]-g.Ev.Rank() <= t {
+			if g.Player.Expire[st] >= g.Turn && g.Player.Expire[st]-g.Turn <= t {
 				r = 'x'
 			}
 		} else if st.Bad() {

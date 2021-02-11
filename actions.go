@@ -405,7 +405,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 			err = g.ExtinguishFire()
 		case StoryCell:
 			if g.Objects.Story[g.Player.Pos] == StoryArtifact && !g.LiberatedArtifact {
-				g.PushEventFirst(&playerEvent{ERank: g.Ev.Rank(), EAction: StorySequence})
+				g.PushEventFirst(&playerEvent{ERank: g.Turn, EAction: StorySequence})
 				g.LiberatedArtifact = true
 			} else if g.Objects.Story[g.Player.Pos] == StoryArtifactSealed {
 				err = errors.New("The artifact is protected by a magical stone barrier.")

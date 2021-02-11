@@ -364,7 +364,7 @@ func (g *game) PlayerBump(pos gruid.Point) (again bool, err error) {
 			_, ok := g.Clouds[g.Player.Pos]
 			if !ok && g.Dungeon.Cell(g.Player.Pos).AllowsFog() {
 				g.Clouds[g.Player.Pos] = CloudFog
-				g.PushEvent(&posEvent{ERank: g.Ev.Rank() + DurationSmokingCloakFog, EAction: CloudEnd, Pos: g.Player.Pos})
+				g.PushEvent(&posEvent{ERank: g.Turn + DurationSmokingCloakFog, EAction: CloudEnd, Pos: g.Player.Pos})
 			}
 		}
 		//}
@@ -396,7 +396,7 @@ func (g *game) SwiftFog() {
 		_, ok := g.Clouds[n.P]
 		if !ok && g.Dungeon.Cell(n.P).AllowsFog() {
 			g.Clouds[n.P] = CloudFog
-			g.PushEvent(&posEvent{ERank: g.Ev.Rank() + DurationFog + RandInt(DurationFog/2), EAction: CloudEnd, Pos: n.P})
+			g.PushEvent(&posEvent{ERank: g.Turn + DurationFog + RandInt(DurationFog/2), EAction: CloudEnd, Pos: n.P})
 		}
 	}
 	g.PutStatus(StatusSwift, DurationShortSwiftness)
@@ -460,10 +460,10 @@ func (g *game) PutStatus(st status, duration int) bool {
 		return false
 	}
 	g.Player.Statuses[st] += duration
-	g.PushEvent(&statusEvent{ERank: g.Ev.Rank() + DurationStatusStep, Status: st})
+	g.PushEvent(&statusEvent{ERank: g.Turn + DurationStatusStep, Status: st})
 	g.Stats.Statuses[st]++
 	if st.Good() {
-		g.Player.Expire[st] = g.Ev.Rank() + duration
+		g.Player.Expire[st] = g.Turn + duration
 	}
 	return true
 }
@@ -475,7 +475,7 @@ func (g *game) PutFakeStatus(st status, duration int) bool {
 	g.Player.Statuses[st] += duration
 	g.Stats.Statuses[st]++
 	if st.Good() {
-		g.Player.Expire[st] = g.Ev.Rank() + duration
+		g.Player.Expire[st] = g.Turn + duration
 	}
 	return true
 }
