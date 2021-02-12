@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	//"log"
+	"log"
 
 	"github.com/anaseto/gruid"
 )
@@ -651,28 +651,83 @@ func (m *monster) MoveTo(g *game, pos gruid.Point) {
 	}
 }
 
-func (m *monster) PlaceAt(g *game, pos gruid.Point) {
-	if !valid(m.Pos) {
-		m.Pos = pos
-		g.MonstersPosCache[idx(m.Pos)] = m.Index + 1
-		npos := m.RandomFreeNeighbor(g)
-		if npos != m.Pos {
-			m.Dir = Dir(m.Pos, npos)
-		} else {
-			m.Dir = E
-		}
-		return
-	}
-	if pos == m.Pos {
+func (m *monster) PlaceAtStart(g *game, p gruid.Point) {
+	i := idx(p)
+	if g.MonstersPosCache[i] > 0 {
+		log.Printf("used monster starting position: %v", p)
 		// should not happen
 		return
 	}
-	m.Dir = Dir(m.Pos, pos)
+	m.Pos = p
+	g.MonstersPosCache[i] = m.Index + 1
+	npos := m.RandomFreeNeighbor(g)
+	if npos != m.Pos {
+		m.Dir = Dir(m.Pos, npos)
+	} else {
+		m.Dir = E
+	}
+}
+
+func (m *monster) PlaceAt(g *game, p gruid.Point) {
+	if !valid(m.Pos) {
+		log.Printf("monster place at: bad position %v", m.Pos)
+		// should not happen
+		return
+	}
+	if p == m.Pos {
+		// should not happen
+		log.Printf("monster place at: same position %v", m.Pos)
+	}
+	if p == g.Player.Pos {
+		log.Printf("monster place at: player position %v", p)
+		// should not happen
+		return
+	}
+	i := idx(p)
+	j := idx(m.Pos)
+	m.Dir = Dir(m.Pos, p)
 	m.CorrectDir()
-	g.MonstersPosCache[idx(m.Pos)] = 0
-	m.Pos = pos
-	g.MonstersPosCache[idx(m.Pos)] = m.Index + 1
+	mons := g.MonsterAt(p)
+	g.MonstersPosCache[i], g.MonstersPosCache[j] = g.MonstersPosCache[j], g.MonstersPosCache[i]
+	if mons.Exists() {
+		m.Pos, mons.Pos = mons.Pos, m.Pos
+		mons.Swapped = true
+	} else {
+		m.Pos = p
+	}
 	m.Waiting = 0
+}
+
+func (g *game) MonsterAt(p gruid.Point) *monster {
+	pi := idx(p)
+	if pi < 0 || pi >= len(g.MonstersPosCache) {
+		log.Printf("monster at: bad index %v for pos %v", pi, p)
+		// should not happen
+		return nil
+	}
+	i := g.MonstersPosCache[pi]
+	if i <= 0 {
+		return nil
+	}
+	m := g.Monsters[i-1]
+	if m.Pos != p {
+		log.Printf("monster position mismatch: %v vs %v", m.Pos, p)
+	}
+	return m
+}
+
+func (g *game) checks() {
+	return
+	//for _, m := range g.Monsters {
+	//mons := g.MonsterAt(m.Pos)
+	//if !mons.Exists() && m.Exists() {
+	//log.Printf("does not exist")
+	//continue
+	//}
+	//if mons != m {
+	//log.Printf("bad monster: %v vs %v", mons.Index, m.Index)
+	//}
+	//}
 }
 
 func (m *monster) CorrectDir() {
@@ -689,7 +744,7 @@ func (m *monster) CorrectDir() {
 }
 
 func (m *monster) EndTurn(g *game) {
-	g.PushEventD(&monsterTurnEvent{Mons: m}, 1)
+	g.PushEventD(&monsterTurnEvent{Index: m.Index}, 1)
 }
 
 func (m *monster) AttackAction(g *game) bool {
@@ -1091,15 +1146,11 @@ func (m *monster) HandleMove(g *game) bool {
 		}
 	case (mons.Pos == target && m.Pos == monstarget || m.Waiting > 5+RandInt(2)) && !mons.Status(MonsLignified):
 		target := mons.Pos
-		monstarget := m.Pos
 		m.MoveTo(g, target)
 		m.Path = m.Path[1:]
-		mons.MoveTo(g, monstarget)
 		if len(mons.Path) > 0 {
 			mons.Path = mons.Path[1:]
 		}
-		g.MonstersPosCache[idx(m.Pos)] = m.Index + 1
-		mons.Swapped = true
 	case m.State == Hunting && mons.State != Hunting:
 		if m.Waiting > 2+RandInt(3) {
 			if mons.Peaceful(g) {
@@ -1286,7 +1337,7 @@ func (m *monster) PutStatus(g *game, st monsterStatus, duration int) bool {
 	}
 	m.Statuses[st] += duration
 	g.PushEventD(&monsterStatusEvent{
-		Mons:   m,
+		Index:  m.Index,
 		Status: st}, DurationStatusStep)
 
 	return true
@@ -1340,9 +1391,7 @@ func (m *monster) HitSideEffects(g *game) {
 		if !(c.IsPassable() || c.IsSwimPassable() || c.IsDoorPassable() || c.IsLevitatePassable()) {
 			break
 		}
-		ompos := m.Pos
-		m.MoveTo(g, g.Player.Pos)
-		g.PlacePlayerAt(ompos)
+		g.PlacePlayerAt(m.Pos)
 		g.Print("The flying milfid makes you swap positions.")
 		g.StoryPrintf("Position swap by %s", m.Kind)
 		m.ExhaustTime(g, 5+RandInt(5))
@@ -1786,17 +1835,6 @@ func (m *monster) GatherBand(g *game) {
 			}
 		}
 	}
-}
-
-func (g *game) MonsterAt(pos gruid.Point) *monster {
-	if !valid(pos) {
-		return nil
-	}
-	i := g.MonstersPosCache[idx(pos)]
-	if i <= 0 {
-		return nil
-	}
-	return g.Monsters[i-1]
 }
 
 func (g *game) MonsterInLOS() *monster {

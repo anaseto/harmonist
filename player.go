@@ -425,9 +425,15 @@ func (g *game) PlacePlayerAt(pos gruid.Point) {
 	case SSW, SSE:
 		g.Player.Dir = S
 	}
+	m := g.MonsterAt(pos)
+	ppos := g.Player.Pos
 	g.Player.Pos = pos
-	if terrain(g.Dungeon.Cell(pos)) == QueenRockCell && !g.Player.HasStatus(StatusLevitation) {
-		g.MakeNoise(QueenRockFootstepNoise, pos)
+	if m.Exists() {
+		m.MoveTo(g, ppos)
+		m.Swapped = true
+	}
+	if terrain(g.Dungeon.Cell(g.Player.Pos)) == QueenRockCell && !g.Player.HasStatus(StatusLevitation) {
+		g.MakeNoise(QueenRockFootstepNoise, g.Player.Pos)
 		g.Print("Tap-tap.")
 	}
 	g.CollectGround()

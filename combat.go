@@ -152,9 +152,7 @@ func (g *game) Jump(mons *monster) (bool, error) {
 			}
 			// otherwise (which should not happen in practice), swap anyways
 		}
-		mons.MoveTo(g, g.Player.Pos)
-		mons.Swapped = true
-		g.PlacePlayerAt(ompos)
+		g.PlacePlayerAt(mons.Pos)
 		return false, nil
 	}
 	if g.Player.HasStatus(StatusExhausted) {

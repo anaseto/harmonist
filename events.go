@@ -93,23 +93,23 @@ func (sev *statusEvent) Handle(g *game) {
 }
 
 type monsterTurnEvent struct {
-	Mons *monster
+	Index int
 }
 
 func (mev *monsterTurnEvent) Handle(g *game) {
-	mons := mev.Mons
+	mons := g.Monsters[mev.Index]
 	if mons.Exists() {
 		mons.HandleTurn(g)
 	}
 }
 
 type monsterStatusEvent struct {
-	Mons   *monster
+	Index  int
 	Status monsterStatus
 }
 
 func (mev *monsterStatusEvent) Handle(g *game) {
-	mons := mev.Mons
+	mons := g.Monsters[mev.Index]
 	st := mev.Status
 	mons.Statuses[st] -= DurationStatusStep
 	if mons.Statuses[st] <= 0 {
@@ -122,7 +122,7 @@ func (mev *monsterStatusEvent) Handle(g *game) {
 			mons.Path = mons.APath(g, mons.Pos, mons.Target)
 		}
 	} else {
-		g.PushEventD(&monsterStatusEvent{Mons: mev.Mons, Status: st}, DurationStatusStep)
+		g.PushEventD(&monsterStatusEvent{Index: mev.Index, Status: st}, DurationStatusStep)
 	}
 }
 

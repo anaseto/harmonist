@@ -2057,7 +2057,7 @@ func (dg *dgen) PutMonsterBand(g *game, band monsterBand) bool {
 		mons.Init()
 		mons.Index = len(g.Monsters) - 1
 		mons.Band = len(g.Bands) - 1
-		mons.PlaceAt(g, pos)
+		mons.PlaceAtStart(g, pos)
 		mons.Target = mons.NextTarget(g)
 		pos = g.FreeCellForBandMonster(pos)
 	}

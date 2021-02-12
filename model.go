@@ -251,6 +251,8 @@ func (md *model) init() gruid.Effect {
 		g.InitLevel()
 		g.PrintfStyled("Error: %v", logError, err)
 		g.PrintStyled("Could not load saved state… starting new state.", logError)
+	} else {
+		g.checks()
 	}
 	if cfgerrstr != "" {
 		g.PrintStyled(cfgerrstr, logError)
@@ -667,7 +669,7 @@ func (md *model) updateKeysChange(msg gruid.Msg) gruid.Effect {
 		return nil
 	case key.IsRune():
 		action := ConfigurableKeyActions[md.keysMenu.Active()]
-		log.Printf("active %v, action %v", md.keysMenu.Active(), action)
+		//log.Printf("active %v, action %v", md.keysMenu.Active(), action)
 		if action.normalModeAction() {
 			md.keysNormal[key] = action
 		}

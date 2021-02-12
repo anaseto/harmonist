@@ -452,6 +452,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		md.pagerMode = modeLogs
 	case ActionSave:
 		again = true
+		g.checks()
 		errsave := g.Save()
 		if errsave != nil {
 			g.PrintfStyled("Error: %v", logError, errsave)

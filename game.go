@@ -503,7 +503,7 @@ func (g *game) InitLevel() {
 		monsters[i], monsters[j] = monsters[j], monsters[i]
 	})
 	for _, m := range monsters {
-		g.PushEvent(&monsterTurnEvent{Mons: m}, g.Turn)
+		g.PushEvent(&monsterTurnEvent{Index: m.Index}, g.Turn)
 	}
 	switch g.Params.Event[g.Depth] {
 	case UnstableLevel:
@@ -543,14 +543,11 @@ func (g *game) InitLevel() {
 
 func (g *game) CleanEvents() {
 	g.Events.Filter(func(ev rl.Event) bool {
-		switch ev := ev.(type) {
-		case *monsterTurnEvent, *posEvent:
+		switch ev.(type) {
+		case *monsterTurnEvent, *posEvent, *monsterStatusEvent, *playerEvent:
 			return false
-		case *playerEvent:
-			// When falling into the abyss after being pushed a
-			// player turn can still be in the queue.
-			return ev.Action != PlayerTurn
 		default:
+			// keep player statuses events
 			return true
 		}
 	})
