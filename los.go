@@ -206,6 +206,10 @@ func (g *game) Illuminated(p gruid.Point) bool {
 	return ok && c <= LightRange
 }
 
+func (g *game) blocksSSCLOS(p gruid.Point) bool {
+	return terrain(g.Dungeon.Cell(p)) != WallCell
+}
+
 func (g *game) ComputeLOS() {
 	g.ComputeLights()
 	for k := range g.Player.LOS {
@@ -213,13 +217,23 @@ func (g *game) ComputeLOS() {
 	}
 	c := g.Dungeon.Cell(g.Player.Pos)
 	rs := NormalPlayerRay
+	maxDepth := DefaultLOSRange
 	if terrain(c) == TreeCell {
 		rs = TreePlayerRay
+		maxDepth = TreeRange
 	}
 	lt := &lighter{rs: rs, g: g}
 	lnodes := g.Player.FOV.VisionMap(lt, g.Player.Pos)
 	nb := make([]gruid.Point, 8)
+	g.Player.FOV.SSCVisionMap(
+		g.Player.Pos, maxDepth,
+		g.blocksSSCLOS,
+		false,
+	)
 	for _, n := range lnodes {
+		if !g.Player.FOV.Visible(n.P) {
+			continue
+		}
 		if n.Cost <= DefaultLOSRange {
 			g.Player.LOS[n.P] = true
 		} else if terrain(c) == TreeCell && g.Illuminated(n.P) && n.Cost <= TreeRange {
@@ -276,7 +290,15 @@ func (m *monster) ComputeLOS(g *game) {
 	losRange := DefaultMonsterLOSRange
 	lt := &lighter{rs: MonsterRay, g: g}
 	lnodes := g.mfov.VisionMap(lt, m.Pos)
+	g.mfov.SSCVisionMap(
+		m.Pos, losRange,
+		g.blocksSSCLOS,
+		false,
+	)
 	for _, n := range lnodes {
+		if !g.mfov.Visible(n.P) {
+			continue
+		}
 		if n.P == m.Pos {
 			m.LOS[n.P] = true
 			continue
