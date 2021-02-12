@@ -19,6 +19,7 @@ type examination struct {
 	sortedStairs []gruid.Point
 	stairIndex   int
 	info         posInfo
+	scroll       bool
 }
 
 // HideCursor hides the target cursor.
@@ -37,6 +38,7 @@ func (md *model) CancelExamine() {
 	md.g.MonsterTargLOS = nil
 	md.HideCursor()
 	md.mp.kbTargeting = false
+	md.mp.ex.scroll = false
 }
 
 // Examine targets a given position with the cursor.
@@ -60,6 +62,7 @@ func (md *model) examine(p gruid.Point) {
 		md.g.MonsterTargLOS = nil
 	}
 	md.updatePosInfo()
+	md.mp.ex.scroll = false
 }
 
 // KeyboardExamine starts keyboard examination mode, with a sensible default
@@ -117,8 +120,13 @@ func (md *model) drawPosInfo() {
 
 	y := 2
 	formatBox := func(title, s string, fg gruid.Color) {
-		md.description.Box = &ui.Box{Title: ui.NewStyledText(title, gruid.Style{}.WithFg(fg))}
 		md.description.Content = md.description.Content.WithText(s).Format(DungeonWidth/2 - 2)
+		if md.description.Content.Size().Y+2 > 2+DungeonHeight {
+			md.description.Box = &ui.Box{Title: ui.NewStyledText(title, gruid.Style{}.WithFg(fg)),
+				Footer: ui.Text("scroll/page down for more...")}
+		} else {
+			md.description.Box = &ui.Box{Title: ui.NewStyledText(title, gruid.Style{}.WithFg(fg))}
+		}
 		y += md.description.Draw(md.gd.Slice(gruid.NewRange(0, y, DungeonWidth/2, 2+DungeonHeight).Add(p))).Size().Y
 	}
 
@@ -159,14 +167,18 @@ func (md *model) drawPosInfo() {
 	} else {
 		desc = info.Cell.Desc(g, info.Pos)
 	}
-	formatBox(t+" ", desc, fg)
 
 	if info.Player {
+		if !md.mp.ex.scroll {
+			formatBox(t+" ", desc, fg)
+		}
 		formatBox("Player", "This is you.", ColorBlue)
+		return
 	}
 
 	mons := info.Monster
 	if !mons.Exists() {
+		formatBox(t+" ", desc, fg)
 		return
 	}
 	title := fmt.Sprintf("%s (%s %s)", mons.Kind, mons.State, mons.Dir.String())
@@ -178,6 +190,9 @@ func (md *model) drawPosInfo() {
 		mdesc = append(mdesc, "Statuses: %s", statuses)
 	}
 	mdesc = append(mdesc, "Traits: "+mons.traits())
+	if !md.mp.ex.scroll {
+		formatBox(t+" ", desc, fg)
+	}
 	formatBox(title, strings.Join(mdesc, "\n"), fg)
 }
 
