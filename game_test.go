@@ -1,5 +1,6 @@
 package main
 
+//import "log"
 import "testing"
 
 func init() {
@@ -62,6 +63,32 @@ func TestInitLevel(t *testing.T) {
 					t.Errorf("Not free: %+v", m.Pos)
 				}
 			}
+			g.Depth++
+		}
+	}
+}
+
+func BenchmarkLOS(b *testing.B) {
+	g := &game{}
+	g.InitLevel()
+	for i := 0; i < b.N; i++ {
+		g.ComputeLOS()
+	}
+}
+
+func BenchmarkLights(b *testing.B) {
+	g := &game{}
+	g.InitLevel()
+	for i := 0; i < b.N; i++ {
+		g.ComputeLights()
+	}
+}
+
+func BenchmarkInitLevel(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		g := &game{}
+		for depth := 0; depth < MaxDepth; depth++ {
+			g.InitLevel()
 			g.Depth++
 		}
 	}

@@ -98,7 +98,6 @@ func (dp *mappingPath) Estimation(from, to gruid.Point) int {
 type tunnelPath struct {
 	dg        *dgen
 	neighbors [4]gruid.Point
-	area      [9]gruid.Point
 }
 
 func (tp *tunnelPath) Neighbors(pos gruid.Point) []gruid.Point {

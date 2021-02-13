@@ -104,13 +104,6 @@ type startParams struct {
 	CrazyImp     int
 }
 
-type places struct {
-	Shaedra  gruid.Point
-	Monolith gruid.Point
-	Marevor  gruid.Point
-	Artifact gruid.Point
-}
-
 type wizardMode int
 
 const (

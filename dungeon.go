@@ -10,7 +10,6 @@ import (
 	"log"
 	"math/rand"
 	"sort"
-	"strings"
 	"time"
 
 	"github.com/anaseto/gruid"
@@ -110,62 +109,6 @@ func (g *game) HasNonWallExploredNeighbor(pos gruid.Point) bool {
 	return false
 }
 
-func (d *dungeon) connex(pr *paths.PathRange) bool {
-	pos := d.FreePassableCell()
-	passable := func(p gruid.Point) bool {
-		return terrain(d.Cell(p)) != WallCell
-	}
-	cp := newPather(passable)
-	pr.CCMap(cp, pos)
-	it := d.Grid.Iterator()
-	for it.Next() {
-		if cell(it.Cell()).IsPassable() && pr.CCMapAt(it.P()) == -1 {
-			return false
-		}
-	}
-	return true
-}
-
-type rentry struct {
-	pos     gruid.Point
-	used    bool
-	virtual bool
-}
-
-type placeKind int
-
-const (
-	PlaceDoor placeKind = iota
-	PlacePatrol
-	PlaceStatic
-	PlaceSpecialStatic
-	PlaceItem
-	PlaceStory
-	PlacePatrolSpecial
-)
-
-type place struct {
-	pos  gruid.Point
-	kind placeKind
-	used bool
-}
-
-type room struct {
-	pos     gruid.Point
-	w       int
-	h       int
-	entries []rentry
-	places  []place
-	kind    string
-	special bool
-	tunnels int
-}
-
-func roomDistance(r1, r2 *room) int {
-	// TODO: use the center?
-	return Abs(r1.pos.X+r1.w/2-r2.pos.X-r2.w/2) + Abs(r1.pos.Y+r1.h/2-r2.pos.Y-r2.h/2)
-}
-
 type roomSlice []*room
 
 func (rs roomSlice) Len() int      { return len(rs) }
@@ -193,21 +136,6 @@ type dgen struct {
 	cc      []int
 	PR      *paths.PathRange
 	rand    *rand.Rand
-}
-
-// UnusedEntry returns an unused entry, if possible, or a random entry
-// otherwise.
-func (r *room) UnusedEntry() int {
-	ens := []int{}
-	for i, e := range r.entries {
-		if !e.used {
-			ens = append(ens, i)
-		}
-	}
-	if len(ens) == 0 {
-		return RandInt(len(r.entries))
-	}
-	return ens[RandInt(len(ens))]
 }
 
 func (dg *dgen) ConnectRoomsShortestPath(i, j int) bool {
@@ -245,227 +173,15 @@ func (dg *dgen) ConnectRoomsShortestPath(i, j int) bool {
 	return true
 }
 
-func (r *room) ComputeDimensions() {
-	lines := strings.Split(r.kind, "\n")
-	r.w = len([]rune(lines[0]))
-	r.h = len(lines)
-}
-
-func (r *room) VRev() {
-	lines := strings.Split(r.kind, "\n")
-	for i, j := 0, len(lines)-1; i < j; i, j = i+1, j-1 {
-		lines[i], lines[j] = lines[j], lines[i]
-	}
-	r.kind = strings.Join(lines, "\n")
-}
-
-func (r *room) DRev() {
-	lines := strings.Split(r.kind, "\n")
-	runelines := make([][]rune, len(lines))
-	for i, s := range lines {
-		runelines[i] = []rune(s)
-	}
-	nrunes := make([]rune, 0, len(r.kind))
-	for x := 0; x < r.w; x++ {
-		for y := 0; y < r.h; y++ {
-			nrunes = append(nrunes, runelines[y][x])
-		}
-		nrunes = append(nrunes, '\n')
-	}
-	r.kind = strings.TrimSpace(string(nrunes))
-	r.h, r.w = r.w, r.h
-}
-
-func (r *room) DVRev() {
-	r.DRev()
-	r.VRev()
-}
-
-func (r *room) VDRev() {
-	r.VRev()
-	r.DRev()
-}
-
-func (r *room) VDVRev() {
-	r.VRev()
-	r.DRev()
-	r.VRev()
-}
-
-func (r *room) DVDRev() {
-	r.DRev()
-	r.VRev()
-	r.DRev()
-}
-
-func (r *room) DVDVRev() {
-	// TODO: optimize? (it's just reverse string)
-	r.DRev()
-	r.VRev()
-	r.DRev()
-	r.VRev()
-}
-
-func (r *room) HasSpace(dg *dgen) bool {
-	if DungeonWidth-r.pos.X < r.w || DungeonHeight-r.pos.Y < r.h {
-		return false
-	}
-	for i := r.pos.X - 1; i <= r.pos.X+r.w; i++ {
-		for j := r.pos.Y - 1; j <= r.pos.Y+r.h; j++ {
-			rpos := gruid.Point{i, j}
-			if valid(rpos) && dg.room[rpos] {
-				return false
-			}
-		}
-	}
-	return true
-}
-
-func (r *room) Dig(dg *dgen) {
-	x := 0
-	y := 0
-	for _, c := range r.kind {
-		if c == '\n' {
-			x = 0
-			y++
-			continue
-		}
-		pos := gruid.Point{X: r.pos.X + x, Y: r.pos.Y + y}
-		if valid(pos) && c != '?' {
-			dg.room[pos] = true
-		}
-		switch c {
-		case '.', '>', '!', 'P', '_', '|', 'G', '-':
-			if valid(pos) {
-				dg.d.SetCell(pos, GroundCell)
-			}
-		case 'B':
-			// obstacle
-			t := WallCell
-			switch RandInt(9) {
-			case 0, 6:
-				t = TreeCell
-			case 1:
-				if RandInt(2) == 0 {
-					t = QueenRockCell
-				} else {
-					t = LightCell
-				}
-			case 2:
-				if RandInt(2) == 0 {
-					t = ChasmCell
-				} else {
-					t = TableCell
-				}
-			case 3:
-				t = TableCell
-			case 4, 5:
-				t = GroundCell
-			}
-			if valid(pos) {
-				dg.d.SetCell(pos, t)
-			}
-		case '#', '+':
-			if valid(pos) {
-				dg.d.SetCell(pos, WallCell)
-			}
-		case 'T':
-			if valid(pos) {
-				dg.d.SetCell(pos, TreeCell)
-			}
-		case 'π':
-			if valid(pos) {
-				dg.d.SetCell(pos, TableCell)
-			}
-		case 'l':
-			if valid(pos) {
-				dg.d.SetCell(pos, LightCell)
-			}
-		case 'W':
-			if valid(pos) {
-				dg.d.SetCell(pos, WindowCell)
-			}
-		case '"',
-			'?',
-			',',
-			'~',
-			'c',
-			'q',
-			'S',
-			'M',
-			'Δ',
-			'A':
-		default:
-			log.Fatalf("Invalid terrain: %c for room w:%d h:%d pos:%+v\n%s", c, r.w, r.h, r.pos, r.kind)
-		}
-		switch c {
-		case '>':
-			r.places = append(r.places, place{pos: pos, kind: PlaceSpecialStatic})
-		case '!':
-			r.places = append(r.places, place{pos: pos, kind: PlaceItem})
-		case 'P':
-			r.places = append(r.places, place{pos: pos, kind: PlacePatrol})
-		case 'G':
-			r.places = append(r.places, place{pos: pos, kind: PlacePatrolSpecial})
-		case '_':
-			r.places = append(r.places, place{pos: pos, kind: PlaceStatic})
-		case '|':
-			r.places = append(r.places, place{pos: pos, kind: PlaceDoor})
-		case '+', '-':
-			if pos.X == 0 || pos.X == DungeonWidth-1 || pos.Y == 0 || pos.Y == DungeonHeight-1 {
-				break
-			}
-			e := rentry{}
-			e.pos = pos
-			if c == '-' {
-				e.virtual = true
-			}
-			r.entries = append(r.entries, e)
-		case '"':
-			if valid(pos) {
-				dg.d.SetCell(pos, FoliageCell)
-			}
-		case ',':
-			if valid(pos) {
-				dg.d.SetCell(pos, CavernCell)
-			}
-		case '~':
-			if valid(pos) {
-				dg.d.SetCell(pos, WaterCell)
-			}
-		case 'c':
-			if valid(pos) {
-				dg.d.SetCell(pos, ChasmCell)
-			}
-		case 'q':
-			if valid(pos) {
-				dg.d.SetCell(pos, QueenRockCell)
-			}
-		case 'S':
-			r.places = append(r.places, place{pos: pos, kind: PlaceStory})
-			dg.spl.Shaedra = pos
-			dg.d.SetCell(pos, StoryCell)
-		case 'M':
-			r.places = append(r.places, place{pos: pos, kind: PlaceStory})
-			dg.spl.Marevor = pos
-			dg.d.SetCell(pos, StoryCell)
-		case 'Δ':
-			r.places = append(r.places, place{pos: pos, kind: PlaceStory})
-			dg.spl.Monolith = pos
-			dg.d.SetCell(pos, StoryCell)
-		case 'A':
-			r.places = append(r.places, place{pos: pos, kind: PlaceStory})
-			dg.spl.Artifact = pos
-			dg.d.SetCell(pos, StoryCell)
-		}
-		x++
-	}
-}
-
 func (dg *dgen) NewRoom(rpos gruid.Point, kind string) *room {
-	r := &room{pos: rpos, kind: kind}
-	r.kind = strings.TrimSpace(r.kind)
-	r.ComputeDimensions()
+	r := &room{pos: rpos, vault: &rl.Vault{}}
+	err := r.vault.Parse(kind)
+	if err != nil {
+		log.Printf("bad vault:%v", err)
+		return nil
+	}
+	r.w = r.vault.Size().X
+	r.h = r.vault.Size().Y
 	drev := 2
 	if r.w > r.h+2 {
 		drev += r.w - r.h - 2
@@ -474,31 +190,31 @@ func (dg *dgen) NewRoom(rpos gruid.Point, kind string) *room {
 		}
 	}
 	if RandInt(drev) == 0 {
-		switch RandInt(4) {
+		switch RandInt(2) {
 		case 0:
-			r.DRev()
-		case 1:
-			r.VDVRev()
-		case 2:
-			r.VDRev()
-		case 3:
-			r.DVRev()
+			r.vault.Reflect()
+			r.vault.Rotate(1 + 2*RandInt(2))
+		default:
+			r.vault.Rotate(1 + 2*RandInt(2))
 		}
 	} else {
-		switch RandInt(4) {
+		switch RandInt(2) {
 		case 0:
-			r.VRev()
-		case 1:
-			r.DVDRev()
-		case 2:
-			r.DVDVRev()
-		case 3:
+			r.vault.Reflect()
+			r.vault.Rotate(2 * RandInt(2))
+		default:
+			r.vault.Rotate(2 * RandInt(2))
 		}
 	}
+	r.w = r.vault.Size().X
+	r.h = r.vault.Size().Y
 	if !r.HasSpace(dg) {
 		return nil
 	}
 	r.Dig(dg)
+	if r.w == 0 || r.h == 0 {
+		log.Printf("bad vault size: %v", r.vault.Size())
+	}
 	return r
 }
 
@@ -893,15 +609,9 @@ func (dg *dgen) PutCavernCells(g *game) {
 func (dg *dgen) ClearUnconnected(g *game) {
 	d := dg.d
 	sp := newPather(func(p gruid.Point) bool { return d.Cell(p).IsPlayerPassable() })
-	dg.PR.CCMapAll(sp)
-	n := dg.PR.CCMapAt(g.Player.Pos)
-	it := dg.d.Grid.Iterator()
-	for it.Next() {
-		p := it.P()
-		if dg.PR.CCMapAt(p) != n {
-			it.SetCell(rl.Cell(WallCell))
-		}
-	}
+	dg.PR.CCMap(sp, g.Player.Pos)
+	mg := rl.MapGen{Grid: dg.d.Grid}
+	mg.KeepCC(dg.PR, g.Player.Pos, rl.Cell(WallCell))
 }
 
 func (dg *dgen) AddSpecial(g *game, ml maplayout) {
@@ -1080,34 +790,6 @@ func (dg *dgen) GenLight(g *game) {
 		g.Objects.Lights[pos] = true
 	}
 	g.ComputeLights()
-}
-
-func (r *room) RandomPlace(kind placeKind) gruid.Point {
-	var p []int
-	for i, pl := range r.places {
-		if pl.kind == kind && !pl.used {
-			p = append(p, i)
-		}
-	}
-	if len(p) == 0 {
-		return InvalidPos
-	}
-	j := p[RandInt(len(p))]
-	r.places[j].used = true
-	return r.places[j].pos
-}
-
-var PlaceSpecialOrStatic = []placeKind{PlaceSpecialStatic, PlaceStatic}
-
-func (r *room) RandomPlaces(kinds []placeKind) gruid.Point {
-	pos := InvalidPos
-	for _, kind := range kinds {
-		pos = r.RandomPlace(kind)
-		if pos != InvalidPos {
-			break
-		}
-	}
-	return pos
 }
 
 func (dg *dgen) PlayerStartCell(g *game, places []gruid.Point) {

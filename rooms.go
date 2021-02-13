@@ -1,5 +1,251 @@
 package main
 
+import (
+	"log"
+
+	"github.com/anaseto/gruid"
+	"github.com/anaseto/gruid/rl"
+)
+
+type room struct {
+	pos     gruid.Point
+	w       int
+	h       int
+	entries []rentry
+	places  []place
+	vault   *rl.Vault
+	special bool
+	tunnels int
+}
+
+type places struct {
+	Shaedra  gruid.Point
+	Monolith gruid.Point
+	Marevor  gruid.Point
+	Artifact gruid.Point
+}
+
+type rentry struct {
+	pos     gruid.Point
+	used    bool
+	virtual bool
+}
+
+type placeKind int
+
+const (
+	PlaceDoor placeKind = iota
+	PlacePatrol
+	PlaceStatic
+	PlaceSpecialStatic
+	PlaceItem
+	PlaceStory
+	PlacePatrolSpecial
+)
+
+type place struct {
+	pos  gruid.Point
+	kind placeKind
+	used bool
+}
+
+func roomDistance(r1, r2 *room) int {
+	// TODO: use the center?
+	return Abs(r1.pos.X+r1.w/2-r2.pos.X-r2.w/2) + Abs(r1.pos.Y+r1.h/2-r2.pos.Y-r2.h/2)
+}
+
+func (r *room) HasSpace(dg *dgen) bool {
+	if DungeonWidth-r.pos.X < r.w || DungeonHeight-r.pos.Y < r.h {
+		return false
+	}
+	for i := r.pos.X - 1; i <= r.pos.X+r.w; i++ {
+		for j := r.pos.Y - 1; j <= r.pos.Y+r.h; j++ {
+			rpos := gruid.Point{i, j}
+			if valid(rpos) && dg.room[rpos] {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+func (r *room) Dig(dg *dgen) {
+	runedraw := func(p gruid.Point, c rune) {
+		pos := gruid.Point{X: r.pos.X + p.X, Y: r.pos.Y + p.Y}
+		if valid(pos) && c != '?' {
+			dg.room[pos] = true
+		}
+		switch c {
+		case '.', '>', '!', 'P', '_', '|', 'G', '-':
+			if valid(pos) {
+				dg.d.SetCell(pos, GroundCell)
+			}
+		case 'B':
+			// obstacle
+			t := WallCell
+			switch RandInt(9) {
+			case 0, 6:
+				t = TreeCell
+			case 1:
+				if RandInt(2) == 0 {
+					t = QueenRockCell
+				} else {
+					t = LightCell
+				}
+			case 2:
+				if RandInt(2) == 0 {
+					t = ChasmCell
+				} else {
+					t = TableCell
+				}
+			case 3:
+				t = TableCell
+			case 4, 5:
+				t = GroundCell
+			}
+			if valid(pos) {
+				dg.d.SetCell(pos, t)
+			}
+		case '#', '+':
+			if valid(pos) {
+				dg.d.SetCell(pos, WallCell)
+			}
+		case 'T':
+			if valid(pos) {
+				dg.d.SetCell(pos, TreeCell)
+			}
+		case 'π':
+			if valid(pos) {
+				dg.d.SetCell(pos, TableCell)
+			}
+		case 'l':
+			if valid(pos) {
+				dg.d.SetCell(pos, LightCell)
+			}
+		case 'W':
+			if valid(pos) {
+				dg.d.SetCell(pos, WindowCell)
+			}
+		case '"',
+			'?',
+			',',
+			'~',
+			'c',
+			'q',
+			'S',
+			'M',
+			'Δ',
+			'A':
+		default:
+			log.Fatalf("Invalid terrain: %c for room w:%d h:%d pos:%+v\n%s", c, r.w, r.h, r.pos, r.vault.Content())
+		}
+		switch c {
+		case '>':
+			r.places = append(r.places, place{pos: pos, kind: PlaceSpecialStatic})
+		case '!':
+			r.places = append(r.places, place{pos: pos, kind: PlaceItem})
+		case 'P':
+			r.places = append(r.places, place{pos: pos, kind: PlacePatrol})
+		case 'G':
+			r.places = append(r.places, place{pos: pos, kind: PlacePatrolSpecial})
+		case '_':
+			r.places = append(r.places, place{pos: pos, kind: PlaceStatic})
+		case '|':
+			r.places = append(r.places, place{pos: pos, kind: PlaceDoor})
+		case '+', '-':
+			if pos.X == 0 || pos.X == DungeonWidth-1 || pos.Y == 0 || pos.Y == DungeonHeight-1 {
+				break
+			}
+			e := rentry{}
+			e.pos = pos
+			if c == '-' {
+				e.virtual = true
+			}
+			r.entries = append(r.entries, e)
+		case '"':
+			if valid(pos) {
+				dg.d.SetCell(pos, FoliageCell)
+			}
+		case ',':
+			if valid(pos) {
+				dg.d.SetCell(pos, CavernCell)
+			}
+		case '~':
+			if valid(pos) {
+				dg.d.SetCell(pos, WaterCell)
+			}
+		case 'c':
+			if valid(pos) {
+				dg.d.SetCell(pos, ChasmCell)
+			}
+		case 'q':
+			if valid(pos) {
+				dg.d.SetCell(pos, QueenRockCell)
+			}
+		case 'S':
+			r.places = append(r.places, place{pos: pos, kind: PlaceStory})
+			dg.spl.Shaedra = pos
+			dg.d.SetCell(pos, StoryCell)
+		case 'M':
+			r.places = append(r.places, place{pos: pos, kind: PlaceStory})
+			dg.spl.Marevor = pos
+			dg.d.SetCell(pos, StoryCell)
+		case 'Δ':
+			r.places = append(r.places, place{pos: pos, kind: PlaceStory})
+			dg.spl.Monolith = pos
+			dg.d.SetCell(pos, StoryCell)
+		case 'A':
+			r.places = append(r.places, place{pos: pos, kind: PlaceStory})
+			dg.spl.Artifact = pos
+			dg.d.SetCell(pos, StoryCell)
+		}
+	}
+	r.vault.Iter(runedraw)
+}
+
+// UnusedEntry returns an unused entry, if possible, or a random entry
+// otherwise.
+func (r *room) UnusedEntry() int {
+	ens := []int{}
+	for i, e := range r.entries {
+		if !e.used {
+			ens = append(ens, i)
+		}
+	}
+	if len(ens) == 0 {
+		return RandInt(len(r.entries))
+	}
+	return ens[RandInt(len(ens))]
+}
+
+func (r *room) RandomPlace(kind placeKind) gruid.Point {
+	var p []int
+	for i, pl := range r.places {
+		if pl.kind == kind && !pl.used {
+			p = append(p, i)
+		}
+	}
+	if len(p) == 0 {
+		return InvalidPos
+	}
+	j := p[RandInt(len(p))]
+	r.places[j].used = true
+	return r.places[j].pos
+}
+
+var PlaceSpecialOrStatic = []placeKind{PlaceSpecialStatic, PlaceStatic}
+
+func (r *room) RandomPlaces(kinds []placeKind) gruid.Point {
+	pos := InvalidPos
+	for _, kind := range kinds {
+		pos = r.RandomPlace(kind)
+		if pos != InvalidPos {
+			break
+		}
+	}
+	return pos
+}
+
 const (
 	RoomAlmostSquare = `
 ?###+##??

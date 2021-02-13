@@ -4,9 +4,28 @@ import (
 	"bytes"
 	"fmt"
 	"testing"
+
+	"github.com/anaseto/gruid"
+	"github.com/anaseto/gruid/paths"
 )
 
 var Rounds = 40
+
+func (d *dungeon) connex(pr *paths.PathRange) bool {
+	pos := d.FreePassableCell()
+	passable := func(p gruid.Point) bool {
+		return terrain(d.Cell(p)) != WallCell
+	}
+	cp := newPather(passable)
+	pr.CCMap(cp, pos)
+	it := d.Grid.Iterator()
+	for it.Next() {
+		if cell(it.Cell()).IsPassable() && pr.CCMapAt(it.P()) == -1 {
+			return false
+		}
+	}
+	return true
+}
 
 func (d *dungeon) String() string {
 	b := &bytes.Buffer{}
