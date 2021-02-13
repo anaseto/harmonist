@@ -276,6 +276,7 @@ func (g *game) DoorCandidate(pos gruid.Point) bool {
 	if !valid(pos) || d.Cell(pos).IsPassable() {
 		return false
 	}
+	// TODO: refactor this hideous function?
 	return valid(pos.Add(gruid.Point{-1, 0})) && valid(pos.Add(gruid.Point{1, 0})) &&
 		d.Cell(pos.Add(gruid.Point{-1, 0})).IsGround() && d.Cell(pos.Add(gruid.Point{1, 0})).IsGround() &&
 		(!valid(pos.Add(gruid.Point{0, -1})) || terrain(d.Cell(pos.Add(gruid.Point{0, -1}))) == WallCell) &&
@@ -1215,7 +1216,6 @@ func (dg *dgen) RandomOutStone(g *game) stone {
 
 func (dg *dgen) GenStones(g *game) {
 	// Magical Stones
-	// TODO: move into dungeon generation
 	nstones := 3
 	switch RandInt(8) {
 	case 1, 2, 3, 4, 5:
