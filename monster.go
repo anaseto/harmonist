@@ -674,9 +674,15 @@ func (m *monster) PlaceAt(g *game, p gruid.Point) {
 		// should not happen
 		return
 	}
+	if p == InvalidPos {
+		log.Printf("monster new place at invalid position")
+		// should not happen
+		return
+	}
 	if p == m.Pos {
 		// should not happen
 		log.Printf("monster place at: same position %v", m.Pos)
+		return
 	}
 	if p == g.Player.Pos {
 		log.Printf("monster place at: player position %v", p)

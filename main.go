@@ -7,6 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -27,6 +28,11 @@ func main() {
 		opt256colors = flag.Bool("x", false, "use xterm 256-color palette (solarized approximation)")
 	}
 	flag.Parse()
+
+	if !Tiles && !Testing {
+		// XXX: maybe log into a file?
+		log.SetOutput(ioutil.Discard)
+	}
 
 	if *optVersion {
 		fmt.Println(Version)

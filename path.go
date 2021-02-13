@@ -4,8 +4,28 @@ import (
 	"sort"
 
 	"github.com/anaseto/gruid"
+	"github.com/anaseto/gruid/paths"
 	"github.com/anaseto/gruid/rl"
 )
+
+type simplePath struct {
+	passable  func(gruid.Point) bool
+	neighbors *paths.Neighbors
+}
+
+func newPather(passable func(gruid.Point) bool) *simplePath {
+	return &simplePath{
+		passable:  passable,
+		neighbors: &paths.Neighbors{},
+	}
+}
+
+func (sp *simplePath) Neighbors(p gruid.Point) []gruid.Point {
+	if !sp.passable(p) {
+		return nil
+	}
+	return sp.neighbors.Cardinal(p, sp.passable)
+}
 
 type dungeonPath struct {
 	dungeon   *dungeon

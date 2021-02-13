@@ -2,8 +2,11 @@ package main
 
 import "testing"
 
-func TestInitLevel(t *testing.T) {
+func init() {
 	Testing = true
+}
+
+func TestInitLevel(t *testing.T) {
 	for i := 0; i < 50; i++ {
 		g := &game{}
 		for depth := 0; depth < MaxDepth; depth++ {

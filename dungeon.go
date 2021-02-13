@@ -110,64 +110,16 @@ func (g *game) HasNonWallExploredNeighbor(pos gruid.Point) bool {
 	return false
 }
 
-func (dg *dgen) ComputeConnectedComponents(nf func(gruid.Point) bool) {
-	dg.cc = make([]int, DungeonNCells)
-	index := 1
-	stack := []gruid.Point{}
-	nb := make([]gruid.Point, 0, 8)
-	it := dg.d.Grid.Iterator()
-	i := 0
-	for it.Next() {
-		pos := it.P()
-		if dg.cc[i] != 0 || !nf(pos) {
-			continue
-		}
-		stack = append(stack[:0], pos)
-		count := 0
-		dg.cc[i] = index
-		for len(stack) > 0 {
-			pos = stack[len(stack)-1]
-			stack = stack[:len(stack)-1]
-			count++
-			nb = CardinalNeighbors(pos, nb, nf)
-			for _, npos := range nb {
-				if dg.cc[idx(npos)] != index {
-					dg.cc[idx(npos)] = index
-					stack = append(stack, npos)
-				}
-			}
-		}
-		i++
-	}
-}
-
-func (d *dungeon) Connected(pos gruid.Point, nf func(gruid.Point) bool) (map[gruid.Point]bool, int) {
-	conn := map[gruid.Point]bool{}
-	stack := []gruid.Point{pos}
-	count := 0
-	conn[pos] = true
-	nb := make([]gruid.Point, 0, 8)
-	for len(stack) > 0 {
-		pos = stack[len(stack)-1]
-		stack = stack[:len(stack)-1]
-		count++
-		nb = CardinalNeighbors(pos, nb, nf)
-		for _, npos := range nb {
-			if !conn[npos] {
-				conn[npos] = true
-				stack = append(stack, npos)
-			}
-		}
-	}
-	return conn, count
-}
-
-func (d *dungeon) connex() bool {
+func (d *dungeon) connex(pr *paths.PathRange) bool {
 	pos := d.FreePassableCell()
-	conn, _ := d.Connected(pos, d.NotWallCell)
+	passable := func(p gruid.Point) bool {
+		return terrain(d.Cell(p)) != WallCell
+	}
+	cp := newPather(passable)
+	pr.CCMap(cp, pos)
 	it := d.Grid.Iterator()
 	for it.Next() {
-		if cell(it.Cell()).IsPassable() && !conn[it.P()] {
+		if cell(it.Cell()).IsPassable() && pr.CCMapAt(it.P()) == -1 {
 			return false
 		}
 	}
@@ -916,9 +868,9 @@ func (g *game) GenRoomTunnels(ml maplayout) {
 		dg.GenBarrel(g)
 	}
 	dg.AddSpecial(g, ml)
-	dg.ComputeConnectedComponents(func(pos gruid.Point) bool {
+	dg.PR.CCMapAll(newPather(func(pos gruid.Point) bool {
 		return valid(pos) && g.Dungeon.Cell(pos).IsPassable()
-	})
+	}))
 	dg.GenMonsters(g)
 	dg.PutCavernCells(g)
 	if RandInt(2) == 0 {
@@ -940,12 +892,14 @@ func (dg *dgen) PutCavernCells(g *game) {
 
 func (dg *dgen) ClearUnconnected(g *game) {
 	d := dg.d
-	conn, _ := d.Connected(g.Player.Pos, d.IsFreeCell)
+	sp := newPather(func(p gruid.Point) bool { return d.Cell(p).IsPlayerPassable() })
+	dg.PR.CCMapAll(sp)
+	n := dg.PR.CCMapAt(g.Player.Pos)
 	it := dg.d.Grid.Iterator()
 	for it.Next() {
-		pos := it.P()
-		if cell(it.Cell()).IsPassable() && !conn[pos] {
-			d.SetCell(pos, WallCell)
+		p := it.P()
+		if dg.PR.CCMapAt(p) != n {
+			it.SetCell(rl.Cell(WallCell))
 		}
 	}
 }
@@ -1641,12 +1595,13 @@ func (dg *dgen) GenLake(c cell) {
 	walls := []gruid.Point{}
 	xshift := 10 + RandInt(5)
 	yshift := 5 + RandInt(3)
-	for i := 0; i < DungeonNCells; i++ {
-		pos := idxtopos(i)
+	it := dg.d.Grid.Iterator()
+	for it.Next() {
+		pos := it.P()
 		if pos.X < xshift || pos.Y < yshift || pos.X > DungeonWidth-xshift || pos.Y > DungeonHeight-yshift {
 			continue
 		}
-		c := dg.d.Cell(pos)
+		c := cell(it.Cell())
 		if terrain(c) == WallCell && !dg.room[pos] {
 			walls = append(walls, pos)
 		}
@@ -1655,25 +1610,27 @@ func (dg *dgen) GenLake(c cell) {
 	var bestpos = walls[RandInt(len(walls))]
 	var bestsize int
 	d := dg.d
+	passable := func(p gruid.Point) func(q gruid.Point) bool {
+		return func(q gruid.Point) bool {
+			return valid(q) && terrain(dg.d.Cell(q)) == WallCell && !dg.room[q] && Distance(p, q) < 10+RandInt(10)
+		}
+	}
 	for {
-		pos := walls[RandInt(len(walls))]
-		_, size := d.Connected(pos, func(npos gruid.Point) bool {
-			return valid(npos) && terrain(dg.d.Cell(npos)) == WallCell && !dg.room[npos] && Distance(pos, npos) < 10+RandInt(10)
-		})
+		p := walls[RandInt(len(walls))]
+		sp := newPather(passable(p))
+		size := len(dg.PR.CCMap(sp, p))
 		count++
 		if Abs(bestsize-90) > Abs(size-90) {
 			bestsize = size
-			bestpos = pos
+			bestpos = p
 		}
 		if count > 15 || Abs(size-90) < 25 {
 			break
 		}
 	}
-	conn, _ := d.Connected(bestpos, func(npos gruid.Point) bool {
-		return valid(npos) && terrain(dg.d.Cell(npos)) == WallCell && !dg.room[npos] && Distance(bestpos, npos) < 10+RandInt(10)
-	})
-	for pos := range conn {
-		d.SetCell(pos, c)
+	sp := newPather(passable(bestpos))
+	for _, p := range dg.PR.CCMap(sp, bestpos) {
+		d.SetCell(p, c)
 	}
 }
 
@@ -1691,11 +1648,12 @@ func (dg *dgen) GenQueenRock() {
 	}
 	for i := 0; i < 1+RandInt(2); i++ {
 		pos := cavern[RandInt(len(cavern))]
-		conn, _ := dg.d.Connected(pos, func(npos gruid.Point) bool {
-			return valid(npos) && terrain(dg.d.Cell(npos)) == CavernCell && Distance(npos, pos) < 15+RandInt(5)
-		})
-		for pos := range conn {
-			dg.d.SetCell(pos, QueenRockCell)
+		passable := func(q gruid.Point) bool {
+			return valid(q) && terrain(dg.d.Cell(q)) == CavernCell && Distance(q, pos) < 15+RandInt(5)
+		}
+		cp := newPather(passable)
+		for _, p := range dg.PR.CCMap(cp, pos) {
+			dg.d.SetCell(p, QueenRockCell)
 		}
 	}
 
@@ -1848,7 +1806,7 @@ loop:
 					break
 				}
 			}
-			if pos != InvalidPos {
+			if pos != InvalidPos && !g.MonsterAt(pos).Exists() {
 				break loop
 			}
 		}
@@ -1867,10 +1825,12 @@ func (dg *dgen) BandInfoGuardSpecial(g *game, band monsterBand) bandInfo {
 	for _, r := range dg.rooms {
 		count++
 		if count > 1 {
-			panic("guard special")
+			log.Print("unavailable special guard position")
+			pos = dg.InsideCell(g)
+			break
 		}
 		pos = r.RandomPlace(PlacePatrolSpecial)
-		if pos != InvalidPos {
+		if pos != InvalidPos && !g.MonsterAt(pos).Exists() {
 			break
 		}
 	}
@@ -1883,7 +1843,7 @@ func (dg *dgen) BandInfoPatrol(g *game, band monsterBand, pl placeKind) bandInfo
 	bandinfo := bandInfo{Kind: monsterBand(band)}
 	pos := InvalidPos
 	count := 0
-	for pos == InvalidPos {
+	for pos == InvalidPos || g.MonsterAt(pos).Exists() {
 		count++
 		if count > 4000 {
 			pos = dg.InsideCell(g)
@@ -1915,10 +1875,12 @@ func (dg *dgen) BandInfoPatrolSpecial(g *game, band monsterBand) bandInfo {
 	for _, r := range dg.rooms {
 		count++
 		if count > 1 {
-			panic("patrol special")
+			log.Print("unavailable special patrol position")
+			pos = dg.InsideCell(g)
+			break
 		}
 		pos = r.RandomPlace(PlacePatrolSpecial)
-		if pos != InvalidPos {
+		if pos != InvalidPos && !g.MonsterAt(pos).Exists() {
 			break
 		}
 	}
@@ -1967,7 +1929,7 @@ func (dg *dgen) BandInfoOutsideExplore(g *game, band monsterBand) bandInfo {
 	for i := 0; i < 4; i++ {
 		for j := 0; j < 100; j++ {
 			pos := dg.OutsideCell(g)
-			if dg.cc[idx(pos)] == dg.cc[idx(bandinfo.Path[0])] {
+			if dg.PR.CCMapAt(pos) == dg.PR.CCMapAt(bandinfo.Path[0]) {
 				bandinfo.Path = append(bandinfo.Path, pos)
 				break
 			}
@@ -1983,7 +1945,7 @@ func (dg *dgen) BandInfoOutsideExploreButterfly(g *game, band monsterBand) bandI
 	for i := 0; i < 9; i++ {
 		for j := 0; j < 100; j++ {
 			pos := dg.OutsideCell(g)
-			if dg.cc[idx(pos)] == dg.cc[idx(bandinfo.Path[0])] {
+			if dg.PR.CCMapAt(pos) == dg.PR.CCMapAt(bandinfo.Path[0]) {
 				bandinfo.Path = append(bandinfo.Path, pos)
 				break
 			}
@@ -2047,6 +2009,10 @@ func (dg *dgen) PutMonsterBand(g *game, band monsterBand) bool {
 		pos = g.FreeCellForMonster()
 	} else {
 		pos = bdinf.Path[0]
+		if g.MonsterAt(pos).Exists() {
+			log.Printf("already monster at %v mons %v no place for %v", pos, g.MonsterAt(pos).Kind, monsters)
+			pos = g.FreeCellForMonster()
+		}
 	}
 	for _, mk := range monsters {
 		mons := &monster{Kind: mk}

@@ -538,7 +538,9 @@ func (g *game) InitLevel() {
 	g.ComputeLOS()
 	g.MakeMonstersAware()
 	g.ComputeMonsterLOS()
-	g.md.updateStatusInfo()
+	if g.md != nil { // disable when testing
+		g.md.updateStatusInfo()
+	}
 }
 
 func (g *game) CleanEvents() {
