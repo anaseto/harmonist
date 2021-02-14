@@ -170,15 +170,15 @@ func (md *model) drawPosInfo() {
 
 	if info.Player {
 		if !md.mp.ex.scroll {
-			formatBox(t+" ", desc, fg)
+			formatBox(t, desc, fg)
 		}
-		formatBox("Player", "This is you.", ColorBlue)
+		formatBox("Syu", "This is you, the monkey named Syu.", ColorBlue)
 		return
 	}
 
 	mons := info.Monster
 	if !mons.Exists() {
-		formatBox(t+" ", desc, fg)
+		formatBox(t, desc, fg)
 		return
 	}
 	title := fmt.Sprintf("%s (%s %s)", mons.Kind, mons.State, mons.Dir.String())
@@ -191,7 +191,7 @@ func (md *model) drawPosInfo() {
 	}
 	mdesc = append(mdesc, "Traits: "+mons.traits())
 	if !md.mp.ex.scroll {
-		formatBox(t+" ", desc, fg)
+		formatBox(t, desc, fg)
 	}
 	formatBox(title, strings.Join(mdesc, "\n"), fg)
 }
