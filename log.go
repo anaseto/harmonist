@@ -39,10 +39,23 @@ func (e logEntry) String() string {
 	}
 	r := e.Style.Rune()
 	if r != 0 {
-		s = fmt.Sprintf("%s@%c%s@N", tick, r, e.Text)
+		s = fmt.Sprintf("%s@%c%s@N", tick, r, s)
 	} else {
 		s = fmt.Sprintf("%s%s", tick, s)
 	}
+	return s
+}
+
+func (e logEntry) dumpString() string {
+	tick := ""
+	if e.Tick {
+		tick = "• "
+	}
+	s := e.Text
+	if e.Dups > 0 {
+		s += fmt.Sprintf(" (%d×)", e.Dups+1)
+	}
+	s = fmt.Sprintf("%s%s", tick, s)
 	return s
 }
 

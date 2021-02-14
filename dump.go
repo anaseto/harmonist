@@ -109,7 +109,7 @@ func (g *game) Dump() string {
 	fmt.Fprintf(buf, "Last messages:\n")
 	for i := len(g.Log) - 10; i < len(g.Log); i++ {
 		if i >= 0 {
-			fmt.Fprintf(buf, "%s\n", g.Log[i])
+			fmt.Fprintf(buf, "%s\n", g.Log[i].dumpString())
 		}
 	}
 	fmt.Fprintf(buf, "\n")
