@@ -728,7 +728,6 @@ func (dg *dgen) PutLore(g *game) {
 }
 
 func (dg *dgen) GenLight(g *game) {
-	lights := []gruid.Point{}
 	no := 2
 	ni := 8
 	switch dg.layout {
@@ -749,19 +748,20 @@ func (dg *dgen) GenLight(g *game) {
 	for i := 0; i < no; i++ {
 		p := dg.OutsideGroundCell(g)
 		g.Dungeon.SetCell(p, LightCell)
-		lights = append(lights, p)
 	}
 	for i := 0; i < ni; i++ {
 		p := dg.rooms[RandInt(len(dg.rooms))].RandomPlaces(PlaceSpecialOrStatic)
 		if p != InvalidPos {
 			g.Dungeon.SetCell(p, LightCell)
-			lights = append(lights, p)
 		} else if RandInt(10) > 0 {
 			i--
 		}
 	}
-	for _, p := range lights {
-		g.Objects.Lights[p] = true
+	it := g.Dungeon.Grid.Iterator()
+	for it.Next() {
+		if it.Cell() == rl.Cell(LightCell) {
+			g.Objects.Lights[it.P()] = true
+		}
 	}
 	g.ComputeLights()
 }
