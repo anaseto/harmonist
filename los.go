@@ -223,6 +223,7 @@ func (g *game) ComputeLOS() {
 		maxDepth = TreeRange
 	}
 	lt := &lighter{rs: rs, g: g}
+	g.Player.FOV.SetRange(visionRange(g.Player.P, maxDepth))
 	lnodes := g.Player.FOV.VisionMap(lt, g.Player.P)
 	nb := make([]gruid.Point, 8)
 	g.Player.FOV.SSCVisionMap(
@@ -277,6 +278,12 @@ func (g *game) ComputeLOS() {
 	}
 }
 
+func visionRange(p gruid.Point, radius int) gruid.Range {
+	drg := gruid.NewRange(0, 0, DungeonWidth, DungeonHeight)
+	delta := gruid.Point{radius, radius}
+	return drg.Intersect(gruid.Range{Min: p.Sub(delta), Max: p.Add(delta).Shift(1, 1)})
+}
+
 func (m *monster) ComputeLOS(g *game) {
 	if m.Kind.Peaceful() {
 		return
@@ -284,10 +291,12 @@ func (m *monster) ComputeLOS(g *game) {
 	for k := range m.LOS {
 		delete(m.LOS, k)
 	}
-	if g.mfov == nil {
-		g.mfov = rl.NewFOV(gruid.NewRange(0, 0, DungeonWidth, DungeonHeight))
-	}
 	losRange := DefaultMonsterLOSRange
+	if g.mfov == nil {
+		g.mfov = rl.NewFOV(visionRange(m.P, losRange))
+	} else {
+		g.mfov.SetRange(visionRange(m.P, losRange))
+	}
 	lt := &lighter{rs: MonsterRay, g: g}
 	lnodes := g.mfov.VisionMap(lt, m.P)
 	g.mfov.SSCVisionMap(

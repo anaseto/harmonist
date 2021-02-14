@@ -259,7 +259,7 @@ func (g *game) InitPlayer() {
 	g.Player.Magaras[0] = g.RandomStartingMagara()
 	g.GeneratedMagaras = append(g.GeneratedMagaras, g.Player.Magaras[0].Kind)
 	g.Player.Inventory.Misc = MarevorMagara
-	g.Player.FOV = rl.NewFOV(gruid.NewRange(0, 0, DungeonWidth, DungeonHeight))
+	g.Player.FOV = rl.NewFOV(visionRange(g.Player.P, TreeRange))
 	// Testing
 	//g.Player.Magaras[1] = magara{Kind: DispersalMagara, Charges: 10}
 	//g.Player.Magaras[2] = magara{Kind: DelayedOricExplosionMagara, Charges: 10}
