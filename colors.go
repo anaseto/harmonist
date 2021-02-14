@@ -6,13 +6,14 @@ import (
 
 // Thoses are the colors of the main palette. They are given 16-palette color
 // numbers compatible with terminals, though they are then mapped to more
-// precise colors depending on options and the driver.
+// precise colors depending on options and the driver. Dark colorscheme is
+// assumed by default, but it can be changed in configuration.
 const (
 	ColorBackground          gruid.Color = gruid.ColorDefault // background
-	ColorBackgroundSecondary gruid.Color = 1 + 0
+	ColorBackgroundSecondary gruid.Color = 1 + 0              // black
 	ColorForeground          gruid.Color = gruid.ColorDefault
-	ColorForegroundSecondary gruid.Color = 1 + 7
-	ColorForegroundEmph      gruid.Color = 1 + 15
+	ColorForegroundSecondary gruid.Color = 1 + 7  // white
+	ColorForegroundEmph      gruid.Color = 1 + 15 // bright white
 	ColorYellow              gruid.Color = 1 + 3
 	ColorOrange              gruid.Color = 1 + 1 // red
 	ColorRed                 gruid.Color = 1 + 9 // bright red
