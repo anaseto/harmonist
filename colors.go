@@ -235,9 +235,9 @@ func ApplyLightLOS() {
 		ColorBg = ColorBase2
 		ColorBgDark = ColorBase2
 		ColorBgLOS = ColorBase3
-		ColorFgLOS = ColorBase1
-		ColorFgDark = ColorBase00
-		ColorFg = ColorBase1
+		ColorFgLOS = ColorBase01
+		ColorFgDark = ColorBase1
+		ColorFg = ColorBase00
 	}
 }
 
