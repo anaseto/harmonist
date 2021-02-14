@@ -3,12 +3,15 @@
 package main
 
 import (
+	"runtime"
+
 	"github.com/anaseto/gruid"
 	"github.com/anaseto/gruid/drivers/tcell"
 	tc "github.com/gdamore/tcell/v2"
 )
 
 var driver gruid.Driver
+var color8 bool
 
 func init() {
 	st := styler{}
@@ -16,6 +19,9 @@ func init() {
 	//dr.PreventQuit()
 	driver = dr
 	Terminal = true
+	if runtime.GOOS == "windows" {
+		color8 = true
+	}
 }
 
 // styler implements the tcell.StyleManager interface.
@@ -23,12 +29,119 @@ type styler struct{}
 
 func (sty styler) GetStyle(cst gruid.Style) tc.Style {
 	st := tc.StyleDefault
-	st = st.Foreground(tc.ColorValid + tc.Color(cst.Fg)).Background(tc.ColorValid + tc.Color(cst.Bg))
-	if cst.Bg == Color16Base03 {
-		st = st.Background(tc.ColorDefault)
-	}
-	if cst.Fg == Color16Base03 {
-		st = st.Foreground(tc.ColorDefault)
+	if Xterm256Color {
+		cst.Fg = map16ColorTo256(cst.Fg, true)
+		cst.Bg = map16ColorTo256(cst.Bg, false)
+		st = st.Background(tc.ColorValid + tc.Color(cst.Bg)).Foreground(tc.ColorValid + tc.Color(cst.Fg))
+	} else {
+		if !GameConfig.DarkLOS {
+			cst.Fg = map16ColorToLight(cst.Fg)
+			cst.Bg = map16ColorToLight(cst.Bg)
+		}
+		if color8 {
+			cst.Fg = map16ColorTo8Color(cst.Fg)
+			cst.Bg = map16ColorTo8Color(cst.Bg)
+		}
+		fg := tc.Color(cst.Fg)
+		bg := tc.Color(cst.Bg)
+		if cst.Bg == gruid.ColorDefault {
+			st = st.Background(tc.ColorDefault)
+		} else {
+			st = st.Background(tc.ColorValid + bg - 1)
+		}
+		if cst.Fg == gruid.ColorDefault {
+			st = st.Foreground(tc.ColorDefault)
+		} else {
+			st = st.Foreground(tc.ColorValid + fg - 1)
+		}
 	}
 	return st
+}
+
+func map16ColorTo8Color(c gruid.Color) gruid.Color {
+	if c >= 1+8 {
+		c -= 8
+	}
+	return c
+}
+
+func map16ColorToLight(c gruid.Color) gruid.Color {
+	switch c {
+	case Color16BackgroundSecondary:
+		return Color16ForegroundEmph
+	case Color16ForegroundSecondary:
+		return Color16BackgroundSecondary
+	case Color16ForegroundEmph:
+		return 1 + 0
+	default:
+		return c
+	}
+}
+
+// xterm solarized colors: http://ethanschoonover.com/solarized
+const (
+	Color256Base03  gruid.Color = 234
+	Color256Base02  gruid.Color = 235
+	Color256Base01  gruid.Color = 240
+	Color256Base00  gruid.Color = 241 // for dark on light background
+	Color256Base0   gruid.Color = 244
+	Color256Base1   gruid.Color = 245
+	Color256Base2   gruid.Color = 254
+	Color256Base3   gruid.Color = 230
+	Color256Yellow  gruid.Color = 136
+	Color256Orange  gruid.Color = 166
+	Color256Red     gruid.Color = 160
+	Color256Magenta gruid.Color = 125
+	Color256Violet  gruid.Color = 61
+	Color256Blue    gruid.Color = 33
+	Color256Cyan    gruid.Color = 37
+	Color256Green   gruid.Color = 64
+)
+
+func map16ColorTo256(c gruid.Color, fg bool) gruid.Color {
+	switch c {
+	case Color16Background:
+		if fg {
+			if GameConfig.DarkLOS {
+				return Color256Base0
+			}
+			return Color256Base00
+		} else {
+			if GameConfig.DarkLOS {
+				return Color256Base03
+			}
+			return Color256Base3
+		}
+	case Color16BackgroundSecondary:
+		if GameConfig.DarkLOS {
+			return Color256Base02
+		}
+		return Color256Base2
+	case Color16ForegroundEmph:
+		if GameConfig.DarkLOS {
+			return Color256Base01
+		}
+		return Color256Base1
+	case Color16Yellow:
+		return Color256Yellow
+	case Color16Orange:
+		return Color256Orange
+	case Color16Red:
+		return Color256Red
+	case Color16Magenta:
+		return Color256Magenta
+	case Color16Violet:
+		return Color256Violet
+	case Color16Blue:
+		return Color256Blue
+	case Color16Cyan:
+		return Color256Cyan
+	case Color16Green:
+		return Color256Green
+	default:
+		return c
+	}
+}
+
+func clearCache() {
 }

@@ -252,8 +252,8 @@ func (md *model) updateStatusInfo() {
 		's': st.WithFg(ColorFgStatusGood),
 		'o': st.WithFg(ColorFgStatusOther),
 		'b': st.WithFg(ColorFgStatusBad),
-		'B': st.WithFg(ColorCyan),
-		'M': st.WithFg(ColorYellow).WithAttrs(AttrInMap),
+		'B': st.WithFg(Color16Cyan),
+		'M': st.WithFg(Color16Yellow).WithAttrs(AttrInMap),
 	})
 	// depth
 	var depth string

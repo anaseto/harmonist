@@ -483,7 +483,7 @@ func (c cell) Style(g *game, p gruid.Point) (r rune, fg gruid.Color) {
 	case TreeCell:
 		r, fg = '♣', ColorFgConfusedMonster
 	case HoledWallCell:
-		r, fg = 'Π', ColorViolet
+		r, fg = 'Π', Color16Violet
 	case ScrollCell:
 		r, fg = g.Objects.Scrolls[p].Style(g)
 	case StoryCell:
@@ -493,11 +493,11 @@ func (c cell) Style(g *game, p gruid.Point) (r rune, fg gruid.Color) {
 	case BarrierCell:
 		r, fg = 'Ξ', ColorFgMagicPlace
 	case WindowCell:
-		r, fg = 'Θ', ColorViolet
+		r, fg = 'Θ', Color16Violet
 	case ChasmCell:
 		r, fg = '◊', ColorFgLOS
 		if g.Depth == MaxDepth || g.Depth == WinDepth {
-			fg = ColorViolet
+			fg = Color16Violet
 		}
 	case WaterCell:
 		r, fg = '≈', ColorFgLOS
@@ -508,7 +508,7 @@ func (c cell) Style(g *game, p gruid.Point) (r rune, fg gruid.Color) {
 	case FakeStairCell:
 		r, fg = '>', ColorFgPlace
 		if g.Depth == WinDepth {
-			fg = ColorViolet
+			fg = Color16Violet
 		}
 	case PotionCell:
 		r, fg = g.Objects.Potions[p].Style(g)

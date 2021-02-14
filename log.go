@@ -143,12 +143,12 @@ func (st logStyle) Rune() rune {
 }
 
 var logStyles = map[rune]gruid.Style{
-	'r': gruid.Style{}.WithFg(ColorRed),
-	'g': gruid.Style{}.WithFg(ColorGreen),
-	'o': gruid.Style{}.WithFg(ColorOrange),
-	'm': gruid.Style{}.WithFg(ColorMagenta),
-	'v': gruid.Style{}.WithFg(ColorViolet),
-	'e': gruid.Style{}.WithFg(ColorRed),
+	'r': gruid.Style{}.WithFg(Color16Red),
+	'g': gruid.Style{}.WithFg(Color16Green),
+	'o': gruid.Style{}.WithFg(Color16Orange),
+	'm': gruid.Style{}.WithFg(Color16Magenta),
+	'v': gruid.Style{}.WithFg(Color16Violet),
+	'e': gruid.Style{}.WithFg(Color16Red),
 }
 
 // DrawLog draws 2 compacted lines of log.

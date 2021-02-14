@@ -566,7 +566,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 func (md *model) wizardInfo() {
 	md.mode = modeSmallPager
 	st := gruid.Style{}
-	md.smallPager.SetBox(&ui.Box{Title: ui.Text("Wizard Info").WithStyle(st.WithFg(ColorCyan))})
+	md.smallPager.SetBox(&ui.Box{Title: ui.Text("Wizard Info").WithStyle(st.WithFg(Color16Cyan))})
 	stts := []ui.StyledText{}
 	stts = append(stts, ui.Textf("Monsters: %d \n", len(md.g.Monsters)))
 	md.smallPager.SetLines(stts)
@@ -583,7 +583,7 @@ func (md *model) readScroll() {
 	st := gruid.Style{}
 	switch sc {
 	case ScrollLore:
-		md.smallPager.SetBox(&ui.Box{Title: ui.Text("Lore Message").WithStyle(st.WithFg(ColorCyan))})
+		md.smallPager.SetBox(&ui.Box{Title: ui.Text("Lore Message").WithStyle(st.WithFg(Color16Cyan))})
 		stts := []ui.StyledText{}
 		text := ui.Text(sc.Text(md.g)).Format(56)
 		for _, s := range strings.Split(text.Text(), "\n") {
@@ -601,7 +601,7 @@ func (md *model) readScroll() {
 			AchLoremaster.Get(md.g)
 		}
 	default:
-		md.smallPager.SetBox(&ui.Box{Title: ui.Text("Story Message").WithStyle(st.WithFg(ColorCyan))})
+		md.smallPager.SetBox(&ui.Box{Title: ui.Text("Story Message").WithStyle(st.WithFg(Color16Cyan))})
 		stts := []ui.StyledText{}
 		text := ui.Text(sc.Text(md.g)).Format(56)
 		for _, s := range strings.Split(text.Text(), "\n") {
@@ -629,7 +629,7 @@ func altBgEntries(entries []ui.MenuEntry) {
 	for i := range entries {
 		if i%2 == 1 {
 			st := entries[i].Text.Style()
-			entries[i].Text = entries[i].Text.WithStyle(st.WithBg(ColorBgLOS))
+			entries[i].Text = entries[i].Text.WithStyle(st.WithBg(Color16BackgroundSecondary))
 		}
 	}
 }
@@ -651,7 +651,7 @@ func (md *model) openSettings() {
 		r++
 	}
 	altBgEntries(entries)
-	md.menu.SetBox(&ui.Box{Title: ui.Text("Settings").WithStyle(gruid.Style{}.WithFg(ColorYellow))})
+	md.menu.SetBox(&ui.Box{Title: ui.Text("Settings").WithStyle(gruid.Style{}.WithFg(Color16Yellow))})
 	md.menu.SetEntries(entries)
 	md.mode = modeMenu
 	md.menuMode = modeSettings
@@ -700,7 +700,7 @@ func (md *model) openKeyBindings() {
 		r++
 	}
 	altBgEntries(entries)
-	md.keysMenu.SetBox(&ui.Box{Title: ui.Text("Key Bindings").WithStyle(gruid.Style{}.WithFg(ColorYellow))})
+	md.keysMenu.SetBox(&ui.Box{Title: ui.Text("Key Bindings").WithStyle(gruid.Style{}.WithFg(Color16Yellow))})
 	md.keysMenu.SetEntries(entries)
 	md.mode = modeMenu
 	md.menuMode = modeKeys
@@ -726,7 +726,7 @@ func (md *model) openMenu() {
 		r++
 	}
 	altBgEntries(entries)
-	md.menu.SetBox(&ui.Box{Title: ui.Text("Menu").WithStyle(gruid.Style{}.WithFg(ColorYellow))})
+	md.menu.SetBox(&ui.Box{Title: ui.Text("Menu").WithStyle(gruid.Style{}.WithFg(Color16Yellow))})
 	md.menu.SetEntries(entries)
 	md.mode = modeMenu
 	md.menuMode = modeGameMenu
@@ -745,7 +745,7 @@ func (md *model) openIventory() {
 		r++
 	}
 	altBgEntries(entries)
-	md.menu.SetBox(&ui.Box{Title: ui.Text("Inventory").WithStyle(gruid.Style{}.WithFg(ColorYellow))})
+	md.menu.SetBox(&ui.Box{Title: ui.Text("Inventory").WithStyle(gruid.Style{}.WithFg(Color16Yellow))})
 	md.menu.SetEntries(entries)
 	md.mode = modeMenu
 	md.menuMode = modeInventory
@@ -764,7 +764,7 @@ func (md *model) evokeMagaraMenu() {
 		r++
 	}
 	altBgEntries(entries)
-	md.menu.SetBox(&ui.Box{Title: ui.Text("Evoke Magara").WithStyle(gruid.Style{}.WithFg(ColorYellow))})
+	md.menu.SetBox(&ui.Box{Title: ui.Text("Evoke Magara").WithStyle(gruid.Style{}.WithFg(Color16Yellow))})
 	md.menu.SetEntries(entries)
 	md.mode = modeMenu
 	md.menuMode = modeEvokation
@@ -783,7 +783,7 @@ func (md *model) equipMagaraMenu() {
 		r++
 	}
 	altBgEntries(entries)
-	md.menu.SetBox(&ui.Box{Title: ui.Text("Equip Magara").WithStyle(gruid.Style{}.WithFg(ColorYellow))})
+	md.menu.SetBox(&ui.Box{Title: ui.Text("Equip Magara").WithStyle(gruid.Style{}.WithFg(Color16Yellow))})
 	md.menu.SetEntries(entries)
 	md.mode = modeMenu
 	md.menuMode = modeEquip
@@ -806,7 +806,7 @@ func (md *model) openWizardMenu() {
 		r++
 	}
 	altBgEntries(entries)
-	md.menu.SetBox(&ui.Box{Title: ui.Text("Wizard Menu").WithStyle(gruid.Style{}.WithFg(ColorYellow))})
+	md.menu.SetBox(&ui.Box{Title: ui.Text("Wizard Menu").WithStyle(gruid.Style{}.WithFg(Color16Yellow))})
 	md.menu.SetEntries(entries)
 	md.mode = modeMenu
 	md.menuMode = modeWizard
@@ -820,17 +820,17 @@ func (md *model) updateKeysDescription(title string, actions []string) {
 	} else {
 		title = fmt.Sprintf(" %s ", title)
 	}
-	md.pager.SetBox(&ui.Box{Title: ui.Text(title).WithStyle(gruid.Style{}.WithFg(ColorYellow))})
+	md.pager.SetBox(&ui.Box{Title: ui.Text(title).WithStyle(gruid.Style{}.WithFg(Color16Yellow))})
 	lines := []ui.StyledText{}
 	for i := 0; i < len(actions)-1; i += 2 {
 		stt := ui.StyledText{}
 		if actions[i+1] != "" {
 			stt = stt.WithTextf(" %-36s %s", actions[i], actions[i+1])
 		} else {
-			stt = stt.WithTextf(" %s ", actions[i]).WithStyle(gruid.Style{}.WithFg(ColorCyan))
+			stt = stt.WithTextf(" %s ", actions[i]).WithStyle(gruid.Style{}.WithFg(Color16Cyan))
 		}
 		if i%4 == 2 {
-			stt = stt.WithStyle(stt.Style().WithBg(ColorBgLOS))
+			stt = stt.WithStyle(stt.Style().WithBg(Color16BackgroundSecondary))
 		}
 		lines = append(lines, stt)
 	}

@@ -45,6 +45,7 @@ func main() {
 		Xterm256Color = true
 	} else {
 		Xterm256Color = false
+		Only8Colors = true
 	}
 	if *opt256colors {
 		Xterm256Color = true // TODO: map the colors
