@@ -33,10 +33,10 @@ func (g *game) AllExplored() bool {
 	np := &noisePath{state: g}
 	it := g.Dungeon.Grid.Iterator()
 	for it.Next() {
-		pos := it.P()
+		p := it.P()
 		c := cell(it.Cell())
 		if c.IsWall() {
-			if len(np.Neighbors(pos)) == 0 {
+			if len(np.Neighbors(p)) == 0 {
 				continue
 			}
 		}
@@ -89,10 +89,10 @@ func (g *game) NextAuto() (next *gruid.Point, finished bool) {
 	}
 	n := neighbors[0]
 	ncost := g.PR.BreadthFirstMapAt(n)
-	for _, pos := range neighbors[1:] {
-		cost := g.PR.BreadthFirstMapAt(pos)
+	for _, p := range neighbors[1:] {
+		cost := g.PR.BreadthFirstMapAt(p)
 		if cost < ncost {
-			n = pos
+			n = p
 			ncost = cost
 		}
 	}

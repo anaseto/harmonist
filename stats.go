@@ -180,12 +180,12 @@ func (c cell) ReachNotable() bool {
 	}
 }
 
-func (g *game) Reach(pos gruid.Point) {
-	if g.Stats.AtNotablePos[pos] {
+func (g *game) Reach(p gruid.Point) {
+	if g.Stats.AtNotablePos[p] {
 		return
 	}
-	g.Stats.AtNotablePos[pos] = true
-	c := g.Dungeon.Cell(pos)
+	g.Stats.AtNotablePos[p] = true
+	c := g.Dungeon.Cell(p)
 	switch terrain(c) {
 	case TreeCell:
 		g.Stats.ClimbedTree++

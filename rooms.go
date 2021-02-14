@@ -8,7 +8,7 @@ import (
 )
 
 type room struct {
-	pos     gruid.Point
+	p       gruid.Point
 	w       int
 	h       int
 	entries []rentry
@@ -26,7 +26,7 @@ type places struct {
 }
 
 type rentry struct {
-	pos     gruid.Point
+	p       gruid.Point
 	used    bool
 	virtual bool
 }
@@ -44,24 +44,24 @@ const (
 )
 
 type place struct {
-	pos  gruid.Point
+	p    gruid.Point
 	kind placeKind
 	used bool
 }
 
 func roomDistance(r1, r2 *room) int {
 	// TODO: use the center?
-	return Abs(r1.pos.X+r1.w/2-r2.pos.X-r2.w/2) + Abs(r1.pos.Y+r1.h/2-r2.pos.Y-r2.h/2)
+	return Abs(r1.p.X+r1.w/2-r2.p.X-r2.w/2) + Abs(r1.p.Y+r1.h/2-r2.p.Y-r2.h/2)
 }
 
 func (r *room) HasSpace(dg *dgen) bool {
-	if DungeonWidth-r.pos.X < r.w || DungeonHeight-r.pos.Y < r.h {
+	if DungeonWidth-r.p.X < r.w || DungeonHeight-r.p.Y < r.h {
 		return false
 	}
-	for i := r.pos.X - 1; i <= r.pos.X+r.w; i++ {
-		for j := r.pos.Y - 1; j <= r.pos.Y+r.h; j++ {
-			rpos := gruid.Point{i, j}
-			if valid(rpos) && dg.room[rpos] {
+	for i := r.p.X - 1; i <= r.p.X+r.w; i++ {
+		for j := r.p.Y - 1; j <= r.p.Y+r.h; j++ {
+			p := gruid.Point{i, j}
+			if valid(p) && dg.room[p] {
 				return false
 			}
 		}
@@ -71,14 +71,14 @@ func (r *room) HasSpace(dg *dgen) bool {
 
 func (r *room) Dig(dg *dgen) {
 	runedraw := func(p gruid.Point, c rune) {
-		pos := gruid.Point{X: r.pos.X + p.X, Y: r.pos.Y + p.Y}
-		if valid(pos) && c != '?' {
-			dg.room[pos] = true
+		q := gruid.Point{X: r.p.X + p.X, Y: r.p.Y + p.Y}
+		if valid(q) && c != '?' {
+			dg.room[q] = true
 		}
 		switch c {
 		case '.', '>', '!', 'P', '_', '|', 'G', '-':
-			if valid(pos) {
-				dg.d.SetCell(pos, GroundCell)
+			if valid(q) {
+				dg.d.SetCell(q, GroundCell)
 			}
 		case 'B':
 			// obstacle
@@ -103,28 +103,28 @@ func (r *room) Dig(dg *dgen) {
 			case 4, 5:
 				t = GroundCell
 			}
-			if valid(pos) {
-				dg.d.SetCell(pos, t)
+			if valid(q) {
+				dg.d.SetCell(q, t)
 			}
 		case '#', '+':
-			if valid(pos) {
-				dg.d.SetCell(pos, WallCell)
+			if valid(q) {
+				dg.d.SetCell(q, WallCell)
 			}
 		case 'T':
-			if valid(pos) {
-				dg.d.SetCell(pos, TreeCell)
+			if valid(q) {
+				dg.d.SetCell(q, TreeCell)
 			}
 		case 'π':
-			if valid(pos) {
-				dg.d.SetCell(pos, TableCell)
+			if valid(q) {
+				dg.d.SetCell(q, TableCell)
 			}
 		case 'l':
-			if valid(pos) {
-				dg.d.SetCell(pos, LightCell)
+			if valid(q) {
+				dg.d.SetCell(q, LightCell)
 			}
 		case 'W':
-			if valid(pos) {
-				dg.d.SetCell(pos, WindowCell)
+			if valid(q) {
+				dg.d.SetCell(q, WindowCell)
 			}
 		case '"',
 			'?',
@@ -137,67 +137,67 @@ func (r *room) Dig(dg *dgen) {
 			'Δ',
 			'A':
 		default:
-			log.Fatalf("Invalid terrain: %c for room w:%d h:%d pos:%+v\n%s", c, r.w, r.h, r.pos, r.vault.Content())
+			log.Fatalf("Invalid terrain: %c for room w:%d h:%d pos:%+v\n%s", c, r.w, r.h, r.p, r.vault.Content())
 		}
 		switch c {
 		case '>':
-			r.places = append(r.places, place{pos: pos, kind: PlaceSpecialStatic})
+			r.places = append(r.places, place{p: q, kind: PlaceSpecialStatic})
 		case '!':
-			r.places = append(r.places, place{pos: pos, kind: PlaceItem})
+			r.places = append(r.places, place{p: q, kind: PlaceItem})
 		case 'P':
-			r.places = append(r.places, place{pos: pos, kind: PlacePatrol})
+			r.places = append(r.places, place{p: q, kind: PlacePatrol})
 		case 'G':
-			r.places = append(r.places, place{pos: pos, kind: PlacePatrolSpecial})
+			r.places = append(r.places, place{p: q, kind: PlacePatrolSpecial})
 		case '_':
-			r.places = append(r.places, place{pos: pos, kind: PlaceStatic})
+			r.places = append(r.places, place{p: q, kind: PlaceStatic})
 		case '|':
-			r.places = append(r.places, place{pos: pos, kind: PlaceDoor})
+			r.places = append(r.places, place{p: q, kind: PlaceDoor})
 		case '+', '-':
-			if pos.X == 0 || pos.X == DungeonWidth-1 || pos.Y == 0 || pos.Y == DungeonHeight-1 {
+			if q.X == 0 || q.X == DungeonWidth-1 || q.Y == 0 || q.Y == DungeonHeight-1 {
 				break
 			}
 			e := rentry{}
-			e.pos = pos
+			e.p = q
 			if c == '-' {
 				e.virtual = true
 			}
 			r.entries = append(r.entries, e)
 		case '"':
-			if valid(pos) {
-				dg.d.SetCell(pos, FoliageCell)
+			if valid(q) {
+				dg.d.SetCell(q, FoliageCell)
 			}
 		case ',':
-			if valid(pos) {
-				dg.d.SetCell(pos, CavernCell)
+			if valid(q) {
+				dg.d.SetCell(q, CavernCell)
 			}
 		case '~':
-			if valid(pos) {
-				dg.d.SetCell(pos, WaterCell)
+			if valid(q) {
+				dg.d.SetCell(q, WaterCell)
 			}
 		case 'c':
-			if valid(pos) {
-				dg.d.SetCell(pos, ChasmCell)
+			if valid(q) {
+				dg.d.SetCell(q, ChasmCell)
 			}
 		case 'q':
-			if valid(pos) {
-				dg.d.SetCell(pos, QueenRockCell)
+			if valid(q) {
+				dg.d.SetCell(q, QueenRockCell)
 			}
 		case 'S':
-			r.places = append(r.places, place{pos: pos, kind: PlaceStory})
-			dg.spl.Shaedra = pos
-			dg.d.SetCell(pos, StoryCell)
+			r.places = append(r.places, place{p: q, kind: PlaceStory})
+			dg.spl.Shaedra = q
+			dg.d.SetCell(q, StoryCell)
 		case 'M':
-			r.places = append(r.places, place{pos: pos, kind: PlaceStory})
-			dg.spl.Marevor = pos
-			dg.d.SetCell(pos, StoryCell)
+			r.places = append(r.places, place{p: q, kind: PlaceStory})
+			dg.spl.Marevor = q
+			dg.d.SetCell(q, StoryCell)
 		case 'Δ':
-			r.places = append(r.places, place{pos: pos, kind: PlaceStory})
-			dg.spl.Monolith = pos
-			dg.d.SetCell(pos, StoryCell)
+			r.places = append(r.places, place{p: q, kind: PlaceStory})
+			dg.spl.Monolith = q
+			dg.d.SetCell(q, StoryCell)
 		case 'A':
-			r.places = append(r.places, place{pos: pos, kind: PlaceStory})
-			dg.spl.Artifact = pos
-			dg.d.SetCell(pos, StoryCell)
+			r.places = append(r.places, place{p: q, kind: PlaceStory})
+			dg.spl.Artifact = q
+			dg.d.SetCell(q, StoryCell)
 		}
 	}
 	r.vault.Iter(runedraw)
@@ -230,20 +230,20 @@ func (r *room) RandomPlace(kind placeKind) gruid.Point {
 	}
 	j := p[RandInt(len(p))]
 	r.places[j].used = true
-	return r.places[j].pos
+	return r.places[j].p
 }
 
 var PlaceSpecialOrStatic = []placeKind{PlaceSpecialStatic, PlaceStatic}
 
 func (r *room) RandomPlaces(kinds []placeKind) gruid.Point {
-	pos := InvalidPos
+	p := InvalidPos
 	for _, kind := range kinds {
-		pos = r.RandomPlace(kind)
-		if pos != InvalidPos {
+		p = r.RandomPlace(kind)
+		if p != InvalidPos {
 			break
 		}
 	}
-	return pos
+	return p
 }
 
 const (

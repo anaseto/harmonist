@@ -105,28 +105,28 @@ func (g *game) DiagonalOpaque(from, to gruid.Point, rs raystyle) bool {
 	// mechanics of the line of sight algorithm, which for gameplay reasons
 	// allows diagonals for light rays in normal circumstances.
 	var cache [2]gruid.Point
-	p := cache[:0]
+	ps := cache[:0]
 	switch Dir(from, to) {
 	case NE:
-		p = append(p, to.Add(gruid.Point{0, 1}), to.Add(gruid.Point{-1, 0}))
+		ps = append(ps, to.Add(gruid.Point{0, 1}), to.Add(gruid.Point{-1, 0}))
 	case NW:
-		p = append(p, to.Add(gruid.Point{0, 1}), to.Add(gruid.Point{1, 0}))
+		ps = append(ps, to.Add(gruid.Point{0, 1}), to.Add(gruid.Point{1, 0}))
 	case SW:
-		p = append(p, to.Add(gruid.Point{0, -1}), to.Add(gruid.Point{1, 0}))
+		ps = append(ps, to.Add(gruid.Point{0, -1}), to.Add(gruid.Point{1, 0}))
 	case SE:
-		p = append(p, to.Add(gruid.Point{0, -1}), to.Add(gruid.Point{-1, 0}))
+		ps = append(ps, to.Add(gruid.Point{0, -1}), to.Add(gruid.Point{-1, 0}))
 	}
 	count := 0
-	for _, pos := range p {
-		_, ok := g.Clouds[pos]
+	for _, p := range ps {
+		_, ok := g.Clouds[p]
 		if ok {
 			count++
 			continue
 		}
-		if !valid(pos) {
+		if !valid(p) {
 			continue
 		}
-		c := g.Dungeon.Cell(pos)
+		c := g.Dungeon.Cell(p)
 		switch terrain(c) {
 		case WallCell, HoledWallCell, WindowCell:
 			count++
@@ -139,28 +139,28 @@ func (g *game) DiagonalDifficult(from, to gruid.Point) bool {
 	// For reasons similar as in DiagonalOpaque, two diagonal foliage cells
 	// should reduce range of line of sight in that diagonal direction.
 	var cache [2]gruid.Point
-	p := cache[:0]
+	ps := cache[:0]
 	switch Dir(from, to) {
 	case NE:
-		p = append(p, to.Add(gruid.Point{0, 1}), to.Add(gruid.Point{-1, 0}))
+		ps = append(ps, to.Add(gruid.Point{0, 1}), to.Add(gruid.Point{-1, 0}))
 	case NW:
-		p = append(p, to.Add(gruid.Point{0, 1}), to.Add(gruid.Point{1, 0}))
+		ps = append(ps, to.Add(gruid.Point{0, 1}), to.Add(gruid.Point{1, 0}))
 	case SW:
-		p = append(p, to.Add(gruid.Point{0, -1}), to.Add(gruid.Point{1, 0}))
+		ps = append(ps, to.Add(gruid.Point{0, -1}), to.Add(gruid.Point{1, 0}))
 	case SE:
-		p = append(p, to.Add(gruid.Point{0, -1}), to.Add(gruid.Point{-1, 0}))
+		ps = append(ps, to.Add(gruid.Point{0, -1}), to.Add(gruid.Point{-1, 0}))
 	}
 	count := 0
-	for _, pos := range p {
-		if !valid(pos) {
+	for _, p := range ps {
+		if !valid(p) {
 			continue
 		}
-		_, ok := g.Clouds[pos]
+		_, ok := g.Clouds[p]
 		if ok {
 			count++
 			continue
 		}
-		switch terrain(g.Dungeon.Cell(pos)) {
+		switch terrain(g.Dungeon.Cell(p)) {
 		case WallCell, FoliageCell, HoledWallCell:
 			count++
 		}
@@ -254,9 +254,9 @@ func (g *game) ComputeLOS() {
 			g.Player.LOS[n.P] = true
 		}
 	}
-	for pos := range g.Player.LOS {
-		if g.Player.Sees(pos) {
-			g.SeePosition(pos)
+	for p := range g.Player.LOS {
+		if g.Player.Sees(p) {
+			g.SeePosition(p)
 		}
 	}
 	for _, mons := range g.Monsters {
@@ -312,30 +312,30 @@ func (m *monster) ComputeLOS(g *game) {
 	}
 }
 
-func (g *game) SeeNotable(c cell, pos gruid.Point) {
+func (g *game) SeeNotable(c cell, p gruid.Point) {
 	switch terrain(c) {
 	case MagaraCell:
-		mag := g.Objects.Magaras[pos]
+		mag := g.Objects.Magaras[p]
 		dp := &mappingPath{state: g}
-		path := g.PR.AstarPath(dp, g.Player.P, pos)
+		path := g.PR.AstarPath(dp, g.Player.P, p)
 		if len(path) > 0 {
 			g.StoryPrintf("Spotted %s (distance: %d)", mag, len(path))
 		} else {
 			g.StoryPrintf("Spotted %s", mag)
 		}
 	case ItemCell:
-		it := g.Objects.Items[pos]
+		it := g.Objects.Items[p]
 		dp := &mappingPath{state: g}
-		path := g.PR.AstarPath(dp, g.Player.P, pos)
+		path := g.PR.AstarPath(dp, g.Player.P, p)
 		if len(path) > 0 {
 			g.StoryPrintf("Spotted %s (distance: %d)", it.ShortDesc(g), len(path))
 		} else {
 			g.StoryPrintf("Spotted %s", it.ShortDesc(g))
 		}
 	case StairCell:
-		st := g.Objects.Stairs[pos]
+		st := g.Objects.Stairs[p]
 		dp := &mappingPath{state: g}
-		path := g.PR.AstarPath(dp, g.Player.P, pos)
+		path := g.PR.AstarPath(dp, g.Player.P, p)
 		if len(path) > 0 {
 			g.StoryPrintf("Discovered %s (distance: %d)", st, len(path))
 		} else {
@@ -343,17 +343,17 @@ func (g *game) SeeNotable(c cell, pos gruid.Point) {
 		}
 	case FakeStairCell:
 		dp := &mappingPath{state: g}
-		path := g.PR.AstarPath(dp, g.Player.P, pos)
+		path := g.PR.AstarPath(dp, g.Player.P, p)
 		if len(path) > 0 {
 			g.StoryPrintf("Discovered %s (distance: %d)", NormalStairShortDesc, len(path))
 		} else {
 			g.StoryPrintf("Discovered %s", NormalStairShortDesc)
 		}
 	case StoryCell:
-		st := g.Objects.Story[pos]
+		st := g.Objects.Story[p]
 		if st == StoryArtifactSealed {
 			dp := &mappingPath{state: g}
-			path := g.PR.AstarPath(dp, g.Player.P, pos)
+			path := g.PR.AstarPath(dp, g.Player.P, p)
 			if len(path) > 0 {
 				g.StoryPrintf("Discovered Portal Moon Gem Artifact (distance: %d)", len(path))
 			} else {
@@ -363,17 +363,17 @@ func (g *game) SeeNotable(c cell, pos gruid.Point) {
 	}
 }
 
-func (g *game) SeePosition(pos gruid.Point) {
-	c := g.Dungeon.Cell(pos)
-	t, okT := g.TerrainKnowledge[pos]
+func (g *game) SeePosition(p gruid.Point) {
+	c := g.Dungeon.Cell(p)
+	t, okT := g.TerrainKnowledge[p]
 	if !explored(c) {
 		see := "see"
 		if c.IsNotable() {
-			g.Printf("You %s %s.", see, c.ShortDesc(g, pos))
+			g.Printf("You %s %s.", see, c.ShortDesc(g, p))
 			g.StopAuto()
 		}
-		g.Dungeon.SetExplored(pos)
-		g.SeeNotable(c, pos)
+		g.Dungeon.SetExplored(p)
+		g.SeeNotable(c, p)
 		g.AutoexploreMapRebuild = true
 	} else {
 		// XXX this can be improved to handle more terrain types changes
@@ -382,25 +382,25 @@ func (g *game) SeePosition(pos gruid.Point) {
 			g.StopAuto()
 			g.AutoexploreMapRebuild = true
 		}
-		if cld, ok := g.Clouds[pos]; ok && cld == CloudFire && okT && (t == FoliageCell || t == DoorCell) {
+		if cld, ok := g.Clouds[p]; ok && cld == CloudFire && okT && (t == FoliageCell || t == DoorCell) {
 			g.Printf("There are flames there.")
 			g.StopAuto()
 			g.AutoexploreMapRebuild = true
 		}
 	}
 	if okT {
-		delete(g.TerrainKnowledge, pos)
+		delete(g.TerrainKnowledge, p)
 		if c.IsPlayerPassable() {
-			delete(g.MagicalBarriers, pos)
+			delete(g.MagicalBarriers, p)
 		}
 	}
-	if mons, ok := g.LastMonsterKnownAt[pos]; ok && (mons.P != pos || !mons.Exists()) {
-		delete(g.LastMonsterKnownAt, pos)
+	if mons, ok := g.LastMonsterKnownAt[p]; ok && (mons.P != p || !mons.Exists()) {
+		delete(g.LastMonsterKnownAt, p)
 		mons.LastKnownPos = InvalidPos
 	}
-	delete(g.NoiseIllusion, pos)
-	if g.Objects.Story[pos] == StoryShaedra && !g.LiberatedShaedra &&
-		(Distance(g.Player.P, pos) <= 1 ||
+	delete(g.NoiseIllusion, p)
+	if g.Objects.Story[p] == StoryShaedra && !g.LiberatedShaedra &&
+		(Distance(g.Player.P, p) <= 1 ||
 			Distance(g.Player.P, g.Places.Marevor) <= 1 ||
 			Distance(g.Player.P, g.Places.Monolith) <= 1) &&
 		g.Player.P != g.Places.Marevor &&
@@ -410,24 +410,24 @@ func (g *game) SeePosition(pos gruid.Point) {
 	}
 }
 
-func (g *game) ComputeExclusion(pos gruid.Point, toggle bool) {
+func (g *game) ComputeExclusion(p gruid.Point, toggle bool) {
 	exclusionRange := g.LosRange()
-	g.ExclusionsMap[pos] = toggle
+	g.ExclusionsMap[p] = toggle
 	for d := 1; d <= exclusionRange; d++ {
-		for x := -d + pos.X; x <= d+pos.X; x++ {
-			for _, pos := range []gruid.Point{{x, pos.Y + d}, {x, pos.Y - d}} {
-				if !valid(pos) {
+		for x := -d + p.X; x <= d+p.X; x++ {
+			for _, q := range []gruid.Point{{x, p.Y + d}, {x, p.Y - d}} {
+				if !valid(q) {
 					continue
 				}
-				g.ExclusionsMap[pos] = toggle
+				g.ExclusionsMap[q] = toggle
 			}
 		}
-		for y := -d + 1 + pos.Y; y <= d-1+pos.Y; y++ {
-			for _, pos := range []gruid.Point{{pos.X + d, y}, {pos.X - d, y}} {
-				if !valid(pos) {
+		for y := -d + 1 + p.Y; y <= d-1+p.Y; y++ {
+			for _, q := range []gruid.Point{{p.X + d, y}, {p.X - d, y}} {
+				if !valid(q) {
 					continue
 				}
-				g.ExclusionsMap[pos] = toggle
+				g.ExclusionsMap[q] = toggle
 			}
 		}
 	}
@@ -447,14 +447,6 @@ func (g *game) Ray(p gruid.Point) []gruid.Point {
 	}
 	return ps
 }
-
-//func (g *game) ComputeRayHighlight(pos gruid.Point) {
-//g.Highlight = map[gruid.Point]bool{}
-//ray := g.Ray(pos)
-//for _, p := range ray {
-//g.Highlight[p] = true
-//}
-//}
 
 func (g *game) ComputeNoise() {
 	dij := &noisePath{state: g}
@@ -510,26 +502,25 @@ func (g *game) ComputeNoise() {
 	}
 }
 
-func (p *player) Sees(pos gruid.Point) bool {
-	//return pos == p.Pos || p.LOS[pos] && p.Dir.InViewCone(p.Pos, pos)
-	return p.LOS[pos]
+func (pl *player) Sees(p gruid.Point) bool {
+	return pl.LOS[p]
 }
 
 func (m *monster) SeesPlayer(g *game) bool {
 	return m.Sees(g, g.Player.P) && g.Player.Sees(m.P)
 }
 
-func (m *monster) SeesLight(g *game, pos gruid.Point) bool {
-	if !(m.LOS[pos] && m.Dir.InViewCone(m.P, pos)) {
+func (m *monster) SeesLight(g *game, p gruid.Point) bool {
+	if !(m.LOS[p] && m.Dir.InViewCone(m.P, p)) {
 		return false
 	}
-	if m.State == Resting && Distance(m.P, pos) > 1 {
+	if m.State == Resting && Distance(m.P, p) > 1 {
 		return false
 	}
 	return true
 }
 
-func (m *monster) Sees(g *game, pos gruid.Point) bool {
+func (m *monster) Sees(g *game, p gruid.Point) bool {
 	var darkRange = 4
 	if m.Kind == MonsHazeCat {
 		darkRange = DefaultMonsterLOSRange
@@ -541,20 +532,20 @@ func (m *monster) Sees(g *game, pos gruid.Point) bool {
 		darkRange = 1
 	}
 	const tableRange = 1
-	if !(m.LOS[pos] && (m.Dir.InViewCone(m.P, pos) || m.Kind == MonsSpider)) {
+	if !(m.LOS[p] && (m.Dir.InViewCone(m.P, p) || m.Kind == MonsSpider)) {
 		return false
 	}
-	if m.State == Resting && Distance(m.P, pos) > 1 {
+	if m.State == Resting && Distance(m.P, p) > 1 {
 		return false
 	}
-	c := g.Dungeon.Cell(pos)
-	if (!g.Illuminated(pos) && !g.Player.HasStatus(StatusIlluminated) || !c.IsIlluminable()) && Distance(m.P, pos) > darkRange {
+	c := g.Dungeon.Cell(p)
+	if (!g.Illuminated(p) && !g.Player.HasStatus(StatusIlluminated) || !c.IsIlluminable()) && Distance(m.P, p) > darkRange {
 		return false
 	}
-	if terrain(c) == TableCell && Distance(m.P, pos) > tableRange {
+	if terrain(c) == TableCell && Distance(m.P, p) > tableRange {
 		return false
 	}
-	if g.Player.HasStatus(StatusTransparent) && g.Illuminated(pos) && Distance(m.P, pos) > 1 {
+	if g.Player.HasStatus(StatusTransparent) && g.Illuminated(p) && Distance(m.P, p) > 1 {
 		return false
 	}
 	return true
@@ -568,12 +559,12 @@ func (g *game) ComputeMonsterLOS() {
 		if !mons.Exists() || !g.Player.Sees(mons.P) {
 			continue
 		}
-		for pos := range g.Player.LOS {
-			if !g.Player.Sees(pos) {
+		for p := range g.Player.LOS {
+			if !g.Player.Sees(p) {
 				continue
 			}
-			if mons.Sees(g, pos) {
-				g.MonsterLOS[pos] = true
+			if mons.Sees(g, p) {
+				g.MonsterLOS[p] = true
 			}
 		}
 	}
@@ -620,24 +611,24 @@ func (g *game) ComputeLights() {
 
 func (g *game) ComputeMonsterCone(m *monster) {
 	g.MonsterTargLOS = make(map[gruid.Point]bool)
-	for pos := range g.Player.LOS {
-		if !g.Player.Sees(pos) {
+	for p := range g.Player.LOS {
+		if !g.Player.Sees(p) {
 			continue
 		}
-		if m.Sees(g, pos) {
-			g.MonsterTargLOS[pos] = true
+		if m.Sees(g, p) {
+			g.MonsterTargLOS[p] = true
 		}
 	}
 }
 
-func (m *monster) UpdateKnowledge(g *game, pos gruid.Point) {
-	if mons, ok := g.LastMonsterKnownAt[pos]; ok {
+func (m *monster) UpdateKnowledge(g *game, p gruid.Point) {
+	if mons, ok := g.LastMonsterKnownAt[p]; ok {
 		mons.LastKnownPos = InvalidPos
 	}
 	if m.LastKnownPos != InvalidPos {
 		delete(g.LastMonsterKnownAt, m.LastKnownPos)
 	}
-	g.LastMonsterKnownAt[pos] = m
+	g.LastMonsterKnownAt[p] = m
 	m.LastSeenState = m.State
-	m.LastKnownPos = pos
+	m.LastKnownPos = p
 }

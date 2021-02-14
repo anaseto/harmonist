@@ -138,16 +138,16 @@ func (g *game) FindJumpTarget(m *monster) gruid.Point {
 
 func (g *game) Jump(mons *monster) (bool, error) {
 	if mons.Peaceful(g) && mons.Kind != MonsEarthDragon {
-		ompos := mons.P
-		if terrain(g.Dungeon.Cell(ompos)) == ChasmCell && !g.Player.HasStatus(StatusLevitation) {
+		op := mons.P
+		if terrain(g.Dungeon.Cell(op)) == ChasmCell && !g.Player.HasStatus(StatusLevitation) {
 			return true, g.AbyssJump()
 		}
 		if !mons.CanPass(g, g.Player.P) {
-			pos := mons.LeaveRoomForPlayer(g)
-			if pos != InvalidPos {
-				mons.MoveTo(g, pos)
+			p := mons.LeaveRoomForPlayer(g)
+			if p != InvalidPos {
+				mons.MoveTo(g, p)
 				mons.Swapped = true
-				g.PlacePlayerAt(ompos)
+				g.PlacePlayerAt(op)
 				return false, nil
 			}
 			// otherwise (which should not happen in practice), swap anyways
@@ -159,20 +159,20 @@ func (g *game) Jump(mons *monster) (bool, error) {
 		return false, errors.New("You cannot jump while exhausted.")
 	}
 	dir := Dir(g.Player.P, mons.P)
-	pos := g.Player.P
+	p := g.Player.P
 	for {
-		pos = To(dir, pos)
-		if !g.PlayerCanPass(pos) {
+		p = To(dir, p)
+		if !g.PlayerCanPass(p) {
 			break
 		}
-		m := g.MonsterAt(pos)
+		m := g.MonsterAt(p)
 		if !m.Exists() {
 			break
 		}
 	}
-	if !g.PlayerCanPass(pos) {
-		pos = g.FindJumpTarget(mons)
-		if !g.PlayerCanPass(pos) {
+	if !g.PlayerCanPass(p) {
+		p = g.FindJumpTarget(mons)
+		if !g.PlayerCanPass(p) {
 			// should not happen in practice, but better safe than sorry
 			g.Teleportation()
 			return false, nil
@@ -184,7 +184,7 @@ func (g *game) Jump(mons *monster) (bool, error) {
 	if mons.Kind == MonsEarthDragon {
 		g.Confusion()
 	}
-	g.PlacePlayerAt(pos)
+	g.PlacePlayerAt(p)
 	g.Stats.Jumps++
 	g.Printf("You jump over %s", mons.Kind.Definite(false))
 	g.StoryPrintf("Jumped over %s", mons.Kind)
@@ -194,7 +194,7 @@ func (g *game) Jump(mons *monster) (bool, error) {
 	return false, nil
 }
 
-func (g *game) WallJump(pos gruid.Point) error {
+func (g *game) WallJump(p gruid.Point) error {
 	c := g.Dungeon.Cell(g.Player.P)
 	if c.IsEnclosing() {
 		return fmt.Errorf("You cannot jump from %s.", c.ShortDesc(g, g.Player.P))
@@ -202,44 +202,44 @@ func (g *game) WallJump(pos gruid.Point) error {
 	if g.Player.HasStatus(StatusExhausted) {
 		return errors.New("You cannot jump while exhausted.")
 	}
-	dir := Dir(pos, g.Player.P)
-	pos = g.Player.P
-	tpos := pos
+	dir := Dir(p, g.Player.P)
+	p = g.Player.P
+	q := p
 	count := 0
-	path := []gruid.Point{tpos}
+	path := []gruid.Point{q}
 	for count < 4 {
-		pos = To(dir, pos)
-		if !g.PlayerCanJumpPass(pos) {
+		p = To(dir, p)
+		if !g.PlayerCanJumpPass(p) {
 			break
 		}
 		count++
-		tpos = pos
-		path = append(path, tpos)
-		m := g.MonsterAt(pos)
+		q = p
+		path = append(path, q)
+		m := g.MonsterAt(p)
 		if !m.Exists() && count == 3 {
 			break
 		}
 	}
-	m := g.MonsterAt(tpos)
+	m := g.MonsterAt(q)
 	if m.Exists() {
 		return errors.New("There's not enough room to jump.")
 	}
-	if count == 3 && !g.PlayerCanPass(tpos) {
-		tpos = path[len(path)-2]
-		m := g.MonsterAt(tpos)
+	if count == 3 && !g.PlayerCanPass(q) {
+		q = path[len(path)-2]
+		m := g.MonsterAt(q)
 		if m.Exists() {
 			return errors.New("There's not enough room to jump.")
 		}
 		path = path[:len(path)-1]
 	}
-	if !g.PlayerCanPass(tpos) || (count != 3 && count != 2) {
+	if !g.PlayerCanPass(q) || (count != 3 && count != 2) {
 		return errors.New("There's not enough room to jump.")
 	}
 	if !g.Player.HasStatus(StatusSwift) && g.Player.Inventory.Body != CloakAcrobat {
 		g.PutStatus(StatusExhausted, 5)
 	}
 	g.md.PushAnimation(path)
-	g.PlacePlayerAt(tpos)
+	g.PlacePlayerAt(q)
 	g.Stats.WallJumps++
 	g.Print("You jump by propulsing yourself against the wall.")
 	if g.Stats.Jumps+g.Stats.WallJumps == 15 {

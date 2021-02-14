@@ -291,7 +291,7 @@ func (g *game) DumpDungeon() string {
 	it := g.Dungeon.Grid.Iterator()
 	i := 0
 	for it.Next() {
-		pos := it.P()
+		p := it.P()
 		c := cell(it.Cell())
 		if i%DungeonWidth == 0 {
 			if i == 0 {
@@ -315,14 +315,14 @@ func (g *game) DumpDungeon() string {
 			r = '#'
 		default:
 			switch {
-			case pos == g.Player.P:
+			case p == g.Player.P:
 				r = '@'
 			default:
-				r, _ = c.Style(g, pos)
-				if _, ok := g.Clouds[pos]; ok && g.Player.LOS[pos] {
+				r, _ = c.Style(g, p)
+				if _, ok := g.Clouds[p]; ok && g.Player.LOS[p] {
 					r = '§'
 				}
-				m := g.MonsterAt(pos)
+				m := g.MonsterAt(p)
 				if m.Exists() && (g.Player.LOS[m.P] || g.Wizard) {
 					r = m.Kind.Letter()
 				}

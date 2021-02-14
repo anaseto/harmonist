@@ -114,19 +114,19 @@ func (a *Animations) Frame(d time.Duration) {
 	a.pgrid.Copy(a.grid)
 }
 
-func (md *model) SwappingAnimation(mpos, ppos gruid.Point) {
+func (md *model) SwappingAnimation(mp, pp gruid.Point) {
 	if DisableAnimations {
 		return
 	}
 	md.startAnimSeq()
 	md.anims.Frame(AnimDurShort)
-	_, fgm, bgColorm := md.positionDrawing(mpos)
-	_, _, bgColorp := md.positionDrawing(ppos)
-	md.anims.Draw(mpos, 'Φ', fgm, bgColorp)
-	md.anims.Draw(ppos, 'Φ', ColorFgPlayer, bgColorm)
+	_, fgm, bgColorm := md.positionDrawing(mp)
+	_, _, bgColorp := md.positionDrawing(pp)
+	md.anims.Draw(mp, 'Φ', fgm, bgColorp)
+	md.anims.Draw(pp, 'Φ', ColorFgPlayer, bgColorm)
 	md.anims.Frame(AnimDurMedium)
-	md.anims.Draw(mpos, 'Φ', ColorFgPlayer, bgColorp)
-	md.anims.Draw(ppos, 'Φ', fgm, bgColorm)
+	md.anims.Draw(mp, 'Φ', ColorFgPlayer, bgColorp)
+	md.anims.Draw(pp, 'Φ', fgm, bgColorm)
 	md.anims.Frame(AnimDurMedium)
 }
 
@@ -161,23 +161,23 @@ func (md *model) MonsterProjectileAnimation(ray []gruid.Point, r rune, fg gruid.
 	md.startAnimSeq()
 	md.anims.Frame(AnimDurShort)
 	for i := 0; i < len(ray); i++ {
-		pos := ray[i]
-		or, fgColor, bgColor := md.positionDrawing(pos)
-		md.anims.Draw(pos, r, fg, bgColor)
+		p := ray[i]
+		or, fgColor, bgColor := md.positionDrawing(p)
+		md.anims.Draw(p, r, fg, bgColor)
 		md.anims.Frame(AnimDurShort)
-		md.anims.Draw(pos, or, fgColor, bgColor)
+		md.anims.Draw(p, or, fgColor, bgColor)
 	}
 }
 
-func (md *model) WaveDrawAt(pos gruid.Point, fg gruid.Color) {
-	r, _, bgColor := md.positionDrawing(pos)
-	md.anims.Draw(pos, r, bgColor, fg)
+func (md *model) WaveDrawAt(p gruid.Point, fg gruid.Color) {
+	r, _, bgColor := md.positionDrawing(p)
+	md.anims.Draw(p, r, bgColor, fg)
 }
 
-func (md *model) ExplosionDrawAt(pos gruid.Point, fg gruid.Color) {
+func (md *model) ExplosionDrawAt(p gruid.Point, fg gruid.Color) {
 	g := md.g
-	_, _, bgColor := md.positionDrawing(pos)
-	mons := g.MonsterAt(pos)
+	_, _, bgColor := md.positionDrawing(p)
+	mons := g.MonsterAt(p)
 	r := ';'
 	switch RandInt(9) {
 	case 0, 6:
@@ -193,10 +193,10 @@ func (md *model) ExplosionDrawAt(pos gruid.Point, fg gruid.Color) {
 	case 5:
 		r = '~'
 	}
-	if mons.Exists() || g.Player.P == pos {
+	if mons.Exists() || g.Player.P == p {
 		r = '√'
 	}
-	md.anims.Draw(pos, r, bgColor, fg)
+	md.anims.Draw(p, r, bgColor, fg)
 }
 
 func (md *model) NoiseAnimation(noises []gruid.Point) {
@@ -207,10 +207,10 @@ func (md *model) NoiseAnimation(noises []gruid.Point) {
 	//md.startAnimSeq()
 	colors := []gruid.Color{ColorFgSleepingMonster, ColorFgMagicPlace}
 	for i := 0; i < 2; i++ {
-		for _, pos := range noises {
+		for _, p := range noises {
 			r := '♫'
-			_, _, bgColor := md.positionDrawing(pos)
-			md.anims.Draw(pos, r, bgColor, colors[i])
+			_, _, bgColor := md.positionDrawing(p)
+			md.anims.Draw(p, r, bgColor, colors[i])
 		}
 		_, _, bgColor := md.positionDrawing(md.g.Player.P)
 		md.anims.Draw(md.g.Player.P, '@', bgColor, colors[i])
@@ -219,7 +219,7 @@ func (md *model) NoiseAnimation(noises []gruid.Point) {
 
 }
 
-func (md *model) ExplosionAnimation(es explosionStyle, pos gruid.Point) {
+func (md *model) ExplosionAnimation(es explosionStyle, p gruid.Point) {
 	g := md.g
 	if DisableAnimations {
 		return
@@ -232,16 +232,16 @@ func (md *model) ExplosionAnimation(es explosionStyle, pos gruid.Point) {
 		colors[1] = ColorFgExplosionWallEnd
 	}
 	for i := 0; i < 3; i++ {
-		nb := g.Dungeon.FreeNeighbors(pos)
+		nb := g.Dungeon.FreeNeighbors(p)
 		if es != AroundWallExplosion {
-			nb = append(nb, pos)
+			nb = append(nb, p)
 		}
-		for _, npos := range nb {
+		for _, q := range nb {
 			fg := colors[RandInt(2)]
-			if !g.Player.LOS[npos] {
+			if !g.Player.LOS[q] {
 				continue
 			}
-			md.ExplosionDrawAt(npos, fg)
+			md.ExplosionDrawAt(q, fg)
 		}
 		md.anims.Frame(AnimDurMediumLong)
 	}
@@ -295,51 +295,51 @@ func (md *model) WaveAnimation(wave []int, ws wavestyle) {
 	}
 	md.startAnimSeq()
 	for _, i := range wave {
-		pos := idxtopos(i)
+		p := idxtopos(i)
 		switch ws {
 		case WaveConfusion:
 			fg := ColorFgConfusedMonster
-			if md.g.Player.Sees(pos) {
-				md.WaveDrawAt(pos, fg)
+			if md.g.Player.Sees(p) {
+				md.WaveDrawAt(p, fg)
 			}
 		case WaveSleeping:
 			fg := ColorFgSleepingMonster
-			if md.g.Player.Sees(pos) {
-				md.WaveDrawAt(pos, fg)
+			if md.g.Player.Sees(p) {
+				md.WaveDrawAt(p, fg)
 			}
 		case WaveSlowing:
 			fg := ColorFgParalysedMonster
-			if md.g.Player.Sees(pos) {
-				md.WaveDrawAt(pos, fg)
+			if md.g.Player.Sees(p) {
+				md.WaveDrawAt(p, fg)
 			}
 		case WaveTree:
 			fg := ColorFgLignifiedMonster
-			if md.g.Player.Sees(pos) {
-				md.WaveDrawAt(pos, fg)
+			if md.g.Player.Sees(p) {
+				md.WaveDrawAt(p, fg)
 			}
 		case WaveNoise:
 			fg := ColorFgWanderingMonster
-			if md.g.Player.Sees(pos) {
-				md.WaveDrawAt(pos, fg)
+			if md.g.Player.Sees(p) {
+				md.WaveDrawAt(p, fg)
 			}
 		case WaveMagicNoise:
 			fg := ColorFgMagicPlace
-			md.WaveDrawAt(pos, fg)
+			md.WaveDrawAt(p, fg)
 		}
 	}
 	md.anims.Frame(AnimDurShort)
 }
 
-func (md *model) WallExplosionAnimation(pos gruid.Point) {
+func (md *model) WallExplosionAnimation(p gruid.Point) {
 	if DisableAnimations {
 		return
 	}
 	md.startAnimSeq()
 	colors := [2]gruid.Color{ColorFgExplosionWallStart, ColorFgExplosionWallEnd}
 	for _, fg := range colors {
-		_, _, bgColor := md.positionDrawing(pos)
+		_, _, bgColor := md.positionDrawing(p)
 		//md.anims.Draw(pos, '☼', fg, bgColor)
-		md.anims.Draw(pos, '%', bgColor, fg)
+		md.anims.Draw(p, '%', bgColor, fg)
 		md.anims.Frame(AnimDurShort)
 	}
 }
@@ -370,13 +370,13 @@ func (md *model) BeamsAnimation(ray []gruid.Point, bs beamstyle) {
 	}
 	for j := 0; j < 3; j++ {
 		for i := len(ray) - 1; i >= 0; i-- {
-			pos := ray[i]
-			_, _, bgColor := md.positionDrawing(pos)
+			p := ray[i]
+			_, _, bgColor := md.positionDrawing(p)
 			r := '*'
 			if RandInt(2) == 0 {
 				r = '×'
 			}
-			md.anims.Draw(pos, r, bgColor, fg)
+			md.anims.Draw(p, r, bgColor, fg)
 		}
 		md.anims.Frame(AnimDurShortMedium)
 	}
@@ -392,13 +392,13 @@ func (md *model) SlowingMagaraAnimation(ray []gruid.Point) {
 	for j := 0; j < 3; j++ {
 		for i := len(ray) - 1; i >= 0; i-- {
 			fg := colors[RandInt(2)]
-			pos := ray[i]
-			_, _, bgColor := md.positionDrawing(pos)
+			p := ray[i]
+			_, _, bgColor := md.positionDrawing(p)
 			r := '*'
 			if RandInt(2) == 0 {
 				r = '×'
 			}
-			md.anims.Draw(pos, r, bgColor, fg)
+			md.anims.Draw(p, r, bgColor, fg)
 		}
 		md.anims.Frame(AnimDurShortMedium)
 	}
@@ -426,11 +426,11 @@ func (md *model) MonsterJavelinAnimation(ray []gruid.Point, hit bool) {
 	md.startAnimSeq()
 	md.anims.Frame(AnimDurShort)
 	for i := 0; i < len(ray); i++ {
-		pos := ray[i]
-		r, fgColor, bgColor := md.positionDrawing(pos)
-		md.anims.Draw(pos, md.ProjectileSymbol(Dir(g.Player.P, pos)), ColorFgMonster, bgColor)
+		p := ray[i]
+		r, fgColor, bgColor := md.positionDrawing(p)
+		md.anims.Draw(p, md.ProjectileSymbol(Dir(g.Player.P, p)), ColorFgMonster, bgColor)
 		md.anims.Frame(AnimDurShort)
-		md.anims.Draw(pos, r, fgColor, bgColor)
+		md.anims.Draw(p, r, fgColor, bgColor)
 	}
 	//md.anims.Frame(AnimDurShort)
 }
@@ -486,7 +486,7 @@ func (md *model) FoundFakeStairsAnimation() {
 	md.anims.Frame(AnimDurMediumLong)
 }
 
-func (md *model) MusicAnimation(pos gruid.Point) {
+func (md *model) MusicAnimation(p gruid.Point) {
 	if DisableAnimations {
 		return
 	}
@@ -509,8 +509,8 @@ func (md *model) PushAnimation(path []gruid.Point) {
 	}
 	md.startAnimSeq()
 	_, _, bg := md.positionDrawing(path[0])
-	for _, pos := range path[:len(path)-1] {
-		md.anims.Draw(pos, '×', ColorFgPlayer, bg)
+	for _, p := range path[:len(path)-1] {
+		md.anims.Draw(p, '×', ColorFgPlayer, bg)
 	}
 	md.anims.Draw(path[len(path)-1], '@', ColorFgPlayer, bg)
 	md.anims.Frame(AnimDurMediumLong)

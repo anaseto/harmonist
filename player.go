@@ -18,7 +18,7 @@ type player struct {
 	//Aptitudes map[aptitude]bool
 	Statuses  map[status]int
 	Expire    map[status]int
-	P       gruid.Point
+	P         gruid.Point
 	Target    gruid.Point
 	LOS       map[gruid.Point]bool
 	FOV       *rl.FOV
@@ -33,9 +33,9 @@ type inventory struct {
 
 const DefaultHealth = 5
 
-func (p *player) HPMax() int {
+func (pl *player) HPMax() int {
 	hpmax := DefaultHealth
-	if p.Inventory.Body == CloakVitality {
+	if pl.Inventory.Body == CloakVitality {
 		hpmax += 2
 	}
 	if hpmax < 2 {
@@ -46,22 +46,22 @@ func (p *player) HPMax() int {
 
 const DefaultMPmax = 6
 
-func (p *player) MPMax() int {
+func (pl *player) MPMax() int {
 	mpmax := DefaultMPmax
-	if p.Inventory.Body == CloakMagic {
+	if pl.Inventory.Body == CloakMagic {
 		mpmax += 2
 	}
 	return mpmax
 }
 
-func (p *player) HasStatus(st status) bool {
-	return p.Statuses[st] > 0
+func (pl *player) HasStatus(st status) bool {
+	return pl.Statuses[st] > 0
 }
 
 func (g *game) AutoToDir() bool {
 	if g.MonsterInLOS() == nil {
-		pos := To(g.AutoDir, g.Player.P)
-		if g.PlayerCanPass(pos) {
+		p := To(g.AutoDir, g.Player.P)
+		if g.PlayerCanPass(p) {
 			again, err := g.PlayerBump(To(g.AutoDir, g.Player.P))
 			if err != nil {
 				g.Print(err.Error())
@@ -86,11 +86,11 @@ func (g *game) GoToDir(dir direction) (again bool, err error) {
 		g.AutoDir = NoDir
 		return again, errors.New("You cannot travel while there are monsters in view.")
 	}
-	pos := To(dir, g.Player.P)
-	if !g.PlayerCanPass(pos) {
+	p := To(dir, g.Player.P)
+	if !g.PlayerCanPass(p) {
 		return again, errors.New("You cannot move in that direction.")
 	}
-	again, err = g.PlayerBump(pos)
+	again, err = g.PlayerBump(p)
 	if err != nil || again {
 		return again, err
 	}
@@ -182,7 +182,7 @@ func (g *game) NeedsRegenRest() bool {
 }
 
 func (g *game) Teleportation() {
-	var pos gruid.Point
+	var p gruid.Point
 	i := 0
 	count := 0
 	for {
@@ -190,20 +190,20 @@ func (g *game) Teleportation() {
 		if count > 1000 {
 			panic("Teleportation")
 		}
-		pos = g.FreePassableCell()
-		if Distance(pos, g.Player.P) < 15 && i < 1000 {
+		p = g.FreePassableCell()
+		if Distance(p, g.Player.P) < 15 && i < 1000 {
 			i++
 			continue
 		}
 		break
 
 	}
-	if valid(pos) {
+	if valid(p) {
 		// should always happen
 		opos := g.Player.P
 		g.Print("You teleport away.")
-		g.md.TeleportAnimation(opos, pos, true)
-		g.PlacePlayerAt(pos)
+		g.md.TeleportAnimation(opos, p, true)
+		g.PlacePlayerAt(p)
 	} else {
 		// should not happen
 		g.Print("Something went wrong with the teleportation.")
@@ -213,8 +213,8 @@ func (g *game) Teleportation() {
 const MaxBananas = 4
 
 func (g *game) CollectGround() {
-	pos := g.Player.P
-	c := g.Dungeon.Cell(pos)
+	p := g.Player.P
+	c := g.Dungeon.Cell(p)
 	if c.IsNotable() {
 		g.AutoexploreMapRebuild = true
 	switchcell:
@@ -228,8 +228,8 @@ func (g *game) CollectGround() {
 				g.Print("You take a banana.")
 				g.Player.Bananas++
 				g.StoryPrintf("Found banana (bananas: %d)", g.Player.Bananas)
-				g.Dungeon.SetCell(pos, GroundCell)
-				delete(g.Objects.Bananas, pos)
+				g.Dungeon.SetCell(p, GroundCell)
+				delete(g.Objects.Bananas, p)
 				if g.Player.Bananas == MaxBananas {
 					AchBananaCollector.Get(g)
 				}
@@ -239,30 +239,30 @@ func (g *game) CollectGround() {
 				if mag.Kind != NoMagara {
 					continue
 				}
-				g.Player.Magaras[i] = g.Objects.Magaras[pos]
-				delete(g.Objects.Magaras, pos)
-				g.Dungeon.SetCell(pos, GroundCell)
+				g.Player.Magaras[i] = g.Objects.Magaras[p]
+				delete(g.Objects.Magaras, p)
+				g.Dungeon.SetCell(p, GroundCell)
 				g.Printf("You take the %s.", g.Player.Magaras[i])
 				g.StoryPrintf("Took %s", g.Player.Magaras[i])
 				break switchcell
 			}
-			g.Printf("You stand over %s.", Indefinite(g.Objects.Magaras[pos].String(), false))
+			g.Printf("You stand over %s.", Indefinite(g.Objects.Magaras[p].String(), false))
 		case FakeStairCell:
-			g.Dungeon.SetCell(pos, GroundCell)
+			g.Dungeon.SetCell(p, GroundCell)
 			g.PrintStyled("You stand over fake stairs.", logSpecial)
 			g.PrintStyled("Harmonic illusions!", logSpecial)
 			g.StoryPrint("Found harmonic fake stairs!")
 			g.md.FoundFakeStairsAnimation()
 		case PotionCell:
-			g.DrinkPotion(pos)
+			g.DrinkPotion(p)
 		default:
-			g.Printf("You are standing over %s.", c.ShortDesc(g, pos))
+			g.Printf("You are standing over %s.", c.ShortDesc(g, p))
 		}
 	} else if terrain(c) == DoorCell {
 		g.Print("You stand at the door.")
 	}
 	if terrain(c).ReachNotable() {
-		g.Reach(pos)
+		g.Reach(p)
 	}
 }
 
@@ -307,11 +307,11 @@ func (g *game) AbyssJump() error {
 	return nil
 }
 
-func (g *game) PlayerBump(pos gruid.Point) (again bool, err error) {
-	if !valid(pos) {
+func (g *game) PlayerBump(p gruid.Point) (again bool, err error) {
+	if !valid(p) {
 		return again, errors.New("You cannot move there.")
 	}
-	c := g.Dungeon.Cell(pos)
+	c := g.Dungeon.Cell(p)
 	switch {
 	case terrain(c) == BarrierCell && !g.Player.HasStatus(StatusLevitation):
 		return again, errors.New("You cannot move into a magical barrier.")
@@ -320,9 +320,9 @@ func (g *game) PlayerBump(pos gruid.Point) (again bool, err error) {
 	case terrain(c) == BarrelCell && g.MonsterLOS[g.Player.P]:
 		return again, errors.New("You cannot enter a barrel while seen.")
 	}
-	mons := g.MonsterAt(pos)
+	mons := g.MonsterAt(p)
 	if c.IsJumpPropulsion() && !g.Player.HasStatus(StatusDig) {
-		err := g.WallJump(pos)
+		err := g.WallJump(p)
 		if err != nil {
 			return again, err
 		}
@@ -344,10 +344,10 @@ func (g *game) PlayerBump(pos gruid.Point) (again bool, err error) {
 			g.Print("You crawl under the wall.")
 		}
 		if c.IsDiggable() && terrain(c) != HoledWallCell {
-			g.Dungeon.SetCell(pos, RubbleCell)
-			g.MakeNoise(WallNoise, pos)
+			g.Dungeon.SetCell(p, RubbleCell)
+			g.MakeNoise(WallNoise, p)
 			g.Print(g.CrackSound())
-			g.Fog(pos, 1)
+			g.Fog(p, 1)
 			g.Stats.Digs++
 			g.Stats.DestructionUse++
 			if g.Stats.DestructionUse == 20 {
@@ -364,12 +364,12 @@ func (g *game) PlayerBump(pos gruid.Point) (again bool, err error) {
 			_, ok := g.Clouds[g.Player.P]
 			if !ok && g.Dungeon.Cell(g.Player.P).AllowsFog() {
 				g.Clouds[g.Player.P] = CloudFog
-				g.PushEventD(&posEvent{Pos: g.Player.P, Action: CloudEnd}, DurationSmokingCloakFog)
+				g.PushEventD(&posEvent{P: g.Player.P, Action: CloudEnd}, DurationSmokingCloakFog)
 			}
 		}
 		//}
 		g.Stats.Moves++
-		g.PlacePlayerAt(pos)
+		g.PlacePlayerAt(p)
 	} else if again, err = g.Jump(mons); err != nil {
 		return again, err
 	}
@@ -396,7 +396,7 @@ func (g *game) SwiftFog() {
 		_, ok := g.Clouds[n.P]
 		if !ok && g.Dungeon.Cell(n.P).AllowsFog() {
 			g.Clouds[n.P] = CloudFog
-			g.PushEvent(&posEvent{Pos: n.P, Action: CloudEnd}, g.Turn+DurationFog+RandInt(DurationFog/2))
+			g.PushEvent(&posEvent{P: n.P, Action: CloudEnd}, g.Turn+DurationFog+RandInt(DurationFog/2))
 		}
 	}
 	g.PutStatus(StatusSwift, DurationShortSwiftness)
@@ -410,11 +410,11 @@ func (g *game) Confusion() {
 	}
 }
 
-func (g *game) PlacePlayerAt(pos gruid.Point) {
-	if pos == g.Player.P {
+func (g *game) PlacePlayerAt(p gruid.Point) {
+	if p == g.Player.P {
 		return
 	}
-	g.Player.Dir = Dir(g.Player.P, pos)
+	g.Player.Dir = Dir(g.Player.P, p)
 	switch g.Player.Dir {
 	case ENE, ESE:
 		g.Player.Dir = E
@@ -425,9 +425,9 @@ func (g *game) PlacePlayerAt(pos gruid.Point) {
 	case SSW, SSE:
 		g.Player.Dir = S
 	}
-	m := g.MonsterAt(pos)
+	m := g.MonsterAt(p)
 	ppos := g.Player.P
-	g.Player.P = pos
+	g.Player.P = p
 	if m.Exists() {
 		m.MoveTo(g, ppos)
 		m.Swapped = true
@@ -486,31 +486,31 @@ func (g *game) PutFakeStatus(st status, duration int) bool {
 	return true
 }
 
-func (g *game) UpdateKnowledge(pos gruid.Point, c cell) {
-	if g.Player.Sees(pos) {
+func (g *game) UpdateKnowledge(p gruid.Point, c cell) {
+	if g.Player.Sees(p) {
 		return
 	}
-	_, ok := g.TerrainKnowledge[pos]
+	_, ok := g.TerrainKnowledge[p]
 	if !ok {
-		g.TerrainKnowledge[pos] = c
+		g.TerrainKnowledge[p] = c
 	}
 }
 
-func (g *game) PlayerCanPass(pos gruid.Point) bool {
-	if !valid(pos) {
+func (g *game) PlayerCanPass(p gruid.Point) bool {
+	if !valid(p) {
 		return false
 	}
-	c := g.Dungeon.Cell(pos)
+	c := g.Dungeon.Cell(p)
 	return c.IsPlayerPassable() ||
 		g.Player.HasStatus(StatusLevitation) && (terrain(c) == BarrierCell || c.IsLevitatePassable()) ||
 		g.Player.HasStatus(StatusDig) && c.IsDiggable()
 }
 
-func (g *game) PlayerCanJumpPass(pos gruid.Point) bool {
-	if !valid(pos) {
+func (g *game) PlayerCanJumpPass(p gruid.Point) bool {
+	if !valid(p) {
 		return false
 	}
-	c := g.Dungeon.Cell(pos)
+	c := g.Dungeon.Cell(p)
 	return c.IsJumpPassable() ||
 		g.Player.HasStatus(StatusLevitation) && terrain(c) == BarrierCell
 }

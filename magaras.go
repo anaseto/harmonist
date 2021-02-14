@@ -424,32 +424,32 @@ func (g *game) Blink() bool {
 
 func (g *game) BlinkPos(mpassable bool) gruid.Point {
 	losPos := []gruid.Point{}
-	for pos, b := range g.Player.LOS {
+	for p, b := range g.Player.LOS {
 		// XXX: skip if not seen by monster?
 		if !b {
 			continue
 		}
-		c := g.Dungeon.Cell(pos)
+		c := g.Dungeon.Cell(p)
 		if !c.IsPlayerPassable() || mpassable && !c.IsPassable() || terrain(c) == StoryCell {
 			continue
 		}
-		mons := g.MonsterAt(pos)
+		mons := g.MonsterAt(p)
 		if mons.Exists() {
 			continue
 		}
-		losPos = append(losPos, pos)
+		losPos = append(losPos, p)
 	}
 	if len(losPos) == 0 {
 		return InvalidPos
 	}
-	npos := losPos[RandInt(len(losPos))]
+	q := losPos[RandInt(len(losPos))]
 	for i := 0; i < 4; i++ {
-		pos := losPos[RandInt(len(losPos))]
-		if Distance(npos, g.Player.P) < Distance(pos, g.Player.P) {
-			npos = pos
+		p := losPos[RandInt(len(losPos))]
+		if Distance(q, g.Player.P) < Distance(p, g.Player.P) {
+			q = p
 		}
 	}
-	return npos
+	return q
 }
 
 func (g *game) EvokeTeleport() error {
@@ -628,7 +628,7 @@ func (g *game) Fog(at gruid.Point, radius int) {
 		_, ok := g.Clouds[n.P]
 		if !ok && g.Dungeon.Cell(n.P).AllowsFog() {
 			g.Clouds[n.P] = CloudFog
-			g.PushEvent(&posEvent{Pos: n.P, Action: CloudEnd}, g.Turn+DurationFog+RandInt(DurationFog/2))
+			g.PushEvent(&posEvent{P: n.P, Action: CloudEnd}, g.Turn+DurationFog+RandInt(DurationFog/2))
 		}
 	}
 	g.ComputeLOS()
@@ -755,14 +755,14 @@ func (g *game) EvokeNoise() error {
 		best := c
 		for {
 			ncost := best
-			for _, pos := range mp.Neighbors(target) {
-				c := g.PR.BreadthFirstMapAt(pos)
+			for _, p := range mp.Neighbors(target) {
+				c := g.PR.BreadthFirstMapAt(p)
 				if c > noiseDist {
 					continue
 				}
 				ncost := c
 				if ncost > best {
-					target = pos
+					target = p
 					best = ncost
 				}
 			}
@@ -809,8 +809,8 @@ func (g *game) EvokeFire() error {
 		return errors.New("You are not surrounded by any flammable terrain.")
 	}
 	g.Print("Sparks emanate from the magara.")
-	for _, pos := range burnpos {
-		g.Burn(pos)
+	for _, p := range burnpos {
+		g.Burn(p)
 	}
 	return nil
 }
@@ -822,15 +822,15 @@ func (g *game) EvokeObstruction() error {
 			continue
 		}
 		ray := g.Ray(mons.P)
-		for i, pos := range ray[1:] {
-			if pos == g.Player.P {
+		for i, p := range ray[1:] {
+			if p == g.Player.P {
 				break
 			}
-			mons := g.MonsterAt(pos)
+			mons := g.MonsterAt(p)
 			if mons.Exists() {
 				continue
 			}
-			g.MagicalBarrierAt(pos)
+			g.MagicalBarrierAt(p)
 			if len(ray) == 0 {
 				break
 			}
@@ -847,21 +847,21 @@ func (g *game) EvokeObstruction() error {
 	return nil
 }
 
-func (g *game) MagicalBarrierAt(pos gruid.Point) {
-	if terrain(g.Dungeon.Cell(pos)) == WallCell || terrain(g.Dungeon.Cell(pos)) == BarrierCell {
+func (g *game) MagicalBarrierAt(p gruid.Point) {
+	if terrain(g.Dungeon.Cell(p)) == WallCell || terrain(g.Dungeon.Cell(p)) == BarrierCell {
 		return
 	}
-	g.UpdateKnowledge(pos, terrain(g.Dungeon.Cell(pos)))
-	g.CreateMagicalBarrierAt(pos)
+	g.UpdateKnowledge(p, terrain(g.Dungeon.Cell(p)))
+	g.CreateMagicalBarrierAt(p)
 	g.ComputeLOS()
 }
 
-func (g *game) CreateMagicalBarrierAt(pos gruid.Point) {
-	t := terrain(g.Dungeon.Cell(pos))
-	g.Dungeon.SetCell(pos, BarrierCell)
-	delete(g.Clouds, pos)
-	g.MagicalBarriers[pos] = t
-	g.PushEvent(&posEvent{Pos: pos, Action: ObstructionEnd}, g.Turn+DurationMagicalBarrier+RandInt(DurationMagicalBarrier/2))
+func (g *game) CreateMagicalBarrierAt(p gruid.Point) {
+	t := terrain(g.Dungeon.Cell(p))
+	g.Dungeon.SetCell(p, BarrierCell)
+	delete(g.Clouds, p)
+	g.MagicalBarriers[p] = t
+	g.PushEvent(&posEvent{P: p, Action: ObstructionEnd}, g.Turn+DurationMagicalBarrier+RandInt(DurationMagicalBarrier/2))
 }
 
 func (g *game) EvokeEnergyMagara() error {
@@ -895,7 +895,7 @@ func (g *game) EvokeDelayedNoiseMagara() error {
 	if !g.PutFakeStatus(StatusDelay, DurationHarmonicNoiseDelay) {
 		return errors.New("You are already using delayed magic.")
 	}
-	g.PushEventD(&posEvent{Pos: g.Player.P, Action: DelayedHarmonicNoiseEvent,
+	g.PushEventD(&posEvent{P: g.Player.P, Action: DelayedHarmonicNoiseEvent,
 		Timer: DurationHarmonicNoiseDelay}, DurationTurn)
 
 	g.Print("Timer activated.")
@@ -914,7 +914,7 @@ func (g *game) EvokeOricExplosionMagara() error {
 	if !g.PutFakeStatus(StatusDelay, DurationHarmonicNoiseDelay) {
 		return errors.New("You are already using delayed magic.")
 	}
-	g.PushEventD(&posEvent{Pos: g.Player.P, Action: DelayedOricExplosionEvent,
+	g.PushEventD(&posEvent{P: g.Player.P, Action: DelayedOricExplosionEvent,
 		Timer: DurationOricExplosionDelay}, DurationTurn)
 
 	g.Print("Timer activated.")

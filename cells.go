@@ -227,7 +227,7 @@ func (c cell) IsNotable() bool {
 	}
 }
 
-func (c cell) ShortString(g *game, pos gruid.Point) (desc string) {
+func (c cell) ShortString(g *game, p gruid.Point) (desc string) {
 	switch terrain(c) {
 	case WallCell:
 		desc = "wall"
@@ -240,11 +240,11 @@ func (c cell) ShortString(g *game, pos gruid.Point) (desc string) {
 	case BarrelCell:
 		desc = "barrel"
 	case StoneCell:
-		desc = g.Objects.Stones[pos].String()
+		desc = g.Objects.Stones[p].String()
 	case StairCell:
-		desc = g.Objects.Stairs[pos].ShortString(g)
+		desc = g.Objects.Stairs[p].ShortString(g)
 	case MagaraCell:
-		desc = g.Objects.Magaras[pos].String()
+		desc = g.Objects.Magaras[p].String()
 	case BananaCell:
 		desc = "banana"
 	case LightCell:
@@ -258,11 +258,11 @@ func (c cell) ShortString(g *game, pos gruid.Point) (desc string) {
 	case HoledWallCell:
 		desc = "holed wall"
 	case ScrollCell:
-		desc = g.Objects.Scrolls[pos].String()
+		desc = g.Objects.Scrolls[p].String()
 	case StoryCell:
-		desc = g.Objects.Story[pos].String()
+		desc = g.Objects.Story[p].String()
 	case ItemCell:
-		desc = g.Objects.Items[pos].String()
+		desc = g.Objects.Items[p].String()
 	case BarrierCell:
 		desc = "magical barrier"
 	case WindowCell:
@@ -286,14 +286,14 @@ func (c cell) ShortString(g *game, pos gruid.Point) (desc string) {
 			desc = NormalStairShortDesc
 		}
 	case PotionCell:
-		desc = g.Objects.Potions[pos].String()
+		desc = g.Objects.Potions[p].String()
 	case QueenRockCell:
 		desc = "queen rock"
 	}
 	return desc
 }
 
-func (c cell) ShortDesc(g *game, pos gruid.Point) (desc string) {
+func (c cell) ShortDesc(g *game, p gruid.Point) (desc string) {
 	switch terrain(c) {
 	case WallCell:
 		desc = "a wall"
@@ -306,11 +306,11 @@ func (c cell) ShortDesc(g *game, pos gruid.Point) (desc string) {
 	case BarrelCell:
 		desc = "a barrel"
 	case StoneCell:
-		desc = g.Objects.Stones[pos].ShortDesc(g)
+		desc = g.Objects.Stones[p].ShortDesc(g)
 	case StairCell:
-		desc = g.Objects.Stairs[pos].ShortDesc(g)
+		desc = g.Objects.Stairs[p].ShortDesc(g)
 	case MagaraCell:
-		desc = g.Objects.Magaras[pos].ShortDesc()
+		desc = g.Objects.Magaras[p].ShortDesc()
 	case BananaCell:
 		desc = "a banana"
 	case LightCell:
@@ -324,11 +324,11 @@ func (c cell) ShortDesc(g *game, pos gruid.Point) (desc string) {
 	case HoledWallCell:
 		desc = "a holed wall"
 	case ScrollCell:
-		desc = g.Objects.Scrolls[pos].ShortDesc()
+		desc = g.Objects.Scrolls[p].ShortDesc()
 	case StoryCell:
-		desc = g.Objects.Story[pos].String()
+		desc = g.Objects.Story[p].String()
 	case ItemCell:
-		desc = g.Objects.Items[pos].ShortDesc(g)
+		desc = g.Objects.Items[p].ShortDesc(g)
 	case BarrierCell:
 		desc = "a magical barrier"
 	case WindowCell:
@@ -352,14 +352,14 @@ func (c cell) ShortDesc(g *game, pos gruid.Point) (desc string) {
 			desc = NormalStairShortDesc
 		}
 	case PotionCell:
-		desc = g.Objects.Potions[pos].ShortDesc(g)
+		desc = g.Objects.Potions[p].ShortDesc(g)
 	case QueenRockCell:
 		desc = "queen rock"
 	}
 	return desc
 }
 
-func (c cell) Desc(g *game, pos gruid.Point) (desc string) {
+func (c cell) Desc(g *game, p gruid.Point) (desc string) {
 	switch terrain(c) {
 	case WallCell:
 		desc = "A wall is a pile of rocks."
@@ -372,11 +372,11 @@ func (c cell) Desc(g *game, pos gruid.Point) (desc string) {
 	case BarrelCell:
 		desc = "A barrel. You can hide yourself inside it when no creatures see you. It is a safe place for resting and recovering."
 	case StoneCell:
-		desc = g.Objects.Stones[pos].Desc(g)
+		desc = g.Objects.Stones[p].Desc(g)
 	case StairCell:
-		desc = g.Objects.Stairs[pos].Desc(g)
+		desc = g.Objects.Stairs[p].Desc(g)
 	case MagaraCell:
-		desc = g.Objects.Magaras[pos].Desc(g)
+		desc = g.Objects.Magaras[p].Desc(g)
 	case BananaCell:
 		desc = "A gawalt monkey cannot enter a healthy sleep without eating one of those bananas before."
 	case LightCell:
@@ -390,11 +390,11 @@ func (c cell) Desc(g *game, pos gruid.Point) (desc string) {
 	case HoledWallCell:
 		desc = "Only very small creatures can pass there. It is difficult to see through."
 	case ScrollCell:
-		desc = g.Objects.Scrolls[pos].Desc(g)
+		desc = g.Objects.Scrolls[p].Desc(g)
 	case StoryCell:
-		desc = g.Objects.Story[pos].Desc(g, pos)
+		desc = g.Objects.Story[p].Desc(g, p)
 	case ItemCell:
-		desc = g.Objects.Items[pos].Desc(g)
+		desc = g.Objects.Items[p].Desc(g)
 	case BarrierCell:
 		desc = "A temporal magical barrier created by oric energies. It may have been created by an oric magara or an oric celmist. Sometimes, natural oric energies may produce such barriers too in energetically unstable Underground areas."
 	case WindowCell:
@@ -418,7 +418,7 @@ func (c cell) Desc(g *game, pos gruid.Point) (desc string) {
 			desc = NormalStairDesc
 		}
 	case PotionCell:
-		desc = g.Objects.Potions[pos].Desc(g)
+		desc = g.Objects.Potions[p].Desc(g)
 	case QueenRockCell:
 		desc = "Queen rock amplifies sounds. Even though you are usually very silent, monsters may hear your footsteps when walking on those rocks."
 	}
@@ -453,7 +453,7 @@ func (c cell) Desc(g *game, pos gruid.Point) (desc string) {
 	return desc
 }
 
-func (c cell) Style(g *game, pos gruid.Point) (r rune, fg gruid.Color) {
+func (c cell) Style(g *game, p gruid.Point) (r rune, fg gruid.Color) {
 	switch terrain(c) {
 	case WallCell:
 		r, fg = '#', ColorFgLOS
@@ -466,9 +466,9 @@ func (c cell) Style(g *game, pos gruid.Point) (r rune, fg gruid.Color) {
 	case BarrelCell:
 		r, fg = '&', ColorFgObject
 	case StoneCell:
-		r, fg = g.Objects.Stones[pos].Style(g)
+		r, fg = g.Objects.Stones[p].Style(g)
 	case StairCell:
-		st := g.Objects.Stairs[pos]
+		st := g.Objects.Stairs[p]
 		r, fg = st.Style(g)
 	case MagaraCell:
 		r, fg = '/', ColorFgObject
@@ -485,11 +485,11 @@ func (c cell) Style(g *game, pos gruid.Point) (r rune, fg gruid.Color) {
 	case HoledWallCell:
 		r, fg = 'Π', ColorViolet
 	case ScrollCell:
-		r, fg = g.Objects.Scrolls[pos].Style(g)
+		r, fg = g.Objects.Scrolls[p].Style(g)
 	case StoryCell:
-		r, fg = g.Objects.Story[pos].Style(g)
+		r, fg = g.Objects.Story[p].Style(g)
 	case ItemCell:
-		r, fg = g.Objects.Items[pos].Style(g)
+		r, fg = g.Objects.Items[p].Style(g)
 	case BarrierCell:
 		r, fg = 'Ξ', ColorFgMagicPlace
 	case WindowCell:
@@ -511,7 +511,7 @@ func (c cell) Style(g *game, pos gruid.Point) (r rune, fg gruid.Color) {
 			fg = ColorViolet
 		}
 	case PotionCell:
-		r, fg = g.Objects.Potions[pos].Style(g)
+		r, fg = g.Objects.Potions[p].Style(g)
 	case QueenRockCell:
 		r, fg = '‗', ColorFgLOS
 	}

@@ -122,19 +122,19 @@ func (g *game) FreePassableCell() gruid.Point {
 		}
 		x := RandInt(DungeonWidth)
 		y := RandInt(DungeonHeight)
-		pos := gruid.Point{x, y}
-		c := d.Cell(pos)
+		p := gruid.Point{x, y}
+		c := d.Cell(p)
 		if !c.IsPassable() {
 			continue
 		}
-		if g.Player != nil && g.Player.P == pos {
+		if g.Player != nil && g.Player.P == p {
 			continue
 		}
-		mons := g.MonsterAt(pos)
+		mons := g.MonsterAt(p)
 		if mons.Exists() {
 			continue
 		}
-		return pos
+		return p
 	}
 }
 
@@ -143,9 +143,9 @@ func (g *game) FreeCellForPlayer() gruid.Point {
 	center := gruid.Point{DungeonWidth / 2, DungeonHeight / 2}
 	bestpos := g.FreePassableCell()
 	for i := 0; i < 5; i++ {
-		pos := g.FreePassableCell()
-		if Distance(pos, center) > Distance(bestpos, center) {
-			bestpos = pos
+		p := g.FreePassableCell()
+		if Distance(p, center) > Distance(bestpos, center) {
+			bestpos = p
 		}
 	}
 	return bestpos
@@ -161,40 +161,40 @@ func (g *game) FreeCellForMonster() gruid.Point {
 		}
 		x := RandInt(DungeonWidth)
 		y := RandInt(DungeonHeight)
-		pos := gruid.Point{x, y}
-		c := d.Cell(pos)
+		p := gruid.Point{x, y}
+		c := d.Cell(p)
 		if !c.IsPassable() {
 			continue
 		}
-		if g.Player != nil && Distance(g.Player.P, pos) < 8 {
+		if g.Player != nil && Distance(g.Player.P, p) < 8 {
 			continue
 		}
-		mons := g.MonsterAt(pos)
+		mons := g.MonsterAt(p)
 		if mons.Exists() {
 			continue
 		}
-		return pos
+		return p
 	}
 }
 
-func (g *game) FreeCellForBandMonster(pos gruid.Point) gruid.Point {
+func (g *game) FreeCellForBandMonster(p gruid.Point) gruid.Point {
 	count := 0
 	for {
 		count++
 		if count > 1000 {
 			return g.FreeCellForMonster()
 		}
-		neighbors := g.Dungeon.FreeNeighbors(pos)
+		neighbors := g.Dungeon.FreeNeighbors(p)
 		r := RandInt(len(neighbors))
-		pos = neighbors[r]
-		if g.Player != nil && Distance(g.Player.P, pos) < 8 {
+		p = neighbors[r]
+		if g.Player != nil && Distance(g.Player.P, p) < 8 {
 			continue
 		}
-		mons := g.MonsterAt(pos)
-		if mons.Exists() || !g.Dungeon.Cell(pos).IsPassable() {
+		mons := g.MonsterAt(p)
+		if mons.Exists() || !g.Dungeon.Cell(p).IsPassable() {
 			continue
 		}
-		return pos
+		return p
 	}
 }
 
@@ -514,7 +514,7 @@ func (g *game) InitLevel() {
 				g.Turn+DurationMistProgression+RandInt(DurationMistProgression/2))
 		}
 	case EarthquakeLevel:
-		g.PushEvent(&posEvent{Pos: gruid.Point{DungeonWidth/2 - 15 + RandInt(30), DungeonHeight/2 - 5 + RandInt(10)}, Action: Earthquake},
+		g.PushEvent(&posEvent{P: gruid.Point{DungeonWidth/2 - 15 + RandInt(30), DungeonHeight/2 - 5 + RandInt(10)}, Action: Earthquake},
 			g.Turn+10+RandInt(50))
 
 	}

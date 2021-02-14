@@ -12,7 +12,7 @@ import (
 var InvalidPos = gruid.Point{-1, -1}
 
 type examination struct {
-	p          gruid.Point
+	p            gruid.Point
 	nmonster     int
 	objects      []gruid.Point
 	nobject      int
@@ -28,8 +28,8 @@ func (md *model) HideCursor() {
 }
 
 // SetCursor sets the target cursor.
-func (md *model) SetCursor(pos gruid.Point) {
-	md.mp.ex.p = pos
+func (md *model) SetCursor(p gruid.Point) {
+	md.mp.ex.p = p
 }
 
 // CancelExamine cancels current targeting.
@@ -70,35 +70,35 @@ func (md *model) examine(p gruid.Point) {
 func (md *model) KeyboardExamine() {
 	md.mp.kbTargeting = true
 	g := md.g
-	pos := g.Player.P
+	p := g.Player.P
 	minDist := 999
 	for _, mons := range g.Monsters {
 		if mons.Exists() && g.Player.LOS[mons.P] {
 			dist := Distance(mons.P, g.Player.P)
 			if minDist > dist {
 				minDist = dist
-				pos = mons.P
+				p = mons.P
 			}
 		}
 	}
 	md.mp.ex = &examination{
-		p:     pos,
+		p:       p,
 		objects: []gruid.Point{},
 	}
-	if pos == g.Player.P {
+	if p == g.Player.P {
 		md.nextObject(InvalidPos, md.mp.ex)
 		if !valid(md.mp.ex.p) {
 			md.nextStair(md.mp.ex)
 		}
-		if valid(md.mp.ex.p) && Distance(pos, md.mp.ex.p) < DefaultLOSRange+5 {
-			pos = md.mp.ex.p
+		if valid(md.mp.ex.p) && Distance(p, md.mp.ex.p) < DefaultLOSRange+5 {
+			p = md.mp.ex.p
 		}
 	}
-	md.examine(pos)
+	md.examine(p)
 }
 
 type posInfo struct {
-	Pos         gruid.Point
+	P           gruid.Point
 	Unknown     bool
 	Noise       bool
 	Unreachable bool
@@ -132,7 +132,7 @@ func (md *model) drawPosInfo() {
 
 	features := []string{}
 	if !info.Unknown {
-		features = append(features, info.Cell.ShortString(g, info.Pos))
+		features = append(features, info.Cell.ShortString(g, info.P))
 		if info.Cloud != "" && info.Sees {
 			features = append(features, info.Cloud)
 		}
@@ -165,7 +165,7 @@ func (md *model) drawPosInfo() {
 	if info.Unknown {
 		desc = "You do not know what is in there."
 	} else {
-		desc = info.Cell.Desc(g, info.Pos)
+		desc = info.Cell.Desc(g, info.P)
 	}
 
 	if info.Player {
@@ -259,12 +259,12 @@ func (m *monster) traits() string {
 func (md *model) updatePosInfo() {
 	g := md.g
 	pi := posInfo{}
-	pos := md.mp.ex.p
-	pi.Pos = pos
+	p := md.mp.ex.p
+	pi.P = p
 	switch {
-	case !explored(g.Dungeon.Cell(pos)):
+	case !explored(g.Dungeon.Cell(p)):
 		pi.Unknown = true
-		if g.Noise[pos] || g.NoiseIllusion[pos] {
+		if g.Noise[p] || g.NoiseIllusion[p] {
 			pi.Noise = true
 		}
 		md.mp.ex.info = pi
@@ -273,28 +273,28 @@ func (md *model) updatePosInfo() {
 		//pi.Unreachable = true
 		//return
 	}
-	mons := g.MonsterAt(pos)
-	if pos == g.Player.P {
+	mons := g.MonsterAt(p)
+	if p == g.Player.P {
 		pi.Player = true
 	}
-	if g.Player.Sees(pos) {
+	if g.Player.Sees(p) {
 		pi.Sees = true
 	}
-	c := g.Dungeon.Cell(pos)
-	if t, ok := g.TerrainKnowledge[pos]; ok {
+	c := g.Dungeon.Cell(p)
+	if t, ok := g.TerrainKnowledge[p]; ok {
 		c = t | c&Explored
 	}
-	if mons.Exists() && g.Player.Sees(pos) {
+	if mons.Exists() && g.Player.Sees(p) {
 		pi.Monster = mons
 	}
-	if cld, ok := g.Clouds[pos]; ok && g.Player.Sees(pos) {
+	if cld, ok := g.Clouds[p]; ok && g.Player.Sees(p) {
 		pi.Cloud = cld.String()
 	}
 	pi.Cell = c
-	if g.Illuminated(pos) && c.IsIlluminable() && g.Player.Sees(pos) {
+	if g.Illuminated(p) && c.IsIlluminable() && g.Player.Sees(p) {
 		pi.Lighted = true
 	}
-	if g.Noise[pos] || g.NoiseIllusion[pos] {
+	if g.Noise[p] || g.NoiseIllusion[p] {
 		pi.Noise = true
 	}
 	md.mp.ex.info = pi
@@ -304,8 +304,8 @@ func (md *model) computeHighlight() {
 	md.g.computePathHighlight(md.mp.ex.p)
 }
 
-func (g *game) computePathHighlight(pos gruid.Point) {
-	path := g.PlayerPath(g.Player.P, pos)
+func (g *game) computePathHighlight(p gruid.Point) {
+	path := g.PlayerPath(g.Player.P, p)
 	g.Highlight = map[gruid.Point]bool{}
 	for _, p := range path {
 		g.Highlight[p] = true
@@ -314,25 +314,25 @@ func (g *game) computePathHighlight(pos gruid.Point) {
 
 func (md *model) target() error {
 	g := md.g
-	pos := md.mp.ex.p
-	if !explored(g.Dungeon.Cell(pos)) {
+	p := md.mp.ex.p
+	if !explored(g.Dungeon.Cell(p)) {
 		return errors.New("You do not know this place.")
 	}
-	if terrain(g.Dungeon.Cell(pos)) == WallCell && !g.Player.HasStatus(StatusDig) {
+	if terrain(g.Dungeon.Cell(p)) == WallCell && !g.Player.HasStatus(StatusDig) {
 		return errors.New("You cannot travel into a wall.")
 	}
-	path := g.PlayerPath(g.Player.P, pos)
+	path := g.PlayerPath(g.Player.P, p)
 	if len(path) == 0 {
 		return errors.New("There is no safe path to this place.")
 	}
-	if c := g.Dungeon.Cell(pos); explored(c) && terrain(c) != WallCell {
-		g.AutoTarget = pos
+	if c := g.Dungeon.Cell(p); explored(c) && terrain(c) != WallCell {
+		g.AutoTarget = p
 		return nil
 	}
 	return errors.New("Invalid destination.")
 }
 
-func (md *model) nextMonster(key gruid.Key, pos gruid.Point, data *examination) {
+func (md *model) nextMonster(key gruid.Key, p gruid.Point, data *examination) {
 	g := md.g
 	nmonster := data.nmonster
 	for i := 0; i < len(g.Monsters); i++ {
@@ -347,13 +347,13 @@ func (md *model) nextMonster(key gruid.Key, pos gruid.Point, data *examination) 
 			nmonster = len(g.Monsters) - 1
 		}
 		mons := g.Monsters[nmonster]
-		if mons.Exists() && g.Player.LOS[mons.P] && pos != mons.P {
-			pos = mons.P
+		if mons.Exists() && g.Player.LOS[mons.P] && p != mons.P {
+			p = mons.P
 			break
 		}
 	}
 	data.nmonster = nmonster
-	md.Examine(pos)
+	md.Examine(p)
 }
 
 func (md *model) nextStair(data *examination) {
@@ -371,7 +371,7 @@ func (md *model) nextStair(data *examination) {
 	}
 }
 
-func (md *model) nextObject(pos gruid.Point, data *examination) {
+func (md *model) nextObject(np gruid.Point, data *examination) {
 	g := md.g
 	nobject := data.nobject
 	if len(data.objects) == 0 {
@@ -411,20 +411,20 @@ func (md *model) nextObject(pos gruid.Point, data *examination) {
 			nobject = 0
 		}
 		if explored(g.Dungeon.Cell(p)) {
-			pos = p
+			np = p
 			break
 		}
 	}
 	data.nobject = nobject
-	md.Examine(pos)
+	md.Examine(np)
 }
 
-func (md *model) excludeZone(pos gruid.Point) {
+func (md *model) excludeZone(p gruid.Point) {
 	g := md.g
-	if !explored(g.Dungeon.Cell(pos)) {
+	if !explored(g.Dungeon.Cell(p)) {
 		g.Print("You cannot choose an unexplored cell for exclusion.")
 	} else {
-		toggle := !g.ExclusionsMap[pos]
-		g.ComputeExclusion(pos, toggle)
+		toggle := !g.ExclusionsMap[p]
+		g.ComputeExclusion(p, toggle)
 	}
 }

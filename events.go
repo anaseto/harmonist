@@ -141,7 +141,7 @@ const (
 )
 
 type posEvent struct {
-	Pos    gruid.Point
+	P      gruid.Point
 	Action posAction
 	Timer  int
 }
@@ -149,86 +149,86 @@ type posEvent struct {
 func (cev *posEvent) Handle(g *game) {
 	switch cev.Action {
 	case CloudEnd:
-		delete(g.Clouds, cev.Pos)
+		delete(g.Clouds, cev.P)
 		g.ComputeLOS()
 	case ObstructionEnd:
-		t := g.MagicalBarriers[cev.Pos]
-		if !g.Player.Sees(cev.Pos) && terrain(g.Dungeon.Cell(cev.Pos)) == BarrierCell {
+		t := g.MagicalBarriers[cev.P]
+		if !g.Player.Sees(cev.P) && terrain(g.Dungeon.Cell(cev.P)) == BarrierCell {
 			// XXX does not handle all cases
-			g.UpdateKnowledge(cev.Pos, BarrierCell)
+			g.UpdateKnowledge(cev.P, BarrierCell)
 		} else {
-			delete(g.MagicalBarriers, cev.Pos)
-			delete(g.TerrainKnowledge, cev.Pos)
+			delete(g.MagicalBarriers, cev.P)
+			delete(g.TerrainKnowledge, cev.P)
 		}
-		if terrain(g.Dungeon.Cell(cev.Pos)) != BarrierCell {
+		if terrain(g.Dungeon.Cell(cev.P)) != BarrierCell {
 			break
 		}
-		g.Dungeon.SetCell(cev.Pos, t)
+		g.Dungeon.SetCell(cev.P, t)
 	case ObstructionProgression:
-		pos := g.FreePassableCell()
-		g.MagicalBarrierAt(pos)
-		if g.Player.Sees(pos) {
+		p := g.FreePassableCell()
+		g.MagicalBarrierAt(p)
+		if g.Player.Sees(p) {
 			g.Printf("You see an oric barrier appear out of thin air.")
 			g.StopAuto()
 		}
 		g.PushEvent(&posEvent{Action: ObstructionProgression},
 			g.Turn+DurationObstructionProgression+RandInt(DurationObstructionProgression/4))
 	case FireProgression:
-		if _, ok := g.Clouds[cev.Pos]; !ok {
+		if _, ok := g.Clouds[cev.P]; !ok {
 			break
 		}
-		for _, pos := range g.Dungeon.FreeNeighbors(cev.Pos) {
+		for _, p := range g.Dungeon.FreeNeighbors(cev.P) {
 			if RandInt(10) == 0 {
 				continue
 			}
-			g.Burn(pos)
+			g.Burn(p)
 		}
-		delete(g.Clouds, cev.Pos)
-		g.NightFog(cev.Pos, 1)
+		delete(g.Clouds, cev.P)
+		g.NightFog(cev.P, 1)
 		g.ComputeLOS()
 	case NightProgression:
-		if _, ok := g.Clouds[cev.Pos]; !ok {
+		if _, ok := g.Clouds[cev.P]; !ok {
 			break
 		}
 		if cev.Timer <= 0 {
-			delete(g.Clouds, cev.Pos)
+			delete(g.Clouds, cev.P)
 			g.ComputeLOS()
 			break
 		}
-		g.MakeCreatureSleep(cev.Pos)
+		g.MakeCreatureSleep(cev.P)
 		cev.Timer--
 		g.PushEventD(cev, DurationTurn)
 	case MistProgression:
-		pos := g.FreePassableCell()
-		g.Fog(pos, 1)
+		p := g.FreePassableCell()
+		g.Fog(p, 1)
 		g.PushEvent(&posEvent{Action: MistProgression},
 			g.Turn+DurationMistProgression+RandInt(DurationMistProgression/4))
 	case Earthquake:
 		g.PrintStyled("The earth suddenly shakes with force!", logSpecial)
 		g.PrintStyled("Craack!", logSpecial)
 		g.StoryPrint("Special event: earthquake!")
-		g.MakeNoise(EarthquakeNoise, cev.Pos)
-		g.NoiseIllusion[cev.Pos] = true
+		g.MakeNoise(EarthquakeNoise, cev.P)
+		g.NoiseIllusion[cev.P] = true
 		it := g.Dungeon.Grid.Iterator()
 		for it.Next() {
-			pos := it.P()
+			p := it.P()
 			c := cell(it.Cell())
-			if !c.IsDiggable() || !g.Dungeon.HasFreeNeighbor(pos) {
+			if !c.IsDiggable() || !g.Dungeon.HasFreeNeighbor(p) {
 				continue
 			}
-			if Distance(cev.Pos, pos) > RandInt(35) || RandInt(2) == 0 {
+			if Distance(cev.P, p) > RandInt(35) || RandInt(2) == 0 {
 				continue
 			}
-			g.Dungeon.SetCell(pos, RubbleCell)
-			g.UpdateKnowledge(pos, terrain(c))
-			g.Fog(pos, 1)
+			g.Dungeon.SetCell(p, RubbleCell)
+			g.UpdateKnowledge(p, terrain(c))
+			g.Fog(p, 1)
 		}
 	case DelayedHarmonicNoiseEvent:
 		if cev.Timer <= 1 {
 			g.Player.Statuses[StatusDelay] = 0
 			g.Print("Pop!")
-			g.NoiseIllusion[cev.Pos] = true
-			g.MakeNoise(DelayedHarmonicNoise, cev.Pos)
+			g.NoiseIllusion[cev.P] = true
+			g.MakeNoise(DelayedHarmonicNoise, cev.P)
 		} else {
 			cev.Timer--
 			g.Player.Statuses[StatusDelay] = cev.Timer
@@ -238,10 +238,10 @@ func (cev *posEvent) Handle(g *game) {
 		if cev.Timer <= 1 {
 			g.Player.Statuses[StatusDelay] = 0
 			g.Print(g.CrackSound())
-			g.NoiseIllusion[cev.Pos] = true
+			g.NoiseIllusion[cev.P] = true
 			dij := &gridPath{dungeon: g.Dungeon}
-			g.MakeNoise(OricExplosionNoise, cev.Pos)
-			nodes := g.PR.DijkstraMap(dij, []gruid.Point{cev.Pos}, 7)
+			g.MakeNoise(OricExplosionNoise, cev.P)
+			nodes := g.PR.DijkstraMap(dij, []gruid.Point{cev.P}, 7)
 			fogs := []gruid.Point{}
 			terrains := []cell{}
 			for _, n := range nodes {
@@ -257,12 +257,12 @@ func (cev *posEvent) Handle(g *game) {
 				fogs = append(fogs, n.P)
 				terrains = append(terrains, terrain(c))
 			}
-			for _, pos := range fogs {
-				g.Fog(pos, 1)
+			for _, p := range fogs {
+				g.Fog(p, 1)
 			}
 			g.ComputeLOS()
-			for i, pos := range fogs {
-				g.UpdateKnowledge(pos, terrains[i])
+			for i, p := range fogs {
+				g.UpdateKnowledge(p, terrains[i])
 			}
 		} else {
 			cev.Timer--
@@ -280,7 +280,7 @@ func (g *game) NightFog(at gruid.Point, radius int) {
 		if !ok {
 			g.Clouds[n.P] = CloudNight
 			g.PushEventD(&posEvent{Action: NightProgression,
-				Pos: n.P, Timer: DurationNightFog}, DurationCloudProgression)
+				P: n.P, Timer: DurationNightFog}, DurationCloudProgression)
 
 			g.MakeCreatureSleep(n.P)
 		}
@@ -288,14 +288,14 @@ func (g *game) NightFog(at gruid.Point, radius int) {
 	g.ComputeLOS()
 }
 
-func (g *game) MakeCreatureSleep(pos gruid.Point) {
-	if pos == g.Player.P {
+func (g *game) MakeCreatureSleep(p gruid.Point) {
+	if p == g.Player.P {
 		if g.PutStatus(StatusConfusion, DurationConfusionPlayer) {
 			g.Print("The clouds of night confuse you.")
 		}
 		return
 	}
-	mons := g.MonsterAt(pos)
+	mons := g.MonsterAt(p)
 	if !mons.Exists() || (RandInt(2) == 0 && mons.Status(MonsExhausted)) {
 		// do not always make already exhausted monsters sleep (they were probably awaken)
 		return
@@ -309,11 +309,11 @@ func (g *game) MakeCreatureSleep(pos gruid.Point) {
 	mons.ExhaustTime(g, 4+RandInt(2))
 }
 
-func (g *game) Burn(pos gruid.Point) {
-	if _, ok := g.Clouds[pos]; ok {
+func (g *game) Burn(p gruid.Point) {
+	if _, ok := g.Clouds[p]; ok {
 		return
 	}
-	c := g.Dungeon.Cell(pos)
+	c := g.Dungeon.Cell(p)
 	if !c.Flammable() {
 		return
 	}
@@ -325,18 +325,18 @@ func (g *game) Burn(pos gruid.Point) {
 		g.Print("The table vanishes in magical flames.")
 	case BarrelCell:
 		g.Print("The barrel vanishes in magical flames.")
-		delete(g.Objects.Barrels, pos)
+		delete(g.Objects.Barrels, p)
 	case TreeCell:
 		g.Print("The tree vanishes in magical flames.")
 	}
-	g.Dungeon.SetCell(pos, GroundCell)
-	g.Clouds[pos] = CloudFire
-	if !g.Player.Sees(pos) {
-		g.UpdateKnowledge(pos, terrain(c))
+	g.Dungeon.SetCell(p, GroundCell)
+	g.Clouds[p] = CloudFire
+	if !g.Player.Sees(p) {
+		g.UpdateKnowledge(p, terrain(c))
 	} else {
 		g.ComputeLOS()
 	}
-	g.PushEventD(&posEvent{Pos: pos, Action: FireProgression}, DurationCloudProgression)
+	g.PushEventD(&posEvent{P: p, Action: FireProgression}, DurationCloudProgression)
 }
 
 const (

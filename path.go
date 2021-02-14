@@ -33,9 +33,9 @@ type dungeonPath struct {
 	wcost     int
 }
 
-func (dp *dungeonPath) Neighbors(pos gruid.Point) []gruid.Point {
+func (dp *dungeonPath) Neighbors(p gruid.Point) []gruid.Point {
 	nb := dp.neighbors[:0]
-	return CardinalNeighbors(pos, nb, func(npos gruid.Point) bool { return valid(npos) })
+	return CardinalNeighbors(p, nb, func(q gruid.Point) bool { return valid(q) })
 }
 
 func (dp *dungeonPath) Cost(from, to gruid.Point) int {
@@ -57,9 +57,9 @@ type gridPath struct {
 	neighbors [4]gruid.Point
 }
 
-func (gp *gridPath) Neighbors(pos gruid.Point) []gruid.Point {
+func (gp *gridPath) Neighbors(p gruid.Point) []gruid.Point {
 	nb := gp.neighbors[:0]
-	return CardinalNeighbors(pos, nb, func(npos gruid.Point) bool { return valid(npos) })
+	return CardinalNeighbors(p, nb, func(q gruid.Point) bool { return valid(q) })
 }
 
 func (gp *gridPath) Cost(from, to gruid.Point) int {
@@ -75,16 +75,16 @@ type mappingPath struct {
 	neighbors [8]gruid.Point
 }
 
-func (dp *mappingPath) Neighbors(pos gruid.Point) []gruid.Point {
+func (dp *mappingPath) Neighbors(p gruid.Point) []gruid.Point {
 	d := dp.state.Dungeon
-	if terrain(d.Cell(pos)) == WallCell {
+	if terrain(d.Cell(p)) == WallCell {
 		return nil
 	}
 	nb := dp.neighbors[:0]
-	keep := func(npos gruid.Point) bool {
-		return valid(npos)
+	keep := func(q gruid.Point) bool {
+		return valid(q)
 	}
-	return CardinalNeighbors(pos, nb, keep)
+	return CardinalNeighbors(p, nb, keep)
 }
 
 func (dp *mappingPath) Cost(from, to gruid.Point) int {
@@ -100,9 +100,9 @@ type tunnelPath struct {
 	neighbors [4]gruid.Point
 }
 
-func (tp *tunnelPath) Neighbors(pos gruid.Point) []gruid.Point {
+func (tp *tunnelPath) Neighbors(p gruid.Point) []gruid.Point {
 	nb := tp.neighbors[:0]
-	return CardinalNeighbors(pos, nb, func(npos gruid.Point) bool { return valid(npos) })
+	return CardinalNeighbors(p, nb, func(q gruid.Point) bool { return valid(q) })
 }
 
 func (tp *tunnelPath) Cost(from, to gruid.Point) int {
@@ -164,9 +164,9 @@ func (g *game) ppPassable(p gruid.Point) bool {
 		g.Player.HasStatus(StatusDig) && (d.Cell(p).IsDiggable() && !okT || (okT && t.IsDiggable())))
 }
 
-func (pp *playerPath) Neighbors(pos gruid.Point) []gruid.Point {
+func (pp *playerPath) Neighbors(p gruid.Point) []gruid.Point {
 	nb := pp.neighbors[:0]
-	nb = CardinalNeighbors(pos, nb, pp.state.ppPassable)
+	nb = CardinalNeighbors(p, nb, pp.state.ppPassable)
 	sort.Slice(nb, func(i, j int) bool {
 		return MaxCardinalDist(nb[i], pp.goal) <= MaxCardinalDist(nb[j], pp.goal)
 	})
@@ -189,12 +189,12 @@ type jumpPath struct {
 	neighbors [8]gruid.Point
 }
 
-func (jp *jumpPath) Neighbors(pos gruid.Point) []gruid.Point {
+func (jp *jumpPath) Neighbors(p gruid.Point) []gruid.Point {
 	nb := jp.neighbors[:0]
-	keep := func(npos gruid.Point) bool {
-		return jp.state.PlayerCanPass(npos)
+	keep := func(q gruid.Point) bool {
+		return jp.state.PlayerCanPass(q)
 	}
-	nb = CardinalNeighbors(pos, nb, keep)
+	nb = CardinalNeighbors(p, nb, keep)
 	nb = ShufflePos(nb)
 	return nb
 }
@@ -212,13 +212,13 @@ type noisePath struct {
 	neighbors [8]gruid.Point
 }
 
-func (fp *noisePath) Neighbors(pos gruid.Point) []gruid.Point {
+func (fp *noisePath) Neighbors(p gruid.Point) []gruid.Point {
 	nb := fp.neighbors[:0]
 	d := fp.state.Dungeon
-	keep := func(npos gruid.Point) bool {
-		return valid(npos) && terrain(d.Cell(npos)) != WallCell
+	keep := func(q gruid.Point) bool {
+		return valid(q) && terrain(d.Cell(q)) != WallCell
 	}
-	return CardinalNeighbors(pos, nb, keep)
+	return CardinalNeighbors(p, nb, keep)
 }
 
 func (fp *noisePath) Cost(from, to gruid.Point) int {
@@ -230,26 +230,26 @@ type autoexplorePath struct {
 	neighbors [8]gruid.Point
 }
 
-func (ap *autoexplorePath) Neighbors(pos gruid.Point) []gruid.Point {
-	if ap.state.ExclusionsMap[pos] {
+func (ap *autoexplorePath) Neighbors(p gruid.Point) []gruid.Point {
+	if ap.state.ExclusionsMap[p] {
 		return nil
 	}
 	d := ap.state.Dungeon
 	nb := ap.neighbors[:0]
-	keep := func(npos gruid.Point) bool {
-		t, okT := ap.state.TerrainKnowledge[npos]
-		if cld, ok := ap.state.Clouds[npos]; ok && cld == CloudFire && (!okT || t != FoliageCell && t != DoorCell) {
+	keep := func(q gruid.Point) bool {
+		t, okT := ap.state.TerrainKnowledge[q]
+		if cld, ok := ap.state.Clouds[q]; ok && cld == CloudFire && (!okT || t != FoliageCell && t != DoorCell) {
 			// XXX little info leak
 			return false
 		}
-		if !valid(npos) {
+		if !valid(q) {
 			return false
 		}
-		c := d.Cell(npos)
+		c := d.Cell(q)
 		return c.IsPlayerPassable() && (!okT && !c.IsWall() || !t.IsWall()) &&
-			!ap.state.ExclusionsMap[npos]
+			!ap.state.ExclusionsMap[q]
 	}
-	nb = CardinalNeighbors(pos, nb, keep)
+	nb = CardinalNeighbors(p, nb, keep)
 	return nb
 }
 
@@ -271,12 +271,12 @@ func ShufflePos(ps []gruid.Point) []gruid.Point {
 	return ps
 }
 
-func (mp *monPath) Neighbors(pos gruid.Point) []gruid.Point {
+func (mp *monPath) Neighbors(p gruid.Point) []gruid.Point {
 	nb := mp.neighbors[:0]
-	keep := func(npos gruid.Point) bool {
-		return mp.monster.CanPassDestruct(mp.state, npos)
+	keep := func(q gruid.Point) bool {
+		return mp.monster.CanPassDestruct(mp.state, q)
 	}
-	ret := CardinalNeighbors(pos, nb, keep)
+	ret := CardinalNeighbors(p, nb, keep)
 	// shuffle so that monster movement is not unnaturally predictable
 	ret = ShufflePos(ret)
 	return ret
@@ -338,23 +338,23 @@ func (g *game) PlayerPath(from, to gruid.Point) []gruid.Point {
 
 func (g *game) SortedNearestTo(cells []gruid.Point, to gruid.Point) []gruid.Point {
 	ps := posSlice{}
-	for _, pos := range cells {
+	for _, p := range cells {
 		pp := &dungeonPath{dungeon: g.Dungeon, wcost: unreachable}
-		path := g.PR.AstarPath(pp, pos, to)
+		path := g.PR.AstarPath(pp, p, to) // TODO: use JPS?
 		if len(path) > 0 {
-			ps = append(ps, posCost{pos, len(path)})
+			ps = append(ps, posCost{p, len(path)})
 		}
 	}
 	sort.Sort(ps)
 	sorted := []gruid.Point{}
 	for _, pc := range ps {
-		sorted = append(sorted, pc.pos)
+		sorted = append(sorted, pc.p)
 	}
 	return sorted
 }
 
 type posCost struct {
-	pos  gruid.Point
+	p    gruid.Point
 	cost int
 }
 

@@ -205,9 +205,9 @@ func (stn stone) Style(g *game) (r rune, fg gruid.Color) {
 	return r, fg
 }
 
-func (g *game) UseStone(pos gruid.Point) {
-	g.StoryPrintf("Activated %s", g.Objects.Stones[pos])
-	g.Objects.Stones[pos] = InertStone
+func (g *game) UseStone(p gruid.Point) {
+	g.StoryPrintf("Activated %s", g.Objects.Stones[p])
+	g.Objects.Stones[p] = InertStone
 	g.Stats.UsedStones++
 	g.Print("The stone becomes inert.")
 }
@@ -217,7 +217,7 @@ func (g *game) ActivateStone() (err error) {
 	if !ok {
 		return errors.New("No stone to activate here.")
 	}
-	oppos := g.Player.P
+	op := g.Player.P
 	switch stn {
 	case InertStone:
 		err = errors.New("The stone is inert.")
@@ -245,7 +245,7 @@ func (g *game) ActivateStone() (err error) {
 	if err != nil {
 		return err
 	}
-	g.UseStone(oppos)
+	g.UseStone(op)
 	return nil
 }
 
@@ -351,14 +351,14 @@ func (g *game) ActivateTeleportStone() error {
 
 func (g *game) TeleportToBarrel() {
 	barrels := []gruid.Point{}
-	for pos := range g.Objects.Barrels {
-		barrels = append(barrels, pos)
+	for p := range g.Objects.Barrels {
+		barrels = append(barrels, p)
 	}
-	pos := barrels[RandInt(len(barrels))]
-	opos := g.Player.P
+	p := barrels[RandInt(len(barrels))]
+	op := g.Player.P
 	g.Print("You teleport away.")
-	g.md.TeleportAnimation(opos, pos, true)
-	g.PlacePlayerAt(pos)
+	g.md.TeleportAnimation(op, p, true)
+	g.PlacePlayerAt(p)
 }
 
 func (g *game) MagicMapping(maxdist int) error {
@@ -382,11 +382,11 @@ func (g *game) MagicMapping(maxdist int) error {
 		}
 		draw := false
 		for _, i := range cdists[d] {
-			pos := idxtopos(i)
-			c := g.Dungeon.Cell(pos)
+			p := idxtopos(i)
+			c := g.Dungeon.Cell(p)
 			if !explored(c) {
-				g.Dungeon.SetExplored(pos)
-				g.SeeNotable(c, pos)
+				g.Dungeon.SetExplored(p)
+				g.SeeNotable(c, p)
 				draw = true
 			}
 		}
@@ -414,10 +414,10 @@ func (g *game) BarrierStone() error {
 		g.Print("You feel oric energies dissipating.")
 		return nil
 	}
-	for pos, st := range g.Objects.Stairs {
+	for p, st := range g.Objects.Stairs {
 		// actually there is at most only such stair
 		if st == BlockedStair {
-			g.Objects.Stairs[pos] = NormalStair
+			g.Objects.Stairs[p] = NormalStair
 		}
 	}
 	g.Print("You feel oric energies dissipating.")
@@ -503,10 +503,10 @@ const (
 	StoryArtifactSealed
 )
 
-func (st story) Desc(g *game, pos gruid.Point) (desc string) {
+func (st story) Desc(g *game, p gruid.Point) (desc string) {
 	switch st {
 	case NoStory:
-		desc = GroundCell.Desc(g, pos)
+		desc = GroundCell.Desc(g, p)
 	case StoryShaedra:
 		desc = "Shaedra is the friend you came here to rescue, a human-like creature with claws, a ternian. Many other human-like creatures consider them as savages."
 	case StoryMarevor:
@@ -762,8 +762,8 @@ const (
 	MagicPotion
 )
 
-func (p potion) String() (desc string) {
-	switch p {
+func (ptn potion) String() (desc string) {
+	switch ptn {
 	case HealthPotion:
 		desc = "health potion"
 	case MagicPotion:
@@ -772,12 +772,12 @@ func (p potion) String() (desc string) {
 	return desc
 }
 
-func (p potion) ShortDesc(g *game) (desc string) {
-	return Indefinite(p.String(), false)
+func (ptn potion) ShortDesc(g *game) (desc string) {
+	return Indefinite(ptn.String(), false)
 }
 
-func (p potion) Desc(g *game) (desc string) {
-	switch p {
+func (ptn potion) Desc(g *game) (desc string) {
+	switch ptn {
 	case HealthPotion:
 		desc = "Drinking a health potion will cure 1 HP."
 	case MagicPotion:
@@ -787,9 +787,9 @@ func (p potion) Desc(g *game) (desc string) {
 	return desc
 }
 
-func (p potion) Style(g *game) (r rune, fg gruid.Color) {
+func (ptn potion) Style(g *game) (r rune, fg gruid.Color) {
 	r = '!'
-	switch p {
+	switch ptn {
 	case HealthPotion:
 		fg = ColorFgHPok
 	case MagicPotion:
@@ -798,29 +798,29 @@ func (p potion) Style(g *game) (r rune, fg gruid.Color) {
 	return r, fg
 }
 
-func (g *game) DrinkPotion(pos gruid.Point) {
-	p, ok := g.Objects.Potions[pos]
+func (g *game) DrinkPotion(p gruid.Point) {
+	ptn, ok := g.Objects.Potions[p]
 	if !ok {
 		// should not happen
-		g.Dungeon.SetCell(pos, GroundCell)
+		g.Dungeon.SetCell(p, GroundCell)
 		g.PrintStyled("Unexpected potion.", logError)
 		return
 	}
-	switch p {
+	switch ptn {
 	case HealthPotion:
 		if g.Player.HP >= g.Player.HPMax() {
 			return
 		}
 		g.Player.HP++
-		g.StoryPrintf("Drank %s (HP: %d).", p, g.Player.HP)
+		g.StoryPrintf("Drank %s (HP: %d).", ptn, g.Player.HP)
 	case MagicPotion:
 		if g.Player.MP >= g.Player.MPMax() {
 			return
 		}
 		g.Player.MP++
-		g.StoryPrintf("Drank %s (MP: %d).", p, g.Player.MP)
+		g.StoryPrintf("Drank %s (MP: %d).", ptn, g.Player.MP)
 	}
-	g.Printf("You drink %s.", p.ShortDesc(g))
-	g.Dungeon.SetCell(pos, GroundCell)
-	delete(g.Objects.Potions, pos)
+	g.Printf("You drink %s.", ptn.ShortDesc(g))
+	g.Dungeon.SetCell(p, GroundCell)
+	delete(g.Objects.Potions, p)
 }
