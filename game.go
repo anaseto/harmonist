@@ -204,7 +204,7 @@ const WinDepth = 8
 
 const (
 	DungeonHeight = 21
-	DungeonWidth  = 79
+	DungeonWidth  = 80
 	DungeonNCells = DungeonWidth * DungeonHeight
 )
 

@@ -520,6 +520,8 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		} else {
 			ApplyLightLOS()
 		}
+		clearCache()
+		eff = gruid.Cmd(func() gruid.Msg { return gruid.MsgScreen{} })
 		md.mode = modeNormal
 	case ActionToggleTiles:
 		again = true

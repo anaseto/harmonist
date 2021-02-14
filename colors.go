@@ -25,11 +25,11 @@ const (
 	Color16Base03  gruid.Color = gruid.ColorDefault // background
 	Color16Base02  gruid.Color = 8
 	Color16Base01  gruid.Color = 10
-	Color16Base00  gruid.Color = 11
+	Color16Base00  gruid.Color = gruid.ColorDefault
 	Color16Base0   gruid.Color = gruid.ColorDefault // foreground
 	Color16Base1   gruid.Color = 14
 	Color16Base2   gruid.Color = 7
-	Color16Base3   gruid.Color = 15
+	Color16Base3   gruid.Color = gruid.ColorDefault
 	Color16Yellow  gruid.Color = 3
 	Color16Orange  gruid.Color = 9
 	Color16Red     gruid.Color = 1
@@ -99,46 +99,45 @@ func (md *model) Map256ColorTo16(c gruid.Color) gruid.Color {
 	}
 }
 
-func (md *model) Map16ColorTo256(c gruid.Color) gruid.Color {
-	switch c {
-	case Color16Base03:
-		return Color256Base03
-	case Color16Base02:
-		return Color256Base02
-	case Color16Base01:
-		return Color256Base01
-	case Color16Base00:
-		return Color256Base00
-	case Color16Base1:
-		return Color256Base1
-	case Color16Base2:
-		return Color256Base2
-	case Color16Base3:
-		return Color256Base3
-	case Color16Yellow:
-		return Color256Yellow
-	case Color16Orange:
-		return Color256Orange
-	case Color16Red:
-		return Color256Red
-	case Color16Magenta:
-		return Color256Magenta
-	case Color16Violet:
-		return Color256Violet
-	case Color16Blue:
-		return Color256Blue
-	case Color16Cyan:
-		return Color256Cyan
-	case Color16Green:
-		return Color256Green
-	default:
-		return c
-	}
-}
+//func (md *model) Map16ColorTo256(c gruid.Color) gruid.Color {
+//switch c {
+//case Color16Base03:
+//return Color256Base03
+//case Color16Base02:
+//return Color256Base02
+//case Color16Base01:
+//return Color256Base01
+//case Color16Base00:
+//return Color256Base00
+//case Color16Base1:
+//return Color256Base1
+//case Color16Base2:
+//return Color256Base2
+//case Color16Base3:
+//return Color256Base3
+//case Color16Yellow:
+//return Color256Yellow
+//case Color16Orange:
+//return Color256Orange
+//case Color16Red:
+//return Color256Red
+//case Color16Magenta:
+//return Color256Magenta
+//case Color16Violet:
+//return Color256Violet
+//case Color16Blue:
+//return Color256Blue
+//case Color16Cyan:
+//return Color256Cyan
+//case Color16Green:
+//return Color256Green
+//default:
+//return c
+//}
+//}
 
 var (
 	ColorBg,
-	ColorBgBorder,
 	ColorBgDark,
 	ColorBgLOS,
 	ColorFg,
@@ -176,7 +175,6 @@ var (
 
 func LinkColors() {
 	ColorBg = ColorBase03
-	ColorBgBorder = ColorBase02
 	ColorBgDark = ColorBase03
 	ColorBgLOS = ColorBase02
 	ColorFg = ColorBase0
@@ -214,7 +212,6 @@ func LinkColors() {
 
 func ApplyDarkLOS() {
 	ColorBg = ColorBase03
-	ColorBgBorder = ColorBase02
 	ColorBgDark = ColorBase03
 	ColorBgLOS = ColorBase02
 	ColorFgDark = ColorBase01
@@ -235,13 +232,12 @@ func ApplyLightLOS() {
 		ColorBgLOS = ColorBase2
 		ColorFgLOS = ColorBase00
 	} else {
-		ColorBg = ColorBase3
-		ColorBgBorder = ColorBase2
-		ColorBgDark = ColorBase3
-		ColorBgLOS = ColorBase2
-		ColorFgDark = ColorBase1
-		ColorFgLOS = ColorBase00
-		ColorFg = ColorBase00
+		ColorBg = ColorBase2
+		ColorBgDark = ColorBase2
+		ColorBgLOS = ColorBase3
+		ColorFgLOS = ColorBase1
+		ColorFgDark = ColorBase00
+		ColorFg = ColorBase1
 	}
 }
 
@@ -275,42 +271,42 @@ const (
 	Silver
 )
 
-func Map16ColorTo8Color(c gruid.Color) gruid.Color {
-	switch c {
-	case Color16Base03:
-		return Black
-	case Color16Base02:
-		return Black
-	case Color16Base01:
-		return Silver
-	case Color16Base00:
-		return Black
-	case Color16Base1:
-		return Silver
-	case Color16Base2:
-		return Silver
-	case Color16Base3:
-		return Silver
-	case Color16Yellow:
-		return Olive
-	case Color16Orange:
-		return Purple
-	case Color16Red:
-		return Maroon
-	case Color16Magenta:
-		return Purple
-	case Color16Violet:
-		return Teal
-	case Color16Blue:
-		return Navy
-	case Color16Cyan:
-		return Teal
-	case Color16Green:
-		return Green
-	default:
-		return c
-	}
-}
+//func Map16ColorTo8Color(c gruid.Color) gruid.Color {
+//switch c {
+//case Color16Base03:
+//return Black
+//case Color16Base02:
+//return Black
+//case Color16Base01:
+//return Silver
+//case Color16Base00:
+//return Black
+//case Color16Base1:
+//return Silver
+//case Color16Base2:
+//return Silver
+//case Color16Base3:
+//return Silver
+//case Color16Yellow:
+//return Olive
+//case Color16Orange:
+//return Purple
+//case Color16Red:
+//return Maroon
+//case Color16Magenta:
+//return Purple
+//case Color16Violet:
+//return Teal
+//case Color16Blue:
+//return Navy
+//case Color16Cyan:
+//return Teal
+//case Color16Green:
+//return Green
+//default:
+//return c
+//}
+//}
 
 var Only8Colors bool
 
