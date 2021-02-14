@@ -722,20 +722,6 @@ func (g *game) MonsterAt(p gruid.Point) *monster {
 	return m
 }
 
-func (g *game) checks() {
-	return
-	//for _, m := range g.Monsters {
-	//mons := g.MonsterAt(m.Pos)
-	//if !mons.Exists() && m.Exists() {
-	//log.Printf("does not exist")
-	//continue
-	//}
-	//if mons != m {
-	//log.Printf("bad monster: %v vs %v", mons.Index, m.Index)
-	//}
-	//}
-}
-
 func (m *monster) CorrectDir() {
 	switch m.Dir {
 	case ENE, ESE:

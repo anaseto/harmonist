@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"math/rand"
 	"time"
 
@@ -775,6 +776,22 @@ func (g *game) EndTurn() gruid.Effect {
 				}
 				return nil
 			}
+		}
+	}
+}
+
+func (g *game) checks() {
+	if !Testing {
+		return
+	}
+	for _, m := range g.Monsters {
+		mons := g.MonsterAt(m.P)
+		if !mons.Exists() && m.Exists() {
+			log.Printf("does not exist")
+			continue
+		}
+		if mons != m {
+			log.Printf("bad monster: %v vs %v", mons.Index, m.Index)
 		}
 	}
 }

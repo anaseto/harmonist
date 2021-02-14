@@ -23,8 +23,6 @@ var (
 var CustomKeys bool
 var GameConfig config
 
-const doNothing = "Do nothing, then."
-
 type mode int
 
 const (

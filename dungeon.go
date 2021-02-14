@@ -132,7 +132,6 @@ type dgen struct {
 	spl     places
 	special specialRoom
 	layout  maplayout
-	cc      []int
 	PR      *paths.PathRange
 	rand    *rand.Rand
 }

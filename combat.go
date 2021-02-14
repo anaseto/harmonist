@@ -179,7 +179,7 @@ func (g *game) Jump(mons *monster) (bool, error) {
 		}
 	}
 	if !g.Player.HasStatus(StatusSwift) && g.Player.Inventory.Body != CloakAcrobat {
-		g.PutStatus(StatusExhausted, 5)
+		g.PutStatus(StatusExhausted, DurationExhaustion)
 	}
 	if mons.Kind == MonsEarthDragon {
 		g.Confusion()
@@ -236,7 +236,7 @@ func (g *game) WallJump(p gruid.Point) error {
 		return errors.New("There's not enough room to jump.")
 	}
 	if !g.Player.HasStatus(StatusSwift) && g.Player.Inventory.Body != CloakAcrobat {
-		g.PutStatus(StatusExhausted, 5)
+		g.PutStatus(StatusExhausted, DurationExhaustion)
 	}
 	g.md.PushAnimation(path)
 	g.PlacePlayerAt(q)
@@ -275,7 +275,6 @@ func (g *game) HandleKill(mons *monster) {
 const (
 	WallNoise              = 10
 	ExplosionNoise         = 14
-	MagicHitNoise          = 5
 	BarkNoise              = 10
 	MagicCastNoise         = 5
 	HarmonicNoise          = 7

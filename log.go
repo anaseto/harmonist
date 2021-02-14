@@ -136,6 +136,8 @@ func (st logStyle) Rune() rune {
 		r = 'v'
 	case logError:
 		r = 'e'
+	default:
+		r = 'N'
 	}
 	return r
 }

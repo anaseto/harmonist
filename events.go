@@ -348,7 +348,7 @@ const (
 	DurationParalysisMonster       = 6
 	DurationCloudProgression       = 1
 	DurationFog                    = 15
-	DurationExhaustion             = 6
+	DurationExhaustion             = 5
 	DurationConfusionMonster       = 12
 	DurationConfusionPlayer        = 5
 	DurationLignificationMonster   = 15
