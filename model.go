@@ -401,9 +401,8 @@ func (md *model) updateQuitConfirmation(msg gruid.Msg) gruid.Effect {
 		if msg.Key == "y" || msg.Key == "Y" {
 			md.mode = modeQuit
 			return gruid.End()
-		} else {
-			md.mode = modeNormal
 		}
+		md.mode = modeNormal
 	}
 	return nil
 }

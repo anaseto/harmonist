@@ -722,15 +722,13 @@ func (g *game) AutoPlayer() bool {
 	case valid(g.AutoTarget):
 		if g.MoveToTarget() {
 			return true
-		} else {
-			g.AutoTarget = InvalidPos
 		}
+		g.AutoTarget = InvalidPos
 	case g.AutoDir != NoDir:
 		if g.AutoToDir() {
 			return true
-		} else {
-			g.AutoDir = NoDir
 		}
+		g.AutoDir = NoDir
 	}
 	return false
 }

@@ -1473,11 +1473,7 @@ func (m *monster) RangedAttack(g *game) bool {
 	}
 	if !m.FireReady {
 		m.FireReady = true
-		if Distance(m.P, g.Player.P) <= 3 {
-			return true
-		} else {
-			return false
-		}
+		return Distance(m.P, g.Player.P) <= 3
 	}
 	if m.Status(MonsExhausted) {
 		return false
@@ -1704,11 +1700,7 @@ func (m *monster) SmitingAttack(g *game) bool {
 	}
 	if !m.FireReady {
 		m.FireReady = true
-		if Distance(m.P, g.Player.P) <= 3 {
-			return true
-		} else {
-			return false
-		}
+		return Distance(m.P, g.Player.P) <= 3
 	}
 	if m.Status(MonsExhausted) {
 		return false
