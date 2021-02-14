@@ -12,14 +12,14 @@ func TestInitLevel(t *testing.T) {
 		g := &game{}
 		for depth := 0; depth < MaxDepth; depth++ {
 			g.InitLevel()
-			if g.Player.Pos == InvalidPos {
+			if g.Player.P == InvalidPos {
 				t.Errorf("Player starting cell is not valid")
 			}
-			if !terrain(g.Dungeon.Cell(g.Player.Pos)).IsPlayerPassable() {
-				t.Errorf("Player starting cell is not passable: %+v", g.Dungeon.Cell(g.Player.Pos).ShortDesc(g, g.Player.Pos))
+			if !terrain(g.Dungeon.Cell(g.Player.P)).IsPlayerPassable() {
+				t.Errorf("Player starting cell is not passable: %+v", g.Dungeon.Cell(g.Player.P).ShortDesc(g, g.Player.P))
 			}
-			if terrain(g.Dungeon.Cell(g.Player.Pos)) != GroundCell {
-				t.Errorf("Player starting cell is not ground: %+v", g.Dungeon.Cell(g.Player.Pos).ShortDesc(g, g.Player.Pos))
+			if terrain(g.Dungeon.Cell(g.Player.P)) != GroundCell {
+				t.Errorf("Player starting cell is not ground: %+v", g.Dungeon.Cell(g.Player.P).ShortDesc(g, g.Player.P))
 			}
 			if g.Depth == WinDepth {
 				if terrain(g.Dungeon.Cell(g.Places.Shaedra)) != StoryCell {
@@ -59,8 +59,8 @@ func TestInitLevel(t *testing.T) {
 				}
 			}
 			for _, m := range g.Monsters {
-				if !g.Dungeon.Cell(m.Pos).IsPassable() {
-					t.Errorf("Not free: %+v", m.Pos)
+				if !g.Dungeon.Cell(m.P).IsPassable() {
+					t.Errorf("Not free: %+v", m.P)
 				}
 			}
 			g.Depth++

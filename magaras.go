@@ -120,8 +120,8 @@ loop:
 
 func (g *game) EquipMagara(i int) (err error) {
 	omagara := g.Player.Magaras[i]
-	g.Player.Magaras[i] = g.Objects.Magaras[g.Player.Pos]
-	g.Objects.Magaras[g.Player.Pos] = omagara
+	g.Player.Magaras[i] = g.Objects.Magaras[g.Player.P]
+	g.Objects.Magaras[g.Player.P] = omagara
 	g.Printf("You take the %s.", g.Player.Magaras[i])
 	g.Printf("You leave the %s.", omagara)
 	g.StoryPrintf("Took %s (%d), left %s (%d)", g.Player.Magaras[i], g.Player.Magaras[i].Charges, omagara, omagara.Charges)
@@ -411,7 +411,7 @@ func (g *game) Blink() bool {
 		g.Print("You could not blink.")
 		return false
 	}
-	opos := g.Player.Pos
+	opos := g.Player.P
 	if npos == opos {
 		g.Print("You blink in-place.")
 	} else {
@@ -445,7 +445,7 @@ func (g *game) BlinkPos(mpassable bool) gruid.Point {
 	npos := losPos[RandInt(len(losPos))]
 	for i := 0; i < 4; i++ {
 		pos := losPos[RandInt(len(losPos))]
-		if Distance(npos, g.Player.Pos) < Distance(pos, g.Player.Pos) {
+		if Distance(npos, g.Player.P) < Distance(pos, g.Player.P) {
 			npos = pos
 		}
 	}
@@ -472,7 +472,7 @@ func (g *game) EvokeDig() error {
 func (g *game) MonstersInLOS() []*monster {
 	ms := []*monster{}
 	for _, mons := range g.Monsters {
-		if mons.Exists() && g.Player.Sees(mons.Pos) {
+		if mons.Exists() && g.Player.Sees(mons.P) {
 			ms = append(ms, mons)
 		}
 	}
@@ -487,7 +487,7 @@ func (g *game) MonstersInLOS() []*monster {
 func (g *game) MonstersInCardinalLOS() []*monster {
 	ms := []*monster{}
 	for _, mons := range g.Monsters {
-		if mons.Exists() && g.Player.Sees(mons.Pos) && (mons.Pos.X == g.Player.Pos.X || mons.Pos.Y == g.Player.Pos.Y) {
+		if mons.Exists() && g.Player.Sees(mons.P) && (mons.P.X == g.Player.P.X || mons.P.Y == g.Player.P.Y) {
 			ms = append(ms, mons)
 		}
 	}
@@ -510,7 +510,7 @@ func (g *game) EvokeTeleportOther() error {
 	}
 	for i := 0; i < max; i++ {
 		if ms[i].Search == InvalidPos {
-			ms[i].Search = ms[i].Pos
+			ms[i].Search = ms[i].P
 		}
 		ms[i].TeleportAway(g)
 		if ms[i].Kind.ReflectsTeleport() {
@@ -567,8 +567,8 @@ func (g *game) EvokeSwapping() error {
 		if m.Status(MonsLignified) {
 			continue
 		}
-		if Distance(m.Pos, g.Player.Pos) > best {
-			best = Distance(m.Pos, g.Player.Pos)
+		if Distance(m.P, g.Player.P) > best {
+			best = Distance(m.P, g.Player.P)
 			mons = m
 		}
 	}
@@ -577,20 +577,20 @@ func (g *game) EvokeSwapping() error {
 	}
 	if mons.Kind.CanOpenDoors() {
 		// only intelligent monsters understand swapping
-		mons.Search = mons.Pos
+		mons.Search = mons.P
 	}
 	g.SwapWithMonster(mons)
 	return nil
 }
 
 func (g *game) SwapWithMonster(mons *monster) {
-	ompos := mons.Pos
+	ompos := mons.P
 	g.Printf("You swap positions with the %s.", mons.Kind)
-	g.md.SwappingAnimation(mons.Pos, g.Player.Pos)
-	mons.MoveTo(g, g.Player.Pos)
+	g.md.SwappingAnimation(mons.P, g.Player.P)
+	mons.MoveTo(g, g.Player.P)
 	g.PlacePlayerAt(ompos)
 	mons.MakeAware(g)
-	if terrain(g.Dungeon.Cell(g.Player.Pos)) == ChasmCell {
+	if terrain(g.Dungeon.Cell(g.Player.P)) == ChasmCell {
 		g.PushEventFirst(&playerEvent{Action: AbyssFall}, g.Turn)
 	}
 }
@@ -616,7 +616,7 @@ func (cl cloud) String() (s string) {
 }
 
 func (g *game) EvokeFog() error {
-	g.Fog(g.Player.Pos, 3)
+	g.Fog(g.Player.P, 3)
 	g.Print("You are surrounded by a dense fog.")
 	return nil
 }
@@ -652,7 +652,7 @@ func (g *game) EvokeParalysis() error {
 		if mons.PutStatus(g, MonsParalysed, DurationParalysisMonster) {
 			count++
 			if mons.Search == InvalidPos {
-				mons.Search = mons.Pos
+				mons.Search = mons.P
 			}
 		}
 	}
@@ -660,7 +660,7 @@ func (g *game) EvokeParalysis() error {
 		return errors.New("No suitable targets in view.")
 	}
 	g.Print("Whoosh! A slowing luminous wave emerges.")
-	g.md.LOSWavesAnimation(DefaultLOSRange, WaveSlowing, g.Player.Pos)
+	g.md.LOSWavesAnimation(DefaultLOSRange, WaveSlowing, g.Player.P)
 	return nil
 }
 
@@ -685,7 +685,7 @@ func (g *game) EvokeSleeping() error {
 		mons.State = Resting
 		mons.Dir = NoDir
 		mons.ExhaustTime(g, 4+RandInt(2))
-		targets = append(targets, g.Ray(mons.Pos)...)
+		targets = append(targets, g.Ray(mons.P)...)
 	}
 	if len(targets) == 0 {
 		return errors.New("There are no suitable targets.")
@@ -717,9 +717,9 @@ func (g *game) EvokeLignification() error {
 		}
 		mons.EnterLignification(g)
 		if mons.Search == InvalidPos {
-			mons.Search = mons.Pos
+			mons.Search = mons.P
 		}
-		targets = append(targets, g.Ray(mons.Pos)...)
+		targets = append(targets, g.Ray(mons.P)...)
 	}
 	if len(targets) == 0 {
 		return errors.New("There are no suitable targets.")
@@ -736,14 +736,14 @@ func (g *game) EvokeLignification() error {
 func (g *game) EvokeNoise() error {
 	dij := &noisePath{state: g}
 	const noiseDist = 23
-	g.PR.BreadthFirstMap(dij, []gruid.Point{g.Player.Pos}, noiseDist)
+	g.PR.BreadthFirstMap(dij, []gruid.Point{g.Player.P}, noiseDist)
 	noises := []gruid.Point{}
 	g.NoiseIllusion = map[gruid.Point]bool{}
 	for _, mons := range g.Monsters {
 		if !mons.Exists() {
 			continue
 		}
-		c := g.PR.BreadthFirstMapAt(mons.Pos)
+		c := g.PR.BreadthFirstMapAt(mons.P)
 		if c > DefaultLOSRange {
 			continue
 		}
@@ -751,7 +751,7 @@ func (g *game) EvokeNoise() error {
 			continue
 		}
 		mp := &monPath{state: g, monster: mons}
-		target := mons.Pos
+		target := mons.P
 		best := c
 		for {
 			ncost := best
@@ -791,7 +791,7 @@ func (g *game) EvokeConfusion() error {
 		if mons.EnterConfusion(g) {
 			count++
 			if mons.Search == InvalidPos {
-				mons.Search = mons.Pos
+				mons.Search = mons.P
 			}
 		}
 	}
@@ -799,12 +799,12 @@ func (g *game) EvokeConfusion() error {
 		return errors.New("No suitable targets in view.")
 	}
 	g.Print("Whoosh! A confusing luminous wave emerges.")
-	g.md.LOSWavesAnimation(DefaultLOSRange, WaveConfusion, g.Player.Pos)
+	g.md.LOSWavesAnimation(DefaultLOSRange, WaveConfusion, g.Player.P)
 	return nil
 }
 
 func (g *game) EvokeFire() error {
-	burnpos := g.Dungeon.CardinalFlammableNeighbors(g.Player.Pos)
+	burnpos := g.Dungeon.CardinalFlammableNeighbors(g.Player.P)
 	if len(burnpos) == 0 {
 		return errors.New("You are not surrounded by any flammable terrain.")
 	}
@@ -818,12 +818,12 @@ func (g *game) EvokeFire() error {
 func (g *game) EvokeObstruction() error {
 	targets := []gruid.Point{}
 	for _, mons := range g.Monsters {
-		if !mons.Exists() || !g.Player.Sees(mons.Pos) {
+		if !mons.Exists() || !g.Player.Sees(mons.P) {
 			continue
 		}
-		ray := g.Ray(mons.Pos)
+		ray := g.Ray(mons.P)
 		for i, pos := range ray[1:] {
-			if pos == g.Player.Pos {
+			if pos == g.Player.P {
 				break
 			}
 			mons := g.MonsterAt(pos)
@@ -895,7 +895,7 @@ func (g *game) EvokeDelayedNoiseMagara() error {
 	if !g.PutFakeStatus(StatusDelay, DurationHarmonicNoiseDelay) {
 		return errors.New("You are already using delayed magic.")
 	}
-	g.PushEventD(&posEvent{Pos: g.Player.Pos, Action: DelayedHarmonicNoiseEvent,
+	g.PushEventD(&posEvent{Pos: g.Player.P, Action: DelayedHarmonicNoiseEvent,
 		Timer: DurationHarmonicNoiseDelay}, DurationTurn)
 
 	g.Print("Timer activated.")
@@ -914,7 +914,7 @@ func (g *game) EvokeOricExplosionMagara() error {
 	if !g.PutFakeStatus(StatusDelay, DurationHarmonicNoiseDelay) {
 		return errors.New("You are already using delayed magic.")
 	}
-	g.PushEventD(&posEvent{Pos: g.Player.Pos, Action: DelayedOricExplosionEvent,
+	g.PushEventD(&posEvent{Pos: g.Player.P, Action: DelayedOricExplosionEvent,
 		Timer: DurationOricExplosionDelay}, DurationTurn)
 
 	g.Print("Timer activated.")

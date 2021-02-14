@@ -290,7 +290,7 @@ func (mp *monPath) Cost(from, to gruid.Point) int {
 		if mp.monster.Kind == MonsEarthDragon && c.IsDestructible() && !mp.monster.Status(MonsConfused) {
 			return 5
 		}
-		if to == g.Player.Pos && mp.monster.Kind.Peaceful() {
+		if to == g.Player.P && mp.monster.Kind.Peaceful() {
 			switch mp.monster.Kind {
 			case MonsEarthDragon:
 				return 1

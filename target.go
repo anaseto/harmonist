@@ -12,7 +12,7 @@ import (
 var InvalidPos = gruid.Point{-1, -1}
 
 type examination struct {
-	pos          gruid.Point
+	p          gruid.Point
 	nmonster     int
 	objects      []gruid.Point
 	nobject      int
@@ -24,12 +24,12 @@ type examination struct {
 
 // HideCursor hides the target cursor.
 func (md *model) HideCursor() {
-	md.mp.ex.pos = InvalidPos
+	md.mp.ex.p = InvalidPos
 }
 
 // SetCursor sets the target cursor.
 func (md *model) SetCursor(pos gruid.Point) {
-	md.mp.ex.pos = pos
+	md.mp.ex.p = pos
 }
 
 // CancelExamine cancels current targeting.
@@ -43,7 +43,7 @@ func (md *model) CancelExamine() {
 
 // Examine targets a given position with the cursor.
 func (md *model) Examine(p gruid.Point) {
-	if md.mp.ex.pos == p {
+	if md.mp.ex.p == p {
 		return
 	}
 	md.examine(p)
@@ -70,28 +70,28 @@ func (md *model) examine(p gruid.Point) {
 func (md *model) KeyboardExamine() {
 	md.mp.kbTargeting = true
 	g := md.g
-	pos := g.Player.Pos
+	pos := g.Player.P
 	minDist := 999
 	for _, mons := range g.Monsters {
-		if mons.Exists() && g.Player.LOS[mons.Pos] {
-			dist := Distance(mons.Pos, g.Player.Pos)
+		if mons.Exists() && g.Player.LOS[mons.P] {
+			dist := Distance(mons.P, g.Player.P)
 			if minDist > dist {
 				minDist = dist
-				pos = mons.Pos
+				pos = mons.P
 			}
 		}
 	}
 	md.mp.ex = &examination{
-		pos:     pos,
+		p:     pos,
 		objects: []gruid.Point{},
 	}
-	if pos == g.Player.Pos {
+	if pos == g.Player.P {
 		md.nextObject(InvalidPos, md.mp.ex)
-		if !valid(md.mp.ex.pos) {
+		if !valid(md.mp.ex.p) {
 			md.nextStair(md.mp.ex)
 		}
-		if valid(md.mp.ex.pos) && Distance(pos, md.mp.ex.pos) < DefaultLOSRange+5 {
-			pos = md.mp.ex.pos
+		if valid(md.mp.ex.p) && Distance(pos, md.mp.ex.p) < DefaultLOSRange+5 {
+			pos = md.mp.ex.p
 		}
 	}
 	md.examine(pos)
@@ -113,7 +113,7 @@ type posInfo struct {
 func (md *model) drawPosInfo() {
 	g := md.g
 	p := gruid.Point{}
-	if md.mp.ex.pos.X <= DungeonWidth/2 {
+	if md.mp.ex.p.X <= DungeonWidth/2 {
 		p.X += DungeonWidth/2 + 1
 	}
 	info := md.mp.ex.info
@@ -259,7 +259,7 @@ func (m *monster) traits() string {
 func (md *model) updatePosInfo() {
 	g := md.g
 	pi := posInfo{}
-	pos := md.mp.ex.pos
+	pos := md.mp.ex.p
 	pi.Pos = pos
 	switch {
 	case !explored(g.Dungeon.Cell(pos)):
@@ -274,7 +274,7 @@ func (md *model) updatePosInfo() {
 		//return
 	}
 	mons := g.MonsterAt(pos)
-	if pos == g.Player.Pos {
+	if pos == g.Player.P {
 		pi.Player = true
 	}
 	if g.Player.Sees(pos) {
@@ -301,11 +301,11 @@ func (md *model) updatePosInfo() {
 }
 
 func (md *model) computeHighlight() {
-	md.g.computePathHighlight(md.mp.ex.pos)
+	md.g.computePathHighlight(md.mp.ex.p)
 }
 
 func (g *game) computePathHighlight(pos gruid.Point) {
-	path := g.PlayerPath(g.Player.Pos, pos)
+	path := g.PlayerPath(g.Player.P, pos)
 	g.Highlight = map[gruid.Point]bool{}
 	for _, p := range path {
 		g.Highlight[p] = true
@@ -314,14 +314,14 @@ func (g *game) computePathHighlight(pos gruid.Point) {
 
 func (md *model) target() error {
 	g := md.g
-	pos := md.mp.ex.pos
+	pos := md.mp.ex.p
 	if !explored(g.Dungeon.Cell(pos)) {
 		return errors.New("You do not know this place.")
 	}
 	if terrain(g.Dungeon.Cell(pos)) == WallCell && !g.Player.HasStatus(StatusDig) {
 		return errors.New("You cannot travel into a wall.")
 	}
-	path := g.PlayerPath(g.Player.Pos, pos)
+	path := g.PlayerPath(g.Player.P, pos)
 	if len(path) == 0 {
 		return errors.New("There is no safe path to this place.")
 	}
@@ -347,8 +347,8 @@ func (md *model) nextMonster(key gruid.Key, pos gruid.Point, data *examination) 
 			nmonster = len(g.Monsters) - 1
 		}
 		mons := g.Monsters[nmonster]
-		if mons.Exists() && g.Player.LOS[mons.Pos] && pos != mons.Pos {
-			pos = mons.Pos
+		if mons.Exists() && g.Player.LOS[mons.P] && pos != mons.P {
+			pos = mons.P
 			break
 		}
 	}
@@ -360,7 +360,7 @@ func (md *model) nextStair(data *examination) {
 	g := md.g
 	if data.sortedStairs == nil {
 		stairs := g.StairsSlice()
-		data.sortedStairs = g.SortedNearestTo(stairs, g.Player.Pos)
+		data.sortedStairs = g.SortedNearestTo(stairs, g.Player.P)
 	}
 	if data.stairIndex >= len(data.sortedStairs) {
 		data.stairIndex = 0
@@ -402,7 +402,7 @@ func (md *model) nextObject(pos gruid.Point, data *examination) {
 		for p := range g.Objects.Potions {
 			data.objects = append(data.objects, p)
 		}
-		data.objects = g.SortedNearestTo(data.objects, g.Player.Pos)
+		data.objects = g.SortedNearestTo(data.objects, g.Player.P)
 	}
 	for i := 0; i < len(data.objects); i++ {
 		p := data.objects[nobject]

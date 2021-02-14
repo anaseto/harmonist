@@ -45,7 +45,7 @@ func (sev *playerEvent) Handle(g *game) {
 		g.ComputeLOS()
 		g.md.Story()
 	case AbyssFall:
-		if terrain(g.Dungeon.Cell(g.Player.Pos)) == ChasmCell {
+		if terrain(g.Dungeon.Cell(g.Player.P)) == ChasmCell {
 			g.FallAbyss(DescendFall)
 		}
 	}
@@ -78,7 +78,7 @@ func (sev *statusEvent) Handle(g *game) {
 		g.md.StatusEndAnimation()
 		switch st {
 		case StatusLevitation:
-			if terrain(g.Dungeon.Cell(g.Player.Pos)) == ChasmCell {
+			if terrain(g.Dungeon.Cell(g.Player.P)) == ChasmCell {
 				g.FallAbyss(DescendFall)
 			}
 		case StatusLignification:
@@ -114,12 +114,12 @@ func (mev *monsterStatusEvent) Handle(g *game) {
 	mons.Statuses[st] -= DurationStatusStep
 	if mons.Statuses[st] <= 0 {
 		mons.Statuses[st] = 0
-		if g.Player.Sees(mons.Pos) {
+		if g.Player.Sees(mons.P) {
 			g.Printf("%s is no longer %s.", mons.Kind.Definite(true), st)
 		}
 		switch st {
 		case MonsConfused, MonsLignified:
-			mons.Path = mons.APath(g, mons.Pos, mons.Target)
+			mons.Path = mons.APath(g, mons.P, mons.Target)
 		}
 	} else {
 		g.PushEventD(&monsterStatusEvent{Index: mev.Index, Status: st}, DurationStatusStep)
@@ -289,7 +289,7 @@ func (g *game) NightFog(at gruid.Point, radius int) {
 }
 
 func (g *game) MakeCreatureSleep(pos gruid.Point) {
-	if pos == g.Player.Pos {
+	if pos == g.Player.P {
 		if g.PutStatus(StatusConfusion, DurationConfusionPlayer) {
 			g.Print("The clouds of night confuse you.")
 		}
@@ -301,7 +301,7 @@ func (g *game) MakeCreatureSleep(pos gruid.Point) {
 		return
 	}
 	mons.EnterConfusion(g)
-	if mons.State != Resting && g.Player.Sees(mons.Pos) {
+	if mons.State != Resting && g.Player.Sees(mons.P) {
 		g.Printf("%s falls asleep.", mons.Kind.Definite(true))
 	}
 	mons.State = Resting

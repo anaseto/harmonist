@@ -315,7 +315,7 @@ func (g *game) DumpDungeon() string {
 			r = '#'
 		default:
 			switch {
-			case pos == g.Player.Pos:
+			case pos == g.Player.P:
 				r = '@'
 			default:
 				r, _ = c.Style(g, pos)
@@ -323,7 +323,7 @@ func (g *game) DumpDungeon() string {
 					r = '§'
 				}
 				m := g.MonsterAt(pos)
-				if m.Exists() && (g.Player.LOS[m.Pos] || g.Wizard) {
+				if m.Exists() && (g.Player.LOS[m.P] || g.Wizard) {
 					r = m.Kind.Letter()
 				}
 			}

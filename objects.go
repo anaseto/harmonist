@@ -213,11 +213,11 @@ func (g *game) UseStone(pos gruid.Point) {
 }
 
 func (g *game) ActivateStone() (err error) {
-	stn, ok := g.Objects.Stones[g.Player.Pos]
+	stn, ok := g.Objects.Stones[g.Player.P]
 	if !ok {
 		return errors.New("No stone to activate here.")
 	}
-	oppos := g.Player.Pos
+	oppos := g.Player.P
 	switch stn {
 	case InertStone:
 		err = errors.New("The stone is inert.")
@@ -226,7 +226,7 @@ func (g *game) ActivateStone() (err error) {
 		g.TeleportToBarrel()
 	case FogStone:
 		g.Print("The stone releases fog.")
-		g.Fog(g.Player.Pos, FogStoneDistance)
+		g.Fog(g.Player.P, FogStoneDistance)
 	case QueenStone:
 		g.ActivateQueenStone()
 	case NightStone:
@@ -256,9 +256,9 @@ const (
 )
 
 func (g *game) ActivateQueenStone() {
-	g.MakeNoise(QueenStoneNoise, g.Player.Pos)
+	g.MakeNoise(QueenStoneNoise, g.Player.P)
 	dij := &noisePath{state: g}
-	g.PR.BreadthFirstMap(dij, []gruid.Point{g.Player.Pos}, QueenStoneDistance)
+	g.PR.BreadthFirstMap(dij, []gruid.Point{g.Player.P}, QueenStoneDistance)
 	targets := []*monster{}
 	for _, m := range g.Monsters {
 		if !m.Exists() {
@@ -267,18 +267,18 @@ func (g *game) ActivateQueenStone() {
 		if m.State == Resting {
 			continue
 		}
-		c := g.PR.BreadthFirstMapAt(m.Pos)
+		c := g.PR.BreadthFirstMapAt(m.P)
 		if c > QueenStoneDistance {
 			continue
 		}
 		targets = append(targets, m)
 	}
 	g.Print("The stone releases confusing sounds.")
-	g.md.LOSWavesAnimation(DefaultLOSRange, WaveMagicNoise, g.Player.Pos)
+	g.md.LOSWavesAnimation(DefaultLOSRange, WaveMagicNoise, g.Player.P)
 	for _, m := range targets {
 		m.EnterConfusion(g)
 		if m.Search == InvalidPos {
-			m.Search = m.Pos
+			m.Search = m.P
 		}
 	}
 }
@@ -286,7 +286,7 @@ func (g *game) ActivateQueenStone() {
 func (g *game) ActivateNightStone() error {
 	targets := []*monster{}
 	for _, mons := range g.Monsters {
-		if !mons.Exists() || !g.Player.Sees(mons.Pos) {
+		if !mons.Exists() || !g.Player.Sees(mons.P) {
 			continue
 		}
 		if mons.State != Resting {
@@ -297,7 +297,7 @@ func (g *game) ActivateNightStone() error {
 		return errors.New("There are no suitable monsters in sight.")
 	}
 	g.Print("The stone releases hypnotic harmonies.")
-	g.md.LOSWavesAnimation(DefaultLOSRange, WaveSleeping, g.Player.Pos)
+	g.md.LOSWavesAnimation(DefaultLOSRange, WaveSleeping, g.Player.P)
 	for _, mons := range targets {
 		g.Printf("%s falls asleep.", mons.Kind.Definite(true))
 		mons.State = Resting
@@ -310,7 +310,7 @@ func (g *game) ActivateNightStone() error {
 func (g *game) ActivateTreeStone() error {
 	targets := []*monster{}
 	for _, mons := range g.Monsters {
-		if !mons.Exists() || !g.Player.Sees(mons.Pos) || mons.Kind.ResistsLignification() {
+		if !mons.Exists() || !g.Player.Sees(mons.P) || mons.Kind.ResistsLignification() {
 			continue
 		}
 		targets = append(targets, mons)
@@ -319,11 +319,11 @@ func (g *game) ActivateTreeStone() error {
 		return errors.New("There are no suitable monsters in sight.")
 	}
 	g.Print("The stone releases magical spores.")
-	g.md.LOSWavesAnimation(DefaultLOSRange, WaveTree, g.Player.Pos)
+	g.md.LOSWavesAnimation(DefaultLOSRange, WaveTree, g.Player.P)
 	for _, mons := range targets {
 		mons.EnterLignification(g)
 		if mons.Search == InvalidPos {
-			mons.Search = mons.Pos
+			mons.Search = mons.P
 		}
 	}
 	return nil
@@ -337,7 +337,7 @@ func (g *game) ActivateTeleportStone() error {
 	g.Print("The stone releases oric teleport energies.")
 	for _, mons := range targets {
 		if mons.Search == InvalidPos && mons.Kind.CanOpenDoors() {
-			mons.Search = mons.Pos
+			mons.Search = mons.P
 		}
 		mons.TeleportAway(g)
 		if mons.Kind.ReflectsTeleport() {
@@ -355,7 +355,7 @@ func (g *game) TeleportToBarrel() {
 		barrels = append(barrels, pos)
 	}
 	pos := barrels[RandInt(len(barrels))]
-	opos := g.Player.Pos
+	opos := g.Player.P
 	g.Print("You teleport away.")
 	g.md.TeleportAnimation(opos, pos, true)
 	g.PlacePlayerAt(pos)
@@ -363,7 +363,7 @@ func (g *game) TeleportToBarrel() {
 
 func (g *game) MagicMapping(maxdist int) error {
 	dp := &mappingPath{state: g}
-	nodes := g.PR.DijkstraMap(dp, []gruid.Point{g.Player.Pos}, maxdist)
+	nodes := g.PR.DijkstraMap(dp, []gruid.Point{g.Player.P}, maxdist)
 	cdists := make(map[int][]int)
 	for _, n := range nodes {
 		cdists[n.Cost] = append(cdists[n.Cost], idx(n.P))
@@ -400,8 +400,8 @@ func (g *game) MagicMapping(maxdist int) error {
 
 func (g *game) Sensing() error {
 	for _, mons := range g.Monsters {
-		if mons.Exists() && !g.Player.Sees(mons.Pos) && Distance(mons.Pos, g.Player.Pos) <= MappingDistance {
-			mons.UpdateKnowledge(g, mons.Pos)
+		if mons.Exists() && !g.Player.Sees(mons.P) && Distance(mons.P, g.Player.P) <= MappingDistance {
+			mons.UpdateKnowledge(g, mons.P)
 		}
 	}
 	g.Printf("You briefly sense monsters around.")
@@ -464,7 +464,7 @@ func (sc scroll) Text(g *game) (desc string) {
 
 [Order of a Dayoriah Clan's foreman, the paper is rather recent and you can't help but think the thief is actually Shaedra. So they really did capture her! You have to hurry and save her.]`
 	case ScrollLore:
-		i, ok := g.Objects.Lore[g.Player.Pos]
+		i, ok := g.Objects.Lore[g.Player.P]
 		if !ok {
 			// should not happen
 			desc = "Some unintelligible notes."
@@ -682,7 +682,7 @@ func (it item) Style(g *game) (r rune, fg gruid.Color) {
 }
 
 func (g *game) EquipItem() error {
-	it, ok := g.Objects.Items[g.Player.Pos]
+	it, ok := g.Objects.Items[g.Player.P]
 	if !ok {
 		return errors.New("Nothing to equip here.")
 	}
@@ -696,13 +696,13 @@ func (g *game) EquipItem() error {
 		g.Player.Inventory.Neck = it
 	}
 	if oitem != NoItem {
-		g.Objects.Items[g.Player.Pos] = oitem
+		g.Objects.Items[g.Player.P] = oitem
 		g.Printf("You equip the %s.", it.ShortDesc(g))
 		g.Printf("You leave the %s.", oitem.ShortDesc(g))
 		g.StoryPrintf("Equipped %s", it.ShortDesc(g))
 	} else {
-		delete(g.Objects.Items, g.Player.Pos)
-		g.Dungeon.SetCell(g.Player.Pos, GroundCell)
+		delete(g.Objects.Items, g.Player.P)
+		g.Dungeon.SetCell(g.Player.P, GroundCell)
 		g.Printf("You equip the %s.", it.ShortDesc(g))
 		g.StoryPrintf("Equipped %s", it.ShortDesc(g))
 	}

@@ -48,7 +48,7 @@ func (g *game) MakeMonstersAware() {
 		if m.Dead {
 			continue
 		}
-		if g.Player.LOS[m.Pos] {
+		if g.Player.LOS[m.P] {
 			m.MakeAware(g)
 			if m.State != Resting {
 				m.GatherBand(g)
@@ -70,7 +70,7 @@ func (g *game) MakeNoise(noise int, at gruid.Point) {
 		if m.State == Hunting {
 			continue
 		}
-		d := g.PR.BreadthFirstMapAt(m.Pos)
+		d := g.PR.BreadthFirstMapAt(m.P)
 		if d > noise {
 			continue
 		}
@@ -88,23 +88,23 @@ func (g *game) MakeNoise(noise int, at gruid.Point) {
 
 func (m *monster) LeaveRoomForPlayer(g *game) gruid.Point {
 	dij := &monPath{state: g, monster: m}
-	nodes := g.PR.DijkstraMap(dij, []gruid.Point{m.Pos}, 10)
+	nodes := g.PR.DijkstraMap(dij, []gruid.Point{m.P}, 10)
 	free := InvalidPos
 	dist := unreachable
 	for _, n := range nodes {
 		if !m.CanPass(g, n.P) {
 			continue
 		}
-		if n.P == g.Player.Pos || n.P == m.Pos {
+		if n.P == g.Player.P || n.P == m.P {
 			continue
 		}
 		mons := g.MonsterAt(n.P)
 		if mons.Exists() {
 			continue
 		}
-		if Distance(n.P, m.Pos) < dist {
+		if Distance(n.P, m.P) < dist {
 			free = n.P
-			dist = Distance(n.P, m.Pos)
+			dist = Distance(n.P, m.P)
 		}
 	}
 	// free should be valid except in really rare cases
@@ -113,23 +113,23 @@ func (m *monster) LeaveRoomForPlayer(g *game) gruid.Point {
 
 func (g *game) FindJumpTarget(m *monster) gruid.Point {
 	dij := &jumpPath{state: g}
-	nodes := g.PR.DijkstraMap(dij, []gruid.Point{m.Pos}, 10)
+	nodes := g.PR.DijkstraMap(dij, []gruid.Point{m.P}, 10)
 	free := InvalidPos
 	dist := unreachable
 	for _, n := range nodes {
 		if !g.PlayerCanPass(n.P) {
 			continue
 		}
-		if n.P == g.Player.Pos || n.P == m.Pos {
+		if n.P == g.Player.P || n.P == m.P {
 			continue
 		}
 		mons := g.MonsterAt(n.P)
 		if mons.Exists() {
 			continue
 		}
-		if Distance(n.P, m.Pos) < dist {
+		if Distance(n.P, m.P) < dist {
 			free = n.P
-			dist = Distance(n.P, m.Pos)
+			dist = Distance(n.P, m.P)
 		}
 	}
 	// free should be valid except in really rare cases
@@ -138,11 +138,11 @@ func (g *game) FindJumpTarget(m *monster) gruid.Point {
 
 func (g *game) Jump(mons *monster) (bool, error) {
 	if mons.Peaceful(g) && mons.Kind != MonsEarthDragon {
-		ompos := mons.Pos
+		ompos := mons.P
 		if terrain(g.Dungeon.Cell(ompos)) == ChasmCell && !g.Player.HasStatus(StatusLevitation) {
 			return true, g.AbyssJump()
 		}
-		if !mons.CanPass(g, g.Player.Pos) {
+		if !mons.CanPass(g, g.Player.P) {
 			pos := mons.LeaveRoomForPlayer(g)
 			if pos != InvalidPos {
 				mons.MoveTo(g, pos)
@@ -152,14 +152,14 @@ func (g *game) Jump(mons *monster) (bool, error) {
 			}
 			// otherwise (which should not happen in practice), swap anyways
 		}
-		g.PlacePlayerAt(mons.Pos)
+		g.PlacePlayerAt(mons.P)
 		return false, nil
 	}
 	if g.Player.HasStatus(StatusExhausted) {
 		return false, errors.New("You cannot jump while exhausted.")
 	}
-	dir := Dir(g.Player.Pos, mons.Pos)
-	pos := g.Player.Pos
+	dir := Dir(g.Player.P, mons.P)
+	pos := g.Player.P
 	for {
 		pos = To(dir, pos)
 		if !g.PlayerCanPass(pos) {
@@ -195,15 +195,15 @@ func (g *game) Jump(mons *monster) (bool, error) {
 }
 
 func (g *game) WallJump(pos gruid.Point) error {
-	c := g.Dungeon.Cell(g.Player.Pos)
+	c := g.Dungeon.Cell(g.Player.P)
 	if c.IsEnclosing() {
-		return fmt.Errorf("You cannot jump from %s.", c.ShortDesc(g, g.Player.Pos))
+		return fmt.Errorf("You cannot jump from %s.", c.ShortDesc(g, g.Player.P))
 	}
 	if g.Player.HasStatus(StatusExhausted) {
 		return errors.New("You cannot jump while exhausted.")
 	}
-	dir := Dir(pos, g.Player.Pos)
-	pos = g.Player.Pos
+	dir := Dir(pos, g.Player.P)
+	pos = g.Player.P
 	tpos := pos
 	count := 0
 	path := []gruid.Point{tpos}
@@ -263,10 +263,10 @@ const (
 func (g *game) HandleKill(mons *monster) {
 	g.Stats.Killed++
 	g.Stats.KilledMons[mons.Kind]++
-	if g.Player.Sees(mons.Pos) {
+	if g.Player.Sees(mons.P) {
 		AchAssassin.Get(g)
 	}
-	if terrain(g.Dungeon.Cell(mons.Pos)) == DoorCell {
+	if terrain(g.Dungeon.Cell(mons.P)) == DoorCell {
 		g.ComputeLOS()
 	}
 	g.StoryPrintf("Death of %s", mons.Kind.Indefinite(false))

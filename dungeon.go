@@ -610,9 +610,9 @@ func (dg *dgen) PutCavernCells(g *game) {
 func (dg *dgen) ClearUnconnected(g *game) {
 	d := dg.d
 	sp := newPather(func(p gruid.Point) bool { return d.Cell(p).IsPlayerPassable() })
-	dg.PR.CCMap(sp, g.Player.Pos)
+	dg.PR.CCMap(sp, g.Player.P)
 	mg := rl.MapGen{Grid: dg.d.Grid}
-	mg.KeepCC(dg.PR, g.Player.Pos, rl.Cell(WallCell))
+	mg.KeepCC(dg.PR, g.Player.P, rl.Cell(WallCell))
 }
 
 func (dg *dgen) AddSpecial(g *game, ml maplayout) {
@@ -806,14 +806,14 @@ loop:
 			}
 		}
 	}
-	g.Player.Pos = r.RandomPlace(PlacePatrol)
+	g.Player.P = r.RandomPlace(PlacePatrol)
 	switch g.Depth {
 	case 1, 4:
 	default:
 		return
 	}
 	itpos := InvalidPos
-	neighbors := g.Dungeon.FreeNeighbors(g.Player.Pos)
+	neighbors := g.Dungeon.FreeNeighbors(g.Player.P)
 	for i := 0; i < len(neighbors); i++ {
 		j := RandInt(len(neighbors) - i)
 		neighbors[i], neighbors[j] = neighbors[j], neighbors[i]
@@ -961,7 +961,7 @@ func (dg *dgen) FoliageCell(g *game) gruid.Point {
 		x := RandInt(DungeonWidth)
 		y := RandInt(DungeonHeight)
 		pos := gruid.Point{x, y}
-		if Distance(pos, g.Player.Pos) < DefaultLOSRange {
+		if Distance(pos, g.Player.P) < DefaultLOSRange {
 			continue
 		}
 		mons := g.MonsterAt(pos)
@@ -1010,7 +1010,7 @@ func (dg *dgen) InsideCell(g *game) gruid.Point {
 		if mons.Exists() {
 			continue
 		}
-		if Distance(pos, g.Player.Pos) < DefaultLOSRange {
+		if Distance(pos, g.Player.P) < DefaultLOSRange {
 			continue
 		}
 		c := dg.d.Cell(pos)
@@ -1082,11 +1082,11 @@ func (dg *dgen) GenStairs(g *game, st stair) {
 	best := 0
 	for i, r := range dg.rooms {
 		for j, pl := range r.places {
-			score := Distance(pl.pos, g.Player.Pos) + RandInt(20)
+			score := Distance(pl.pos, g.Player.P) + RandInt(20)
 			if !pl.used && pl.kind == PlaceSpecialStatic && score > best {
 				ri = i
 				pj = j
-				best = Distance(pl.pos, g.Player.Pos)
+				best = Distance(pl.pos, g.Player.P)
 			}
 		}
 	}
@@ -1112,11 +1112,11 @@ loop:
 			}
 		}
 		for j, pl := range r.places {
-			score := Distance(pl.pos, g.Player.Pos) + RandInt(20)
+			score := Distance(pl.pos, g.Player.P) + RandInt(20)
 			if !pl.used && pl.kind == PlaceSpecialStatic && score > best {
 				ri = i
 				pj = j
-				best = Distance(pl.pos, g.Player.Pos)
+				best = Distance(pl.pos, g.Player.P)
 			}
 		}
 	}

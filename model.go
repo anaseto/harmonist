@@ -451,10 +451,10 @@ func (md *model) updateNormal(msg gruid.Msg) gruid.Effect {
 
 func (md *model) updateKeyDown(msg gruid.MsgKeyDown) gruid.Effect {
 	md.statusFocus = false
-	if !md.mp.kbTargeting && valid(md.mp.ex.pos) {
+	if !md.mp.kbTargeting && valid(md.mp.ex.p) {
 		md.CancelExamine()
 	}
-	if md.mp.ex.pos != InvalidPos {
+	if md.mp.ex.p != InvalidPos {
 		switch msg.Key {
 		case gruid.KeyPageDown:
 			md.mp.ex.scroll = true
@@ -482,11 +482,11 @@ func (md *model) updateMouse(msg gruid.MsgMouse) gruid.Effect {
 	p := msg.P.Add(gruid.Point{0, -2}) // relative position ignoring log
 	switch msg.Action {
 	case gruid.MouseWheelUp:
-		if md.mp.ex.pos != InvalidPos {
+		if md.mp.ex.p != InvalidPos {
 			md.mp.ex.scroll = true
 		}
 	case gruid.MouseWheelDown:
-		if md.mp.ex.pos != InvalidPos {
+		if md.mp.ex.p != InvalidPos {
 			md.mp.ex.scroll = false
 		}
 	case gruid.MouseMove:
@@ -627,7 +627,7 @@ func (md *model) updateMapInfo() {
 	md.g.ComputeMonsterLOS()
 	md.updateStatusInfo()
 	if md.g.Highlight != nil {
-		md.examine(md.mp.ex.pos)
+		md.examine(md.mp.ex.p)
 	}
 }
 

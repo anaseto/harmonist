@@ -69,7 +69,7 @@ func (md *model) startAnimSeq() {
 		p := it.P()
 		r, fg, bg := md.positionDrawing(p)
 		attrs := AttrInMap
-		if md.g.Highlight[p] || p == md.mp.ex.pos {
+		if md.g.Highlight[p] || p == md.mp.ex.p {
 			attrs |= AttrReverse
 		}
 		md.anims.grid.Set(p, gruid.Cell{Rune: r, Style: gruid.Style{Fg: fg, Bg: bg, Attrs: attrs}})
@@ -193,7 +193,7 @@ func (md *model) ExplosionDrawAt(pos gruid.Point, fg gruid.Color) {
 	case 5:
 		r = '~'
 	}
-	if mons.Exists() || g.Player.Pos == pos {
+	if mons.Exists() || g.Player.P == pos {
 		r = '√'
 	}
 	md.anims.Draw(pos, r, bgColor, fg)
@@ -203,7 +203,7 @@ func (md *model) NoiseAnimation(noises []gruid.Point) {
 	if DisableAnimations {
 		return
 	}
-	md.LOSWavesAnimation(DefaultLOSRange, WaveMagicNoise, md.g.Player.Pos)
+	md.LOSWavesAnimation(DefaultLOSRange, WaveMagicNoise, md.g.Player.P)
 	//md.startAnimSeq()
 	colors := []gruid.Color{ColorFgSleepingMonster, ColorFgMagicPlace}
 	for i := 0; i < 2; i++ {
@@ -212,8 +212,8 @@ func (md *model) NoiseAnimation(noises []gruid.Point) {
 			_, _, bgColor := md.positionDrawing(pos)
 			md.anims.Draw(pos, r, bgColor, colors[i])
 		}
-		_, _, bgColor := md.positionDrawing(md.g.Player.Pos)
-		md.anims.Draw(md.g.Player.Pos, '@', bgColor, colors[i])
+		_, _, bgColor := md.positionDrawing(md.g.Player.P)
+		md.anims.Draw(md.g.Player.P, '@', bgColor, colors[i])
 		md.anims.Frame(AnimDurShortMedium)
 	}
 
@@ -428,7 +428,7 @@ func (md *model) MonsterJavelinAnimation(ray []gruid.Point, hit bool) {
 	for i := 0; i < len(ray); i++ {
 		pos := ray[i]
 		r, fgColor, bgColor := md.positionDrawing(pos)
-		md.anims.Draw(pos, md.ProjectileSymbol(Dir(g.Player.Pos, pos)), ColorFgMonster, bgColor)
+		md.anims.Draw(pos, md.ProjectileSymbol(Dir(g.Player.P, pos)), ColorFgMonster, bgColor)
 		md.anims.Frame(AnimDurShort)
 		md.anims.Draw(pos, r, fgColor, bgColor)
 	}
@@ -441,11 +441,11 @@ func (md *model) WoundedAnimation() {
 		return
 	}
 	md.startAnimSeq()
-	r, _, bg := md.positionDrawing(g.Player.Pos)
-	md.anims.Draw(g.Player.Pos, r, ColorFgHPwounded, bg)
+	r, _, bg := md.positionDrawing(g.Player.P)
+	md.anims.Draw(g.Player.P, r, ColorFgHPwounded, bg)
 	md.anims.Frame(AnimDurShortMedium)
 	if g.Player.HP <= 15 {
-		md.anims.Draw(g.Player.Pos, r, ColorFgHPcritical, bg)
+		md.anims.Draw(g.Player.P, r, ColorFgHPcritical, bg)
 		md.anims.Frame(AnimDurShortMedium)
 	}
 }
@@ -457,10 +457,10 @@ func (md *model) PlayerGoodEffectAnimation() {
 	}
 	md.startAnimSeq()
 	md.anims.Frame(AnimDurShort)
-	r, _, bg := md.positionDrawing(g.Player.Pos)
-	md.anims.Draw(g.Player.Pos, r, ColorGreen, bg)
+	r, _, bg := md.positionDrawing(g.Player.P)
+	md.anims.Draw(g.Player.P, r, ColorGreen, bg)
 	md.anims.Frame(AnimDurShortMedium)
-	md.anims.Draw(g.Player.Pos, r, ColorYellow, bg)
+	md.anims.Draw(g.Player.P, r, ColorYellow, bg)
 	md.anims.Frame(AnimDurShortMedium)
 	//md.anims.Draw(g.Player.Pos, r, fg, bg)
 }
@@ -471,8 +471,8 @@ func (md *model) StatusEndAnimation() {
 		return
 	}
 	md.startAnimSeq()
-	r, _, bg := md.positionDrawing(g.Player.Pos)
-	md.anims.Draw(g.Player.Pos, r, ColorViolet, bg)
+	r, _, bg := md.positionDrawing(g.Player.P)
+	md.anims.Draw(g.Player.P, r, ColorViolet, bg)
 	md.anims.Frame(AnimDurShortMedium)
 }
 
@@ -481,8 +481,8 @@ func (md *model) FoundFakeStairsAnimation() {
 	if DisableAnimations {
 		return
 	}
-	r, _, bg := md.positionDrawing(g.Player.Pos)
-	md.anims.Draw(g.Player.Pos, r, ColorMagenta, bg)
+	r, _, bg := md.positionDrawing(g.Player.P)
+	md.anims.Draw(g.Player.P, r, ColorMagenta, bg)
 	md.anims.Frame(AnimDurMediumLong)
 }
 
@@ -555,17 +555,6 @@ func (md *model) FreeingShaedra() {
 		if !DisableAnimations {
 			md.startAnimSeq()
 			md.anims.Frame(AnimDurMediumLong)
-			_, _, bg := md.positionDrawing(g.Places.Marevor)
-			md.anims.Draw(g.Places.Marevor, 'Φ', ColorFgMagicPlace, bg)
-			md.anims.Frame(AnimDurMediumLong)
-		}
-		g.Objects.Story[g.Places.Marevor] = StoryMarevor
-		g.PrintStyled("Marevor: “And what about the mission? Take that magara!”", logSpecial)
-		g.PrintStyled("Shaedra: “Pff, don't be reckless!”", logSpecial)
-		g.Print("[(x) to continue]")
-	case 2:
-		if !DisableAnimations {
-			md.startAnimSeq()
 			_, _, bg := md.positionDrawing(g.Places.Marevor)
 			md.anims.Draw(g.Places.Marevor, 'Φ', ColorFgMagicPlace, bg)
 			md.anims.Frame(AnimDurMediumLong)

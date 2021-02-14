@@ -221,7 +221,7 @@ func (md *model) statusMPColor() rune {
 func (md *model) sortedStatuses() statusSlice {
 	g := md.g
 	sts := statusSlice{}
-	if cld, ok := g.Clouds[g.Player.Pos]; ok && cld == CloudFire {
+	if cld, ok := g.Clouds[g.Player.P]; ok && cld == CloudFire {
 		g.Player.Statuses[StatusFlames] = 1
 		defer func() {
 			g.Player.Statuses[StatusFlames] = 0

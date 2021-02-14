@@ -250,11 +250,11 @@ func (k action) targetingModeAction() bool {
 
 func (md *model) interact() (string, bool) {
 	g := md.g
-	c := g.Dungeon.Cell(g.Player.Pos)
+	c := g.Dungeon.Cell(g.Player.P)
 	switch terrain(c) {
 	case StairCell:
-		if terrain(g.Dungeon.Cell(g.Player.Pos)) == StairCell && g.Objects.Stairs[g.Player.Pos] != BlockedStair ||
-			terrain(g.Dungeon.Cell(g.Player.Pos)) == StairCell && g.Objects.Stairs[g.Player.Pos] == BlockedStair {
+		if terrain(g.Dungeon.Cell(g.Player.P)) == StairCell && g.Objects.Stairs[g.Player.P] != BlockedStair ||
+			terrain(g.Dungeon.Cell(g.Player.P)) == StairCell && g.Objects.Stairs[g.Player.P] == BlockedStair {
 			return "descend", true
 		}
 		return "", false
@@ -271,8 +271,8 @@ func (md *model) interact() (string, bool) {
 	case LightCell:
 		return "extinguish light", true
 	case StoryCell:
-		if g.Objects.Story[g.Player.Pos] == StoryArtifact && !g.LiberatedArtifact ||
-			g.Objects.Story[g.Player.Pos] == StoryArtifactSealed {
+		if g.Objects.Story[g.Player.P] == StoryArtifact && !g.LiberatedArtifact ||
+			g.Objects.Story[g.Player.P] == StoryArtifactSealed {
 			return "take artifact", true
 		}
 		return "", false
@@ -288,9 +288,9 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		again = true
 	case ActionW, ActionS, ActionN, ActionE:
 		if !md.mp.kbTargeting {
-			again, err = g.PlayerBump(To(KeyToDir(action), g.Player.Pos))
+			again, err = g.PlayerBump(To(KeyToDir(action), g.Player.P))
 		} else {
-			p := To(KeyToDir(action), md.mp.ex.pos)
+			p := To(KeyToDir(action), md.mp.ex.p)
 			if valid(p) {
 				md.Examine(p)
 			}
@@ -302,7 +302,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		} else {
 			q := InvalidPos
 			for i := 0; i < 5; i++ {
-				p := To(KeyToDir(action), md.mp.ex.pos)
+				p := To(KeyToDir(action), md.mp.ex.p)
 				if !valid(p) {
 					break
 				}
@@ -315,16 +315,16 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		}
 	case ActionExclude:
 		again = true
-		md.excludeZone(md.mp.ex.pos)
+		md.excludeZone(md.mp.ex.p)
 	case ActionPreviousMonster:
 		again = true
-		md.nextMonster("-", md.mp.ex.pos, md.mp.ex)
+		md.nextMonster("-", md.mp.ex.p, md.mp.ex)
 	case ActionNextMonster:
 		again = true
-		md.nextMonster("+", md.mp.ex.pos, md.mp.ex)
+		md.nextMonster("+", md.mp.ex.p, md.mp.ex)
 	case ActionNextObject:
 		again = true
-		md.nextObject(md.mp.ex.pos, md.mp.ex)
+		md.nextObject(md.mp.ex.p, md.mp.ex)
 	case ActionTarget:
 		again = true
 		err = md.target()
@@ -342,14 +342,14 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 	case ActionGoToStairs:
 		again = true
 		stairs := g.StairsSlice()
-		sortedStairs := g.SortedNearestTo(stairs, g.Player.Pos)
+		sortedStairs := g.SortedNearestTo(stairs, g.Player.P)
 		if len(sortedStairs) > 0 {
 			stair := sortedStairs[0]
-			if g.Player.Pos == stair {
+			if g.Player.P == stair {
 				err = errors.New("You are already on the stairs.")
 				break
 			}
-			md.mp.ex.pos = stair
+			md.mp.ex.p = stair
 			err = md.target()
 			if err != nil {
 				err = errors.New("There is no safe path to the nearest stairs.")
@@ -360,13 +360,13 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 			err = errors.New("You cannot go to any stairs.")
 		}
 	case ActionInteract:
-		c := g.Dungeon.Cell(g.Player.Pos)
+		c := g.Dungeon.Cell(g.Player.P)
 		switch terrain(c) {
 		case StairCell:
-			if terrain(g.Dungeon.Cell(g.Player.Pos)) == StairCell && g.Objects.Stairs[g.Player.Pos] != BlockedStair {
+			if terrain(g.Dungeon.Cell(g.Player.P)) == StairCell && g.Objects.Stairs[g.Player.P] != BlockedStair {
 				// TODO: animation
 				//ui.MenuSelectedAnimation(MenuInteract, true)
-				strt := g.Objects.Stairs[g.Player.Pos]
+				strt := g.Objects.Stairs[g.Player.P]
 				err = md.checkShaedra(strt)
 				if err != nil {
 					break
@@ -376,7 +376,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 					md.win()
 				}
 				//ui.DrawDungeonView(NormalMode)
-			} else if terrain(g.Dungeon.Cell(g.Player.Pos)) == StairCell && g.Objects.Stairs[g.Player.Pos] == BlockedStair {
+			} else if terrain(g.Dungeon.Cell(g.Player.P)) == StairCell && g.Objects.Stairs[g.Player.P] == BlockedStair {
 				err = errors.New("The stairs are blocked by a magical stone barrier energies.")
 			} else {
 				err = errors.New("No stairs here.")
@@ -404,10 +404,10 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		case LightCell:
 			err = g.ExtinguishFire()
 		case StoryCell:
-			if g.Objects.Story[g.Player.Pos] == StoryArtifact && !g.LiberatedArtifact {
+			if g.Objects.Story[g.Player.P] == StoryArtifact && !g.LiberatedArtifact {
 				g.PushEventFirst(&playerEvent{Action: StorySequence}, g.Turn)
 				g.LiberatedArtifact = true
-			} else if g.Objects.Story[g.Player.Pos] == StoryArtifactSealed {
+			} else if g.Objects.Story[g.Player.P] == StoryArtifactSealed {
 				err = errors.New("The artifact is protected by a magical stone barrier.")
 			} else {
 				err = errors.New("You cannot interact with anything here.")
@@ -571,7 +571,7 @@ func (md *model) wizardInfo() {
 }
 
 func (md *model) readScroll() {
-	sc, ok := md.g.Objects.Scrolls[md.g.Player.Pos]
+	sc, ok := md.g.Objects.Scrolls[md.g.Player.P]
 	if !ok {
 		md.g.PrintStyled("Error while reading message.", logError)
 		return

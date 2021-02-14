@@ -9,7 +9,7 @@ func (g *game) Autoexplore() (again bool, err error) {
 	if mons := g.MonsterInLOS(); mons.Exists() {
 		return again, errors.New("You cannot auto-explore while there are monsters in view.")
 	}
-	if g.ExclusionsMap[g.Player.Pos] {
+	if g.ExclusionsMap[g.Player.P] {
 		return again, errors.New("You cannot auto-explore while in an excluded area.")
 	}
 	if g.AllExplored() {
@@ -80,10 +80,10 @@ func (g *game) BuildAutoexploreMap(sources []gruid.Point) {
 
 func (g *game) NextAuto() (next *gruid.Point, finished bool) {
 	ap := &autoexplorePath{state: g}
-	if g.PR.BreadthFirstMapAt(g.Player.Pos) > unreachable {
+	if g.PR.BreadthFirstMapAt(g.Player.P) > unreachable {
 		return nil, false
 	}
-	neighbors := ap.Neighbors(g.Player.Pos)
+	neighbors := ap.Neighbors(g.Player.P)
 	if len(neighbors) == 0 {
 		return nil, false
 	}
@@ -96,7 +96,7 @@ func (g *game) NextAuto() (next *gruid.Point, finished bool) {
 			ncost = cost
 		}
 	}
-	if ncost >= g.PR.BreadthFirstMapAt(g.Player.Pos) {
+	if ncost >= g.PR.BreadthFirstMapAt(g.Player.P) {
 		finished = true
 	}
 	next = &n

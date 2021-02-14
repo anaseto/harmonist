@@ -127,7 +127,7 @@ func (g *game) FreePassableCell() gruid.Point {
 		if !c.IsPassable() {
 			continue
 		}
-		if g.Player != nil && g.Player.Pos == pos {
+		if g.Player != nil && g.Player.P == pos {
 			continue
 		}
 		mons := g.MonsterAt(pos)
@@ -166,7 +166,7 @@ func (g *game) FreeCellForMonster() gruid.Point {
 		if !c.IsPassable() {
 			continue
 		}
-		if g.Player != nil && Distance(g.Player.Pos, pos) < 8 {
+		if g.Player != nil && Distance(g.Player.P, pos) < 8 {
 			continue
 		}
 		mons := g.MonsterAt(pos)
@@ -187,7 +187,7 @@ func (g *game) FreeCellForBandMonster(pos gruid.Point) gruid.Point {
 		neighbors := g.Dungeon.FreeNeighbors(pos)
 		r := RandInt(len(neighbors))
 		pos = neighbors[r]
-		if g.Player != nil && Distance(g.Player.Pos, pos) < 8 {
+		if g.Player != nil && Distance(g.Player.P, pos) < 8 {
 			continue
 		}
 		mons := g.MonsterAt(pos)
@@ -630,8 +630,8 @@ func (g *game) Descend(style descendstyle) bool {
 			AchStealthMaster.Get(g)
 		}
 	}
-	c := g.Dungeon.Cell(g.Player.Pos)
-	if terrain(c) == StairCell && g.Objects.Stairs[g.Player.Pos] == WinStair {
+	c := g.Dungeon.Cell(g.Player.P)
+	if terrain(c) == StairCell && g.Objects.Stairs[g.Player.P] == WinStair {
 		g.StoryPrint("Escaped!")
 		g.ExploredLevels = g.Depth
 		g.Depth = -1

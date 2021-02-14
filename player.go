@@ -18,7 +18,7 @@ type player struct {
 	//Aptitudes map[aptitude]bool
 	Statuses  map[status]int
 	Expire    map[status]int
-	Pos       gruid.Point
+	P       gruid.Point
 	Target    gruid.Point
 	LOS       map[gruid.Point]bool
 	FOV       *rl.FOV
@@ -60,9 +60,9 @@ func (p *player) HasStatus(st status) bool {
 
 func (g *game) AutoToDir() bool {
 	if g.MonsterInLOS() == nil {
-		pos := To(g.AutoDir, g.Player.Pos)
+		pos := To(g.AutoDir, g.Player.P)
 		if g.PlayerCanPass(pos) {
-			again, err := g.PlayerBump(To(g.AutoDir, g.Player.Pos))
+			again, err := g.PlayerBump(To(g.AutoDir, g.Player.P))
 			if err != nil {
 				g.Print(err.Error())
 				g.AutoDir = NoDir
@@ -86,7 +86,7 @@ func (g *game) GoToDir(dir direction) (again bool, err error) {
 		g.AutoDir = NoDir
 		return again, errors.New("You cannot travel while there are monsters in view.")
 	}
-	pos := To(dir, g.Player.Pos)
+	pos := To(dir, g.Player.P)
 	if !g.PlayerCanPass(pos) {
 		return again, errors.New("You cannot move in that direction.")
 	}
@@ -102,7 +102,7 @@ func (g *game) MoveToTarget() bool {
 	if !valid(g.AutoTarget) {
 		return false
 	}
-	path := g.PlayerPath(g.Player.Pos, g.AutoTarget)
+	path := g.PlayerPath(g.Player.P, g.AutoTarget)
 	if g.MonsterInLOS() != nil {
 		g.AutoTarget = InvalidPos
 	}
@@ -125,7 +125,7 @@ func (g *game) MoveToTarget() bool {
 		g.AutoTarget = InvalidPos
 		return false
 	}
-	if valid(g.AutoTarget) && g.Player.Pos == g.AutoTarget {
+	if valid(g.AutoTarget) && g.Player.P == g.AutoTarget {
 		g.AutoTarget = InvalidPos
 	}
 	return !again
@@ -145,10 +145,10 @@ func (g *game) MonsterCount() (count int) {
 }
 
 func (g *game) Rest() error {
-	if terrain(g.Dungeon.Cell(g.Player.Pos)) != BarrelCell {
+	if terrain(g.Dungeon.Cell(g.Player.P)) != BarrelCell {
 		return fmt.Errorf("This place is not safe for sleeping.")
 	}
-	if cld, ok := g.Clouds[g.Player.Pos]; ok && cld == CloudFire {
+	if cld, ok := g.Clouds[g.Player.P]; ok && cld == CloudFire {
 		return errors.New("You cannot rest on flames.")
 	}
 	if !g.NeedsRegenRest() && !g.StatusRest() {
@@ -191,7 +191,7 @@ func (g *game) Teleportation() {
 			panic("Teleportation")
 		}
 		pos = g.FreePassableCell()
-		if Distance(pos, g.Player.Pos) < 15 && i < 1000 {
+		if Distance(pos, g.Player.P) < 15 && i < 1000 {
 			i++
 			continue
 		}
@@ -200,7 +200,7 @@ func (g *game) Teleportation() {
 	}
 	if valid(pos) {
 		// should always happen
-		opos := g.Player.Pos
+		opos := g.Player.P
 		g.Print("You teleport away.")
 		g.md.TeleportAnimation(opos, pos, true)
 		g.PlacePlayerAt(pos)
@@ -213,7 +213,7 @@ func (g *game) Teleportation() {
 const MaxBananas = 4
 
 func (g *game) CollectGround() {
-	pos := g.Player.Pos
+	pos := g.Player.P
 	c := g.Dungeon.Cell(pos)
 	if c.IsNotable() {
 		g.AutoexploreMapRebuild = true
@@ -317,7 +317,7 @@ func (g *game) PlayerBump(pos gruid.Point) (again bool, err error) {
 		return again, errors.New("You cannot move into a magical barrier.")
 	case terrain(c) == WindowCell && !g.Player.HasStatus(StatusDig):
 		return again, errors.New("You cannot pass through the closed window.")
-	case terrain(c) == BarrelCell && g.MonsterLOS[g.Player.Pos]:
+	case terrain(c) == BarrelCell && g.MonsterLOS[g.Player.P]:
 		return again, errors.New("You cannot enter a barrel while seen.")
 	}
 	mons := g.MonsterAt(pos)
@@ -361,10 +361,10 @@ func (g *game) PlayerBump(pos gruid.Point) (again bool, err error) {
 			}
 		}
 		if g.Player.Inventory.Body == CloakSmoke {
-			_, ok := g.Clouds[g.Player.Pos]
-			if !ok && g.Dungeon.Cell(g.Player.Pos).AllowsFog() {
-				g.Clouds[g.Player.Pos] = CloudFog
-				g.PushEventD(&posEvent{Pos: g.Player.Pos, Action: CloudEnd}, DurationSmokingCloakFog)
+			_, ok := g.Clouds[g.Player.P]
+			if !ok && g.Dungeon.Cell(g.Player.P).AllowsFog() {
+				g.Clouds[g.Player.P] = CloudFog
+				g.PushEventD(&posEvent{Pos: g.Player.P, Action: CloudEnd}, DurationSmokingCloakFog)
 			}
 		}
 		//}
@@ -391,7 +391,7 @@ func (g *game) PushPlayerTurn() {
 
 func (g *game) SwiftFog() {
 	dij := &noisePath{state: g}
-	nodes := g.PR.DijkstraMap(dij, []gruid.Point{g.Player.Pos}, 2)
+	nodes := g.PR.DijkstraMap(dij, []gruid.Point{g.Player.P}, 2)
 	for _, n := range nodes {
 		_, ok := g.Clouds[n.P]
 		if !ok && g.Dungeon.Cell(n.P).AllowsFog() {
@@ -411,10 +411,10 @@ func (g *game) Confusion() {
 }
 
 func (g *game) PlacePlayerAt(pos gruid.Point) {
-	if pos == g.Player.Pos {
+	if pos == g.Player.P {
 		return
 	}
-	g.Player.Dir = Dir(g.Player.Pos, pos)
+	g.Player.Dir = Dir(g.Player.P, pos)
 	switch g.Player.Dir {
 	case ENE, ESE:
 		g.Player.Dir = E
@@ -426,14 +426,14 @@ func (g *game) PlacePlayerAt(pos gruid.Point) {
 		g.Player.Dir = S
 	}
 	m := g.MonsterAt(pos)
-	ppos := g.Player.Pos
-	g.Player.Pos = pos
+	ppos := g.Player.P
+	g.Player.P = pos
 	if m.Exists() {
 		m.MoveTo(g, ppos)
 		m.Swapped = true
 	}
-	if terrain(g.Dungeon.Cell(g.Player.Pos)) == QueenRockCell && !g.Player.HasStatus(StatusLevitation) {
-		g.MakeNoise(QueenRockFootstepNoise, g.Player.Pos)
+	if terrain(g.Dungeon.Cell(g.Player.P)) == QueenRockCell && !g.Player.HasStatus(StatusLevitation) {
+		g.MakeNoise(QueenRockFootstepNoise, g.Player.P)
 		g.Print("Tap-tap.")
 	}
 	g.CollectGround()
@@ -451,8 +451,8 @@ func (g *game) EnterLignification() {
 }
 
 func (g *game) ExtinguishFire() error {
-	g.Dungeon.SetCell(g.Player.Pos, ExtinguishedLightCell)
-	g.Objects.Lights[g.Player.Pos] = false
+	g.Dungeon.SetCell(g.Player.P, ExtinguishedLightCell)
+	g.Objects.Lights[g.Player.P] = false
 	g.Stats.Extinguishments++
 	if g.Stats.Extinguishments >= 15 {
 		AchExtinguisher.Get(g)
