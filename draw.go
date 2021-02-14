@@ -64,7 +64,7 @@ func (md *model) Draw() gruid.Grid {
 		case modeKeys, modeKeysChange:
 			gd := md.keysMenu.Draw()
 			max := gd.Size()
-			t := ui.Text("(R) reset (Enter) change").WithStyle(gruid.Style{}.WithFg(Color16Cyan))
+			t := ui.Text("(R) reset (Enter) change").WithStyle(gruid.Style{}.WithFg(ColorCyan))
 			if md.menuMode == modeKeysChange {
 				t = t.WithText(" Press new key... ")
 			}
@@ -80,8 +80,8 @@ func drawWelcome(gd gruid.Grid) gruid.Grid {
 	tst := gruid.Style{}
 	st := gruid.Style{}.WithAttrs(AttrInMap)
 	stt := ui.StyledText{}.WithMarkups(map[rune]gruid.Style{
-		't': tst.WithFg(Color16Green),
-		'W': st.WithFg(Color16Violet),
+		't': tst.WithFg(ColorGreen),
+		'W': st.WithFg(ColorViolet),
 		'l': st.WithFg(ColorFgLOS).WithBg(ColorBgLOS),
 		'L': st.WithFg(ColorFgLOSLight).WithBg(ColorBgLOS),
 		'p': st.WithFg(ColorFgPlayer).WithBg(ColorBgLOS),

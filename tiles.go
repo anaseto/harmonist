@@ -72,35 +72,35 @@ func ColorToRGBA(c gruid.Color, fg bool) color.Color {
 	cl := color.RGBA{}
 	opaque := uint8(255)
 	switch c {
-	case Color16BackgroundSecondary:
+	case ColorBackgroundSecondary:
 		if GameConfig.DarkLOS {
 			cl = color.RGBA{7, 54, 66, opaque}
 		} else {
 			cl = color.RGBA{238, 232, 213, opaque}
 		}
-	case Color16Red:
+	case ColorRed:
 		cl = color.RGBA{220, 50, 47, opaque}
-	case Color16Green:
+	case ColorGreen:
 		cl = color.RGBA{133, 153, 0, opaque}
-	case Color16Yellow:
+	case ColorYellow:
 		cl = color.RGBA{181, 137, 0, opaque}
-	case Color16Blue:
+	case ColorBlue:
 		cl = color.RGBA{38, 139, 210, opaque}
-	case Color16Magenta:
+	case ColorMagenta:
 		cl = color.RGBA{211, 54, 130, opaque}
-	case Color16Cyan:
+	case ColorCyan:
 		cl = color.RGBA{42, 161, 152, opaque}
-	case Color16Orange:
+	case ColorOrange:
 		cl = color.RGBA{203, 75, 22, opaque}
-	case Color16Violet:
+	case ColorViolet:
 		cl = color.RGBA{108, 113, 196, opaque}
-	case Color16ForegroundEmph:
+	case ColorForegroundEmph:
 		if GameConfig.DarkLOS {
 			cl = color.RGBA{147, 161, 161, opaque}
 		} else {
 			cl = color.RGBA{88, 110, 117, opaque}
 		}
-	case Color16ForegroundSecondary:
+	case ColorForegroundSecondary:
 		if GameConfig.DarkLOS {
 			cl = color.RGBA{88, 110, 117, opaque}
 		} else {

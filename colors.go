@@ -4,20 +4,23 @@ import (
 	"github.com/anaseto/gruid"
 )
 
+// Thoses are the colors of the main palette. They are given 16-palette color
+// numbers compatible with terminals, though they are then mapped to more
+// precise colors depending on options and the driver.
 const (
-	Color16Background          gruid.Color = gruid.ColorDefault // background
-	Color16BackgroundSecondary gruid.Color = 1 + 0
-	Color16Foreground          gruid.Color = gruid.ColorDefault
-	Color16ForegroundSecondary gruid.Color = 1 + 7
-	Color16ForegroundEmph      gruid.Color = 1 + 15
-	Color16Yellow              gruid.Color = 1 + 3
-	Color16Orange              gruid.Color = 1 + 1 // red
-	Color16Red                 gruid.Color = 1 + 9 // bright red
-	Color16Magenta             gruid.Color = 1 + 5
-	Color16Violet              gruid.Color = 1 + 12 // bright blue
-	Color16Blue                gruid.Color = 1 + 4
-	Color16Cyan                gruid.Color = 1 + 6
-	Color16Green               gruid.Color = 1 + 2
+	ColorBackground          gruid.Color = gruid.ColorDefault // background
+	ColorBackgroundSecondary gruid.Color = 1 + 0
+	ColorForeground          gruid.Color = gruid.ColorDefault
+	ColorForegroundSecondary gruid.Color = 1 + 7
+	ColorForegroundEmph      gruid.Color = 1 + 15
+	ColorYellow              gruid.Color = 1 + 3
+	ColorOrange              gruid.Color = 1 + 1 // red
+	ColorRed                 gruid.Color = 1 + 9 // bright red
+	ColorMagenta             gruid.Color = 1 + 5
+	ColorViolet              gruid.Color = 1 + 12 // bright blue
+	ColorBlue                gruid.Color = 1 + 4
+	ColorCyan                gruid.Color = 1 + 6
+	ColorGreen               gruid.Color = 1 + 2
 )
 
 var (
@@ -58,61 +61,61 @@ var (
 )
 
 func LinkColors() {
-	ColorBg = Color16Background
-	ColorBgDark = Color16Background
-	ColorBgLOS = Color16BackgroundSecondary
-	ColorFg = Color16Foreground
-	ColorFgDark = Color16ForegroundSecondary
-	ColorFgLOS = Color16ForegroundEmph
-	ColorFgLOSLight = Color16Yellow
-	ColorFgObject = Color16Yellow
-	ColorFgTree = Color16Green
-	ColorFgConfusedMonster = Color16Green
-	ColorFgLignifiedMonster = Color16Yellow
-	ColorFgParalysedMonster = Color16Cyan
-	ColorFgExcluded = Color16Red
-	ColorFgExplosionEnd = Color16Orange
-	ColorFgExplosionStart = Color16Yellow
-	ColorFgExplosionWallEnd = Color16Magenta
-	ColorFgExplosionWallStart = Color16Violet
-	ColorFgHPcritical = Color16Red
-	ColorFgHPok = Color16Green
-	ColorFgHPwounded = Color16Yellow
-	ColorFgMPcritical = Color16Magenta
-	ColorFgMPok = Color16Blue
-	ColorFgMPpartial = Color16Violet
-	ColorFgMagicPlace = Color16Cyan
-	ColorFgMonster = Color16Red
-	ColorFgPlace = Color16Magenta
-	ColorFgPlayer = Color16Blue
-	ColorFgBananas = Color16Yellow
-	ColorFgSleepingMonster = Color16Violet
-	ColorFgStatusBad = Color16Red
-	ColorFgStatusGood = Color16Blue
-	ColorFgStatusExpire = Color16Violet
-	ColorFgStatusOther = Color16Yellow
-	ColorFgWanderingMonster = Color16Orange
+	ColorBg = ColorBackground
+	ColorBgDark = ColorBackground
+	ColorBgLOS = ColorBackgroundSecondary
+	ColorFg = ColorForeground
+	ColorFgDark = ColorForegroundSecondary
+	ColorFgLOS = ColorForegroundEmph
+	ColorFgLOSLight = ColorYellow
+	ColorFgObject = ColorYellow
+	ColorFgTree = ColorGreen
+	ColorFgConfusedMonster = ColorGreen
+	ColorFgLignifiedMonster = ColorYellow
+	ColorFgParalysedMonster = ColorCyan
+	ColorFgExcluded = ColorRed
+	ColorFgExplosionEnd = ColorOrange
+	ColorFgExplosionStart = ColorYellow
+	ColorFgExplosionWallEnd = ColorMagenta
+	ColorFgExplosionWallStart = ColorViolet
+	ColorFgHPcritical = ColorRed
+	ColorFgHPok = ColorGreen
+	ColorFgHPwounded = ColorYellow
+	ColorFgMPcritical = ColorMagenta
+	ColorFgMPok = ColorBlue
+	ColorFgMPpartial = ColorViolet
+	ColorFgMagicPlace = ColorCyan
+	ColorFgMonster = ColorRed
+	ColorFgPlace = ColorMagenta
+	ColorFgPlayer = ColorBlue
+	ColorFgBananas = ColorYellow
+	ColorFgSleepingMonster = ColorViolet
+	ColorFgStatusBad = ColorRed
+	ColorFgStatusGood = ColorBlue
+	ColorFgStatusExpire = ColorViolet
+	ColorFgStatusOther = ColorYellow
+	ColorFgWanderingMonster = ColorOrange
 }
 
 func ApplyDarkLOS() {
-	ColorBgDark = Color16Background
-	ColorBgLOS = Color16BackgroundSecondary
-	ColorFgDark = Color16ForegroundSecondary
+	ColorBgDark = ColorBackground
+	ColorBgLOS = ColorBackgroundSecondary
+	ColorFgDark = ColorForegroundSecondary
 	if Only8Colors {
-		ColorFgLOS = Color16Green
+		ColorFgLOS = ColorGreen
 	} else {
-		ColorFgLOS = Color16ForegroundEmph
+		ColorFgLOS = ColorForegroundEmph
 	}
 }
 
 func ApplyLightLOS() {
-	ColorBgDark = Color16BackgroundSecondary
-	ColorBgLOS = Color16Background
-	ColorFgDark = Color16Foreground
+	ColorBgDark = ColorBackgroundSecondary
+	ColorBgLOS = ColorBackground
+	ColorFgDark = ColorForeground
 	if Only8Colors {
-		ColorFgLOS = Color16Green
+		ColorFgLOS = ColorGreen
 	} else {
-		ColorFgLOS = Color16ForegroundEmph
+		ColorFgLOS = ColorForegroundEmph
 	}
 }
 

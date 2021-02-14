@@ -67,11 +67,11 @@ func map16ColorTo8Color(c gruid.Color) gruid.Color {
 
 func map16ColorToLight(c gruid.Color) gruid.Color {
 	switch c {
-	case Color16BackgroundSecondary:
-		return Color16ForegroundEmph
-	case Color16ForegroundSecondary:
-		return Color16BackgroundSecondary
-	case Color16ForegroundEmph:
+	case ColorBackgroundSecondary:
+		return ColorForegroundEmph
+	case ColorForegroundSecondary:
+		return ColorBackgroundSecondary
+	case ColorForegroundEmph:
 		return 1 + 0
 	default:
 		return c
@@ -100,7 +100,7 @@ const (
 
 func map16ColorTo256(c gruid.Color, fg bool) gruid.Color {
 	switch c {
-	case Color16Background:
+	case ColorBackground:
 		if fg {
 			if GameConfig.DarkLOS {
 				return Color256Base0
@@ -112,31 +112,31 @@ func map16ColorTo256(c gruid.Color, fg bool) gruid.Color {
 			}
 			return Color256Base3
 		}
-	case Color16BackgroundSecondary:
+	case ColorBackgroundSecondary:
 		if GameConfig.DarkLOS {
 			return Color256Base02
 		}
 		return Color256Base2
-	case Color16ForegroundEmph:
+	case ColorForegroundEmph:
 		if GameConfig.DarkLOS {
 			return Color256Base01
 		}
 		return Color256Base1
-	case Color16Yellow:
+	case ColorYellow:
 		return Color256Yellow
-	case Color16Orange:
+	case ColorOrange:
 		return Color256Orange
-	case Color16Red:
+	case ColorRed:
 		return Color256Red
-	case Color16Magenta:
+	case ColorMagenta:
 		return Color256Magenta
-	case Color16Violet:
+	case ColorViolet:
 		return Color256Violet
-	case Color16Blue:
+	case ColorBlue:
 		return Color256Blue
-	case Color16Cyan:
+	case ColorCyan:
 		return Color256Cyan
-	case Color16Green:
+	case ColorGreen:
 		return Color256Green
 	default:
 		return c

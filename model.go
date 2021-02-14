@@ -173,8 +173,8 @@ func (md *model) initKeys() {
 }
 
 func (md *model) initWidgets() {
-	md.log = ui.NewLabel(ui.StyledText{}.WithStyle(gruid.Style{}).WithMarkup('t', gruid.Style{Fg: Color16Yellow}))
-	md.description = ui.NewLabel(ui.StyledText{}.WithStyle(gruid.Style{}).WithMarkup('t', gruid.Style{Fg: Color16Yellow}))
+	md.log = ui.NewLabel(ui.StyledText{}.WithStyle(gruid.Style{}).WithMarkup('t', gruid.Style{Fg: ColorYellow}))
+	md.description = ui.NewLabel(ui.StyledText{}.WithStyle(gruid.Style{}).WithMarkup('t', gruid.Style{Fg: ColorYellow}))
 	md.description.AdjustWidth = false
 	md.statusDesc = ui.NewLabel(ui.StyledText{}.WithStyle(gruid.Style{}))
 	md.pager = ui.NewPager(ui.PagerConfig{
@@ -189,7 +189,7 @@ func (md *model) initWidgets() {
 	})
 	md.pagerMarkup = ui.StyledText{}.WithMarkups(logStyles)
 	style := ui.MenuStyle{
-		Active: gruid.Style{}.WithFg(Color16Yellow),
+		Active: gruid.Style{}.WithFg(ColorYellow),
 	}
 	md.menu = ui.NewMenu(ui.MenuConfig{
 		Grid:  gruid.NewGrid(UIWidth/2, UIHeight-1),

@@ -159,7 +159,7 @@ func (md *model) drawPosInfo() {
 	}
 	fg := ColorFg
 	if info.Unreachable {
-		fg = Color16Orange
+		fg = ColorOrange
 	}
 	desc := ""
 	if info.Unknown {
@@ -172,7 +172,7 @@ func (md *model) drawPosInfo() {
 		if !md.mp.ex.scroll {
 			formatBox(t+" ", desc, fg)
 		}
-		formatBox("Player", "This is you.", Color16Blue)
+		formatBox("Player", "This is you.", ColorBlue)
 		return
 	}
 

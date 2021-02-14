@@ -1659,7 +1659,7 @@ func (m *monster) ThrowAcid(g *game) bool {
 	dmg := DmgNormal
 	noise := g.HitNoise(false) // no clang with acid projectiles
 	g.Printf("%s throws acid at you (%d dmg).", m.Kind.Definite(true), dmg)
-	g.md.MonsterProjectileAnimation(g.Ray(m.P), '*', Color16Green)
+	g.md.MonsterProjectileAnimation(g.Ray(m.P), '*', ColorGreen)
 	g.MakeNoise(noise, g.Player.P)
 	m.InflictDamage(g, dmg, dmg)
 	m.Corrode(g)
@@ -1676,7 +1676,7 @@ func (m *monster) NixeAttraction(g *game) bool {
 	g.PrintfStyled("%s lures you to her.", logMonsterHit, m.Kind.Definite(true))
 	g.StoryPrintf("Lured by %s", m.Kind)
 	ray := g.Ray(m.P)
-	g.md.MonsterProjectileAnimation(ray, '*', Color16Cyan)
+	g.md.MonsterProjectileAnimation(ray, '*', ColorCyan)
 	if len(ray) > 1 {
 		// should always be the case
 		g.md.TeleportAnimation(g.Player.P, ray[1], true)

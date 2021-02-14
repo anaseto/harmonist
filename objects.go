@@ -108,7 +108,7 @@ func (st stair) Style(g *game) (r rune, fg gruid.Color) {
 	case NormalStair:
 		fg = ColorFgPlace
 		if g.Depth == WinDepth {
-			fg = Color16Violet
+			fg = ColorViolet
 		}
 	case BlockedStair:
 		fg = ColorFgMagicPlace
@@ -196,7 +196,7 @@ func (stn stone) Style(g *game) (r rune, fg gruid.Color) {
 	case SealStone:
 		fg = ColorFgPlayer
 	case MappingStone, SensingStone:
-		fg = Color16Violet
+		fg = ColorViolet
 	case BarrelStone:
 		fg = ColorFgObject
 	default:
@@ -488,7 +488,7 @@ func (sc scroll) Style(g *game) (r rune, fg gruid.Color) {
 	r = '?'
 	fg = ColorFgMagicPlace
 	if sc == ScrollLore {
-		fg = Color16Violet
+		fg = ColorViolet
 	}
 	return r, fg
 }

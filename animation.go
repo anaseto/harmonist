@@ -137,11 +137,11 @@ func (md *model) TeleportAnimation(from, to gruid.Point, showto bool) {
 	md.startAnimSeq()
 	_, _, bgColorf := md.positionDrawing(from)
 	_, _, bgColort := md.positionDrawing(to)
-	md.anims.Draw(from, 'Φ', Color16Cyan, bgColorf)
+	md.anims.Draw(from, 'Φ', ColorCyan, bgColorf)
 	md.anims.Frame(AnimDurMediumLong)
 	if showto {
-		md.anims.Draw(from, 'Φ', Color16Blue, bgColorf)
-		md.anims.Draw(to, 'Φ', Color16Cyan, bgColort)
+		md.anims.Draw(from, 'Φ', ColorBlue, bgColorf)
+		md.anims.Draw(to, 'Φ', ColorCyan, bgColort)
 		md.anims.Frame(AnimDurMedium)
 	}
 }
@@ -458,9 +458,9 @@ func (md *model) PlayerGoodEffectAnimation() {
 	md.startAnimSeq()
 	md.anims.Frame(AnimDurShort)
 	r, _, bg := md.positionDrawing(g.Player.P)
-	md.anims.Draw(g.Player.P, r, Color16Green, bg)
+	md.anims.Draw(g.Player.P, r, ColorGreen, bg)
 	md.anims.Frame(AnimDurShortMedium)
-	md.anims.Draw(g.Player.P, r, Color16Yellow, bg)
+	md.anims.Draw(g.Player.P, r, ColorYellow, bg)
 	md.anims.Frame(AnimDurShortMedium)
 	//md.anims.Draw(g.Player.Pos, r, fg, bg)
 }
@@ -472,7 +472,7 @@ func (md *model) StatusEndAnimation() {
 	}
 	md.startAnimSeq()
 	r, _, bg := md.positionDrawing(g.Player.P)
-	md.anims.Draw(g.Player.P, r, Color16Violet, bg)
+	md.anims.Draw(g.Player.P, r, ColorViolet, bg)
 	md.anims.Frame(AnimDurShortMedium)
 }
 
@@ -482,7 +482,7 @@ func (md *model) FoundFakeStairsAnimation() {
 		return
 	}
 	r, _, bg := md.positionDrawing(g.Player.P)
-	md.anims.Draw(g.Player.P, r, Color16Magenta, bg)
+	md.anims.Draw(g.Player.P, r, ColorMagenta, bg)
 	md.anims.Frame(AnimDurMediumLong)
 }
 
