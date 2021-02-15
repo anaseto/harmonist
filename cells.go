@@ -201,7 +201,7 @@ func (c cell) IsWall() bool {
 
 func (c cell) Flammable() bool {
 	switch terrain(c) {
-	case FoliageCell, DoorCell, BarrelCell, TableCell, TreeCell, WindowCell:
+	case FoliageCell, DoorCell, BarrelCell, TableCell, TreeCell:
 		return true
 	default:
 		return false
