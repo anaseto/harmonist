@@ -47,7 +47,6 @@ func main() {
 	} else if *opt16colors {
 		Xterm256Color = false
 	}
-	LinkColors()
 	if *optReplay != "" {
 		RunReplay(*optReplay)
 	} else {

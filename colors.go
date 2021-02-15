@@ -61,7 +61,7 @@ var (
 	ColorFgWanderingMonster gruid.Color
 )
 
-func LinkColors() {
+func init() {
 	ColorBg = ColorBackground
 	ColorBgDark = ColorBackground
 	ColorBgLOS = ColorBackgroundSecondary

@@ -34,7 +34,6 @@ func clearCache() {
 
 func main() {
 	mainMenu := newMainMenu()
-	LinkColors()
 	es1, es2 := initConfig()
 	if es1 != "" {
 		mainMenu.err = errors.New(es1)
