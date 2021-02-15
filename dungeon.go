@@ -1544,7 +1544,9 @@ func (dg *dgen) BandInfoPatrolSpecial(g *game, band monsterBand) bandInfo {
 	for _, r := range dg.rooms {
 		count++
 		if count > 1 {
-			panic("patrol special")
+			log.Print("unavailable special second patrol position")
+			p = dg.InsideCell(g)
+			break
 		}
 		target = r.RandomPlace(PlacePatrolSpecial)
 		if target != InvalidPos {
