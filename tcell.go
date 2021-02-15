@@ -60,6 +60,9 @@ func (sty styler) GetStyle(cst gruid.Style) tc.Style {
 			st = st.Foreground(tc.ColorValid + fg - 1)
 		}
 	}
+	if cst.Attrs&AttrReverse != 0 {
+		st = st.Reverse(true)
+	}
 	return st
 }
 
@@ -123,6 +126,11 @@ func map16ColorTo256(c gruid.Color, fg bool) gruid.Color {
 		}
 		return Color256Base2
 	case ColorForegroundEmph:
+		if GameConfig.DarkLOS {
+			return Color256Base1
+		}
+		return Color256Base01
+	case ColorForegroundSecondary:
 		if GameConfig.DarkLOS {
 			return Color256Base01
 		}
