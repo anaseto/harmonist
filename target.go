@@ -182,7 +182,7 @@ func (md *model) drawPosInfo() {
 		return
 	}
 	title := fmt.Sprintf("%s (%s %s)", mons.Kind, mons.State, mons.Dir.String())
-	fg = mons.color(g)
+	mfg := mons.color(g)
 	var mdesc []string
 
 	statuses := mons.statusesText()
@@ -193,7 +193,7 @@ func (md *model) drawPosInfo() {
 	if !md.mp.ex.scroll {
 		formatBox(t, desc, fg)
 	}
-	formatBox(title, strings.Join(mdesc, "\n"), fg)
+	formatBox(title, strings.Join(mdesc, "\n"), mfg)
 }
 
 func (m *monster) color(gs *game) gruid.Color {
