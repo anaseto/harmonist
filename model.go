@@ -57,7 +57,7 @@ const (
 	modeKeys
 	modeKeysChange
 	modeGameMenu
-	modeEvokation
+	modeEvocation
 	modeEquip
 	modeWizard
 )
@@ -759,7 +759,7 @@ func (md *model) updateMenu(msg gruid.Msg) gruid.Effect {
 			items := []item{md.g.Player.Inventory.Body, md.g.Player.Inventory.Neck, md.g.Player.Inventory.Misc}
 			it := items[md.menu.Active()]
 			md.description.Content = ui.Text(it.Desc(md.g)).Format(UIWidth/2 - 1 - 2)
-		case modeEvokation:
+		case modeEvocation:
 			items := md.g.Player.Magaras
 			it := items[md.menu.Active()]
 			md.description.Content = ui.Text(it.Desc(md.g)).Format(UIWidth/2 - 1 - 2)

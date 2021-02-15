@@ -55,7 +55,7 @@ func (md *model) Draw() gruid.Grid {
 		md.gd.Slice(gruid.NewRange(10, 2, UIWidth, UIHeight-1)).Copy(md.smallPager.Draw())
 	case modeMenu:
 		switch md.menuMode {
-		case modeInventory, modeEquip, modeEvokation:
+		case modeInventory, modeEquip, modeEvocation:
 			md.gd.Copy(md.menu.Draw())
 			md.description.Box = &ui.Box{Title: ui.Text("Description")}
 			md.description.Draw(md.gd.Slice(md.gd.Range().Columns(UIWidth/2, UIWidth)))

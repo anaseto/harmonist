@@ -767,7 +767,7 @@ func (md *model) evokeMagaraMenu() {
 	md.menu.SetBox(&ui.Box{Title: ui.Text("Evoke Magara").WithStyle(gruid.Style{}.WithFg(ColorYellow))})
 	md.menu.SetEntries(entries)
 	md.mode = modeMenu
-	md.menuMode = modeEvokation
+	md.menuMode = modeEvocation
 	md.description.Content = ui.Text(items[md.menu.Active()].Desc(md.g)).Format(UIWidth/2 - 1 - 2)
 }
 
