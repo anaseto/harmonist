@@ -521,6 +521,7 @@ func (md *model) MagicMappingAnimation() {
 	if DisableAnimations {
 		return
 	}
+	md.startAnimSeq()
 	md.anims.Frame(AnimDurShort)
 }
 

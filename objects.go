@@ -373,9 +373,6 @@ func (g *game) MagicMapping(maxdist int) error {
 		dists = append(dists, dist)
 	}
 	sort.Ints(dists)
-	if !DisableAnimations {
-		g.md.startAnimSeq()
-	}
 	for _, d := range dists {
 		if maxdist > 0 && d > maxdist {
 			continue
