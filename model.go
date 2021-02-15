@@ -609,7 +609,14 @@ func (md *model) updateStatusMouse(msg gruid.MsgMouse) gruid.Effect {
 			if i > len(sts)-1 {
 				break
 			}
-			md.statusDesc.Box = &ui.Box{Title: ui.Text(sts[i].String())}
+			var title ui.StyledText
+			st := sts[i]
+			if !st.Flag() {
+				title = ui.Textf("%s (for %d turns)", sts[i].String(), md.g.Player.Statuses[sts[i]]/DurationStatusStep)
+			} else {
+				title = ui.Text(sts[i].String())
+			}
+			md.statusDesc.Box = &ui.Box{Title: title}
 			md.statusDesc.SetText(sts[i].Desc())
 			md.statusFocus = true
 		}
