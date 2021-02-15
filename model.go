@@ -521,8 +521,13 @@ const (
 )
 
 func (md *model) updateStatusMouse(msg gruid.MsgMouse) gruid.Effect {
+	msg.P.Y = 0
+	if !msg.P.In(md.status.Bounds()) {
+		md.statusFocus = false
+		return nil
+	}
 	md.CancelExamine()
-	md.status.Update(md.gd.Range().Line(UIHeight - 1).RelMsg(msg))
+	md.status.Update(msg)
 	update := !md.statusFocus
 	switch md.status.Action() {
 	case ui.MenuMove:
