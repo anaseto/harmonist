@@ -716,9 +716,9 @@ func (g *game) MonsterAt(p gruid.Point) *monster {
 		return nil
 	}
 	m := g.Monsters[i-1]
-	if m.P != p {
-		log.Printf("monster position mismatch: %v vs %v", m.P, p)
-	}
+	//if m.P != p {
+	//log.Printf("monster position mismatch: %v vs %v", m.P, p)
+	//}
 	return m
 }
 
