@@ -496,8 +496,16 @@ func (md *model) updateMouse(msg gruid.MsgMouse) gruid.Effect {
 		if !valid(p) {
 			return nil
 		}
-		again, eff, err := md.normalModeAction(ActionTarget)
+		var again bool
+		var eff gruid.Effect
+		var err error
+		if Distance(p, md.g.Player.P) == 1 {
+			again, err = md.g.PlayerBump(p)
+		} else {
+			again, eff, err = md.normalModeAction(ActionTarget)
+		}
 		if err != nil {
+			again = true
 			md.g.Print(err.Error())
 		}
 		if again {
