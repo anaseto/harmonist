@@ -10,6 +10,11 @@ import (
 	tc "github.com/gdamore/tcell/v2"
 )
 
+const Tiles = false
+
+func (md *model) ApplyToggleTiles() {
+}
+
 var driver gruid.Driver
 var color8 bool
 
