@@ -148,7 +148,7 @@ func (g *game) WriteDump() error {
 	}
 	err = ioutil.WriteFile(filepath.Join(dataDir, "dump"), []byte(g.Dump()), 0644)
 	if err != nil {
-		return fmt.Errorf("writing state statistics: %v", err)
+		return fmt.Errorf("writing dump statistics: %v", err)
 	}
 	return nil
 }

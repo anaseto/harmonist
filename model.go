@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"runtime"
 	"strings"
 
 	"github.com/anaseto/gruid"
@@ -229,7 +230,9 @@ func initConfig() (string, string) {
 }
 
 func (md *model) init() gruid.Effect {
-	md.mode = modeWelcome
+	if runtime.GOOS != "js" {
+		md.mode = modeWelcome
+	}
 	LinkColors()
 	md.initKeys()
 	md.initWidgets()
@@ -238,7 +241,6 @@ func (md *model) init() gruid.Effect {
 
 	cfgerrstr, cfgreseterr := initConfig()
 	md.applyConfig()
-	//ui.DrawWelcome()
 	load, err := g.Load()
 	md.g.md = md // TODO: avoid this? (though it's handy)
 	if !load {

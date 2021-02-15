@@ -29,11 +29,6 @@ func main() {
 	}
 	flag.Parse()
 
-	if !Tiles && !Testing {
-		// XXX: maybe log into a file?
-		log.SetOutput(ioutil.Discard)
-	}
-
 	if *optVersion {
 		fmt.Println(Version)
 		os.Exit(0)
@@ -48,7 +43,7 @@ func main() {
 		Only8Colors = true
 	}
 	if *opt256colors {
-		Xterm256Color = true // TODO: map the colors
+		Xterm256Color = true
 	} else if *opt16colors {
 		Xterm256Color = false
 	}
@@ -91,6 +86,10 @@ func RunGame() {
 		log.Print(err)
 	}
 
+	if !Tiles && !Testing {
+		// XXX: maybe log into a file?
+		log.SetOutput(ioutil.Discard)
+	}
 	app := gruid.NewApp(gruid.AppConfig{
 		Driver:      driver,
 		Model:       m,
@@ -98,6 +97,9 @@ func RunGame() {
 	})
 	if err := app.Start(context.Background()); err != nil {
 		log.Fatal(err)
+	}
+	if !Tiles && !Testing {
+		log.SetOutput(os.Stderr)
 	}
 }
 
