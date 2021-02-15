@@ -99,11 +99,15 @@ func newMainMenu() *mainMenu {
 	return md
 }
 
+func menuRange() gruid.Range {
+	return gruid.NewRange(20, 18, UIWidth, UIHeight)
+}
+
 func (md *mainMenu) Update(msg gruid.Msg) gruid.Effect {
 	if md.action != MainMenuDefault {
 		return nil
 	}
-	md.menu.Update(msg)
+	md.menu.Update(menuRange().RelMsg(msg))
 	switch md.menu.Action() {
 	case ui.MenuMove:
 	case ui.MenuInvoke:
@@ -122,7 +126,7 @@ func (md *mainMenu) Update(msg gruid.Msg) gruid.Effect {
 func (md *mainMenu) Draw() gruid.Grid {
 	md.grid.Fill(gruid.Cell{Rune: ' '})
 	drawWelcome(md.grid)
-	md.grid.Slice(gruid.NewRange(20, 18, UIHeight, UIWidth)).Copy(md.menu.Draw())
+	md.grid.Slice(menuRange()).Copy(md.menu.Draw())
 	if md.err != nil {
 		md.errs.SetText(md.err.Error())
 		md.errs.Draw(md.grid.Slice(gruid.NewRange(10, 4, UIWidth, 6)))
