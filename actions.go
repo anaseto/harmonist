@@ -166,9 +166,9 @@ func (k action) String() (text string) {
 	case ActionHelp:
 		text = "Help (keys and mouse)"
 	case ActionMenuCommandHelp:
-		text = "Help (general commands)"
+		text = "Help (keyboard normal mode)"
 	case ActionMenuTargetingHelp:
-		text = "Help (targeting commands)"
+		text = "Help (keyboard examine mode)"
 	case ActionSettings:
 		text = "Settings and key bindings"
 	case ActionWizard:
@@ -844,7 +844,8 @@ func (md *model) KeysHelp() {
 		"Interact (Equip/Descend/Rest...)", "e",
 		"Evoke/Zap magara", "v or z",
 		"Inventory", "i",
-		"Examine", "x or mouse hover",
+		"Examine", "x",
+		"Close/Cancel", "x or esc or space",
 		"Menu", "M",
 		"Advanced Commands", "",
 		"Save and Quit", "S",
@@ -858,14 +859,13 @@ func (md *model) KeysHelp() {
 }
 
 func (md *model) ExamineHelp() {
-	md.updateKeysDescription("Examine/Travel Commands", []string{
-		"Move cursor", "arrows or wasd or hjkl or mouse hover",
-		"Go to/select target", "“.” or enter or mouse left",
-		"View target description", "v or mouse right",
+	md.updateKeysDescription("Examine Commands", []string{
+		"Move cursor", "arrows or wasd or hjkl",
+		"Go to/select target", "“.” or enter",
 		"Cycle through monsters", "+",
 		"Cycle through stairs", ">",
 		"Cycle through objects", "o",
-		"Toggle exclude area from auto-travel", "e or mouse middle",
+		"Toggle exclude area from auto-travel", "e",
 	})
 }
 

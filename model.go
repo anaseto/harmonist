@@ -94,81 +94,92 @@ type mapUI struct {
 
 func (md *model) initKeys() {
 	md.keysNormal = map[gruid.Key]action{
-		"h":             ActionW,
-		"j":             ActionS,
-		"k":             ActionN,
-		"l":             ActionE,
-		"a":             ActionW,
-		"s":             ActionS,
-		"w":             ActionN,
-		"d":             ActionE,
-		"4":             ActionW,
-		"2":             ActionS,
-		"8":             ActionN,
-		"6":             ActionE,
-		"H":             ActionRunW,
-		"J":             ActionRunS,
-		"K":             ActionRunN,
-		"L":             ActionRunE,
-		".":             ActionWaitTurn,
-		"5":             ActionWaitTurn,
-		"G":             ActionGoToStairs,
-		"o":             ActionExplore,
-		"x":             ActionExamine,
-		"v":             ActionEvoke,
-		"z":             ActionEvoke,
-		"e":             ActionInteract,
-		"E":             ActionInteract,
-		"i":             ActionInventory,
-		"I":             ActionInventory,
-		"m":             ActionLogs,
-		"M":             ActionMenu,
-		"#":             ActionDump,
-		"?":             ActionHelp,
-		"S":             ActionSave,
-		"Q":             ActionQuit,
-		"W":             ActionWizard,
-		"@":             ActionWizardMenu,
-		">":             ActionWizardDescend,
-		"=":             ActionSettings,
-		gruid.KeyEscape: ActionEscape,
+		gruid.KeyArrowLeft:  ActionW,
+		gruid.KeyArrowDown:  ActionS,
+		gruid.KeyArrowUp:    ActionN,
+		gruid.KeyArrowRight: ActionE,
+		"h":                 ActionW,
+		"j":                 ActionS,
+		"k":                 ActionN,
+		"l":                 ActionE,
+		"a":                 ActionW,
+		"s":                 ActionS,
+		"w":                 ActionN,
+		"d":                 ActionE,
+		"4":                 ActionW,
+		"2":                 ActionS,
+		"8":                 ActionN,
+		"6":                 ActionE,
+		"H":                 ActionRunW,
+		"J":                 ActionRunS,
+		"K":                 ActionRunN,
+		"L":                 ActionRunE,
+		".":                 ActionWaitTurn,
+		gruid.KeyEnter:      ActionWaitTurn,
+		"5":                 ActionWaitTurn,
+		"G":                 ActionGoToStairs,
+		"o":                 ActionExplore,
+		"x":                 ActionExamine,
+		"v":                 ActionEvoke,
+		"V":                 ActionEvoke,
+		"z":                 ActionEvoke,
+		"e":                 ActionInteract,
+		"E":                 ActionInteract,
+		"i":                 ActionInventory,
+		"I":                 ActionInventory,
+		"m":                 ActionLogs,
+		"M":                 ActionMenu,
+		"#":                 ActionDump,
+		"?":                 ActionHelp,
+		"S":                 ActionSave,
+		"Q":                 ActionQuit,
+		"W":                 ActionWizard,
+		"@":                 ActionWizardMenu,
+		">":                 ActionWizardDescend,
+		"=":                 ActionSettings,
+		gruid.KeyEscape:     ActionEscape,
 	}
 	md.keysTarget = map[gruid.Key]action{
-		"h":             ActionW,
-		"j":             ActionS,
-		"k":             ActionN,
-		"l":             ActionE,
-		"a":             ActionW,
-		"s":             ActionS,
-		"w":             ActionN,
-		"d":             ActionE,
-		"4":             ActionW,
-		"2":             ActionS,
-		"8":             ActionN,
-		"6":             ActionE,
-		"H":             ActionRunW,
-		"J":             ActionRunS,
-		"K":             ActionRunN,
-		"L":             ActionRunE,
-		">":             ActionNextStairs,
-		"-":             ActionPreviousMonster,
-		"+":             ActionNextMonster,
-		"o":             ActionNextObject,
-		"]":             ActionNextObject,
-		")":             ActionNextObject,
-		"(":             ActionNextObject,
-		"[":             ActionNextObject,
-		"_":             ActionNextObject,
-		"=":             ActionNextObject,
-		".":             ActionTarget,
-		"t":             ActionTarget,
-		"g":             ActionTarget,
-		"e":             ActionExclude,
-		gruid.KeySpace:  ActionEscape,
-		gruid.KeyEscape: ActionEscape,
-		"x":             ActionEscape,
-		"X":             ActionEscape,
-		"?":             ActionHelp,
+		gruid.KeyArrowLeft:  ActionW,
+		gruid.KeyArrowDown:  ActionS,
+		gruid.KeyArrowUp:    ActionN,
+		gruid.KeyArrowRight: ActionE,
+		"h":                 ActionW,
+		"j":                 ActionS,
+		"k":                 ActionN,
+		"l":                 ActionE,
+		"a":                 ActionW,
+		"s":                 ActionS,
+		"w":                 ActionN,
+		"d":                 ActionE,
+		"4":                 ActionW,
+		"2":                 ActionS,
+		"8":                 ActionN,
+		"6":                 ActionE,
+		"H":                 ActionRunW,
+		"J":                 ActionRunS,
+		"K":                 ActionRunN,
+		"L":                 ActionRunE,
+		">":                 ActionNextStairs,
+		"-":                 ActionPreviousMonster,
+		"+":                 ActionNextMonster,
+		"o":                 ActionNextObject,
+		"]":                 ActionNextObject,
+		")":                 ActionNextObject,
+		"(":                 ActionNextObject,
+		"[":                 ActionNextObject,
+		"_":                 ActionNextObject,
+		"=":                 ActionNextObject,
+		".":                 ActionTarget,
+		gruid.KeyEnter:      ActionTarget,
+		"t":                 ActionTarget,
+		"g":                 ActionTarget,
+		"e":                 ActionExclude,
+		gruid.KeySpace:      ActionEscape,
+		gruid.KeyEscape:     ActionEscape,
+		"x":                 ActionEscape,
+		"X":                 ActionEscape,
+		"?":                 ActionHelp,
 	}
 	CustomKeys = false
 }
@@ -461,7 +472,7 @@ func (md *model) updateKeyDown(msg gruid.MsgKeyDown) gruid.Effect {
 			return nil
 		}
 	}
-	again, eff, err := md.normalModeKeyDown(msg.Key)
+	again, eff, err := md.normalModeKeyDown(msg.Key, msg.Mod&gruid.ModShift != 0)
 	if err != nil {
 		md.g.Print(err.Error())
 	}
@@ -526,6 +537,7 @@ const (
 	statusBananas
 	statusMenu
 	statusInventory
+	statusEvoke
 	statusInteract
 )
 
@@ -549,6 +561,8 @@ func (md *model) updateStatusMouse(msg gruid.MsgMouse) gruid.Effect {
 			action = ActionMenu
 		case statusInventory:
 			action = ActionInventory
+		case statusEvoke:
+			action = ActionEvoke
 		case statusInteract:
 			action = ActionInteract
 			md.statusFocus = false
@@ -588,19 +602,23 @@ func (md *model) updateStatusMouse(msg gruid.MsgMouse) gruid.Effect {
 			md.statusDesc.SetText("Need to eat one before sleeping in barrels.")
 			md.statusFocus = true
 		case i == statusMenu:
-			md.statusDesc.Box = &ui.Box{Title: ui.Text("Menu")}
+			md.statusDesc.Box = &ui.Box{Title: ui.Text("Menu (M)")}
 			md.statusDesc.SetText("Click to open menu.")
 			md.statusFocus = true
 		case i == statusInventory:
-			md.statusDesc.Box = &ui.Box{Title: ui.Text("Inventory")}
+			md.statusDesc.Box = &ui.Box{Title: ui.Text("Inventory (i)")}
 			md.statusDesc.SetText("Click to open inventory.")
+			md.statusFocus = true
+		case i == statusEvoke:
+			md.statusDesc.Box = &ui.Box{Title: ui.Text("Evoke magara (v)")}
+			md.statusDesc.SetText("Click to open magara evocation menu.")
 			md.statusFocus = true
 		case i == statusInteract:
 			s, ok := md.interact()
 			if !ok {
 				break
 			}
-			md.statusDesc.Box = &ui.Box{Title: ui.Text("Interact")}
+			md.statusDesc.Box = &ui.Box{Title: ui.Text("Interact (e)")}
 			md.statusDesc.SetText(fmt.Sprintf("Click to %v.", s))
 			md.statusFocus = true
 		case i >= statusIndex:
@@ -806,10 +824,22 @@ func (md *model) updateMenu(msg gruid.Msg) gruid.Effect {
 	return nil
 }
 
-func (md *model) normalModeKeyDown(key gruid.Key) (again bool, eff gruid.Effect, err error) {
+func (md *model) normalModeKeyDown(key gruid.Key, shift bool) (again bool, eff gruid.Effect, err error) {
 	action := md.keysNormal[key]
 	if md.mp.kbTargeting {
 		action = md.keysTarget[key]
+	}
+	if shift && !key.IsRune() {
+		switch action {
+		case ActionW:
+			action = ActionRunW
+		case ActionS:
+			action = ActionRunS
+		case ActionN:
+			action = ActionRunN
+		case ActionE:
+			action = ActionRunE
+		}
 	}
 	again, eff, err = md.normalModeAction(action)
 	if _, ok := err.(actionError); ok {
