@@ -73,6 +73,7 @@ type game struct {
 	PlayerAgain       bool
 	mfov              *rl.FOV
 	PR                *paths.PathRange
+	PRauto            *paths.PathRange
 	autosources       []gruid.Point // cache
 }
 
@@ -438,6 +439,7 @@ func (g *game) InitFirstLevel() {
 	}
 	g.Params.CrazyImp = 2 + RandInt(MaxDepth-2)
 	g.PR = paths.NewPathRange(gruid.NewRange(0, 0, DungeonWidth, DungeonHeight))
+	g.PRauto = paths.NewPathRange(gruid.NewRange(0, 0, DungeonWidth, DungeonHeight))
 }
 
 func (g *game) InitLevelStructures() {

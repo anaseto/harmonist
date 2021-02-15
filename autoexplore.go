@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+
 	"github.com/anaseto/gruid"
 )
 
@@ -62,7 +63,8 @@ func (g *game) AutoexploreSources() []gruid.Point {
 		if g.ExclusionsMap[p] {
 			continue
 		}
-		if !explored(c) {
+		if !explored(c) || g.Player.Bananas < MaxBananas && g.Objects.Bananas[p] {
+			// TODO: add more sources (potions, magaras) in some cases.
 			g.autosources = append(g.autosources, p)
 		}
 
@@ -74,13 +76,13 @@ const unreachable = 9999
 
 func (g *game) BuildAutoexploreMap(sources []gruid.Point) {
 	ap := &autoexplorePath{state: g}
-	g.PR.BreadthFirstMap(ap, sources, unreachable)
+	g.PRauto.BreadthFirstMap(ap, sources, unreachable)
 	g.AutoexploreMapRebuild = false
 }
 
 func (g *game) NextAuto() (next *gruid.Point, finished bool) {
 	ap := &autoexplorePath{state: g}
-	if g.PR.BreadthFirstMapAt(g.Player.P) > unreachable {
+	if g.PRauto.BreadthFirstMapAt(g.Player.P) > unreachable {
 		return nil, false
 	}
 	neighbors := ap.Neighbors(g.Player.P)
@@ -88,15 +90,15 @@ func (g *game) NextAuto() (next *gruid.Point, finished bool) {
 		return nil, false
 	}
 	n := neighbors[0]
-	ncost := g.PR.BreadthFirstMapAt(n)
+	ncost := g.PRauto.BreadthFirstMapAt(n)
 	for _, p := range neighbors[1:] {
-		cost := g.PR.BreadthFirstMapAt(p)
+		cost := g.PRauto.BreadthFirstMapAt(p)
 		if cost < ncost {
 			n = p
 			ncost = cost
 		}
 	}
-	if ncost >= g.PR.BreadthFirstMapAt(g.Player.P) {
+	if ncost >= g.PRauto.BreadthFirstMapAt(g.Player.P) {
 		finished = true
 	}
 	next = &n

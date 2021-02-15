@@ -14,7 +14,7 @@ import (
 	"github.com/anaseto/gruid"
 )
 
-const Tiles = false
+const Tiles = true
 
 func init() {
 	settingsActions = append(settingsActions, ActionToggleTiles)
