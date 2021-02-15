@@ -233,7 +233,6 @@ func (md *model) init() gruid.Effect {
 	if runtime.GOOS != "js" {
 		md.mode = modeWelcome
 	}
-	LinkColors()
 	md.initKeys()
 	md.initWidgets()
 

@@ -34,6 +34,7 @@ func clearCache() {
 
 func main() {
 	mainMenu := newMainMenu()
+	LinkColors()
 	es1, es2 := initConfig()
 	if es1 != "" {
 		mainMenu.err = errors.New(es1)
@@ -124,7 +125,7 @@ func (md *mainMenu) Draw() gruid.Grid {
 	md.grid.Slice(gruid.NewRange(20, 18, UIHeight, UIWidth)).Copy(md.menu.Draw())
 	if md.err != nil {
 		md.errs.SetText(md.err.Error())
-		md.errs.Draw(md.grid.Slice(gruid.NewRange(10, 4, 6, UIWidth)))
+		md.errs.Draw(md.grid.Slice(gruid.NewRange(10, 4, UIWidth, 6)))
 	}
 	return md.grid
 }
