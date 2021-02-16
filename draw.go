@@ -10,7 +10,10 @@ import (
 )
 
 func (md *model) Draw() gruid.Grid {
-	if md.anims.draw && !md.anims.Done() {
+	if !md.anims.Done() {
+		if !md.anims.draw {
+			return md.gd.Slice(gruid.Range{})
+		}
 		gd := md.gd.Slice(md.gd.Range().Shift(0, 2, 0, -1))
 		for _, fc := range md.anims.frames[0].Cells {
 			gd.Set(fc.P, fc.Cell)
