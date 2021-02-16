@@ -581,6 +581,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		}
 		md.zoomlevel++
 		md.updateZoom()
+		eff = gruid.Cmd(func() gruid.Msg { return gruid.MsgScreen{} })
 	case ActionZoomDecrease:
 		again = true
 		if md.zoomlevel <= -1 {
@@ -588,6 +589,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		}
 		md.zoomlevel--
 		md.updateZoom()
+		eff = gruid.Cmd(func() gruid.Msg { return gruid.MsgScreen{} })
 	default:
 		err = actionErrorUnknown
 	}
