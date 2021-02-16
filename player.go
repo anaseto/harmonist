@@ -410,6 +410,9 @@ func (g *game) Confusion() {
 	}
 }
 
+// PlacePlayerAt moves the player to a given position, swapping positions with
+// a monster if necessary, and handles LOS and monsters awareness update,
+// ground collecting, and footsteps noise.
 func (g *game) PlacePlayerAt(p gruid.Point) {
 	if p == g.Player.P {
 		return

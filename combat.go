@@ -48,7 +48,7 @@ func (g *game) MakeMonstersAware() {
 		if m.Dead {
 			continue
 		}
-		if g.Player.LOS[m.P] {
+		if g.Player.Sees(m.P) {
 			m.MakeAware(g)
 			if m.State != Resting {
 				m.GatherBand(g)

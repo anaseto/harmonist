@@ -584,12 +584,9 @@ func (g *game) EvokeSwapping() error {
 }
 
 func (g *game) SwapWithMonster(mons *monster) {
-	ompos := mons.P
 	g.Printf("You swap positions with the %s.", mons.Kind)
 	g.md.SwappingAnimation(mons.P, g.Player.P)
-	mons.MoveTo(g, g.Player.P)
-	g.PlacePlayerAt(ompos)
-	mons.MakeAware(g)
+	g.PlacePlayerAt(mons.P)
 	if terrain(g.Dungeon.Cell(g.Player.P)) == ChasmCell {
 		g.PushEventFirst(&playerEvent{Action: AbyssFall}, g.Turn)
 	}
