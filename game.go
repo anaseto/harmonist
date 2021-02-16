@@ -554,6 +554,8 @@ func (g *game) CleanEvents() {
 	for !g.Events.Empty() {
 		ev, r := g.Events.PopR()
 		if r == turn {
+			e := ev.(event)
+			e.Handle(g)
 			continue
 		}
 		g.Events.PushFirst(ev, r)
