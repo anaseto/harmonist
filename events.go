@@ -153,10 +153,13 @@ func (cev *posEvent) Handle(g *game) {
 		g.ComputeLOS()
 	case ObstructionEnd:
 		t := g.MagicalBarriers[cev.P]
-		if !g.Player.Sees(cev.P) && terrain(g.Dungeon.Cell(cev.P)) == BarrierCell {
-			// XXX does not handle all cases
-			g.UpdateKnowledge(cev.P, BarrierCell)
-		} else {
+		if terrain(g.Dungeon.Cell(cev.P)) == BarrierCell {
+			_, ok := g.TerrainKnowledge[cev.P]
+			if !ok {
+				g.UpdateKnowledge(cev.P, BarrierCell)
+			}
+		}
+		if g.Player.Sees(cev.P) {
 			delete(g.MagicalBarriers, cev.P)
 			delete(g.TerrainKnowledge, cev.P)
 		}
