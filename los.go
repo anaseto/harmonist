@@ -284,6 +284,14 @@ func visionRange(p gruid.Point, radius int) gruid.Range {
 	return drg.Intersect(gruid.Range{Min: p.Sub(delta), Max: p.Add(delta).Shift(1, 1)})
 }
 
+func (g *game) mfovSetCenter(p gruid.Point) {
+	if g.mfov == nil {
+		g.mfov = rl.NewFOV(visionRange(p, DefaultMonsterLOSRange))
+	} else {
+		g.mfov.SetRange(visionRange(p, DefaultMonsterLOSRange))
+	}
+}
+
 func (m *monster) ComputeLOS(g *game) {
 	if m.Kind.Peaceful() {
 		return
@@ -291,16 +299,11 @@ func (m *monster) ComputeLOS(g *game) {
 	for k := range m.LOS {
 		delete(m.LOS, k)
 	}
-	losRange := DefaultMonsterLOSRange
-	if g.mfov == nil {
-		g.mfov = rl.NewFOV(visionRange(m.P, losRange))
-	} else {
-		g.mfov.SetRange(visionRange(m.P, losRange))
-	}
+	g.mfovSetCenter(m.P)
 	lt := &lighter{rs: MonsterRay, g: g}
 	lnodes := g.mfov.VisionMap(lt, m.P)
 	g.mfov.SSCVisionMap(
-		m.P, losRange,
+		m.P, DefaultMonsterLOSRange,
 		g.blocksSSCLOS,
 		false,
 	)
@@ -312,7 +315,7 @@ func (m *monster) ComputeLOS(g *game) {
 			m.LOS[n.P] = true
 			continue
 		}
-		if n.Cost <= losRange && terrain(g.Dungeon.Cell(n.P)) != BarrelCell {
+		if n.Cost <= DefaultMonsterLOSRange && terrain(g.Dungeon.Cell(n.P)) != BarrelCell {
 			pnode, ok := g.mfov.From(lt, n.P)
 			if !ok || !g.Dungeon.Cell(pnode.P).Hides() {
 				m.LOS[n.P] = true
@@ -419,26 +422,19 @@ func (g *game) SeePosition(p gruid.Point) {
 	}
 }
 
+func (g *game) SSCExclusionPassable(p gruid.Point) bool {
+	c := g.Dungeon.Cell(p)
+	return terrain(c) != WallCell || !explored(c)
+}
+
 func (g *game) ComputeExclusion(p gruid.Point, toggle bool) {
-	exclusionRange := g.LosRange()
-	g.ExclusionsMap[p] = toggle
-	for d := 1; d <= exclusionRange; d++ {
-		for x := -d + p.X; x <= d+p.X; x++ {
-			for _, q := range []gruid.Point{{x, p.Y + d}, {x, p.Y - d}} {
-				if !valid(q) {
-					continue
-				}
-				g.ExclusionsMap[q] = toggle
-			}
-		}
-		for y := -d + 1 + p.Y; y <= d-1+p.Y; y++ {
-			for _, q := range []gruid.Point{{p.X + d, y}, {p.X - d, y}} {
-				if !valid(q) {
-					continue
-				}
-				g.ExclusionsMap[q] = toggle
-			}
-		}
+	g.mfovSetCenter(p)
+	for _, q := range g.mfov.SSCVisionMap(
+		p, DefaultMonsterLOSRange,
+		g.blocksSSCLOS,
+		false,
+	) {
+		g.ExclusionsMap[q] = toggle
 	}
 }
 
