@@ -620,7 +620,13 @@ func (m *monster) MoveTo(g *game, p gruid.Point) {
 	if g.Player.Sees(p) {
 		m.UpdateKnowledge(g, p)
 	} else if g.Player.Sees(m.P) {
-		delete(g.LastMonsterKnownAt, m.P)
+		if Distance(m.P, p) == 1 {
+			// You know the direction, so you know where the
+			// monster should be.
+			m.UpdateKnowledge(g, p)
+		} else {
+			delete(g.LastMonsterKnownAt, m.P)
+		}
 		m.LastKnownPos = InvalidPos
 	}
 	if !g.Player.Sees(m.P) && g.Player.Sees(p) {
