@@ -424,7 +424,13 @@ func (md *model) excludeZone(p gruid.Point) {
 	if !explored(g.Dungeon.Cell(p)) {
 		g.Print("You cannot choose an unexplored cell for exclusion.")
 	} else {
-		toggle := !g.ExclusionsMap[p]
-		g.ComputeExclusion(p, toggle)
+		g.ComputeExclusion(p)
 	}
+}
+
+func (md *model) clearExcludeZone(p gruid.Point) {
+	rg := visionRange(p, DefaultMonsterLOSRange)
+	rg.Iter(func(p gruid.Point) {
+		delete(md.g.ExclusionsMap, p)
+	})
 }

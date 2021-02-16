@@ -403,14 +403,14 @@ func (g *game) SSCExclusionPassable(p gruid.Point) bool {
 	return terrain(c) != WallCell || !explored(c)
 }
 
-func (g *game) ComputeExclusion(p gruid.Point, toggle bool) {
+func (g *game) ComputeExclusion(p gruid.Point) {
 	g.mfovSetCenter(p)
 	for _, q := range g.mfov.SSCVisionMap(
 		p, DefaultMonsterLOSRange,
 		g.blocksSSCLOS,
 		false,
 	) {
-		g.ExclusionsMap[q] = toggle
+		g.ExclusionsMap[q] = true
 	}
 }
 

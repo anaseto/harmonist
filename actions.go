@@ -45,6 +45,7 @@ const (
 	ActionNextObject
 	ActionTarget
 	ActionExclude
+	ActionClearExclude
 	ActionEscape
 
 	ActionSettings
@@ -88,7 +89,8 @@ var ConfigurableKeyActions = [...]action{
 	ActionNextObject,
 	ActionNextStairs,
 	ActionTarget,
-	ActionExclude}
+	ActionExclude,
+	ActionClearExclude}
 
 func (k action) normalModeAction() bool {
 	switch k {
@@ -224,7 +226,9 @@ func (k action) targetingModeDescription() (text string) {
 	case ActionTarget:
 		text = "Go to"
 	case ActionExclude:
-		text = "Toggle exclude area from auto-travel"
+		text = "exclude area from auto-travel"
+	case ActionClearExclude:
+		text = "revert exclude area from auto-travel"
 	case ActionEscape:
 		text = "Quit targeting mode"
 	}
@@ -241,6 +245,7 @@ func (k action) targetingModeAction() bool {
 		ActionNextStairs,
 		ActionTarget,
 		ActionExclude,
+		ActionClearExclude,
 		ActionEscape:
 		return true
 	default:
@@ -316,6 +321,9 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 	case ActionExclude:
 		again = true
 		md.excludeZone(md.mp.ex.p)
+	case ActionClearExclude:
+		again = true
+		md.clearExcludeZone(md.mp.ex.p)
 	case ActionPreviousMonster:
 		again = true
 		md.nextMonster("-", md.mp.ex.p, md.mp.ex)
@@ -865,7 +873,8 @@ func (md *model) ExamineHelp() {
 		"Cycle through monsters", "+",
 		"Cycle through stairs", ">",
 		"Cycle through objects", "o",
-		"Toggle exclude area from auto-travel", "e",
+		"exclude area from auto-travel", "e",
+		"revert exclude area from auto-travel", "r",
 	})
 }
 

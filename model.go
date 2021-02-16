@@ -175,6 +175,7 @@ func (md *model) initKeys() {
 		"t":                 ActionTarget,
 		"g":                 ActionTarget,
 		"e":                 ActionExclude,
+		"r":                 ActionClearExclude,
 		gruid.KeySpace:      ActionEscape,
 		gruid.KeyEscape:     ActionEscape,
 		"x":                 ActionEscape,
