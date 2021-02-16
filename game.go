@@ -42,7 +42,7 @@ type game struct {
 	ExclusionsMap         map[gruid.Point]bool
 	Noise                 map[gruid.Point]bool
 	NoiseIllusion         map[gruid.Point]bool
-	LastMonsterKnownAt    map[gruid.Point]*monster
+	LastMonsterKnownAt    map[gruid.Point]int
 	MonsterLOS            map[gruid.Point]bool
 	MonsterTargLOS        map[gruid.Point]bool
 	LightFOV              *rl.FOV
@@ -448,7 +448,7 @@ func (g *game) InitLevelStructures() {
 	g.TerrainKnowledge = map[gruid.Point]cell{}
 	g.ExclusionsMap = map[gruid.Point]bool{}
 	g.MagicalBarriers = map[gruid.Point]cell{}
-	g.LastMonsterKnownAt = map[gruid.Point]*monster{}
+	g.LastMonsterKnownAt = map[gruid.Point]int{}
 	g.Objects.Magaras = map[gruid.Point]magara{}
 	g.Objects.Lore = map[gruid.Point]int{}
 	g.Objects.Items = map[gruid.Point]item{}

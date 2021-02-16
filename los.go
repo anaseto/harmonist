@@ -382,9 +382,9 @@ func (g *game) SeePosition(p gruid.Point) {
 			delete(g.MagicalBarriers, p)
 		}
 	}
-	if mons, ok := g.LastMonsterKnownAt[p]; ok && (mons.P != p || !mons.Exists()) {
+	if idx, ok := g.LastMonsterKnownAt[p]; ok && (g.Monsters[idx].P != p || !g.Monsters[idx].Exists()) {
 		delete(g.LastMonsterKnownAt, p)
-		mons.LastKnownPos = InvalidPos
+		g.Monsters[idx].LastKnownPos = InvalidPos
 	}
 	delete(g.NoiseIllusion, p)
 	if g.Objects.Story[p] == StoryShaedra && !g.LiberatedShaedra &&
@@ -603,13 +603,13 @@ func (g *game) ComputeMonsterCone(m *monster) {
 }
 
 func (m *monster) UpdateKnowledge(g *game, p gruid.Point) {
-	if mons, ok := g.LastMonsterKnownAt[p]; ok {
-		mons.LastKnownPos = InvalidPos
+	if idx, ok := g.LastMonsterKnownAt[p]; ok {
+		g.Monsters[idx].LastKnownPos = InvalidPos
 	}
 	if m.LastKnownPos != InvalidPos {
 		delete(g.LastMonsterKnownAt, m.LastKnownPos)
 	}
-	g.LastMonsterKnownAt[p] = m
+	g.LastMonsterKnownAt[p] = m.Index
 	m.LastSeenState = m.State
 	m.LastKnownPos = p
 }

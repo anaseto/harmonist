@@ -147,7 +147,7 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 			r = '¤'
 			fgColor = ColorFgDark
 		}
-		if mons, ok := g.LastMonsterKnownAt[p]; ok && !mons.Seen {
+		if idx, ok := g.LastMonsterKnownAt[p]; ok && !g.Monsters[idx].Seen {
 			r = '☻'
 			fgColor = ColorFgSleepingMonster
 		}
@@ -235,7 +235,8 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 		} else if g.NoiseIllusion[p] {
 			r = '♪'
 			fgColor = ColorFgMagicPlace
-		} else if mons, ok := g.LastMonsterKnownAt[p]; (!g.Wizard || g.WizardMode == WizardNormal) && ok {
+		} else if idx, ok := g.LastMonsterKnownAt[p]; (!g.Wizard || g.WizardMode == WizardNormal) && ok {
+			mons := g.Monsters[idx]
 			if !mons.Seen {
 				r = '☻'
 				fgColor = ColorFgWanderingMonster

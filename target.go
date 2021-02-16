@@ -182,12 +182,17 @@ func (md *model) drawPosInfo() {
 		return
 	}
 	title := fmt.Sprintf("%s (%s %s)", mons.Kind, mons.State, mons.Dir.String())
+	if !info.Sees {
+		title = fmt.Sprintf("%s (seen)", mons.Kind)
+	}
 	mfg := mons.color(g)
 	var mdesc []string
 
-	statuses := mons.statusesText()
-	if statuses != "" {
-		mdesc = append(mdesc, "Statuses: %s", statuses)
+	if info.Sees {
+		statuses := mons.statusesText()
+		if statuses != "" {
+			mdesc = append(mdesc, fmt.Sprintf("Statuses: %s", statuses))
+		}
 	}
 	mdesc = append(mdesc, "Traits: "+mons.traits())
 	if !md.targ.ex.scroll {
@@ -273,7 +278,6 @@ func (md *model) updatePosInfo() {
 		//pi.Unreachable = true
 		//return
 	}
-	mons := g.MonsterAt(p)
 	if p == g.Player.P {
 		pi.Player = true
 	}
@@ -284,8 +288,10 @@ func (md *model) updatePosInfo() {
 	if t, ok := g.TerrainKnowledge[p]; ok {
 		c = t | c&Explored
 	}
-	if mons.Exists() && g.Player.Sees(p) {
+	if mons := g.MonsterAt(p); mons.Exists() && g.Player.Sees(p) {
 		pi.Monster = mons
+	} else if idx, ok := g.LastMonsterKnownAt[p]; ok {
+		pi.Monster = g.Monsters[idx]
 	}
 	if cld, ok := g.Clouds[p]; ok && g.Player.Sees(p) {
 		pi.Cloud = cld.String()
