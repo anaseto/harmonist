@@ -24,12 +24,12 @@ type examination struct {
 
 // HideCursor hides the target cursor.
 func (md *model) HideCursor() {
-	md.mp.ex.p = InvalidPos
+	md.targ.ex.p = InvalidPos
 }
 
 // SetCursor sets the target cursor.
 func (md *model) SetCursor(p gruid.Point) {
-	md.mp.ex.p = p
+	md.targ.ex.p = p
 }
 
 // CancelExamine cancels current targeting.
@@ -37,13 +37,13 @@ func (md *model) CancelExamine() {
 	md.g.Highlight = nil
 	md.g.MonsterTargLOS = nil
 	md.HideCursor()
-	md.mp.kbTargeting = false
-	md.mp.ex.scroll = false
+	md.targ.kbTargeting = false
+	md.targ.ex.scroll = false
 }
 
 // Examine targets a given position with the cursor.
 func (md *model) Examine(p gruid.Point) {
-	if md.mp.ex.p == p {
+	if md.targ.ex.p == p {
 		return
 	}
 	md.examine(p)
@@ -62,13 +62,13 @@ func (md *model) examine(p gruid.Point) {
 		md.g.MonsterTargLOS = nil
 	}
 	md.updatePosInfo()
-	md.mp.ex.scroll = false
+	md.targ.ex.scroll = false
 }
 
 // KeyboardExamine starts keyboard examination mode, with a sensible default
 // target.
 func (md *model) KeyboardExamine() {
-	md.mp.kbTargeting = true
+	md.targ.kbTargeting = true
 	g := md.g
 	p := g.Player.P
 	minDist := 999
@@ -81,17 +81,17 @@ func (md *model) KeyboardExamine() {
 			}
 		}
 	}
-	md.mp.ex = &examination{
+	md.targ.ex = &examination{
 		p:       p,
 		objects: []gruid.Point{},
 	}
 	if p == g.Player.P {
-		md.nextObject(InvalidPos, md.mp.ex)
-		if !valid(md.mp.ex.p) {
-			md.nextStair(md.mp.ex)
+		md.nextObject(InvalidPos, md.targ.ex)
+		if !valid(md.targ.ex.p) {
+			md.nextStair(md.targ.ex)
 		}
-		if valid(md.mp.ex.p) && Distance(p, md.mp.ex.p) < DefaultLOSRange+5 {
-			p = md.mp.ex.p
+		if valid(md.targ.ex.p) && Distance(p, md.targ.ex.p) < DefaultLOSRange+5 {
+			p = md.targ.ex.p
 		}
 	}
 	md.examine(p)
@@ -113,10 +113,10 @@ type posInfo struct {
 func (md *model) drawPosInfo() {
 	g := md.g
 	p := gruid.Point{}
-	if md.mp.ex.p.X <= DungeonWidth/2 {
+	if md.targ.ex.p.X <= DungeonWidth/2 {
 		p.X += DungeonWidth/2 + 1
 	}
-	info := md.mp.ex.info
+	info := md.targ.ex.info
 
 	y := 2
 	formatBox := func(title, s string, fg gruid.Color) {
@@ -169,7 +169,7 @@ func (md *model) drawPosInfo() {
 	}
 
 	if info.Player {
-		if !md.mp.ex.scroll {
+		if !md.targ.ex.scroll {
 			formatBox(t, desc, fg)
 		}
 		formatBox("Syu", "This is you, the monkey named Syu.", ColorBlue)
@@ -190,7 +190,7 @@ func (md *model) drawPosInfo() {
 		mdesc = append(mdesc, "Statuses: %s", statuses)
 	}
 	mdesc = append(mdesc, "Traits: "+mons.traits())
-	if !md.mp.ex.scroll {
+	if !md.targ.ex.scroll {
 		formatBox(t, desc, fg)
 	}
 	formatBox(title, strings.Join(mdesc, "\n"), mfg)
@@ -259,7 +259,7 @@ func (m *monster) traits() string {
 func (md *model) updatePosInfo() {
 	g := md.g
 	pi := posInfo{}
-	p := md.mp.ex.p
+	p := md.targ.ex.p
 	pi.P = p
 	switch {
 	case !explored(g.Dungeon.Cell(p)):
@@ -267,7 +267,7 @@ func (md *model) updatePosInfo() {
 		if g.Noise[p] || g.NoiseIllusion[p] {
 			pi.Noise = true
 		}
-		md.mp.ex.info = pi
+		md.targ.ex.info = pi
 		return
 		//case !targ.Reachable(g, pos):
 		//pi.Unreachable = true
@@ -297,11 +297,11 @@ func (md *model) updatePosInfo() {
 	if g.Noise[p] || g.NoiseIllusion[p] {
 		pi.Noise = true
 	}
-	md.mp.ex.info = pi
+	md.targ.ex.info = pi
 }
 
 func (md *model) computeHighlight() {
-	md.g.computePathHighlight(md.mp.ex.p)
+	md.g.computePathHighlight(md.targ.ex.p)
 }
 
 func (g *game) computePathHighlight(p gruid.Point) {
@@ -314,7 +314,7 @@ func (g *game) computePathHighlight(p gruid.Point) {
 
 func (md *model) target() error {
 	g := md.g
-	p := md.mp.ex.p
+	p := md.targ.ex.p
 	if !explored(g.Dungeon.Cell(p)) {
 		return errors.New("You do not know this place.")
 	}

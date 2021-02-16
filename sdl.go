@@ -8,14 +8,22 @@ import (
 )
 
 var driver gruid.Driver
+var isFullscreen bool
 
-func init() {
+func initDriver(fullscreen bool) {
+	isFullscreen = fullscreen
 	dr := sdl.NewDriver(sdl.Config{
 		TileManager: &monochromeTileManager{},
+		Fullscreen:  fullscreen,
 	})
-	//dr.SetScale(1.5, 1.5)
-	//dr.PreventQuit()
 	driver = dr
+}
+
+func (md *model) updateZoom() {
+	if !isFullscreen {
+		dr := driver.(*sdl.Driver)
+		dr.SetScale(1+0.25*float32(md.zoomlevel), 1+0.25*float32(md.zoomlevel))
+	}
 }
 
 func clearCache() {

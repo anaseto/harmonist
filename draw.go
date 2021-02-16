@@ -31,7 +31,7 @@ func (md *model) Draw() gruid.Grid {
 	md.drawMap(md.gd.Slice(md.gd.Range().Shift(0, 2, 0, -1)))
 	md.log.Content = md.DrawLog()
 	md.log.Draw(md.gd.Slice(md.gd.Range().Lines(0, 2)))
-	if md.mp.ex.p != InvalidPos {
+	if md.targ.ex.p != InvalidPos {
 		md.drawPosInfo()
 	}
 	switch md.mode {
@@ -119,7 +119,7 @@ func (md *model) drawMap(gd gruid.Grid) {
 		p := it.P()
 		r, fg, bg := md.positionDrawing(p)
 		attrs := AttrInMap
-		if md.g.Highlight[p] || p == md.mp.ex.p {
+		if md.g.Highlight[p] || p == md.targ.ex.p {
 			attrs |= AttrReverse
 		}
 		gd.Set(p, gruid.Cell{Rune: r, Style: gruid.Style{Fg: fg, Bg: bg, Attrs: attrs}})

@@ -13,12 +13,17 @@ import (
 const Tiles = false
 
 func (md *model) ApplyToggleTiles() {
+	// do nothing
+}
+
+func (md *model) updateZoom() {
+	// do nothing
 }
 
 var driver gruid.Driver
 var color8 bool
 
-func init() {
+func initDriver(fullscreen bool) {
 	st := styler{}
 	dr := tcell.NewDriver(tcell.Config{StyleManager: st})
 	//dr.PreventQuit()

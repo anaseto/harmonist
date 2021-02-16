@@ -23,9 +23,12 @@ func main() {
 	optReplay := flag.String("r", "", "path to replay file (_ means default location)")
 	opt16colors := new(bool)
 	opt256colors := new(bool)
+	optFullscreen := new(bool)
 	if Terminal {
 		opt16colors = flag.Bool("s", false, "use 16-color simple palette")
 		opt256colors = flag.Bool("x", false, "use xterm 256-color palette (solarized approximation)")
+	} else {
+		optFullscreen = flag.Bool("F", false, "fullscreen")
 	}
 	flag.Parse()
 
@@ -47,6 +50,7 @@ func main() {
 	} else if *opt16colors {
 		Xterm256Color = false
 	}
+	initDriver(*optFullscreen)
 	if *optReplay != "" {
 		RunReplay(*optReplay)
 	} else {

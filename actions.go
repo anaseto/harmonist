@@ -61,6 +61,9 @@ const (
 
 	ActionWizardInfo
 	ActionWizardToggleMode
+
+	ActionZoomIncrease
+	ActionZoomDecrease
 )
 
 var ConfigurableKeyActions = [...]action{
@@ -116,7 +119,9 @@ func (k action) normalModeAction() bool {
 		ActionWizard,
 		ActionWizardMenu,
 		ActionWizardInfo,
-		ActionWizardToggleMode:
+		ActionWizardToggleMode,
+		ActionZoomIncrease,
+		ActionZoomDecrease:
 		return true
 	default:
 		return false
@@ -191,6 +196,10 @@ func (k action) String() (text string) {
 		text = "Info"
 	case ActionWizardToggleMode:
 		text = "toggle normal/map/all wizard mode"
+	case ActionZoomIncrease:
+		text = "increase zoom"
+	case ActionZoomDecrease:
+		text = "decrease zoom"
 	}
 	return text
 }
@@ -285,6 +294,8 @@ func (md *model) interact() (string, bool) {
 	return "", false
 }
 
+const zoomMax = 4
+
 func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, err error) {
 	g := md.g
 	switch action {
@@ -292,22 +303,23 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		// not used
 		again = true
 	case ActionW, ActionS, ActionN, ActionE:
-		if !md.mp.kbTargeting {
+		if !md.targ.kbTargeting {
 			again, err = g.PlayerBump(To(KeyToDir(action), g.Player.P))
 		} else {
-			p := To(KeyToDir(action), md.mp.ex.p)
+			p := To(KeyToDir(action), md.targ.ex.p)
 			if valid(p) {
 				md.Examine(p)
 			}
 			again = true
 		}
 	case ActionRunW, ActionRunS, ActionRunN, ActionRunE:
-		if !md.mp.kbTargeting {
+		if !md.targ.kbTargeting {
 			again, err = g.GoToDir(KeyToDir(action))
 		} else {
 			q := InvalidPos
+			p := md.targ.ex.p
 			for i := 0; i < 5; i++ {
-				p := To(KeyToDir(action), md.mp.ex.p)
+				p = To(KeyToDir(action), p)
 				if !valid(p) {
 					break
 				}
@@ -320,19 +332,19 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		}
 	case ActionExclude:
 		again = true
-		md.excludeZone(md.mp.ex.p)
+		md.excludeZone(md.targ.ex.p)
 	case ActionClearExclude:
 		again = true
-		md.clearExcludeZone(md.mp.ex.p)
+		md.clearExcludeZone(md.targ.ex.p)
 	case ActionPreviousMonster:
 		again = true
-		md.nextMonster("-", md.mp.ex.p, md.mp.ex)
+		md.nextMonster("-", md.targ.ex.p, md.targ.ex)
 	case ActionNextMonster:
 		again = true
-		md.nextMonster("+", md.mp.ex.p, md.mp.ex)
+		md.nextMonster("+", md.targ.ex.p, md.targ.ex)
 	case ActionNextObject:
 		again = true
-		md.nextObject(md.mp.ex.p, md.mp.ex)
+		md.nextObject(md.targ.ex.p, md.targ.ex)
 	case ActionTarget:
 		again = true
 		err = md.target()
@@ -357,7 +369,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 				err = errors.New("You are already on the stairs.")
 				break
 			}
-			md.mp.ex.p = stair
+			md.targ.ex.p = stair
 			err = md.target()
 			if err != nil {
 				err = errors.New("There is no safe path to the nearest stairs.")
@@ -436,7 +448,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		md.KeyboardExamine()
 	case ActionHelp, ActionMenuCommandHelp:
 		again = true
-		if md.mp.kbTargeting {
+		if md.targ.kbTargeting {
 			md.ExamineHelp()
 		} else {
 			md.KeysHelp()
@@ -562,6 +574,20 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 			g.WizardMode = WizardNormal
 		}
 		md.mode = modeNormal
+	case ActionZoomIncrease:
+		again = true
+		if md.zoomlevel >= 4 {
+			break
+		}
+		md.zoomlevel++
+		md.updateZoom()
+	case ActionZoomDecrease:
+		again = true
+		if md.zoomlevel <= -1 {
+			break
+		}
+		md.zoomlevel--
+		md.updateZoom()
 	default:
 		err = actionErrorUnknown
 	}

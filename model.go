@@ -77,7 +77,7 @@ type model struct {
 	pager       *ui.Pager
 	smallPager  *ui.Pager
 	pagerMarkup ui.StyledText
-	mp          mapUI
+	targ        mapTargInfo
 	logs        []ui.StyledText
 	keysNormal  map[gruid.Key]action
 	keysTarget  map[gruid.Key]action
@@ -85,9 +85,10 @@ type model struct {
 	statusFocus bool
 	anims       Animations
 	story       int
+	zoomlevel   int
 }
 
-type mapUI struct {
+type mapTargInfo struct {
 	kbTargeting bool
 	ex          *examination
 }
@@ -137,6 +138,8 @@ func (md *model) initKeys() {
 		"@":                 ActionWizardMenu,
 		">":                 ActionWizardDescend,
 		"=":                 ActionSettings,
+		"+":                 ActionZoomIncrease,
+		"-":                 ActionZoomDecrease,
 		gruid.KeyEscape:     ActionEscape,
 	}
 	md.keysTarget = map[gruid.Key]action{
@@ -274,7 +277,7 @@ func (md *model) init() gruid.Effect {
 	md.g.ComputeLOS()
 	md.g.ComputeMonsterLOS()
 	md.updateStatusInfo()
-	md.mp.ex = &examination{}
+	md.targ.ex = &examination{}
 	md.CancelExamine()
 	md.initAnimations()
 	return nil
@@ -460,16 +463,16 @@ func (md *model) updateNormal(msg gruid.Msg) gruid.Effect {
 
 func (md *model) updateKeyDown(msg gruid.MsgKeyDown) gruid.Effect {
 	md.statusFocus = false
-	if !md.mp.kbTargeting && valid(md.mp.ex.p) {
+	if !md.targ.kbTargeting && valid(md.targ.ex.p) {
 		md.CancelExamine()
 	}
-	if md.mp.ex.p != InvalidPos {
+	if md.targ.ex.p != InvalidPos {
 		switch msg.Key {
 		case gruid.KeyPageDown:
-			md.mp.ex.scroll = true
+			md.targ.ex.scroll = true
 			return nil
 		case gruid.KeyPageUp:
-			md.mp.ex.scroll = false
+			md.targ.ex.scroll = false
 			return nil
 		}
 	}
@@ -491,12 +494,12 @@ func (md *model) updateMouse(msg gruid.MsgMouse) gruid.Effect {
 	p := msg.P.Add(gruid.Point{0, -2}) // relative position ignoring log
 	switch msg.Action {
 	case gruid.MouseWheelUp:
-		if md.mp.ex.p != InvalidPos {
-			md.mp.ex.scroll = true
+		if md.targ.ex.p != InvalidPos {
+			md.targ.ex.scroll = true
 		}
 	case gruid.MouseWheelDown:
-		if md.mp.ex.p != InvalidPos {
-			md.mp.ex.scroll = false
+		if md.targ.ex.p != InvalidPos {
+			md.targ.ex.scroll = false
 		}
 	case gruid.MouseMove:
 		if valid(p) {
@@ -663,7 +666,7 @@ func (md *model) updateMapInfo() {
 	md.g.ComputeMonsterLOS()
 	md.updateStatusInfo()
 	if md.g.Highlight != nil {
-		md.examine(md.mp.ex.p)
+		md.examine(md.targ.ex.p)
 	}
 }
 
@@ -827,7 +830,7 @@ func (md *model) updateMenu(msg gruid.Msg) gruid.Effect {
 
 func (md *model) normalModeKeyDown(key gruid.Key, shift bool) (again bool, eff gruid.Effect, err error) {
 	action := md.keysNormal[key]
-	if md.mp.kbTargeting {
+	if md.targ.kbTargeting {
 		action = md.keysTarget[key]
 	}
 	if shift && !key.IsRune() {

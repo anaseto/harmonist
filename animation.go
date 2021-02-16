@@ -69,7 +69,7 @@ func (md *model) startAnimSeq() {
 		p := it.P()
 		r, fg, bg := md.positionDrawing(p)
 		attrs := AttrInMap
-		if md.g.Highlight[p] || p == md.mp.ex.p {
+		if md.g.Highlight[p] || p == md.targ.ex.p {
 			attrs |= AttrReverse
 		}
 		md.anims.grid.Set(p, gruid.Cell{Rune: r, Style: gruid.Style{Fg: fg, Bg: bg, Attrs: attrs}})

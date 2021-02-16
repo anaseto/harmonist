@@ -18,7 +18,7 @@ import (
 
 var driver gruid.Driver
 
-func init() {
+func initDriver() {
 	dr := jsd.NewDriver(jsd.Config{
 		TileManager: &monochromeTileManager{},
 		AppCanvasId: "gamecanvas",
@@ -32,7 +32,12 @@ func clearCache() {
 	dr.ClearCache()
 }
 
+func (md *model) updateZoom() {
+	// do nothing
+}
+
 func main() {
+	initDriver()
 	mainMenu := newMainMenu()
 	es1, es2 := initConfig()
 	if es1 != "" {
