@@ -35,37 +35,43 @@ func (lt *lighter) Cost(src, from, to gruid.Point) int {
 	g := lt.g
 	rs := lt.rs
 	wallcost := lt.MaxCost(src)
-	// diagonal costs
-	if g.DiagonalOpaque(from, to, rs) {
-		return wallcost
-	}
 	// no terrain cost on origin
 	if src == from {
-		if rs != TreePlayerRay && g.DiagonalDifficult(from, to) {
+		// specific diagonal costs
+		opaque, hard := g.DiagonalOpaque(from, to)
+		if opaque {
+			return wallcost
+		}
+		if rs != TreePlayerRay && hard {
 			return wallcost - 1
 		}
 		return Distance(to, from)
 	}
 	// from terrain specific costs
-	c := g.Dungeon.Cell(from)
-	if terrain(c) == WallCell {
+	c := terrain(cell(g.Dungeon.Grid.AtU(from)))
+	if c == WallCell {
 		return wallcost
 	}
 	if _, ok := g.Clouds[from]; ok {
 		return wallcost
 	}
-	if terrain(c) == DoorCell {
+	// specific diagonal costs
+	opaque, hard := g.DiagonalOpaque(from, to)
+	if opaque {
+		return wallcost
+	}
+	switch c {
+	case DoorCell:
 		if from != src {
 			mons := g.MonsterAt(from)
 			if !mons.Exists() && from != g.Player.P {
 				return wallcost
 			}
 		}
-	}
-	if terrain(c) == FoliageCell || terrain(c) == HoledWallCell {
+	case FoliageCell, HoledWallCell:
 		switch rs {
 		case TreePlayerRay:
-			if terrain(c) == FoliageCell {
+			if c == FoliageCell {
 				break
 			}
 			fallthrough
@@ -73,14 +79,14 @@ func (lt *lighter) Cost(src, from, to gruid.Point) int {
 			return wallcost + Distance(to, from) - 3
 		}
 	}
-	if rs != TreePlayerRay && g.DiagonalDifficult(from, to) {
+	if rs != TreePlayerRay && hard {
 		cost := wallcost - Distance(from, src) - 1
 		if cost < 1 {
 			cost = 1
 		}
 		return cost
 	}
-	if rs == TreePlayerRay && terrain(c) == WindowCell && Distance(src, from) >= DefaultLOSRange {
+	if rs == TreePlayerRay && c == WindowCell && Distance(src, from) >= DefaultLOSRange {
 		return wallcost - Distance(src, from) - 1
 	}
 	return Distance(to, from)
@@ -95,77 +101,51 @@ func (lt *lighter) MaxCost(src gruid.Point) int {
 	case LightRay:
 		return LightRange
 	default:
-		return lt.g.LosRange() + 1
+		return DefaultLOSRange + 1
 	}
 }
 
-func (g *game) DiagonalOpaque(from, to gruid.Point, rs raystyle) bool {
+func (g *game) DiagonalOpaque(from, to gruid.Point) (opaque, hard bool) {
 	// The state uses cardinal movement only, so two diagonal walls should,
 	// for example, block line of sight. This is in contrast with the main
 	// mechanics of the line of sight algorithm, which for gameplay reasons
 	// allows diagonals for light rays in normal circumstances.
-	var cache [2]gruid.Point
-	ps := cache[:0]
-	switch Dir(from, to) {
-	case NE:
-		ps = append(ps, to.Add(gruid.Point{0, 1}), to.Add(gruid.Point{-1, 0}))
-	case NW:
-		ps = append(ps, to.Add(gruid.Point{0, 1}), to.Add(gruid.Point{1, 0}))
-	case SW:
-		ps = append(ps, to.Add(gruid.Point{0, -1}), to.Add(gruid.Point{1, 0}))
-	case SE:
-		ps = append(ps, to.Add(gruid.Point{0, -1}), to.Add(gruid.Point{-1, 0}))
+	var ps [2]gruid.Point
+	delta := to.Sub(from)
+	switch delta {
+	case gruid.Point{1, -1}:
+		ps[0] = from.Shift(1, 0)
+		ps[1] = from.Shift(0, -1)
+	case gruid.Point{-1, -1}:
+		ps[0] = from.Shift(-1, 0)
+		ps[1] = from.Shift(0, -1)
+	case gruid.Point{-1, 1}:
+		ps[0] = from.Shift(-1, 0)
+		ps[1] = from.Shift(0, 1)
+	case gruid.Point{1, 1}:
+		ps[0] = from.Shift(1, 0)
+		ps[1] = from.Shift(0, 1)
+	default:
+		return false, false
 	}
-	count := 0
+	opaque = true
+	hard = true
 	for _, p := range ps {
 		_, ok := g.Clouds[p]
 		if ok {
-			count++
 			continue
 		}
-		if !valid(p) {
-			continue
-		}
-		c := g.Dungeon.Cell(p)
-		switch terrain(c) {
-		case WallCell, HoledWallCell, WindowCell:
-			count++
+		switch terrain(cell(g.Dungeon.Grid.AtU(p))) {
+		case WindowCell:
+			hard = false
+		case WallCell, HoledWallCell:
+		case FoliageCell:
+			opaque = false
+		default:
+			return false, false
 		}
 	}
-	return count > 1
-}
-
-func (g *game) DiagonalDifficult(from, to gruid.Point) bool {
-	// For reasons similar as in DiagonalOpaque, two diagonal foliage cells
-	// should reduce range of line of sight in that diagonal direction.
-	var cache [2]gruid.Point
-	ps := cache[:0]
-	switch Dir(from, to) {
-	case NE:
-		ps = append(ps, to.Add(gruid.Point{0, 1}), to.Add(gruid.Point{-1, 0}))
-	case NW:
-		ps = append(ps, to.Add(gruid.Point{0, 1}), to.Add(gruid.Point{1, 0}))
-	case SW:
-		ps = append(ps, to.Add(gruid.Point{0, -1}), to.Add(gruid.Point{1, 0}))
-	case SE:
-		ps = append(ps, to.Add(gruid.Point{0, -1}), to.Add(gruid.Point{-1, 0}))
-	}
-	count := 0
-	for _, p := range ps {
-		if !valid(p) {
-			continue
-		}
-		_, ok := g.Clouds[p]
-		if ok {
-			count++
-			continue
-		}
-		switch terrain(g.Dungeon.Cell(p)) {
-		case WallCell, FoliageCell, HoledWallCell:
-			count++
-		}
-	}
-	return count > 1
+	return opaque, hard
 }
 
 type raystyle int
@@ -181,10 +161,6 @@ const LightRange = 6
 
 const DefaultLOSRange = 12
 const DefaultMonsterLOSRange = 12
-
-func (g *game) LosRange() int {
-	return DefaultLOSRange
-}
 
 func (g *game) StopAuto() {
 	if g.Autoexploring && !g.AutoHalt {
