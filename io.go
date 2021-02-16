@@ -76,7 +76,7 @@ func (g *game) Load() (bool, error) {
 		return true, err
 	}
 	if lg.Version != Version {
-		return true, fmt.Errorf("saved state for previous version %s.", lg.Version)
+		return true, nil
 	}
 	*g = *lg
 	return true, nil
@@ -119,7 +119,7 @@ func LoadConfig() (bool, error) {
 		return true, err
 	}
 	if c.Version != GameConfig.Version {
-		return true, errors.New("Version mismatch")
+		return true, nil
 	}
 	GameConfig = *c
 	return true, nil
