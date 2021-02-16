@@ -901,8 +901,9 @@ func (md *model) ExamineHelp() {
 		"Cycle through monsters", "+",
 		"Cycle through stairs", ">",
 		"Cycle through objects", "o",
-		"exclude area from auto-travel", "e",
-		"revert exclude area from auto-travel", "r",
+		"Exclude area from auto-travel", "e",
+		"Revert exclude area from auto-travel", "r",
+		"Close/cancel examination mode", "x or esc or space",
 	})
 }
 
