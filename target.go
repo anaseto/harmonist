@@ -113,21 +113,21 @@ type posInfo struct {
 func (md *model) drawPosInfo() {
 	g := md.g
 	p := gruid.Point{}
-	if md.targ.ex.p.X <= DungeonWidth/2 {
+	if md.targ.ex.p.X < DungeonWidth/2 {
 		p.X += DungeonWidth/2 + 1
 	}
 	info := md.targ.ex.info
 
 	y := 2
 	formatBox := func(title, s string, fg gruid.Color) {
-		md.description.Content = md.description.Content.WithText(s).Format(DungeonWidth/2 - 2)
+		md.description.Content = md.description.Content.WithText(s).Format(DungeonWidth/2 - 3)
 		if md.description.Content.Size().Y+2 > 2+DungeonHeight {
 			md.description.Box = &ui.Box{Title: ui.NewStyledText(title, gruid.Style{}.WithFg(fg)),
 				Footer: ui.Text("scroll/page down for more...")}
 		} else {
 			md.description.Box = &ui.Box{Title: ui.NewStyledText(title, gruid.Style{}.WithFg(fg))}
 		}
-		y += md.description.Draw(md.gd.Slice(gruid.NewRange(0, y, DungeonWidth/2, 2+DungeonHeight).Add(p))).Size().Y
+		y += md.description.Draw(md.gd.Slice(gruid.NewRange(0, y, DungeonWidth/2-1, 2+DungeonHeight).Add(p))).Size().Y
 	}
 
 	features := []string{}
