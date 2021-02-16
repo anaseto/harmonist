@@ -785,7 +785,9 @@ func (md *model) openIventory() {
 	md.menu.SetEntries(entries)
 	md.mode = modeMenu
 	md.menuMode = modeInventory
-	md.description.Content = ui.Text(items[md.menu.Active()].Desc(md.g)).Format(UIWidth/2 - 1 - 2)
+	it := items[md.menu.Active()]
+	md.description.Content = ui.Text(it.Desc(md.g)).Format(UIWidth/2 - 1 - 2)
+	md.description.Box = &ui.Box{Title: ui.Text(it.String())}
 }
 
 func (md *model) evokeMagaraMenu() {
@@ -804,7 +806,9 @@ func (md *model) evokeMagaraMenu() {
 	md.menu.SetEntries(entries)
 	md.mode = modeMenu
 	md.menuMode = modeEvocation
-	md.description.Content = ui.Text(items[md.menu.Active()].Desc(md.g)).Format(UIWidth/2 - 1 - 2)
+	it := items[md.menu.Active()]
+	md.description.Content = ui.Text(it.Desc(md.g)).Format(UIWidth/2 - 1 - 2)
+	md.description.Box = &ui.Box{Title: ui.Text(it.String())}
 }
 
 func (md *model) equipMagaraMenu() {
@@ -819,11 +823,13 @@ func (md *model) equipMagaraMenu() {
 		r++
 	}
 	altBgEntries(entries)
-	md.menu.SetBox(&ui.Box{Title: ui.Text("Equip Magara").WithStyle(gruid.Style{}.WithFg(ColorYellow))})
+	md.menu.SetBox(&ui.Box{Title: ui.Text("Replace which magara?").WithStyle(gruid.Style{}.WithFg(ColorYellow))})
 	md.menu.SetEntries(entries)
 	md.mode = modeMenu
 	md.menuMode = modeEquip
-	md.description.Content = ui.Text(items[md.menu.Active()].Desc(md.g)).Format(UIWidth/2 - 1 - 2)
+	it := items[md.menu.Active()]
+	md.description.Content = ui.Text(it.Desc(md.g)).Format(UIWidth/2 - 1 - 2)
+	md.description.Box = &ui.Box{Title: ui.Textf("%s (equipped)", it.String())}
 }
 
 var wizardActions = []action{

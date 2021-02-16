@@ -59,9 +59,15 @@ func (md *model) Draw() gruid.Grid {
 	case modeMenu:
 		switch md.menuMode {
 		case modeInventory, modeEquip, modeEvocation:
-			md.gd.Copy(md.menu.Draw())
-			md.description.Box = &ui.Box{Title: ui.Text("Description")}
+			gd := md.menu.Draw()
+			md.gd.Copy(gd)
 			md.description.Draw(md.gd.Slice(md.gd.Range().Columns(UIWidth/2, UIWidth)))
+			if md.menuMode == modeEquip {
+				it := md.g.Objects.Magaras[md.g.Player.P]
+				md.equipLabel.Content = ui.Text(it.Desc(md.g)).Format(UIWidth/2 - 1 - 2)
+				md.equipLabel.Box = &ui.Box{Title: ui.Textf("%s (ground)", it.String())}
+				md.equipLabel.Draw(md.gd.Slice(gruid.NewRange(0, gd.Size().Y, UIWidth/2, UIHeight-1)))
+			}
 		case modeGameMenu, modeSettings, modeWizard:
 			md.gd.Copy(md.menu.Draw())
 		case modeKeys, modeKeysChange:

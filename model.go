@@ -73,6 +73,7 @@ type model struct {
 	status      *ui.Menu
 	log         *ui.Label
 	description *ui.Label
+	equipLabel  *ui.Label
 	statusDesc  *ui.Label
 	pager       *ui.Pager
 	smallPager  *ui.Pager
@@ -192,6 +193,8 @@ func (md *model) initWidgets() {
 	md.log = ui.NewLabel(ui.StyledText{}.WithStyle(gruid.Style{}).WithMarkup('t', gruid.Style{Fg: ColorYellow}))
 	md.description = ui.NewLabel(ui.StyledText{}.WithStyle(gruid.Style{}).WithMarkup('t', gruid.Style{Fg: ColorYellow}))
 	md.description.AdjustWidth = false
+	md.equipLabel = ui.NewLabel(ui.StyledText{}.WithStyle(gruid.Style{}).WithMarkup('t', gruid.Style{Fg: ColorYellow}))
+	md.equipLabel.AdjustWidth = false
 	md.statusDesc = ui.NewLabel(ui.StyledText{}.WithStyle(gruid.Style{}))
 	md.pager = ui.NewPager(ui.PagerConfig{
 		Grid: gruid.NewGrid(UIWidth, UIHeight-1),
@@ -763,10 +766,12 @@ func (md *model) updateMenu(msg gruid.Msg) gruid.Effect {
 			items := []item{md.g.Player.Inventory.Body, md.g.Player.Inventory.Neck, md.g.Player.Inventory.Misc}
 			it := items[md.menu.Active()]
 			md.description.Content = ui.Text(it.Desc(md.g)).Format(UIWidth/2 - 1 - 2)
+			md.description.Box = &ui.Box{Title: ui.Text(it.String())}
 		case modeEvocation:
 			items := md.g.Player.Magaras
 			it := items[md.menu.Active()]
 			md.description.Content = ui.Text(it.Desc(md.g)).Format(UIWidth/2 - 1 - 2)
+			md.description.Box = &ui.Box{Title: ui.Text(it.String())}
 			if act != ui.MenuInvoke {
 				break
 			}
@@ -781,6 +786,7 @@ func (md *model) updateMenu(msg gruid.Msg) gruid.Effect {
 			items := md.g.Player.Magaras
 			it := items[md.menu.Active()]
 			md.description.Content = ui.Text(it.Desc(md.g)).Format(UIWidth/2 - 1 - 2)
+			md.description.Box = &ui.Box{Title: ui.Textf("%s (equipped)", it.String())}
 			if act != ui.MenuInvoke {
 				break
 			}
