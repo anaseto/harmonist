@@ -37,19 +37,21 @@ Install from Sources
 In all cases, you need first to perform the following preliminaries:
 
 + Install the [go compiler](https://golang.org/).
-+ Set `$GOPATH` variable (for example `export GOPATH=$HOME/go`, the default
-  value in recent Go versions).
-+ Add `$GOPATH/bin` to your `$PATH` (for example `export PATH="$PATH:$GOPATH/bin"`).
++ Add `$(go env GOPATH)/bin` to your `$PATH` (for example `export PATH="$PATH:$(go env GOPATH)/bin"`).
 
-### ASCII
+Harmonist uses the [gruid](https://github.com/anaseto/gruid) library for
+grid-based user interfaces, which offers three different rendering drivers:
+terminal, graphical SDL2, and browser.
+
+### Terminal (ASCII)
 
 You can build a native ASCII version from source by using this command:
 
-+ `go get -u git.tuxfamily.org/harmonist/harmonist.git`.
++ `go get -u git.tuxfamily.org/harmonist/harmonist.git`
 
-or using the github repos:
+or using the github repository:
 
-+ `go get -u github.com/anaseto/harmonist`.
++ `go get -u github.com/anaseto/harmonist`
   
 The `harmonist` command should now be available (you may have to rename it to
 remove the `.git` suffix).
@@ -57,15 +59,21 @@ remove the `.git` suffix).
 This version uses the [tcell](https://github.com/gdamore/tcell) terminal
 library.
 
-### Tiles
+### SDL2 (Tiles or ASCII)
 
 You can build a graphical version depending on SDL2 using this command:
 
     go get -u --tags sdl git.tuxfamily.org/harmonist/harmonist.git
 
+or using the github repository:
+
++ `go get -u --tags sdl github.com/anaseto/harmonist`
+
 This will install the [go-sdl2](https://github.com/veandco/go-sdl2/sdl) Go
 bindings for SDL2. You need to install
 [SDL2](https://libsdl.org/download-2.0.php) first.
+
+### Browser (Tiles or ASCII)
 
 You can also build a WebAssembly version with:
 
@@ -73,17 +81,13 @@ You can also build a WebAssembly version with:
 
 You can then play by serving a directory containing the wasm file via http. The
 directory should contain some other files that you can find in the main
-website instance.
+website instance (some HTML and js).
 
 Colors
 ------
 
 If the default colors do not display nicely on your terminal emulator, you can
-use the `-s` option: `harmonist -s` to use the 16-color palette, which
-will display nicely if the [solarized](http://ethanschoonover.com/solarized)
-palette is used. Configurations are available for most terminal emulators,
-otherwise, colors may have to be configured manually to one's liking in
-the terminal emulator options.
+check the available options as documented in the manual page.
 
 Check also the other color options.
 

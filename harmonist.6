@@ -11,7 +11,7 @@
 .\" WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-.Dd Feb 10, 2021
+.Dd Feb 16, 2021
 .Dt HARMONIST 6
 .Os
 .Sh NAME
@@ -21,6 +21,7 @@
 .Nm
 .Op Fl c
 .Op Fl n
+.Op Fl F
 .Op Fl s
 .Op Fl v
 .Op Fl x
@@ -51,6 +52,8 @@ The options are as follows:
 .Bl -tag -width Ds
 .It Fl n
 No animations.
+.It Fl F
+Launch game in fullscreen (SDL version only).
 .It Fl r Ar file
 Watch replay file
 .Ar file
@@ -74,12 +77,12 @@ and
 .Cm Q
 for exiting the program.
 .It Fl s
-Use the 16-color simple palette.
+Use the 16-color simple palette (terminal version only).
 .It Fl v
 Print version number.
 .It Fl x
-Use xterm 256-color palette (solarized approximation). This is the default on
-non-windows platforms.
+Use xterm 256-color palette (solarized approximation, terminal version only).
+This is the default on non-windows platforms.
 .El
 .Sh FILES
 .Bl -tag -width Ds -compact
