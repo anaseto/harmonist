@@ -45,7 +45,7 @@ func (lt *lighter) Cost(src, from, to gruid.Point) int {
 		if rs != TreePlayerRay && hard {
 			return wallcost - 1
 		}
-		return Distance(to, from)
+		return distance(to, from)
 	}
 	// from terrain specific costs
 	c := terrain(cell(g.Dungeon.Grid.AtU(from)))
@@ -76,20 +76,20 @@ func (lt *lighter) Cost(src, from, to gruid.Point) int {
 			}
 			fallthrough
 		default:
-			return wallcost + Distance(to, from) - 3
+			return wallcost + distance(to, from) - 3
 		}
 	}
 	if rs != TreePlayerRay && hard {
-		cost := wallcost - Distance(from, src) - 1
+		cost := wallcost - distance(from, src) - 1
 		if cost < 1 {
 			cost = 1
 		}
 		return cost
 	}
-	if rs == TreePlayerRay && c == WindowCell && Distance(src, from) >= DefaultLOSRange {
-		return wallcost - Distance(src, from) - 1
+	if rs == TreePlayerRay && c == WindowCell && distance(src, from) >= DefaultLOSRange {
+		return wallcost - distance(src, from) - 1
 	}
-	return Distance(to, from)
+	return distance(to, from)
 }
 
 func (lt *lighter) MaxCost(src gruid.Point) int {
@@ -165,13 +165,13 @@ const DefaultMonsterLOSRange = 12
 func (g *game) StopAuto() {
 	if g.Autoexploring && !g.AutoHalt {
 		g.Print("You stop exploring.")
-	} else if g.AutoDir != NoDir {
+	} else if g.AutoDir != ZP {
 		g.Print("You stop.")
 	} else if g.AutoTarget != InvalidPos {
 		g.Print("You stop.")
 	}
 	g.AutoHalt = true
-	g.AutoDir = NoDir
+	g.AutoDir = ZP
 	g.AutoTarget = InvalidPos
 }
 
@@ -388,9 +388,9 @@ func (g *game) SeePosition(p gruid.Point) {
 	}
 	delete(g.NoiseIllusion, p)
 	if g.Objects.Story[p] == StoryShaedra && !g.LiberatedShaedra &&
-		(Distance(g.Player.P, p) <= 1 ||
-			Distance(g.Player.P, g.Places.Marevor) <= 1 ||
-			Distance(g.Player.P, g.Places.Monolith) <= 1) &&
+		(distance(g.Player.P, p) <= 1 ||
+			distance(g.Player.P, g.Places.Marevor) <= 1 ||
+			distance(g.Player.P, g.Places.Monolith) <= 1) &&
 		g.Player.P != g.Places.Marevor &&
 		g.Player.P != g.Places.Monolith {
 		g.PushEventFirst(&playerEvent{Action: StorySequence}, g.Turn)
@@ -492,10 +492,10 @@ func (m *monster) SeesPlayer(g *game) bool {
 }
 
 func (m *monster) SeesLight(g *game, p gruid.Point) bool {
-	if !(m.LOS[p] && m.Dir.InViewCone(m.P, p)) {
+	if !(m.LOS[p] && inViewCone(m.Dir, m.P, p)) {
 		return false
 	}
-	if m.State == Resting && Distance(m.P, p) > 1 {
+	if m.State == Resting && distance(m.P, p) > 1 {
 		return false
 	}
 	return true
@@ -513,20 +513,20 @@ func (m *monster) Sees(g *game, p gruid.Point) bool {
 		darkRange = 1
 	}
 	const tableRange = 1
-	if !(m.LOS[p] && (m.Dir.InViewCone(m.P, p) || m.Kind == MonsSpider)) {
+	if !(m.LOS[p] && (inViewCone(m.Dir, m.P, p) || m.Kind == MonsSpider)) {
 		return false
 	}
-	if m.State == Resting && Distance(m.P, p) > 1 {
+	if m.State == Resting && distance(m.P, p) > 1 {
 		return false
 	}
 	c := g.Dungeon.Cell(p)
-	if (!g.Illuminated(p) && !g.Player.HasStatus(StatusIlluminated) || !c.IsIlluminable()) && Distance(m.P, p) > darkRange {
+	if (!g.Illuminated(p) && !g.Player.HasStatus(StatusIlluminated) || !c.IsIlluminable()) && distance(m.P, p) > darkRange {
 		return false
 	}
-	if terrain(c) == TableCell && Distance(m.P, p) > tableRange {
+	if terrain(c) == TableCell && distance(m.P, p) > tableRange {
 		return false
 	}
-	if g.Player.HasStatus(StatusTransparent) && g.Illuminated(p) && Distance(m.P, p) > 1 {
+	if g.Player.HasStatus(StatusTransparent) && g.Illuminated(p) && distance(m.P, p) > 1 {
 		return false
 	}
 	return true
@@ -572,7 +572,7 @@ func (g *game) ComputeLights() {
 		if !on {
 			continue
 		}
-		if Distance(lpos, g.Player.P) > DefaultLOSRange+LightRange && terrain(g.Dungeon.Cell(g.Player.P)) != TreeCell {
+		if distance(lpos, g.Player.P) > DefaultLOSRange+LightRange && terrain(g.Dungeon.Cell(g.Player.P)) != TreeCell {
 			continue
 		}
 		sources = append(sources, lpos)
@@ -581,7 +581,7 @@ func (g *game) ComputeLights() {
 		if !mons.Exists() || mons.Kind != MonsButterfly || mons.Status(MonsConfused) || mons.Status(MonsParalysed) {
 			continue
 		}
-		if Distance(mons.P, g.Player.P) > DefaultLOSRange+LightRange && terrain(g.Dungeon.Cell(g.Player.P)) != TreeCell {
+		if distance(mons.P, g.Player.P) > DefaultLOSRange+LightRange && terrain(g.Dungeon.Cell(g.Player.P)) != TreeCell {
 			continue
 		}
 		sources = append(sources, mons.P)

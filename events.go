@@ -219,7 +219,7 @@ func (cev *posEvent) Handle(g *game) {
 			if !c.IsDiggable() || !g.Dungeon.HasFreeNeighbor(p) {
 				continue
 			}
-			if Distance(cev.P, p) > RandInt(35) || RandInt(2) == 0 {
+			if distance(cev.P, p) > RandInt(35) || RandInt(2) == 0 {
 				continue
 			}
 			g.Dungeon.SetCell(p, RubbleCell)
@@ -308,7 +308,7 @@ func (g *game) MakeCreatureSleep(p gruid.Point) {
 		g.Printf("%s falls asleep.", mons.Kind.Definite(true))
 	}
 	mons.State = Resting
-	mons.Dir = NoDir
+	mons.Dir = ZP
 	mons.ExhaustTime(g, 4+RandInt(2))
 }
 

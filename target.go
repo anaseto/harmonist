@@ -74,7 +74,7 @@ func (md *model) KeyboardExamine() {
 	minDist := 999
 	for _, mons := range g.Monsters {
 		if mons.Exists() && g.Player.LOS[mons.P] {
-			dist := Distance(mons.P, g.Player.P)
+			dist := distance(mons.P, g.Player.P)
 			if minDist > dist {
 				minDist = dist
 				p = mons.P
@@ -90,7 +90,7 @@ func (md *model) KeyboardExamine() {
 		if !valid(md.targ.ex.p) {
 			md.nextStair(md.targ.ex)
 		}
-		if valid(md.targ.ex.p) && Distance(p, md.targ.ex.p) < DefaultLOSRange+5 {
+		if valid(md.targ.ex.p) && distance(p, md.targ.ex.p) < DefaultLOSRange+5 {
 			p = md.targ.ex.p
 		}
 	}
@@ -181,7 +181,7 @@ func (md *model) drawPosInfo() {
 		formatBox(t, desc, fg)
 		return
 	}
-	title := fmt.Sprintf("%s (%s %s)", mons.Kind, mons.State, mons.Dir.String())
+	title := fmt.Sprintf("%s (%s %s)", mons.Kind, mons.State, dirString(mons.Dir))
 	if !info.Sees {
 		title = fmt.Sprintf("%s (seen)", mons.Kind)
 	}

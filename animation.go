@@ -404,15 +404,15 @@ func (md *model) SlowingMagaraAnimation(ray []gruid.Point) {
 	}
 }
 
-func (md *model) ProjectileSymbol(dir direction) (r rune) {
+func (md *model) ProjectileSymbol(dir gruid.Point) (r rune) {
 	switch dir {
-	case E, ENE, ESE, WNW, W, WSW:
+	case gruid.Point{1, 0}, gruid.Point{-1, 0}:
 		r = '—'
-	case NE, SW:
+	case gruid.Point{1, -1}, gruid.Point{-1, 1}:
 		r = '/'
-	case NNE, N, NNW, SSW, S, SSE:
+	case gruid.Point{0, 1}, gruid.Point{0, -1}:
 		r = '|'
-	case NW, SE:
+	case gruid.Point{1, 1}, gruid.Point{-1, -1}:
 		r = '\\'
 	}
 	return r
@@ -428,7 +428,7 @@ func (md *model) MonsterJavelinAnimation(ray []gruid.Point, hit bool) {
 	for i := 0; i < len(ray); i++ {
 		p := ray[i]
 		r, fgColor, bgColor := md.positionDrawing(p)
-		md.anims.Draw(p, md.ProjectileSymbol(Dir(g.Player.P, p)), ColorFgMonster, bgColor)
+		md.anims.Draw(p, md.ProjectileSymbol(dirnorm(g.Player.P, p)), ColorFgMonster, bgColor)
 		md.anims.Frame(AnimDurShort)
 		md.anims.Draw(p, r, fgColor, bgColor)
 	}

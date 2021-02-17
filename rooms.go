@@ -51,7 +51,7 @@ type place struct {
 
 func roomDistance(r1, r2 *room) int {
 	// TODO: use the center?
-	return Abs(r1.p.X+r1.w/2-r2.p.X-r2.w/2) + Abs(r1.p.Y+r1.h/2-r2.p.Y-r2.h/2)
+	return abs(r1.p.X+r1.w/2-r2.p.X-r2.w/2) + abs(r1.p.Y+r1.h/2-r2.p.Y-r2.h/2)
 }
 
 func (r *room) HasSpace(dg *dgen) bool {

@@ -14,7 +14,7 @@ type player struct {
 	MP      int
 	Bananas int
 	Magaras []magara
-	Dir     direction
+	Dir     gruid.Point
 	//Aptitudes map[aptitude]bool
 	Statuses  map[status]int
 	Expire    map[status]int
@@ -60,33 +60,33 @@ func (pl *player) HasStatus(st status) bool {
 
 func (g *game) AutoToDir() bool {
 	if g.MonsterInLOS() == nil {
-		p := To(g.AutoDir, g.Player.P)
+		p := g.Player.P.Add(g.AutoDir)
 		if g.PlayerCanPass(p) {
-			again, err := g.PlayerBump(To(g.AutoDir, g.Player.P))
+			again, err := g.PlayerBump(p)
 			if err != nil {
 				g.Print(err.Error())
-				g.AutoDir = NoDir
+				g.AutoDir = ZP
 				return false
 			}
 			if again {
 				return false
 			}
 		} else {
-			g.AutoDir = NoDir
+			g.AutoDir = ZP
 			return false
 		}
 		return true
 	}
-	g.AutoDir = NoDir
+	g.AutoDir = ZP
 	return false
 }
 
-func (g *game) GoToDir(dir direction) (again bool, err error) {
+func (g *game) GoToDir(dir gruid.Point) (again bool, err error) {
 	if g.MonsterInLOS() != nil {
-		g.AutoDir = NoDir
+		g.AutoDir = ZP
 		return again, errors.New("You cannot travel while there are monsters in view.")
 	}
-	p := To(dir, g.Player.P)
+	p := g.Player.P.Add(dir)
 	if !g.PlayerCanPass(p) {
 		return again, errors.New("You cannot move in that direction.")
 	}
@@ -191,7 +191,7 @@ func (g *game) Teleportation() {
 			panic("Teleportation")
 		}
 		p = g.FreePassableCell()
-		if Distance(p, g.Player.P) < 15 && i < 1000 {
+		if distance(p, g.Player.P) < 15 && i < 1000 {
 			i++
 			continue
 		}
@@ -417,17 +417,7 @@ func (g *game) PlacePlayerAt(p gruid.Point) {
 	if p == g.Player.P {
 		return
 	}
-	g.Player.Dir = Dir(g.Player.P, p)
-	switch g.Player.Dir {
-	case ENE, ESE:
-		g.Player.Dir = E
-	case NNE, NNW:
-		g.Player.Dir = N
-	case WNW, WSW:
-		g.Player.Dir = W
-	case SSW, SSE:
-		g.Player.Dir = S
-	}
+	g.Player.Dir = dirnorm(g.Player.P, p)
 	m := g.MonsterAt(p)
 	ppos := g.Player.P
 	g.Player.P = p

@@ -4,204 +4,89 @@ import (
 	"github.com/anaseto/gruid"
 )
 
-func Distance(from, to gruid.Point) int {
+func distance(from, to gruid.Point) int {
 	delta := to.Sub(from)
-	return Abs(delta.X) + Abs(delta.Y)
+	return abs(delta.X) + abs(delta.Y)
 }
 
-func MaxCardinalDist(from, to gruid.Point) int {
+func maxCardinalDist(from, to gruid.Point) int {
 	delta := to.Sub(from)
-	deltaX := Abs(delta.X)
-	deltaY := Abs(delta.Y)
+	deltaX := abs(delta.X)
+	deltaY := abs(delta.Y)
 	if deltaX > deltaY {
 		return deltaX
 	}
 	return deltaY
 }
 
-type direction int
+var ZP gruid.Point = gruid.Point{}
 
-const (
-	NoDir direction = iota
-	E
-	ENE
-	NE
-	NNE
-	N
-	NNW
-	NW
-	WNW
-	W
-	WSW
-	SW
-	SSW
-	S
-	SSE
-	SE
-	ESE
-)
-
-func (dir direction) String() (s string) {
+func dirString(dir gruid.Point) (s string) {
 	switch dir {
-	case NoDir:
+	case ZP:
 		s = ""
-	case E:
+	case gruid.Point{1, 0}:
 		s = "E"
-	case ENE:
-		s = "ENE"
-	case NE:
+	case gruid.Point{1, -1}:
 		s = "NE"
-	case NNE:
-		s = "NNE"
-	case N:
+	case gruid.Point{0, -1}:
 		s = "N"
-	case NNW:
-		s = "NNW"
-	case NW:
+	case gruid.Point{-1, -1}:
 		s = "NW"
-	case WNW:
-		s = "WNW"
-	case W:
+	case gruid.Point{-1, 0}:
 		s = "W"
-	case WSW:
-		s = "WSW"
-	case SW:
+	case gruid.Point{-1, 1}:
 		s = "SW"
-	case SSW:
-		s = "SSW"
-	case S:
+	case gruid.Point{0, 1}:
 		s = "S"
-	case SSE:
-		s = "SSE"
-	case SE:
+	case gruid.Point{1, 1}:
 		s = "SE"
-	case ESE:
-		s = "ESE"
 	}
 	return s
 }
 
-func KeyToDir(k action) (dir direction) {
+func keyToDir(k action) (p gruid.Point) {
 	switch k {
 	case ActionW, ActionRunW:
-		dir = W
+		p = gruid.Point{-1, 0}
 	case ActionE, ActionRunE:
-		dir = E
+		p = gruid.Point{1, 0}
 	case ActionS, ActionRunS:
-		dir = S
+		p = gruid.Point{0, 1}
 	case ActionN, ActionRunN:
-		dir = N
+		p = gruid.Point{0, -1}
+	}
+	return p
+}
+
+func sign(n int) int {
+	var i int
+	switch {
+	case n > 0:
+		i = 1
+	case n < 0:
+		i = -1
+	}
+	return i
+}
+
+// dirnorm returns a normalized direction between two points, so that
+// directions that aren't cardinal nor diagonal are transformed into the
+// cardinal part (this corresponds to pruned intermediate nodes in diagonal
+// jump).
+func dirnorm(p, q gruid.Point) gruid.Point {
+	dir := q.Sub(p)
+	dx := abs(dir.X)
+	dy := abs(dir.Y)
+	dir = gruid.Point{sign(dir.X), sign(dir.Y)}
+	switch {
+	case dx == dy:
+	case dx > dy:
+		dir.Y = 0
+	default:
+		dir.X = 0
 	}
 	return dir
-}
-
-func To(dir direction, from gruid.Point) gruid.Point {
-	to := from
-	switch dir {
-	case E, ENE, ESE:
-		to = from.Add(gruid.Point{1, 0})
-	case NE:
-		to = from.Add(gruid.Point{1, -1})
-	case NNE, N, NNW:
-		to = from.Add(gruid.Point{0, -1})
-	case NW:
-		to = from.Add(gruid.Point{-1, -1})
-	case WNW, W, WSW:
-		to = from.Add(gruid.Point{-1, 0})
-	case SW:
-		to = from.Add(gruid.Point{-1, 1})
-	case SSW, S, SSE:
-		to = from.Add(gruid.Point{0, 1})
-	case SE:
-		to = from.Add(gruid.Point{1, 1})
-	}
-	return to
-}
-
-func Dir(from, to gruid.Point) direction {
-	deltaX := Abs(to.X - from.X)
-	deltaY := Abs(to.Y - from.Y)
-	switch {
-	case to.X > from.X && to.Y == from.Y:
-		return E
-	case to.X > from.X && to.Y < from.Y:
-		switch {
-		case deltaX > deltaY:
-			return ENE
-		case deltaX == deltaY:
-			return NE
-		default:
-			return NNE
-		}
-	case to.X == from.X && to.Y < from.Y:
-		return N
-	case to.X < from.X && to.Y < from.Y:
-		switch {
-		case deltaY > deltaX:
-			return NNW
-		case deltaX == deltaY:
-			return NW
-		default:
-			return WNW
-		}
-	case to.X < from.X && to.Y == from.Y:
-		return W
-	case to.X < from.X && to.Y > from.Y:
-		switch {
-		case deltaX > deltaY:
-			return WSW
-		case deltaX == deltaY:
-			return SW
-		default:
-			return SSW
-		}
-	case to.X == from.X && to.Y > from.Y:
-		return S
-	case to.X > from.X && to.Y > from.Y:
-		switch {
-		case deltaY > deltaX:
-			return SSE
-		case deltaX == deltaY:
-			return SE
-		default:
-			return ESE
-		}
-	default:
-		return NoDir
-	}
-}
-
-func RandomNeighbor(p gruid.Point, diag bool) gruid.Point {
-	if diag {
-		return RandomNeighborDiagonals(p)
-	}
-	return RandomNeighborCardinal(p)
-}
-
-func RandomNeighborDiagonals(p gruid.Point) gruid.Point {
-	neighbors := [8]gruid.Point{p.Add(gruid.Point{1, 0}), p.Add(gruid.Point{-1, 0}), p.Add(gruid.Point{0, -1}), p.Add(gruid.Point{0, 1}), p.Add(gruid.Point{1, -1}), p.Add(gruid.Point{-1, -1}), p.Add(gruid.Point{1, 1}), p.Add(gruid.Point{-1, 1})}
-	var r int
-	switch RandInt(8) {
-	case 0:
-		r = RandInt(len(neighbors[0:4]))
-	case 1:
-		r = RandInt(len(neighbors[0:2]))
-	default:
-		r = RandInt(len(neighbors[4:]))
-	}
-	return neighbors[r]
-}
-
-func RandomNeighborCardinal(p gruid.Point) gruid.Point {
-	neighbors := [4]gruid.Point{p.Add(gruid.Point{1, 0}), p.Add(gruid.Point{-1, 0}), p.Add(gruid.Point{0, -1}), p.Add(gruid.Point{0, 1})}
-	var r int
-	switch RandInt(4) {
-	case 0, 1:
-		r = RandInt(len(neighbors[0:2]))
-	default:
-		r = RandInt(len(neighbors))
-	}
-	return neighbors[r]
 }
 
 func idxtopos(i int) gruid.Point {
@@ -216,105 +101,36 @@ func valid(p gruid.Point) bool {
 	return p.Y >= 0 && p.Y < DungeonHeight && p.X >= 0 && p.X < DungeonWidth
 }
 
-func (dir direction) InViewCone(from, to gruid.Point) bool {
-	if to == from {
+func inViewCone(dir, from, to gruid.Point) bool {
+	if to == from || distance(from, to) <= 1 {
 		return true
 	}
-	d := Dir(from, to)
-	if d == dir || Distance(from, to) <= 1 {
-		return true
-	}
-	switch dir {
-	case E:
-		switch d {
-		case ESE, ENE, NE, SE:
-			return true
-		}
-	case NE:
-		switch d {
-		case ENE, NNE, N, E:
-			return true
-		}
-	case N:
-		switch d {
-		case NNE, NNW, NE, NW:
-			return true
-		}
-	case NW:
-		switch d {
-		case NNW, WNW, N, W:
-			return true
-		}
-	case W:
-		switch d {
-		case WNW, WSW, NW, SW:
-			return true
-		}
-	case SW:
-		switch d {
-		case WSW, SSW, W, S:
-			return true
-		}
-	case S:
-		switch d {
-		case SSW, SSE, SW, SE:
-			return true
-		}
-	case SE:
-		switch d {
-		case SSE, ESE, S, E:
-			return true
-		}
-	}
-	return false
+	d := dirnorm(from, to)
+	return d == dir || leftDir(d) == dir || rightDir(d) == dir
 }
 
-var alternateDirs = []direction{E, NE, N, NW, W, SW, S, SE}
-
-func (dir direction) Left() (d direction) {
-	switch dir {
-	case E:
-		d = NE
-	case NE:
-		d = N
-	case N:
-		d = NW
-	case NW:
-		d = W
-	case W:
-		d = SW
-	case SW:
-		d = S
-	case S:
-		d = SE
-	case SE:
-		d = E
+func leftDir(dir gruid.Point) gruid.Point {
+	switch {
+	case dir.X == 0 || dir.Y == 0:
+		return left(dir, dir)
 	default:
-		d = alternateDirs[RandInt(len(alternateDirs))]
+		return gruid.Point{(dir.Y + dir.X) / 2, (dir.Y - dir.X) / 2}
 	}
-	return d
 }
 
-func (dir direction) Right() (d direction) {
-	switch dir {
-	case E:
-		d = SE
-	case NE:
-		d = E
-	case N:
-		d = NE
-	case NW:
-		d = N
-	case W:
-		d = NW
-	case SW:
-		d = W
-	case S:
-		d = SW
-	case SE:
-		d = S
+func rightDir(dir gruid.Point) gruid.Point {
+	switch {
+	case dir.X == 0 || dir.Y == 0:
+		return right(dir, dir)
 	default:
-		d = alternateDirs[RandInt(len(alternateDirs))]
+		return gruid.Point{(dir.X - dir.Y) / 2, (dir.Y + dir.X) / 2}
 	}
-	return d
+}
+
+func right(p gruid.Point, dir gruid.Point) gruid.Point {
+	return gruid.Point{p.X - dir.Y, p.Y + dir.X}
+}
+
+func left(p gruid.Point, dir gruid.Point) gruid.Point {
+	return gruid.Point{p.X + dir.Y, p.Y - dir.X}
 }

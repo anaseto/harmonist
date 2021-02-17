@@ -73,3 +73,36 @@ func (d *dungeon) CardinalFlammableNeighbors(p gruid.Point) []gruid.Point {
 
 	return nb
 }
+
+func RandomNeighbor(p gruid.Point, diag bool) gruid.Point {
+	if diag {
+		return RandomNeighborDiagonals(p)
+	}
+	return RandomNeighborCardinal(p)
+}
+
+func RandomNeighborDiagonals(p gruid.Point) gruid.Point {
+	neighbors := [8]gruid.Point{p.Add(gruid.Point{1, 0}), p.Add(gruid.Point{-1, 0}), p.Add(gruid.Point{0, -1}), p.Add(gruid.Point{0, 1}), p.Add(gruid.Point{1, -1}), p.Add(gruid.Point{-1, -1}), p.Add(gruid.Point{1, 1}), p.Add(gruid.Point{-1, 1})}
+	var r int
+	switch RandInt(8) {
+	case 0:
+		r = RandInt(len(neighbors[0:4]))
+	case 1:
+		r = RandInt(len(neighbors[0:2]))
+	default:
+		r = RandInt(len(neighbors[4:]))
+	}
+	return neighbors[r]
+}
+
+func RandomNeighborCardinal(p gruid.Point) gruid.Point {
+	neighbors := [4]gruid.Point{p.Add(gruid.Point{1, 0}), p.Add(gruid.Point{-1, 0}), p.Add(gruid.Point{0, -1}), p.Add(gruid.Point{0, 1})}
+	var r int
+	switch RandInt(4) {
+	case 0, 1:
+		r = RandInt(len(neighbors[0:2]))
+	default:
+		r = RandInt(len(neighbors))
+	}
+	return neighbors[r]
+}

@@ -121,7 +121,7 @@ func (rs roomSlice) Less(i, j int) bool {
 	jpos := rs[j].p
 	jpos.X += rs[j].w / 2
 	jpos.Y += rs[j].h / 2
-	return rs[i].special || !rs[j].special && Distance(ipos, center) <= Distance(jpos, center)
+	return rs[i].special || !rs[j].special && distance(ipos, center) <= distance(jpos, center)
 }
 
 type dgen struct {
@@ -772,7 +772,7 @@ func (dg *dgen) PlayerStartCell(g *game, places []gruid.Point) {
 loop:
 	for i := len(dg.rooms) - 2; i >= 0; i-- {
 		for _, p := range places {
-			if Distance(r.p, p) < far && Distance(dg.rooms[i].p, p) >= far {
+			if distance(r.p, p) < far && distance(dg.rooms[i].p, p) >= far {
 				r = dg.rooms[i]
 				dg.rooms[len(dg.rooms)-1], dg.rooms[i] = dg.rooms[i], dg.rooms[len(dg.rooms)-1]
 				break loop
@@ -934,7 +934,7 @@ func (dg *dgen) FoliageCell(g *game) gruid.Point {
 		x := RandInt(DungeonWidth)
 		y := RandInt(DungeonHeight)
 		p := gruid.Point{x, y}
-		if Distance(p, g.Player.P) < DefaultLOSRange {
+		if distance(p, g.Player.P) < DefaultLOSRange {
 			continue
 		}
 		mons := g.MonsterAt(p)
@@ -983,7 +983,7 @@ func (dg *dgen) InsideCell(g *game) gruid.Point {
 		if mons.Exists() {
 			continue
 		}
-		if Distance(p, g.Player.P) < DefaultLOSRange {
+		if distance(p, g.Player.P) < DefaultLOSRange {
 			continue
 		}
 		c := dg.d.Cell(p)
@@ -1055,11 +1055,11 @@ func (dg *dgen) GenStairs(g *game, st stair) {
 	best := 0
 	for i, r := range dg.rooms {
 		for j, pl := range r.places {
-			score := Distance(pl.p, g.Player.P) + RandInt(20)
+			score := distance(pl.p, g.Player.P) + RandInt(20)
 			if !pl.used && pl.kind == PlaceSpecialStatic && score > best {
 				ri = i
 				pj = j
-				best = Distance(pl.p, g.Player.P)
+				best = distance(pl.p, g.Player.P)
 			}
 		}
 	}
@@ -1085,11 +1085,11 @@ loop:
 			}
 		}
 		for j, pl := range r.places {
-			score := Distance(pl.p, g.Player.P) + RandInt(20)
+			score := distance(pl.p, g.Player.P) + RandInt(20)
 			if !pl.used && pl.kind == PlaceSpecialStatic && score > best {
 				ri = i
 				pj = j
-				best = Distance(pl.p, g.Player.P)
+				best = distance(pl.p, g.Player.P)
 			}
 		}
 	}
@@ -1267,7 +1267,7 @@ func (dg *dgen) GenLake(c cell) {
 	d := dg.d
 	passable := func(p gruid.Point) func(q gruid.Point) bool {
 		return func(q gruid.Point) bool {
-			return valid(q) && terrain(dg.d.Cell(q)) == WallCell && !dg.room[q] && Distance(p, q) < 10+RandInt(10)
+			return valid(q) && terrain(dg.d.Cell(q)) == WallCell && !dg.room[q] && distance(p, q) < 10+RandInt(10)
 		}
 	}
 	for {
@@ -1275,11 +1275,11 @@ func (dg *dgen) GenLake(c cell) {
 		sp := newPather(passable(p))
 		size := len(dg.PR.CCMap(sp, p))
 		count++
-		if Abs(bestsize-90) > Abs(size-90) {
+		if abs(bestsize-90) > abs(size-90) {
 			bestsize = size
 			bestpos = p
 		}
-		if count > 15 || Abs(size-90) < 25 {
+		if count > 15 || abs(size-90) < 25 {
 			break
 		}
 	}
@@ -1304,7 +1304,7 @@ func (dg *dgen) GenQueenRock() {
 	for i := 0; i < 1+RandInt(2); i++ {
 		p := cavern[RandInt(len(cavern))]
 		passable := func(q gruid.Point) bool {
-			return valid(q) && terrain(dg.d.Cell(q)) == CavernCell && Distance(q, p) < 15+RandInt(5)
+			return valid(q) && terrain(dg.d.Cell(q)) == CavernCell && distance(q, p) < 15+RandInt(5)
 		}
 		cp := newPather(passable)
 		for _, q := range dg.PR.CCMap(cp, p) {

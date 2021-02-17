@@ -102,9 +102,9 @@ func (m *monster) LeaveRoomForPlayer(g *game) gruid.Point {
 		if mons.Exists() {
 			continue
 		}
-		if Distance(n.P, m.P) < dist {
+		if distance(n.P, m.P) < dist {
 			free = n.P
-			dist = Distance(n.P, m.P)
+			dist = distance(n.P, m.P)
 		}
 	}
 	// free should be valid except in really rare cases
@@ -127,9 +127,9 @@ func (g *game) FindJumpTarget(m *monster) gruid.Point {
 		if mons.Exists() {
 			continue
 		}
-		if Distance(n.P, m.P) < dist {
+		if distance(n.P, m.P) < dist {
 			free = n.P
-			dist = Distance(n.P, m.P)
+			dist = distance(n.P, m.P)
 		}
 	}
 	// free should be valid except in really rare cases
@@ -158,10 +158,10 @@ func (g *game) Jump(mons *monster) (bool, error) {
 	if g.Player.HasStatus(StatusExhausted) {
 		return false, errors.New("You cannot jump while exhausted.")
 	}
-	dir := Dir(g.Player.P, mons.P)
+	dir := dirnorm(g.Player.P, mons.P)
 	p := g.Player.P
 	for {
-		p = To(dir, p)
+		p = p.Add(dir)
 		if !g.PlayerCanPass(p) {
 			break
 		}
@@ -202,13 +202,13 @@ func (g *game) WallJump(p gruid.Point) error {
 	if g.Player.HasStatus(StatusExhausted) {
 		return errors.New("You cannot jump while exhausted.")
 	}
-	dir := Dir(p, g.Player.P)
+	dir := dirnorm(p, g.Player.P)
 	p = g.Player.P
 	q := p
 	count := 0
 	path := []gruid.Point{q}
 	for count < 4 {
-		p = To(dir, p)
+		p = p.Add(dir)
 		if !g.PlayerCanJumpPass(p) {
 			break
 		}

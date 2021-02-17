@@ -301,7 +301,7 @@ func (g *game) ActivateNightStone() error {
 	for _, mons := range targets {
 		g.Printf("%s falls asleep.", mons.Kind.Definite(true))
 		mons.State = Resting
-		mons.Dir = NoDir
+		mons.Dir = ZP
 		mons.ExhaustTime(g, 4+RandInt(2))
 	}
 	return nil
@@ -397,7 +397,7 @@ func (g *game) MagicMapping(maxdist int) error {
 
 func (g *game) Sensing() error {
 	for _, mons := range g.Monsters {
-		if mons.Exists() && !g.Player.Sees(mons.P) && Distance(mons.P, g.Player.P) <= MappingDistance {
+		if mons.Exists() && !g.Player.Sees(mons.P) && distance(mons.P, g.Player.P) <= MappingDistance {
 			mons.UpdateKnowledge(g, mons.P)
 		}
 	}

@@ -52,7 +52,7 @@ type game struct {
 	Autoexploring         bool
 	AutoexploreMapRebuild bool
 	AutoTarget            gruid.Point
-	AutoDir               direction
+	AutoDir               gruid.Point
 	AutoHalt              bool
 	AutoNext              bool
 	Log                   []logEntry
@@ -146,7 +146,7 @@ func (g *game) FreeCellForPlayer() gruid.Point {
 	bestpos := g.FreePassableCell()
 	for i := 0; i < 5; i++ {
 		p := g.FreePassableCell()
-		if Distance(p, center) > Distance(bestpos, center) {
+		if distance(p, center) > distance(bestpos, center) {
 			bestpos = p
 		}
 	}
@@ -168,7 +168,7 @@ func (g *game) FreeCellForMonster() gruid.Point {
 		if !c.IsPassable() {
 			continue
 		}
-		if g.Player != nil && Distance(g.Player.P, p) < 8 {
+		if g.Player != nil && distance(g.Player.P, p) < 8 {
 			continue
 		}
 		mons := g.MonsterAt(p)
@@ -189,7 +189,7 @@ func (g *game) FreeCellForBandMonster(p gruid.Point) gruid.Point {
 		neighbors := g.Dungeon.FreeNeighbors(p)
 		r := RandInt(len(neighbors))
 		p = neighbors[r]
-		if g.Player != nil && Distance(g.Player.P, p) < 8 {
+		if g.Player != nil && distance(g.Player.P, p) < 8 {
 			continue
 		}
 		mons := g.MonsterAt(p)
@@ -728,11 +728,11 @@ func (g *game) AutoPlayer() bool {
 			return true
 		}
 		g.AutoTarget = InvalidPos
-	case g.AutoDir != NoDir:
+	case g.AutoDir != ZP:
 		if g.AutoToDir() {
 			return true
 		}
-		g.AutoDir = NoDir
+		g.AutoDir = ZP
 	}
 	return false
 }

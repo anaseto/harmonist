@@ -304,9 +304,9 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		again = true
 	case ActionW, ActionS, ActionN, ActionE:
 		if !md.targ.kbTargeting {
-			again, err = g.PlayerBump(To(KeyToDir(action), g.Player.P))
+			again, err = g.PlayerBump(g.Player.P.Add(keyToDir(action)))
 		} else {
-			p := To(KeyToDir(action), md.targ.ex.p)
+			p := md.targ.ex.p.Add(keyToDir(action))
 			if valid(p) {
 				md.Examine(p)
 			}
@@ -314,12 +314,12 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		}
 	case ActionRunW, ActionRunS, ActionRunN, ActionRunE:
 		if !md.targ.kbTargeting {
-			again, err = g.GoToDir(KeyToDir(action))
+			again, err = g.GoToDir(keyToDir(action))
 		} else {
 			q := InvalidPos
 			p := md.targ.ex.p
 			for i := 0; i < 5; i++ {
-				p = To(KeyToDir(action), p)
+				p = p.Add(keyToDir(action))
 				if !valid(p) {
 					break
 				}
