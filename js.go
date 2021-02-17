@@ -290,7 +290,7 @@ func RemoveReplay() {
 func (g *game) Load() (bool, error) {
 	s, err := GetItem(harmonistsave)
 	if err != nil || s == nil {
-		return false, err
+		return false, nil
 	}
 	lg, err := g.DecodeGameSave(s)
 	if err != nil {

@@ -68,7 +68,7 @@ func (g *game) Load() (bool, error) {
 	_, err = os.Stat(saveFile)
 	if err != nil {
 		// no save file, new state
-		return false, err
+		return false, nil
 	}
 	data, err := ioutil.ReadFile(saveFile)
 	if err != nil {
