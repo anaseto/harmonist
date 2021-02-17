@@ -880,19 +880,21 @@ func (md *model) updateKeysDescription(title string, actions []string) {
 }
 
 func (md *model) KeysHelp() {
-	md.updateKeysDescription("Basic Commands", []string{
+	md.updateKeysDescription("Commands", []string{
+		"Basic Commands", "",
 		"Move/Jump", "arrows or wasd or hjkl or mouse left",
 		"Wait a turn", "“.” or 5 or enter or mouse left on @",
 		"Interact (Equip/Descend/Rest...)", "e",
 		"Evoke/Zap magara", "v or z",
 		"Inventory", "i",
 		"Examine", "x",
-		"Close/Cancel", "x or esc or space",
+		"Close/Cancel inventory, evocation...", "X or esc or space",
 		"Menu", "M",
 		"Advanced Commands", "",
 		"Save and Quit", "S",
 		"View previous messages", "m",
 		"Go to nearest stairs", "G",
+		"Run in a direction", "shift+arrows or HJKL",
 		"Autoexplore (use with caution)", "o",
 		"Write state statistics to file", "#",
 		"Quit without saving", "Q",
