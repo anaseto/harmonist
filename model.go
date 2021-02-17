@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"runtime"
 	"strings"
 
@@ -228,23 +229,23 @@ func (md *model) initWidgets() {
 	})
 }
 
-func initConfig() (string, string) {
+func initConfig() error {
 	GameConfig.DarkLOS = true
 	GameConfig.Version = Version
 	GameConfig.Tiles = true
 	load, err := LoadConfig()
-	var cfgerrstr string
-	var cfgreseterr string
-	if load && err != nil {
-		cfgerrstr = fmt.Sprintf("Error loading config: %s", err.Error())
-		err = SaveConfig()
-		if err != nil {
-			cfgreseterr = fmt.Sprintf("Error resetting config: %s", err.Error())
+	if err != nil {
+		err = fmt.Errorf("Error loading config: %v", err)
+		saverr := SaveConfig()
+		if saverr != nil {
+			log.Printf("Error resetting badly loaded config: %v", err)
 		}
-	} else if load {
+		return err
+	}
+	if load {
 		CustomKeys = true
 	}
-	return cfgerrstr, cfgreseterr
+	return err
 }
 
 func (md *model) init() gruid.Effect {
@@ -256,24 +257,16 @@ func (md *model) init() gruid.Effect {
 
 	g := md.g
 
-	cfgerrstr, cfgreseterr := initConfig()
 	md.applyConfig()
 	load, err := g.Load()
 	md.g.md = md // TODO: avoid this? (though it's handy)
 	if !load {
 		g.InitLevel()
-	} else if err != nil {
-		g.InitLevel()
-		g.PrintfStyled("Error: %v", logError, err)
-		g.PrintStyled("Could not load saved state… starting new state.", logError)
-	} else {
 		g.checks()
 	}
-	if cfgerrstr != "" {
-		g.PrintStyled(cfgerrstr, logError)
-	}
-	if cfgreseterr != "" {
-		g.PrintStyled(cfgreseterr, logError)
+	if err != nil {
+		g.PrintfStyled("Error: %v", logError, err)
+		g.PrintStyled("Could not load saved state… starting new state.", logError)
 	}
 
 	md.g.ComputeNoise()
@@ -372,9 +365,9 @@ func (md *model) update(msg gruid.Msg) gruid.Effect {
 		if md.mode == modeQuit {
 			err := RemoveSaveFile()
 			if err != nil {
-				md.g.PrintfStyled("Error removing save file: %v", logError, err)
+				log.Printf("Error removing save file: %v", err)
 			}
-			RemoveDataFile("replay.part")
+			RemoveReplay()
 			return eff
 		}
 		return eff
@@ -897,6 +890,9 @@ func (md *model) applyConfig() {
 	if GameConfig.TargetModeKeys != nil {
 		md.keysTarget = GameConfig.TargetModeKeys
 	}
+}
+
+func applyThemeConf() {
 	if GameConfig.DarkLOS {
 		ApplyDarkLOS()
 	} else {

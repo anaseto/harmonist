@@ -39,18 +39,11 @@ func (md *model) updateZoom() {
 func main() {
 	initDriver()
 	mainMenu := newMainMenu()
-	es1, es2 := initConfig()
-	if es1 != "" {
-		mainMenu.err = errors.New(es1)
+	err := initConfig()
+	if err != nil {
+		mainMenu.err = err
 	}
-	if es2 != "" {
-		mainMenu.err = errors.New(es2)
-	}
-	if GameConfig.DarkLOS {
-		ApplyDarkLOS()
-	} else {
-		ApplyLightLOS()
-	}
+	applyThemeConf()
 	for {
 		app := gruid.NewApp(gruid.AppConfig{
 			Driver: driver,
@@ -139,6 +132,7 @@ func (md *mainMenu) Draw() gruid.Grid {
 }
 
 const repit = "harmonistreplay"
+const replock = "harmonistreplock"
 
 func RunGame() error {
 	gd := gruid.NewGrid(UIWidth, UIHeight)
@@ -146,16 +140,32 @@ func RunGame() error {
 	repw := &bytes.Buffer{}
 	defer func() {
 		if m.finished {
+			SetItem(repit, repw.Bytes())
+			RemoveItem(replock)
 			RemoveSaveFile()
+		} else {
+			rl, err := GetItem(replock)
+			if err != nil {
+				log.Printf("replock: %v", err)
+			}
+			if rl != nil {
+				// save ongoing game replay
+				SetItem(repit, repw.Bytes())
+			}
 		}
-		SetItem(repit, repw.Bytes())
 	}()
-	replay, ok, err := GetItem(repit)
-	if !ok || err != nil {
+	rl, err := GetItem(replock)
+	if rl == nil {
 		if err != nil {
-			log.Printf("get replay: %v", err)
+			log.Printf("replock: %v", err)
 		}
-	} else {
+		// new game: remove old replay
+		RemoveReplay()
+	}
+	replay, err := GetItem(repit)
+	if err != nil {
+		log.Printf("get replay: %v", err)
+	} else if replay != nil {
 		repw.Write(replay)
 	}
 	app := gruid.NewApp(gruid.AppConfig{
@@ -163,15 +173,16 @@ func RunGame() error {
 		Model:       m,
 		FrameWriter: repw,
 	})
+	SetItem(replock, []byte("1"))
 	return app.Start(context.Background())
 }
 
 func RunReplay() error {
-	replay, ok, err := GetItem(repit)
-	if !ok {
-		if err != nil {
-			return fmt.Errorf("replay loading: %v", err)
-		}
+	replay, err := GetItem(repit)
+	if err != nil {
+		return fmt.Errorf("replay loading: %v", err)
+	}
+	if replay == nil {
 		return errors.New("no replay found")
 	}
 	repr := &bytes.Buffer{}
@@ -185,7 +196,6 @@ func RunReplay() error {
 		Grid:         gd,
 		FrameDecoder: fd,
 	})
-	initConfig()
 	app := gruid.NewApp(gruid.AppConfig{
 		Driver: driver,
 		Model:  rep,
@@ -195,30 +205,28 @@ func RunReplay() error {
 
 // io compatibility functions
 
-var SaveError string
-
 func DataDir() (string, error) {
 	return "", nil
 }
 
-// GetItem retrieves a base64 encoded item from localStorage. It returns a
-// false boolean if the item does not exist in the storage. It returns an error
-// if localStorage is not available, or an item existed but could not be
-// decoded.
-func GetItem(item string) ([]byte, bool, error) {
+// GetItem retrieves a base64 encoded item from localStorage. It returns nil if
+// the item does not exist in the storage. It returns an error if localStorage
+// is not available, or an item existed but could not be decoded.
+func GetItem(item string) ([]byte, error) {
 	storage := js.Global().Get("localStorage")
 	if storage.Type() != js.TypeObject {
-		return nil, true, errors.New("localStorage not found")
+		return nil, errors.New("localStorage not found")
 	}
 	save := storage.Call("getItem", item)
 	if save.Type() != js.TypeString {
-		return nil, false, nil
+		// this means the item does not exist
+		return nil, nil
 	}
 	s, err := base64.StdEncoding.DecodeString(save.String())
 	if err != nil {
-		return nil, true, err
+		return nil, err
 	}
-	return s, true, nil
+	return s, nil
 }
 
 // SetItem sets an item to a given value in the localStorage. The value will be
@@ -226,7 +234,6 @@ func GetItem(item string) ([]byte, bool, error) {
 func SetItem(item string, value []byte) error {
 	storage := js.Global().Get("localStorage")
 	if storage.Type() != js.TypeObject {
-		SaveError = "localStorage not found"
 		return errors.New("localStorage not found")
 	}
 	s := base64.StdEncoding.EncodeToString(value)
@@ -235,79 +242,78 @@ func SetItem(item string, value []byte) error {
 }
 
 // RemoveItem removes an item from localStorage.
-func RemoveItem(item string) error {
+func RemoveItem(item string) {
 	storage := js.Global().Get("localStorage")
 	if storage.Type() != js.TypeObject {
-		SaveError = "localStorage not found"
-		return errors.New("localStorage not found")
+		log.Print("localStorage not found")
 	}
 	storage.Call("removeItem", item)
-	return nil
 }
+
+const harmonistsave = "harmonistsave"
+const harmonistconfig = "harmonistconfig"
 
 func (g *game) Save() error {
 	save, err := g.GameSave()
 	if err != nil {
-		SaveError = err.Error()
 		return err
 	}
-	err = SetItem("harmonistsave", save)
+	err = SetItem(harmonistsave, save)
 	if err != nil {
-		SaveError = err.Error()
 		return err
 	}
-	SaveError = ""
 	return nil
 }
 
 func SaveConfig() error {
 	conf, err := GameConfig.ConfigSave()
 	if err != nil {
-		SaveError = err.Error()
 		return err
 	}
-	err = SetItem("harmonistconfig", conf)
+	err = SetItem(harmonistconfig, conf)
 	if err != nil {
-		SaveError = err.Error()
 		return err
 	}
-	SaveError = ""
 	return nil
 }
 
 func RemoveSaveFile() error {
-	RemoveDataFile("save")
+	RemoveItem(harmonistsave)
 	return nil
 }
 
-func RemoveDataFile(file string) error {
-	return RemoveItem("harmonist" + file)
+func RemoveReplay() {
+	RemoveItem(replock)
+	RemoveItem(repit)
 }
 
 func (g *game) Load() (bool, error) {
-	s, ok, err := GetItem("harmonistsave")
-	if !ok || err != nil {
-		return ok, err
+	s, err := GetItem(harmonistsave)
+	if err != nil || s == nil {
+		return false, err
 	}
 	lg, err := g.DecodeGameSave(s)
 	if err != nil {
-		return true, err
+		return false, err
+	}
+	if lg.Version != Version {
+		return false, nil
 	}
 	*g = *lg
 	return true, nil
 }
 
 func LoadConfig() (bool, error) {
-	s, ok, err := GetItem("harmonistconfig")
-	if !ok || err != nil {
-		return ok, err
+	s, err := GetItem(harmonistconfig)
+	if err != nil || s == nil {
+		return false, err
 	}
 	c, err := DecodeConfigSave(s)
 	if err != nil {
-		return true, err
+		return false, err
 	}
 	if c.Version != GameConfig.Version {
-		return true, errors.New("Version mismatch")
+		return false, nil
 	}
 	GameConfig = *c
 	return true, nil

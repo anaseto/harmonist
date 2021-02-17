@@ -55,6 +55,10 @@ func RemoveSaveFile() error {
 	return RemoveDataFile("save")
 }
 
+func RemoveReplay() {
+	RemoveDataFile("replay.part")
+}
+
 func (g *game) Load() (bool, error) {
 	dataDir, err := DataDir()
 	if err != nil {
@@ -68,14 +72,14 @@ func (g *game) Load() (bool, error) {
 	}
 	data, err := ioutil.ReadFile(saveFile)
 	if err != nil {
-		return true, err
+		return false, err
 	}
 	lg, err := g.DecodeGameSave(data)
 	if err != nil {
-		return true, err
+		return false, err
 	}
 	if lg.Version != Version {
-		return true, nil
+		return false, nil
 	}
 	*g = *lg
 	return true, nil
@@ -107,18 +111,18 @@ func LoadConfig() (bool, error) {
 	_, err = os.Stat(saveFile)
 	if err != nil {
 		// no save file, new state
-		return false, err
+		return false, nil
 	}
 	data, err := ioutil.ReadFile(saveFile)
 	if err != nil {
-		return true, err
+		return false, err
 	}
 	c, err := DecodeConfigSave(data)
 	if err != nil {
-		return true, err
+		return false, err
 	}
 	if c.Version != GameConfig.Version {
-		return true, nil
+		return false, nil
 	}
 	GameConfig = *c
 	return true, nil

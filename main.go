@@ -50,6 +50,11 @@ func main() {
 	} else if *opt16colors {
 		Xterm256Color = false
 	}
+	err := initConfig()
+	if err != nil {
+		log.Print(err)
+	}
+	applyThemeConf()
 	initDriver(*optFullscreen)
 	if *optReplay != "" {
 		RunReplay(*optReplay)
@@ -130,7 +135,6 @@ func RunReplay(file string) {
 		Grid:         gd,
 		FrameDecoder: fd,
 	})
-	initConfig()
 	app := gruid.NewApp(gruid.AppConfig{
 		Driver: driver,
 		Model:  rep,
