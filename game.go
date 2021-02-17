@@ -53,6 +53,8 @@ type game struct {
 	AutoexploreMapRebuild bool
 	AutoTarget            gruid.Point
 	AutoDir               gruid.Point
+	autoDirNeighbors      dirNeighbors
+	autoDirChanged        bool
 	AutoHalt              bool
 	AutoNext              bool
 	Log                   []logEntry

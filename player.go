@@ -61,7 +61,10 @@ func (pl *player) HasStatus(st status) bool {
 func (g *game) AutoToDir() bool {
 	if g.MonsterInLOS() == nil {
 		p := g.Player.P.Add(g.AutoDir)
-		if g.PlayerCanPass(p) {
+		nbs := g.dirNeighbors(p, g.AutoDir)
+		blocked := g.dirBlocked(p, g.AutoDir)
+		if g.PlayerCanPass(p) && (g.autoDirNeighbors == nbs || nbs > 0 && blocked ||
+			nbs == dirBlockedLaterals && (g.autoDirChanged || g.dirNeighbors(g.Player.P, g.AutoDir) == dirBlockedLaterals)) {
 			again, err := g.PlayerBump(p)
 			if err != nil {
 				g.Print(err.Error())
@@ -69,16 +72,49 @@ func (g *game) AutoToDir() bool {
 				return false
 			}
 			if again {
+				g.AutoDir = ZP
 				return false
 			}
-		} else {
-			g.AutoDir = ZP
-			return false
+			// player moved in the direction
+			g.autoDirChanged = false
+			if blocked && nbs > 0 {
+				if g.PlayerCanPass(left(p, g.AutoDir)) {
+					g.AutoDir = left(p, g.AutoDir).Sub(p)
+					g.autoDirChanged = true
+				} else if g.PlayerCanPass(right(p, g.AutoDir)) {
+					g.AutoDir = right(p, g.AutoDir).Sub(p)
+					g.autoDirChanged = true
+				}
+				g.autoDirNeighbors = g.dirNeighbors(p, g.AutoDir)
+			}
+			return true
 		}
-		return true
 	}
 	g.AutoDir = ZP
 	return false
+}
+
+type dirNeighbors int
+
+const (
+	dirFreeLaterals dirNeighbors = iota
+	dirBlockedLeft
+	dirBlockedRight
+	dirBlockedLaterals
+)
+
+func (g *game) dirNeighbors(p, dir gruid.Point) (dn dirNeighbors) {
+	if !g.PlayerCanPass(left(p, dir)) {
+		dn += dirBlockedLeft
+	}
+	if !g.PlayerCanPass(right(p, dir)) {
+		dn += dirBlockedRight
+	}
+	return dn
+}
+
+func (g *game) dirBlocked(p, dir gruid.Point) bool {
+	return !g.PlayerCanPass(p.Add(dir))
 }
 
 func (g *game) GoToDir(dir gruid.Point) (again bool, err error) {
@@ -95,6 +131,21 @@ func (g *game) GoToDir(dir gruid.Point) (again bool, err error) {
 		return again, err
 	}
 	g.AutoDir = dir
+	nbs := g.dirNeighbors(p, dir)
+	g.autoDirChanged = false
+	blocked := g.dirBlocked(p, dir)
+	if blocked && nbs > 0 {
+		if g.PlayerCanPass(left(p, dir)) {
+			g.AutoDir = left(p, dir).Sub(p)
+			g.autoDirChanged = true
+		} else if g.PlayerCanPass(right(p, dir)) {
+			g.AutoDir = right(p, dir).Sub(p)
+			g.autoDirChanged = true
+		}
+		g.autoDirNeighbors = g.dirNeighbors(p, g.AutoDir)
+	} else {
+		g.autoDirNeighbors = nbs
+	}
 	return again, err
 }
 
