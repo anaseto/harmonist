@@ -63,7 +63,7 @@ func (g *game) AutoToDir() bool {
 		p := g.Player.P.Add(g.AutoDir)
 		nbs := g.dirNeighbors(p, g.AutoDir)
 		blocked := g.dirBlocked(p, g.AutoDir)
-		if g.PlayerCanPass(p) && (g.autoDirNeighbors == nbs || nbs > 0 && blocked ||
+		if g.PlayerCanPass(p) && (g.autoDirNeighbors == nbs || nbs != dirFreeLaterals && blocked ||
 			nbs == dirBlockedLaterals && (g.autoDirChanged || g.dirNeighbors(g.Player.P, g.AutoDir) == dirBlockedLaterals)) {
 			again, err := g.PlayerBump(p)
 			if err != nil {
@@ -155,10 +155,10 @@ func (g *game) MoveToTarget() bool {
 	}
 	path := g.PlayerPath(g.Player.P, g.AutoTarget)
 	if g.MonsterInLOS() != nil {
-		g.AutoTarget = InvalidPos
+		g.AutoTarget = invalidPos
 	}
 	if len(path) < 1 {
-		g.AutoTarget = InvalidPos
+		g.AutoTarget = invalidPos
 		return false
 	}
 	var err error
@@ -166,18 +166,18 @@ func (g *game) MoveToTarget() bool {
 	if len(path) > 1 {
 		again, err = g.PlayerBump(path[1])
 		if g.ExclusionsMap[path[1]] {
-			g.AutoTarget = InvalidPos
+			g.AutoTarget = invalidPos
 		}
 	} else {
 		g.WaitTurn()
 	}
 	if err != nil {
 		g.Print(err.Error())
-		g.AutoTarget = InvalidPos
+		g.AutoTarget = invalidPos
 		return false
 	}
 	if valid(g.AutoTarget) && g.Player.P == g.AutoTarget {
-		g.AutoTarget = InvalidPos
+		g.AutoTarget = invalidPos
 	}
 	return !again
 }

@@ -19,6 +19,7 @@ func maxCardinalDist(from, to gruid.Point) int {
 	return deltaY
 }
 
+// ZP is the zero value for gruid.Point.
 var ZP gruid.Point = gruid.Point{}
 
 func dirString(dir gruid.Point) (s string) {

@@ -281,9 +281,9 @@ func (c cell) ShortString(g *game, p gruid.Point) (desc string) {
 		desc = "cave ground"
 	case FakeStairCell:
 		if g.Depth == WinDepth {
-			desc = DeepStairShortDesc
+			desc = deepStairShortDesc
 		} else {
-			desc = NormalStairShortDesc
+			desc = normalStairShortDesc
 		}
 	case PotionCell:
 		desc = g.Objects.Potions[p].String()
@@ -347,9 +347,9 @@ func (c cell) ShortDesc(g *game, p gruid.Point) (desc string) {
 		desc = "cave ground"
 	case FakeStairCell:
 		if g.Depth == WinDepth {
-			desc = DeepStairShortDesc
+			desc = deepStairShortDesc
 		} else {
-			desc = NormalStairShortDesc
+			desc = normalStairShortDesc
 		}
 	case PotionCell:
 		desc = g.Objects.Potions[p].ShortDesc(g)
@@ -413,9 +413,9 @@ func (c cell) Desc(g *game, p gruid.Point) (desc string) {
 		desc = "This is natural cave ground."
 	case FakeStairCell:
 		if g.Depth == WinDepth {
-			desc = DeepStairDesc
+			desc = deepStairDesc
 		} else {
-			desc = NormalStairDesc
+			desc = normalStairDesc
 		}
 	case PotionCell:
 		desc = g.Objects.Potions[p].Desc(g)

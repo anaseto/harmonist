@@ -98,11 +98,13 @@ func init() {
 	ColorFgWanderingMonster = ColorOrange
 }
 
+var Only8Colors bool
+
 func ApplyDarkLOS() {
 	ColorBgDark = ColorBackground
 	ColorBgLOS = ColorBackgroundSecondary
 	ColorFgDark = ColorForegroundSecondary
-	if Only8Colors {
+	if Only8Colors && !Tiles {
 		ColorFgLOS = ColorGreen
 	} else {
 		ColorFgLOS = ColorForegroundEmph
@@ -113,17 +115,11 @@ func ApplyLightLOS() {
 	ColorBgDark = ColorBackgroundSecondary
 	ColorBgLOS = ColorBackground
 	ColorFgDark = ColorForeground
-	if Only8Colors {
+	if Only8Colors && !Tiles {
 		ColorFgLOS = ColorGreen
 	} else {
 		ColorFgLOS = ColorForegroundEmph
 	}
-}
-
-var Only8Colors bool
-
-func Simple8ColorPalette() {
-	Only8Colors = true
 }
 
 const (

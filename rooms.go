@@ -226,7 +226,7 @@ func (r *room) RandomPlace(kind placeKind) gruid.Point {
 		}
 	}
 	if len(p) == 0 {
-		return InvalidPos
+		return invalidPos
 	}
 	j := p[RandInt(len(p))]
 	r.places[j].used = true
@@ -236,10 +236,10 @@ func (r *room) RandomPlace(kind placeKind) gruid.Point {
 var PlaceSpecialOrStatic = []placeKind{PlaceSpecialStatic, PlaceStatic}
 
 func (r *room) RandomPlaces(kinds []placeKind) gruid.Point {
-	p := InvalidPos
+	p := invalidPos
 	for _, kind := range kinds {
 		p = r.RandomPlace(kind)
-		if p != InvalidPos {
+		if p != invalidPos {
 			break
 		}
 	}

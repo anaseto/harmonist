@@ -691,9 +691,9 @@ func (dg *dgen) AddSpecial(g *game, ml maplayout) {
 }
 
 func (dg *dgen) PutLore(g *game) {
-	p := InvalidPos
+	p := invalidPos
 	count := 0
-	for p == InvalidPos {
+	for p == invalidPos {
 		count++
 		if count > 2000 {
 			panic("PutLore1")
@@ -742,7 +742,7 @@ func (dg *dgen) GenLight(g *game) {
 	}
 	for i := 0; i < ni; i++ {
 		p := dg.rooms[RandInt(len(dg.rooms))].RandomPlaces(PlaceSpecialOrStatic)
-		if p != InvalidPos {
+		if p != invalidPos {
 			g.Dungeon.SetCell(p, LightCell)
 		} else if dg.rand.Intn(10) > 0 {
 			i--
@@ -776,7 +776,7 @@ loop:
 	default:
 		return
 	}
-	itpos := InvalidPos
+	itpos := invalidPos
 	neighbors := g.playerPassableNeighbors(g.Player.P)
 	for i := 0; i < len(neighbors); i++ {
 		j := RandInt(len(neighbors) - i)
@@ -795,12 +795,12 @@ loopnb:
 			break
 		}
 	}
-	if itpos == InvalidPos {
+	if itpos == invalidPos {
 		itpos = r.RandomPlace(PlaceItem)
 	}
-	if itpos == InvalidPos {
+	if itpos == invalidPos {
 		itpos = r.RandomPlaces(PlaceSpecialOrStatic)
-		if itpos == InvalidPos {
+		if itpos == invalidPos {
 			panic("no item")
 		}
 	}
@@ -834,8 +834,8 @@ func (dg *dgen) GenBanana(g *game) {
 
 func (dg *dgen) GenPotion(g *game, ptn potion) {
 	count := 0
-	p := InvalidPos
-	for p == InvalidPos {
+	p := invalidPos
+	for p == invalidPos {
 		count++
 		if count > maxIterations {
 			return
@@ -872,7 +872,7 @@ func (dg *dgen) OutsideCavernMiddleCell(g *game) gruid.Point {
 	for {
 		count++
 		if count > 2500 {
-			return InvalidPos
+			return invalidPos
 		}
 		x := dg.rand.Intn(DungeonWidth)
 		y := dg.rand.Intn(DungeonHeight)
@@ -989,9 +989,9 @@ func (dg *dgen) GenItem(g *game) {
 	if plan != GenAmulet && plan != GenCloak {
 		return
 	}
-	p := InvalidPos
+	p := invalidPos
 	count := 0
-	for p == InvalidPos {
+	for p == invalidPos {
 		count++
 		if count > maxIterations {
 			panic("GenItem")
@@ -1012,9 +1012,9 @@ func (dg *dgen) GenItem(g *game) {
 }
 
 func (dg *dgen) GenBarrierStone(g *game) {
-	p := InvalidPos
+	p := invalidPos
 	count := 0
-	for p == InvalidPos {
+	for p == invalidPos {
 		count++
 		if count > maxIterations {
 			panic("GenBarrierStone")
@@ -1026,9 +1026,9 @@ func (dg *dgen) GenBarrierStone(g *game) {
 }
 
 func (dg *dgen) GenMagara(g *game) {
-	p := InvalidPos
+	p := invalidPos
 	count := 0
-	for p == InvalidPos {
+	for p == invalidPos {
 		count++
 		if count > maxIterations {
 			panic("GenMagara")
@@ -1093,9 +1093,9 @@ loop:
 }
 
 func (dg *dgen) GenBarrel(g *game) {
-	p := InvalidPos
+	p := invalidPos
 	count := 0
-	for p == InvalidPos {
+	for p == invalidPos {
 		count++
 		if count > 500 {
 			return
@@ -1107,9 +1107,9 @@ func (dg *dgen) GenBarrel(g *game) {
 }
 
 func (dg *dgen) GenTable(g *game) {
-	p := InvalidPos
+	p := invalidPos
 	count := 0
-	for p == InvalidPos {
+	for p == invalidPos {
 		count++
 		if count > 500 {
 			return
@@ -1121,7 +1121,7 @@ func (dg *dgen) GenTable(g *game) {
 
 func (dg *dgen) GenTree(g *game) {
 	p := dg.OutsideCavernMiddleCell(g)
-	if p != InvalidPos {
+	if p != invalidPos {
 		g.Dungeon.SetCell(p, TreeCell)
 	}
 }
@@ -1196,11 +1196,11 @@ func (dg *dgen) GenStones(g *game) {
 		inroom++
 	}
 	for i := 0; i < nstones; i++ {
-		p := InvalidPos
+		p := invalidPos
 		var st stone
 		if i < inroom {
 			count := 0
-			for p == InvalidPos {
+			for p == invalidPos {
 				count++
 				if count > 1500 {
 					p = dg.CaveGroundCell(g)
@@ -1436,10 +1436,10 @@ func (g *game) GenBand(band monsterBand) []monsterKind {
 
 func (dg *dgen) BandInfoGuard(g *game, band monsterBand, pl placeKind) bandInfo {
 	bandinfo := bandInfo{Kind: monsterBand(band)}
-	p := InvalidPos
+	p := invalidPos
 	count := 0
 loop:
-	for p == InvalidPos {
+	for p == invalidPos {
 		count++
 		if count > maxIterations {
 			p = dg.InsideCell(g)
@@ -1453,7 +1453,7 @@ loop:
 					break
 				}
 			}
-			if p != InvalidPos && !g.MonsterAt(p).Exists() {
+			if p != invalidPos && !g.MonsterAt(p).Exists() {
 				break loop
 			}
 		}
@@ -1467,7 +1467,7 @@ loop:
 
 func (dg *dgen) BandInfoGuardSpecial(g *game, band monsterBand) bandInfo {
 	bandinfo := bandInfo{Kind: monsterBand(band)}
-	p := InvalidPos
+	p := invalidPos
 	count := 0
 	for _, r := range dg.rooms {
 		count++
@@ -1477,7 +1477,7 @@ func (dg *dgen) BandInfoGuardSpecial(g *game, band monsterBand) bandInfo {
 			break
 		}
 		p = r.RandomPlace(PlacePatrolSpecial)
-		if p != InvalidPos && !g.MonsterAt(p).Exists() {
+		if p != invalidPos && !g.MonsterAt(p).Exists() {
 			break
 		}
 	}
@@ -1488,9 +1488,9 @@ func (dg *dgen) BandInfoGuardSpecial(g *game, band monsterBand) bandInfo {
 
 func (dg *dgen) BandInfoPatrol(g *game, band monsterBand, pl placeKind) bandInfo {
 	bandinfo := bandInfo{Kind: monsterBand(band)}
-	p := InvalidPos
+	p := invalidPos
 	count := 0
-	for p == InvalidPos || g.MonsterAt(p).Exists() {
+	for p == invalidPos || g.MonsterAt(p).Exists() {
 		count++
 		if count > 4000 {
 			p = dg.InsideCell(g)
@@ -1498,9 +1498,9 @@ func (dg *dgen) BandInfoPatrol(g *game, band monsterBand, pl placeKind) bandInfo
 		}
 		p = dg.rooms[RandInt(len(dg.rooms)-1)].RandomPlace(pl)
 	}
-	target := InvalidPos
+	target := invalidPos
 	count = 0
-	for target == InvalidPos {
+	for target == invalidPos {
 		// TODO: only find place in other room?
 		count++
 		if count > 4000 {
@@ -1517,7 +1517,7 @@ func (dg *dgen) BandInfoPatrol(g *game, band monsterBand, pl placeKind) bandInfo
 
 func (dg *dgen) BandInfoPatrolSpecial(g *game, band monsterBand) bandInfo {
 	bandinfo := bandInfo{Kind: monsterBand(band)}
-	p := InvalidPos
+	p := invalidPos
 	count := 0
 	for _, r := range dg.rooms {
 		count++
@@ -1527,11 +1527,11 @@ func (dg *dgen) BandInfoPatrolSpecial(g *game, band monsterBand) bandInfo {
 			break
 		}
 		p = r.RandomPlace(PlacePatrolSpecial)
-		if p != InvalidPos && !g.MonsterAt(p).Exists() {
+		if p != invalidPos && !g.MonsterAt(p).Exists() {
 			break
 		}
 	}
-	target := InvalidPos
+	target := invalidPos
 	count = 0
 	for _, r := range dg.rooms {
 		count++
@@ -1541,7 +1541,7 @@ func (dg *dgen) BandInfoPatrolSpecial(g *game, band monsterBand) bandInfo {
 			break
 		}
 		target = r.RandomPlace(PlacePatrolSpecial)
-		if target != InvalidPos {
+		if target != invalidPos {
 			break
 		}
 	}

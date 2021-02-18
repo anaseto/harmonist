@@ -119,12 +119,11 @@ func map16ColorTo256(c gruid.Color, fg bool) gruid.Color {
 				return Color256Base0
 			}
 			return Color256Base00
-		} else {
-			if GameConfig.DarkLOS {
-				return Color256Base03
-			}
-			return Color256Base3
 		}
+		if GameConfig.DarkLOS {
+			return Color256Base03
+		}
+		return Color256Base3
 	case ColorBackgroundSecondary:
 		if GameConfig.DarkLOS {
 			return Color256Base02

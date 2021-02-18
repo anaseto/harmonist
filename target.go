@@ -9,7 +9,7 @@ import (
 	"github.com/anaseto/gruid/ui"
 )
 
-var InvalidPos = gruid.Point{-1, -1}
+var invalidPos = gruid.Point{-1, -1}
 
 type examination struct {
 	p            gruid.Point
@@ -24,7 +24,7 @@ type examination struct {
 
 // HideCursor hides the target cursor.
 func (md *model) HideCursor() {
-	md.targ.ex.p = InvalidPos
+	md.targ.ex.p = invalidPos
 }
 
 // SetCursor sets the target cursor.
@@ -86,7 +86,7 @@ func (md *model) KeyboardExamine() {
 		objects: []gruid.Point{},
 	}
 	if p == g.Player.P {
-		md.nextObject(InvalidPos, md.targ.ex)
+		md.nextObject(invalidPos, md.targ.ex)
 		if !valid(md.targ.ex.p) {
 			md.nextStair(md.targ.ex)
 		}

@@ -440,7 +440,7 @@ func (g *game) BlinkPos(mpassable bool) gruid.Point {
 		losPos = append(losPos, p)
 	}
 	if len(losPos) == 0 {
-		return InvalidPos
+		return invalidPos
 	}
 	q := losPos[RandInt(len(losPos))]
 	for i := 0; i < 4; i++ {
@@ -509,7 +509,7 @@ func (g *game) EvokeTeleportOther() error {
 		max = len(ms)
 	}
 	for i := 0; i < max; i++ {
-		if ms[i].Search == InvalidPos {
+		if ms[i].Search == invalidPos {
 			ms[i].Search = ms[i].P
 		}
 		ms[i].TeleportAway(g)
@@ -648,7 +648,7 @@ func (g *game) EvokeParalysis() error {
 	for _, mons := range ms {
 		if mons.PutStatus(g, MonsParalysed, DurationParalysisMonster) {
 			count++
-			if mons.Search == InvalidPos {
+			if mons.Search == invalidPos {
 				mons.Search = mons.P
 			}
 		}
@@ -713,7 +713,7 @@ func (g *game) EvokeLignification() error {
 			continue
 		}
 		mons.EnterLignification(g)
-		if mons.Search == InvalidPos {
+		if mons.Search == invalidPos {
 			mons.Search = mons.P
 		}
 		targets = append(targets, g.Ray(mons.P)...)
@@ -787,7 +787,7 @@ func (g *game) EvokeConfusion() error {
 	for _, mons := range ms {
 		if mons.EnterConfusion(g) {
 			count++
-			if mons.Search == InvalidPos {
+			if mons.Search == invalidPos {
 				mons.Search = mons.P
 			}
 		}

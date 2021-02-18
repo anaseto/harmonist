@@ -423,7 +423,7 @@ func (md *model) updateJumpConfirmation(msg gruid.Msg) {
 	case gruid.MsgKeyDown:
 		md.mode = modeNormal
 		if msg.Key == "y" || msg.Key == "Y" {
-			md.g.FallAbyss(DescendFall)
+			md.g.FallAbyss(DescendJump)
 		} else {
 			md.g.Print("No jump, then.")
 		}
@@ -462,7 +462,7 @@ func (md *model) updateKeyDown(msg gruid.MsgKeyDown) gruid.Effect {
 	if !md.targ.kbTargeting && valid(md.targ.ex.p) {
 		md.CancelExamine()
 	}
-	if md.targ.ex.p != InvalidPos {
+	if md.targ.ex.p != invalidPos {
 		switch msg.Key {
 		case gruid.KeyPageDown:
 			md.targ.ex.scroll = true
@@ -490,11 +490,11 @@ func (md *model) updateMouse(msg gruid.MsgMouse) gruid.Effect {
 	p := msg.P.Add(gruid.Point{0, -2}) // relative position ignoring log
 	switch msg.Action {
 	case gruid.MouseWheelUp:
-		if md.targ.ex.p != InvalidPos {
+		if md.targ.ex.p != invalidPos {
 			md.targ.ex.scroll = true
 		}
 	case gruid.MouseWheelDown:
-		if md.targ.ex.p != InvalidPos {
+		if md.targ.ex.p != invalidPos {
 			md.targ.ex.scroll = false
 		}
 	case gruid.MouseMove:

@@ -42,16 +42,16 @@ func (st stair) String() (desc string) {
 	return desc
 }
 
-const NormalStairShortDesc = "stairs downwards"
-const DeepStairShortDesc = "deep stairs downwards"
+const normalStairShortDesc = "stairs downwards"
+const deepStairShortDesc = "deep stairs downwards"
 
 func (st stair) ShortString(g *game) (desc string) {
 	switch st {
 	case NormalStair:
 		if g.Depth == WinDepth {
-			desc = DeepStairShortDesc
+			desc = deepStairShortDesc
 		} else {
-			desc = NormalStairShortDesc
+			desc = normalStairShortDesc
 		}
 	case WinStair:
 		desc = "monolith portal"
@@ -65,9 +65,9 @@ func (st stair) ShortDesc(g *game) (desc string) {
 	switch st {
 	case NormalStair:
 		if g.Depth == WinDepth {
-			desc = DeepStairShortDesc
+			desc = deepStairShortDesc
 		} else {
-			desc = NormalStairShortDesc
+			desc = normalStairShortDesc
 		}
 	case WinStair:
 		desc = "a monolith portal"
@@ -77,8 +77,8 @@ func (st stair) ShortDesc(g *game) (desc string) {
 	return desc
 }
 
-const NormalStairDesc = "Stairs lead to the next level of Dayoriah Clan's domain in Hareka's Underground. You will not be able to come back, because an oric barrier seals the stairs when they are traversed by intruders. The upside of this is that ennemies cannot follow you either."
-const DeepStairDesc = "Those very deep stairs lead to the next level of Dayoriah Clan's domain in Hareka's Underground. You will not be able to come back, because an oric barrier seals the stairs when they are traversed by intruders. The upside of this is that ennemies cannot follow you either."
+const normalStairDesc = "Stairs lead to the next level of Dayoriah Clan's domain in Hareka's Underground. You will not be able to come back, because an oric barrier seals the stairs when they are traversed by intruders. The upside of this is that ennemies cannot follow you either."
+const deepStairDesc = "Those very deep stairs lead to the next level of Dayoriah Clan's domain in Hareka's Underground. You will not be able to come back, because an oric barrier seals the stairs when they are traversed by intruders. The upside of this is that ennemies cannot follow you either."
 
 func (st stair) Desc(g *game) (desc string) {
 	switch st {
@@ -88,9 +88,9 @@ func (st stair) Desc(g *game) (desc string) {
 			desc += " If you're courageous enough, you may skip this portal and continue going deeper in the dungeon, to find Marevor's magara, finishing Shaedra's failed mission."
 		}
 	case NormalStair:
-		desc = NormalStairDesc
+		desc = normalStairDesc
 		if g.Depth == WinDepth {
-			desc = DeepStairDesc
+			desc = deepStairDesc
 			desc += " You may want to take those after freeing Shaedra from her cell."
 		}
 	case BlockedStair:
@@ -277,7 +277,7 @@ func (g *game) ActivateQueenStone() {
 	g.md.LOSWavesAnimation(DefaultLOSRange, WaveMagicNoise, g.Player.P)
 	for _, m := range targets {
 		m.EnterConfusion(g)
-		if m.Search == InvalidPos {
+		if m.Search == invalidPos {
 			m.Search = m.P
 		}
 	}
@@ -322,7 +322,7 @@ func (g *game) ActivateTreeStone() error {
 	g.md.LOSWavesAnimation(DefaultLOSRange, WaveTree, g.Player.P)
 	for _, mons := range targets {
 		mons.EnterLignification(g)
-		if mons.Search == InvalidPos {
+		if mons.Search == invalidPos {
 			mons.Search = mons.P
 		}
 	}
@@ -336,7 +336,7 @@ func (g *game) ActivateTeleportStone() error {
 	}
 	g.Print("The stone releases oric teleport energies.")
 	for _, mons := range targets {
-		if mons.Search == InvalidPos && mons.Kind.CanOpenDoors() {
+		if mons.Search == invalidPos && mons.Kind.CanOpenDoors() {
 			mons.Search = mons.P
 		}
 		mons.TeleportAway(g)

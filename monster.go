@@ -512,10 +512,10 @@ type monster struct {
 
 func (m *monster) Init() {
 	m.Attack = m.Kind.BaseAttack()
-	m.P = InvalidPos
+	m.P = invalidPos
 	m.LOS = make(map[gruid.Point]bool)
-	m.LastKnownPos = InvalidPos
-	m.Search = InvalidPos
+	m.LastKnownPos = invalidPos
+	m.Search = invalidPos
 	if RandInt(2) == 0 {
 		m.Left = true
 	}
@@ -627,7 +627,7 @@ func (m *monster) MoveTo(g *game, p gruid.Point) {
 		} else {
 			delete(g.LastMonsterKnownAt, m.P)
 		}
-		m.LastKnownPos = InvalidPos
+		m.LastKnownPos = invalidPos
 	}
 	if !g.Player.Sees(m.P) && g.Player.Sees(p) {
 		if !m.Seen {
@@ -680,7 +680,7 @@ func (m *monster) PlaceAt(g *game, p gruid.Point) {
 		// should not happen
 		return
 	}
-	if p == InvalidPos {
+	if p == invalidPos {
 		log.Printf("monster new place at invalid position")
 		// should not happen
 		return
@@ -851,7 +851,7 @@ func (m *monster) SearchAround(g *game, p gruid.Point, radius int) gruid.Point {
 		p := SearchAroundCache[RandInt(len(SearchAroundCache))]
 		return p
 	}
-	return InvalidPos
+	return invalidPos
 }
 
 func (m *monster) NextTarget(g *game) (p gruid.Point) {
@@ -861,45 +861,45 @@ func (m *monster) NextTarget(g *game) (p gruid.Point) {
 	case BehWander:
 		if distance(m.P, band.Path[0]) < 8+RandInt(8) {
 			p = m.SearchAround(g, m.P, 4)
-			if p != InvalidPos {
+			if p != invalidPos {
 				break
 			}
 		}
-		if m.Search != InvalidPos && RandInt(2) == 0 {
+		if m.Search != invalidPos && RandInt(2) == 0 {
 			p = m.SearchAround(g, m.Search, 7)
-			if p != InvalidPos {
+			if p != invalidPos {
 				break
 			}
 		}
 		p = m.SearchAround(g, band.Path[0], 7)
-		if p != InvalidPos {
+		if p != invalidPos {
 			break
 		}
 		p = band.Path[0]
 	case BehExplore:
 		if m.Kind.CanOpenDoors() {
-			if m.Search != InvalidPos && RandInt(4) == 0 {
+			if m.Search != invalidPos && RandInt(4) == 0 {
 				p = m.SearchAround(g, m.Search, 7)
 			} else {
 				p = m.SearchAround(g, p, 5)
 			}
-			if p != InvalidPos {
+			if p != invalidPos {
 				break
 			}
 		}
 		p = band.Path[RandInt(len(band.Path))]
 	case BehGuard:
-		if m.Search != InvalidPos && distance(m.Search, m.P) < 5 && RandInt(2) == 0 {
+		if m.Search != invalidPos && distance(m.Search, m.P) < 5 && RandInt(2) == 0 {
 			p = m.SearchAround(g, m.Search, 3)
-			if p != InvalidPos {
+			if p != invalidPos {
 				break
 			}
 		}
 		p = band.Path[0]
 	case BehPatrol:
-		if m.Search != InvalidPos && RandInt(4) > 0 {
+		if m.Search != invalidPos && RandInt(4) > 0 {
 			p = m.SearchAround(g, m.Search, 7)
-			if p != m.P && p != InvalidPos {
+			if p != m.P && p != invalidPos {
 				break
 			}
 		}
@@ -934,7 +934,7 @@ func (m *monster) HandleMonsSpecifics(g *game) (done bool) {
 	case MonsSatowalgaPlant:
 		switch m.State {
 		case Hunting:
-			if m.Target != InvalidPos && m.Target != m.P {
+			if m.Target != invalidPos && m.Target != m.P {
 				m.Dir = dirnorm(m.P, m.Target)
 			}
 			if !m.SeesPlayer(g) {
@@ -1046,9 +1046,9 @@ func (m *monster) Peaceful(g *game) bool {
 }
 
 func (m *monster) HandleEndPath(g *game) {
-	if len(m.Path) == 0 && m.Search != InvalidPos && distance(m.Search, m.Target) < 10 && m.P != m.Target {
+	if len(m.Path) == 0 && m.Search != invalidPos && distance(m.Search, m.Target) < 10 && m.P != m.Target {
 		// the cell where the player was last noticed may not be recheable for the monster
-		m.Search = InvalidPos
+		m.Search = invalidPos
 	}
 	switch m.State {
 	case Wandering, Hunting:
@@ -1083,7 +1083,7 @@ func (m *monster) MakeWander() {
 func (m *monster) HandleMove(g *game) bool {
 	target := m.Path[1]
 	mons := g.MonsterAt(target)
-	monstarget := InvalidPos
+	monstarget := invalidPos
 	if mons.Exists() && len(mons.Path) >= 2 {
 		monstarget = mons.Path[1]
 	}
@@ -1289,7 +1289,7 @@ func (m *monster) HitPlayer(g *game) {
 	case AmuletObstruction:
 		opos := m.P
 		p := m.LeaveRoomForPlayer(g)
-		if p == InvalidPos {
+		if p == invalidPos {
 			m.Blink(g)
 		} else {
 			m.MoveTo(g, p)

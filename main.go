@@ -47,8 +47,10 @@ func main() {
 	}
 	if *opt256colors {
 		Xterm256Color = true
+		Only8Colors = false
 	} else if *opt16colors {
 		Xterm256Color = false
+		Only8Colors = false
 	}
 	err := initConfig()
 	if err != nil {

@@ -62,7 +62,6 @@ type game struct {
 	LogNextTick           int
 	InfoEntry             string
 	Stats                 stats
-	Boredom               int
 	Wizard                bool
 	WizardMode            wizardMode
 	Version               string
@@ -234,7 +233,7 @@ func (g *game) InitFirstLevel() {
 	g.Version = Version
 	g.Depth++ // start at 1
 	g.InitPlayer()
-	g.AutoTarget = InvalidPos
+	g.AutoTarget = invalidPos
 	g.RaysCache = rayMap{}
 	g.GeneratedLore = map[int]bool{}
 	g.Stats.KilledMons = map[monsterKind]int{}
@@ -414,8 +413,6 @@ func (g *game) InitLevel() {
 	// Starting data
 	if g.Depth == 0 {
 		g.InitFirstLevel()
-	} else if !Testing {
-		//g.ui.DrawLoading()
 	}
 
 	g.InitLevelStructures()
@@ -595,7 +592,6 @@ func (g *game) Descend(style descendstyle) bool {
 	}
 	g.Depth++
 	g.DepthPlayerTurn = 0
-	g.Boredom = 0
 	g.InitLevel()
 	g.Save()
 	return false
@@ -670,7 +666,7 @@ func (g *game) AutoPlayer() bool {
 		if g.MoveToTarget() {
 			return true
 		}
-		g.AutoTarget = InvalidPos
+		g.AutoTarget = invalidPos
 	case g.AutoDir != ZP:
 		if g.AutoToDir() {
 			return true

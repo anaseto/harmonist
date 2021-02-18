@@ -12,7 +12,7 @@ func TestInitLevel(t *testing.T) {
 		g := &game{}
 		for depth := 0; depth < MaxDepth; depth++ {
 			g.InitLevel()
-			if g.Player.P == InvalidPos {
+			if g.Player.P == invalidPos {
 				t.Errorf("Player starting cell is not valid")
 			}
 			if !terrain(g.Dungeon.Cell(g.Player.P)).IsPlayerPassable() {

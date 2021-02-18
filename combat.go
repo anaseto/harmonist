@@ -89,7 +89,7 @@ func (g *game) MakeNoise(noise int, at gruid.Point) {
 func (m *monster) LeaveRoomForPlayer(g *game) gruid.Point {
 	dij := &monPath{state: g, monster: m}
 	nodes := g.PR.DijkstraMap(dij, []gruid.Point{m.P}, 10)
-	free := InvalidPos
+	free := invalidPos
 	dist := unreachable
 	for _, n := range nodes {
 		if !m.CanPass(g, n.P) {
@@ -114,7 +114,7 @@ func (m *monster) LeaveRoomForPlayer(g *game) gruid.Point {
 func (g *game) FindJumpTarget(m *monster) gruid.Point {
 	dij := &jumpPath{state: g}
 	nodes := g.PR.DijkstraMap(dij, []gruid.Point{m.P}, 10)
-	free := InvalidPos
+	free := invalidPos
 	dist := unreachable
 	for _, n := range nodes {
 		if !g.PlayerCanPass(n.P) {
@@ -144,7 +144,7 @@ func (g *game) Jump(mons *monster) (bool, error) {
 		}
 		if !mons.CanPass(g, g.Player.P) {
 			p := mons.LeaveRoomForPlayer(g)
-			if p != InvalidPos {
+			if p != invalidPos {
 				mons.MoveTo(g, p)
 				mons.Swapped = true
 				g.PlacePlayerAt(op)

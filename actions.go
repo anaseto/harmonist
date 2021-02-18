@@ -294,6 +294,7 @@ func (md *model) interact() (string, bool) {
 	return "", false
 }
 
+const zoomMin = -1
 const zoomMax = 4
 
 func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, err error) {
@@ -316,7 +317,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		if !md.targ.kbTargeting {
 			again, err = g.GoToDir(keyToDir(action))
 		} else {
-			q := InvalidPos
+			q := invalidPos
 			p := md.targ.ex.p
 			for i := 0; i < 5; i++ {
 				p = p.Add(keyToDir(action))
@@ -325,7 +326,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 				}
 				q = p
 			}
-			if q != InvalidPos {
+			if q != invalidPos {
 				md.Examine(q)
 			}
 			again = true
@@ -576,7 +577,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		md.mode = modeNormal
 	case ActionZoomIncrease:
 		again = true
-		if md.zoomlevel >= 4 {
+		if md.zoomlevel >= zoomMax {
 			break
 		}
 		md.zoomlevel++
@@ -584,7 +585,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		eff = gruid.Cmd(func() gruid.Msg { return gruid.MsgScreen{} })
 	case ActionZoomDecrease:
 		again = true
-		if md.zoomlevel <= -1 {
+		if md.zoomlevel <= zoomMin {
 			break
 		}
 		md.zoomlevel--

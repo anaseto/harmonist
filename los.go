@@ -168,12 +168,12 @@ func (g *game) StopAuto() {
 		g.Print("You stop exploring.")
 	} else if g.AutoDir != ZP {
 		g.Print("You stop.")
-	} else if g.AutoTarget != InvalidPos {
+	} else if g.AutoTarget != invalidPos {
 		g.Print("You stop.")
 	}
 	g.AutoHalt = true
 	g.AutoDir = ZP
-	g.AutoTarget = InvalidPos
+	g.AutoTarget = invalidPos
 }
 
 const TreeRange = 50
@@ -334,9 +334,9 @@ func (g *game) SeeNotable(c cell, p gruid.Point) {
 		dp := &mappingPath{state: g}
 		path := g.PR.AstarPath(dp, g.Player.P, p)
 		if len(path) > 0 {
-			g.StoryPrintf("Discovered %s (distance: %d)", NormalStairShortDesc, len(path))
+			g.StoryPrintf("Discovered %s (distance: %d)", normalStairShortDesc, len(path))
 		} else {
-			g.StoryPrintf("Discovered %s", NormalStairShortDesc)
+			g.StoryPrintf("Discovered %s", normalStairShortDesc)
 		}
 	case StoryCell:
 		st := g.Objects.Story[p]
@@ -385,7 +385,7 @@ func (g *game) SeePosition(p gruid.Point) {
 	}
 	if idx, ok := g.LastMonsterKnownAt[p]; ok && (g.Monsters[idx].P != p || !g.Monsters[idx].Exists()) {
 		delete(g.LastMonsterKnownAt, p)
-		g.Monsters[idx].LastKnownPos = InvalidPos
+		g.Monsters[idx].LastKnownPos = invalidPos
 	}
 	delete(g.NoiseIllusion, p)
 	if g.Objects.Story[p] == StoryShaedra && !g.LiberatedShaedra &&
@@ -605,9 +605,9 @@ func (g *game) ComputeMonsterCone(m *monster) {
 
 func (m *monster) UpdateKnowledge(g *game, p gruid.Point) {
 	if idx, ok := g.LastMonsterKnownAt[p]; ok {
-		g.Monsters[idx].LastKnownPos = InvalidPos
+		g.Monsters[idx].LastKnownPos = invalidPos
 	}
-	if m.LastKnownPos != InvalidPos {
+	if m.LastKnownPos != invalidPos {
 		delete(g.LastMonsterKnownAt, m.LastKnownPos)
 	}
 	g.LastMonsterKnownAt[p] = m.Index
