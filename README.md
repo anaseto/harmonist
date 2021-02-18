@@ -63,7 +63,7 @@ library.
 
 You can build a graphical version depending on SDL2 using this command:
 
-    go get -u --tags sdl git.tuxfamily.org/harmonist/harmonist.git
++ `go get -u --tags sdl git.tuxfamily.org/harmonist/harmonist.git`
 
 or using the github repository:
 
