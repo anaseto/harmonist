@@ -10,13 +10,12 @@ import (
 
 type simplePath struct {
 	passable  func(gruid.Point) bool
-	neighbors *paths.Neighbors
+	neighbors paths.Neighbors
 }
 
 func newPather(passable func(gruid.Point) bool) *simplePath {
 	return &simplePath{
-		passable:  passable,
-		neighbors: &paths.Neighbors{},
+		passable: passable,
 	}
 }
 
@@ -140,9 +139,9 @@ func (tp *tunnelPath) Estimation(from, to gruid.Point) int {
 }
 
 type playerPath struct {
-	g *game
-	nbs   paths.Neighbors
-	goal  gruid.Point
+	g    *game
+	nbs  paths.Neighbors
+	goal gruid.Point
 }
 
 func (g *game) ppPassable(p gruid.Point) bool {
@@ -177,8 +176,8 @@ func (pp *playerPath) Estimation(from, to gruid.Point) int {
 }
 
 type jumpPath struct {
-	g *game
-	nbs   paths.Neighbors
+	g   *game
+	nbs paths.Neighbors
 }
 
 func (jp *jumpPath) Neighbors(p gruid.Point) []gruid.Point {
@@ -199,8 +198,8 @@ func (jp *jumpPath) Estimation(from, to gruid.Point) int {
 }
 
 type noisePath struct {
-	g *game
-	nbs   paths.Neighbors
+	g   *game
+	nbs paths.Neighbors
 }
 
 func (fp *noisePath) Neighbors(p gruid.Point) []gruid.Point {
@@ -216,8 +215,8 @@ func (fp *noisePath) Cost(from, to gruid.Point) int {
 }
 
 type autoexplorePath struct {
-	g *game
-	nbs   paths.Neighbors
+	g   *game
+	nbs paths.Neighbors
 }
 
 func (ap *autoexplorePath) Neighbors(p gruid.Point) []gruid.Point {
@@ -247,7 +246,7 @@ func (ap *autoexplorePath) Cost(from, to gruid.Point) int {
 }
 
 type monPath struct {
-	g   *game
+	g       *game
 	monster *monster
 	nbs     paths.Neighbors
 }

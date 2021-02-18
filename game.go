@@ -707,7 +707,7 @@ func (g *game) EndTurn() {
 		case event:
 			ev.Handle(g)
 		default:
-			log.Print("bad event: %v", ev)
+			log.Printf("bad event: %v", ev)
 		}
 	}
 }
