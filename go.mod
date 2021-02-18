@@ -1,4 +1,4 @@
-module harmonist
+module github.com/anaseto/harmonist
 
 go 1.13
 
