@@ -12,11 +12,12 @@ type logStyle int
 const (
 	logNormal logStyle = iota
 	logCritic
-	logPlayerHit
-	logMonsterHit
+	logNotable
+	logDamage
 	logSpecial
 	logStatusEnd
 	logError
+	logConfirm
 )
 
 type logEntry struct {
@@ -139,9 +140,9 @@ func (st logStyle) Rune() rune {
 	switch st {
 	case logCritic:
 		r = 'r'
-	case logPlayerHit:
+	case logNotable:
 		r = 'g'
-	case logMonsterHit:
+	case logDamage:
 		r = 'o'
 	case logSpecial:
 		r = 'm'
@@ -149,6 +150,8 @@ func (st logStyle) Rune() rune {
 		r = 'v'
 	case logError:
 		r = 'e'
+	case logConfirm:
+		r = 'c'
 	default:
 		r = 'N'
 	}
@@ -157,11 +160,13 @@ func (st logStyle) Rune() rune {
 
 var logStyles = map[rune]gruid.Style{
 	'r': gruid.Style{}.WithFg(ColorRed),
+	't': gruid.Style{}.WithFg(ColorYellow),
 	'g': gruid.Style{}.WithFg(ColorGreen),
 	'o': gruid.Style{}.WithFg(ColorOrange),
 	'm': gruid.Style{}.WithFg(ColorMagenta),
 	'v': gruid.Style{}.WithFg(ColorViolet),
 	'e': gruid.Style{}.WithFg(ColorRed),
+	'c': gruid.Style{}.WithFg(ColorCyan),
 }
 
 // DrawLog draws 2 compacted lines of log.

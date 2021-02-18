@@ -564,7 +564,7 @@ func (md *model) FreeingShaedra() {
 		md.mode = modeStory
 		g.Print("You see Shaedra. She is wounded!")
 		g.PrintStyled("Shaedra: “Oh, it's you, Syu! Let's flee with Marevor's magara!”", logSpecial)
-		g.Print("[(x) to continue]")
+		g.PrintStyled("[(x) to continue]", logConfirm)
 	case 1:
 		if !DisableAnimations {
 			md.startAnimSeq()
@@ -584,7 +584,7 @@ func (md *model) FreeingShaedra() {
 		g.Objects.Story[g.Places.Marevor] = StoryMarevor
 		g.PrintStyled("Marevor: “And what about the mission? Take that magara!”", logSpecial)
 		g.PrintStyled("Shaedra: “Pff, don't be reckless!”", logSpecial)
-		g.Print("[(x) to continue]")
+		g.PrintStyled("[(x) to continue]", logConfirm)
 	case 3:
 		if !DisableAnimations {
 			md.startAnimSeq()
@@ -622,7 +622,7 @@ func (md *model) TakingArtifact() {
 	case 0:
 		md.mode = modeStory
 		g.PrintStyled("You take and use the artifact.", logSpecial)
-		g.Print("[(x) to continue].")
+		g.PrintStyled("[(x) to continue].", logConfirm)
 	case 1:
 		g.Dungeon.SetCell(g.Places.Artifact, GroundCell)
 		if !DisableAnimations {
@@ -642,7 +642,7 @@ func (md *model) TakingArtifact() {
 		g.Objects.Story[g.Places.Marevor] = StoryMarevor
 		g.PrintStyled("Marevor: “Great! Let's escape and find some bones to celebrate!”", logSpecial)
 		g.PrintStyled("Syu: “Sorry, but I prefer bananas!”", logSpecial)
-		g.Print("[(x) to continue]")
+		g.PrintStyled("[(x) to continue]", logConfirm)
 	case 2:
 		g.Dungeon.SetCell(g.Places.Marevor, GroundCell)
 		AchRetrievedArtifact.Get(g)

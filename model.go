@@ -846,7 +846,7 @@ func (md *model) normalModeKeyDown(key gruid.Key, shift bool) (again bool, eff g
 	}
 	again, eff, err = md.normalModeAction(action)
 	if _, ok := err.(actionError); ok {
-		err = fmt.Errorf("Unknown key '%s'. Type ? for help.", key)
+		err = fmt.Errorf("Key '%s' does nothing. Type ? for help.", key)
 	}
 	return again, eff, err
 }
@@ -857,16 +857,19 @@ func (md *model) death() {
 	if len(g.Stats.Achievements) == 0 {
 		NoAchievement.Get(g)
 	}
-	g.Print("You die... [(x) to continue]")
+	g.PrintStyled("You die...", logSpecial)
+	g.PrintStyled("[(x) to continue]", logConfirm)
 	md.mode = modeEnd
 }
 
 func (md *model) win() {
 	g := md.g
 	if g.Wizard {
-		g.Print("You escape by the magic portal! **WIZARD** [(x) to continue]")
+		g.PrintStyled("You escape by the magic portal! **WIZARD**", logSpecial)
+		g.PrintStyled("[(x) to continue]", logConfirm)
 	} else {
-		g.Print("You escape by the magic portal! [(x) to continue]")
+		g.PrintStyled("You escape by the magic portal!", logSpecial)
+		g.PrintStyled("[(x) to continue]", logConfirm)
 	}
 	md.mode = modeEnd
 }

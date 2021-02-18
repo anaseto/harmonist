@@ -584,7 +584,7 @@ func (g *game) Descend(style descendstyle) bool {
 	}
 	if style != DescendNormal {
 		g.md.AbyssFallAnimation()
-		g.Print("You fall into the abyss. It hurts!")
+		g.PrintStyled("You fall into the abyss. It hurts!", logDamage)
 		g.StoryPrint("Fell into the abyss")
 	} else {
 		g.Print("You descend deeper in the dungeon.")

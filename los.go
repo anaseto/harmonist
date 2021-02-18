@@ -453,28 +453,28 @@ func (g *game) ComputeNoise() {
 			case MonsMirrorSpecter, MonsSatowalgaPlant, MonsButterfly:
 				if mons.Kind == MonsMirrorSpecter && g.Player.Inventory.Body == CloakHear {
 					g.Noise[n.P] = true
-					g.Print("You hear an imperceptible air movement.")
+					g.PrintStyled("You hear an imperceptible air movement.", logNotable)
 					count++
 				}
 			case MonsWingedMilfid, MonsTinyHarpy:
 				g.Noise[n.P] = true
-				g.Print("You hear the flapping of wings.")
+				g.PrintStyled("You hear the flapping of wings.", logNotable)
 				count++
 			case MonsEarthDragon, MonsTreeMushroom, MonsYack:
 				g.Noise[n.P] = true
-				g.Print("You hear heavy footsteps.")
+				g.PrintStyled("You hear heavy footsteps.", logNotable)
 				count++
 			case MonsWorm, MonsAcidMound:
 				g.Noise[n.P] = true
-				g.Print("You hear a creep noise.")
+				g.PrintStyled("You hear a creep noise.", logNotable)
 				count++
 			case MonsDog, MonsBlinkingFrog, MonsHazeCat, MonsCrazyImp, MonsSpider:
 				g.Noise[n.P] = true
-				g.Print("You hear light footsteps.")
+				g.PrintStyled("You hear light footsteps.", logNotable)
 				count++
 			default:
 				g.Noise[n.P] = true
-				g.Print("You hear footsteps.")
+				g.PrintStyled("You hear footsteps.", logNotable)
 				count++
 			}
 		}

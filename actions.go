@@ -301,8 +301,8 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 	g := md.g
 	switch action {
 	case ActionNone:
-		// not used
 		again = true
+		err = actionErrorUnknown
 	case ActionW, ActionS, ActionN, ActionE:
 		if !md.targ.kbTargeting {
 			again, err = g.PlayerBump(g.Player.P.Add(keyToDir(action)))
@@ -518,8 +518,10 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		}
 	case ActionWizard:
 		again = true
-		md.g.Print("Do you really want to enter wizard mode (irreversible)? [y/N]")
-		md.mode = modeWizardConfirmation
+		if !md.g.Wizard {
+			md.g.PrintStyled("Do you really want to enter wizard mode (irreversible)? [y/N]", logConfirm)
+			md.mode = modeWizardConfirmation
+		}
 	case ActionQuit:
 		again = true
 		md.Quit()
@@ -927,6 +929,6 @@ func (md *model) checkShaedra(st stair) (err error) {
 
 // Quit enters confirmation mode for quit without saving.
 func (md *model) Quit() {
-	md.g.Print("Do you really want to quit without saving? [y/N]")
+	md.g.PrintStyled("Do you really want to quit without saving? [y/N]", logConfirm)
 	md.mode = modeQuitConfirmation
 }

@@ -340,10 +340,8 @@ func (g *game) FallAbyss(style descendstyle) {
 }
 
 func (g *game) AbyssJumpConfirmation() {
-	g.Print("Do you really want to jump into the abyss? (DANGEROUS) [y/N]")
+	g.PrintStyled("Do you really want to jump into the abyss? (DANGEROUS) [y/N]", logConfirm)
 	g.md.mode = modeJumpConfirmation
-	// TODO confirmation prompt abyss
-	//return g.ui.PromptConfirmation()
 }
 
 func (g *game) DeepChasmDepth() bool {
