@@ -691,6 +691,7 @@ func (g *game) Died() bool {
 type msgAuto int
 
 func (g *game) EndTurn() {
+	g.Events.Push(endTurnAction, g.Turn+DurationTurn)
 	for {
 		if g.Died() {
 			return

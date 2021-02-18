@@ -434,10 +434,6 @@ func (g *game) PlayerBump(p gruid.Point) (again bool, err error) {
 	return again, nil
 }
 
-func (g *game) PushPlayerTurn() {
-	g.Events.Push(endTurnAction, g.Turn+DurationTurn)
-}
-
 func (g *game) SwiftFog() {
 	dij := &noisePath{g: g}
 	nodes := g.PR.DijkstraMap(dij, []gruid.Point{g.Player.P}, 2)

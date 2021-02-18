@@ -662,15 +662,14 @@ func (md *model) Auto() gruid.Effect {
 // turn.
 func (md *model) EndTurn() gruid.Effect {
 	md.mode = modeNormal
-	md.g.PushPlayerTurn()
 	md.g.EndTurn()
-	md.updateMapInfo()
+	eff := md.Auto()
 	md.g.TurnStats()
+	md.updateMapInfo()
 	if md.g.Player.HP <= 0 {
 		md.death()
 		return nil
 	}
-	eff := md.Auto()
 	if md.critical {
 		md.g.PrintStyled("*** CRITICAL HP WARNING ***", logCritic)
 		md.g.PrintStyled("[(x) to continue]", logConfirm)
