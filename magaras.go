@@ -615,6 +615,7 @@ func (cl cloud) String() (s string) {
 func (g *game) EvokeFog() error {
 	g.Fog(g.Player.P, 3)
 	g.Print("You are surrounded by a dense fog.")
+	g.md.EffectAtPPAnimation()
 	return nil
 }
 
@@ -639,6 +640,7 @@ func (g *game) EvokeShadows() error {
 		return errors.New("You are already surrounded by shadows.")
 	}
 	g.Print("You are surrounded by shadows.")
+	g.md.EffectAtPPAnimation()
 	return nil
 }
 
@@ -806,6 +808,7 @@ func (g *game) EvokeFire() error {
 		return errors.New("You are not surrounded by any flammable terrain.")
 	}
 	g.Print("Sparks emanate from the magara.")
+	g.md.EffectAtPPAnimation()
 	for _, p := range burnpos {
 		g.Burn(p)
 	}
@@ -877,6 +880,7 @@ func (g *game) EvokeTransparencyMagara() error {
 		return errors.New("You are already transparent.")
 	}
 	g.Print("Light makes you diaphanous.")
+	g.md.EffectAtPPAnimation()
 	return nil
 }
 
@@ -885,6 +889,7 @@ func (g *game) EvokeDisguiseMagara() error {
 		return errors.New("You are already disguised.")
 	}
 	g.Print("You look now like a normal guard.")
+	g.md.EffectAtPPAnimation()
 	return nil
 }
 
@@ -894,8 +899,8 @@ func (g *game) EvokeDelayedNoiseMagara() error {
 	}
 	g.PushEventD(&posEvent{P: g.Player.P, Action: DelayedHarmonicNoiseEvent,
 		Timer: DurationHarmonicNoiseDelay}, DurationTurn)
-
 	g.Print("Timer activated.")
+	g.md.EffectAtPPAnimation()
 	return nil
 }
 
@@ -904,6 +909,7 @@ func (g *game) EvokeDispersalMagara() error {
 		return errors.New("You are already dispersing.")
 	}
 	g.Print("You feel unstable.")
+	g.md.EffectAtPPAnimation()
 	return nil
 }
 
@@ -913,7 +919,7 @@ func (g *game) EvokeOricExplosionMagara() error {
 	}
 	g.PushEventD(&posEvent{P: g.Player.P, Action: DelayedOricExplosionEvent,
 		Timer: DurationOricExplosionDelay}, DurationTurn)
-
 	g.Print("Timer activated.")
+	g.md.EffectAtPPAnimation()
 	return nil
 }

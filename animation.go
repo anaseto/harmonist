@@ -100,6 +100,15 @@ func (a *Animations) Draw(p gruid.Point, r rune, fg, bg gruid.Color) {
 	a.grid.Set(p, c)
 }
 
+func (a *Animations) DrawReverse(p gruid.Point, r rune, fg, bg gruid.Color) {
+	c := a.grid.At(p)
+	c.Rune = r
+	c.Style.Fg = fg
+	c.Style.Bg = bg
+	c.Style.Attrs |= AttrReverse
+	a.grid.Set(p, c)
+}
+
 func (a *Animations) Frame(d time.Duration) {
 	frame := AnimFrame{}
 	frame.Duration = d
@@ -172,7 +181,7 @@ func (md *model) MonsterProjectileAnimation(ray []gruid.Point, r rune, fg gruid.
 
 func (md *model) WaveDrawAt(p gruid.Point, fg gruid.Color) {
 	r, _, bgColor := md.positionDrawing(p)
-	md.anims.Draw(p, r, bgColor, fg)
+	md.anims.DrawReverse(p, r, fg, bgColor)
 }
 
 func (md *model) ExplosionDrawAt(p gruid.Point, fg gruid.Color) {
@@ -197,7 +206,7 @@ func (md *model) ExplosionDrawAt(p gruid.Point, fg gruid.Color) {
 	if mons.Exists() || g.Player.P == p {
 		r = '√'
 	}
-	md.anims.Draw(p, r, bgColor, fg)
+	md.anims.DrawReverse(p, r, fg, bgColor)
 }
 
 func (md *model) NoiseAnimation(noises []gruid.Point) {
@@ -211,20 +220,20 @@ func (md *model) NoiseAnimation(noises []gruid.Point) {
 		for _, p := range noises {
 			r := '♫'
 			_, _, bgColor := md.positionDrawing(p)
-			md.anims.Draw(p, r, bgColor, colors[i])
+			md.anims.DrawReverse(p, r, colors[i], bgColor)
 		}
 		_, _, bgColor := md.positionDrawing(md.g.Player.P)
-		md.anims.Draw(md.g.Player.P, '@', bgColor, colors[i])
+		md.anims.DrawReverse(md.g.Player.P, '@', colors[i], bgColor)
 		md.anims.Frame(AnimDurShortMedium)
 	}
 
 }
 
 func (md *model) ExplosionAnimation(es explosionStyle, p gruid.Point) {
-	g := md.g
 	if DisableAnimations {
 		return
 	}
+	g := md.g
 	md.startAnimSeq()
 	md.anims.Frame(AnimDurShort)
 	colors := [2]gruid.Color{ColorFgExplosionStart, ColorFgExplosionEnd}
@@ -340,7 +349,7 @@ func (md *model) WallExplosionAnimation(p gruid.Point) {
 	for _, fg := range colors {
 		_, _, bgColor := md.positionDrawing(p)
 		//md.anims.Draw(pos, '☼', fg, bgColor)
-		md.anims.Draw(p, '%', bgColor, fg)
+		md.anims.DrawReverse(p, '%', fg, bgColor)
 		md.anims.Frame(AnimDurShort)
 	}
 }
@@ -377,7 +386,7 @@ func (md *model) BeamsAnimation(ray []gruid.Point, bs beamstyle) {
 			if RandInt(2) == 0 {
 				r = '×'
 			}
-			md.anims.Draw(p, r, bgColor, fg)
+			md.anims.DrawReverse(p, r, fg, bgColor)
 		}
 		md.anims.Frame(AnimDurShortMedium)
 	}
@@ -399,7 +408,7 @@ func (md *model) SlowingMagaraAnimation(ray []gruid.Point) {
 			if RandInt(2) == 0 {
 				r = '×'
 			}
-			md.anims.Draw(p, r, bgColor, fg)
+			md.anims.DrawReverse(p, r, fg, bgColor)
 		}
 		md.anims.Frame(AnimDurShortMedium)
 	}
@@ -420,10 +429,10 @@ func (md *model) ProjectileSymbol(dir gruid.Point) (r rune) {
 }
 
 func (md *model) MonsterJavelinAnimation(ray []gruid.Point, hit bool) {
-	g := md.g
 	if DisableAnimations {
 		return
 	}
+	g := md.g
 	md.startAnimSeq()
 	md.anims.Frame(AnimDurShort)
 	for i := 0; i < len(ray); i++ {
@@ -437,10 +446,10 @@ func (md *model) MonsterJavelinAnimation(ray []gruid.Point, hit bool) {
 }
 
 func (md *model) WoundedAnimation() {
-	g := md.g
 	if DisableAnimations {
 		return
 	}
+	g := md.g
 	md.startAnimSeq()
 	r, _, bg := md.positionDrawing(g.Player.P)
 	md.anims.Draw(g.Player.P, r, ColorFgHPwounded, bg)
@@ -452,10 +461,10 @@ func (md *model) WoundedAnimation() {
 }
 
 func (md *model) PlayerGoodEffectAnimation() {
-	g := md.g
 	if DisableAnimations {
 		return
 	}
+	g := md.g
 	md.startAnimSeq()
 	md.anims.Frame(AnimDurShort)
 	r, _, bg := md.positionDrawing(g.Player.P)
@@ -467,21 +476,32 @@ func (md *model) PlayerGoodEffectAnimation() {
 }
 
 func (md *model) StatusEndAnimation() {
-	g := md.g
 	if DisableAnimations {
 		return
 	}
+	g := md.g
 	md.startAnimSeq()
 	r, _, bg := md.positionDrawing(g.Player.P)
 	md.anims.Draw(g.Player.P, r, ColorViolet, bg)
 	md.anims.Frame(AnimDurShortMedium)
 }
 
-func (md *model) FoundFakeStairsAnimation() {
-	g := md.g
+func (md *model) EffectAtPPAnimation() {
 	if DisableAnimations {
 		return
 	}
+	g := md.g
+	md.startAnimSeq()
+	r, _, bg := md.positionDrawing(g.Player.P)
+	md.anims.Draw(g.Player.P, r, ColorCyan, bg)
+	md.anims.Frame(AnimDurShortMedium)
+}
+
+func (md *model) FoundFakeStairsAnimation() {
+	if DisableAnimations {
+		return
+	}
+	g := md.g
 	r, _, bg := md.positionDrawing(g.Player.P)
 	md.anims.Draw(g.Player.P, r, ColorMagenta, bg)
 	md.anims.Frame(AnimDurMediumLong)
