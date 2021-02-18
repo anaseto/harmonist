@@ -362,9 +362,9 @@ func (c cell) ShortDesc(g *game, p gruid.Point) (desc string) {
 func (c cell) Desc(g *game, p gruid.Point) (desc string) {
 	switch terrain(c) {
 	case WallCell:
-		desc = "A wall is a pile of rocks."
+		desc = "A wall is an obstructing pile of rocks."
 	case GroundCell:
-		desc = "This is paved ground."
+		desc = "Paved ground is a way constructed with small stones, often used by patrols between buildings."
 	case DoorCell:
 		desc = "A closed door blocks your line of sight. Doors open automatically when you or a creature stand on them."
 	case FoliageCell:
@@ -403,12 +403,12 @@ func (c cell) Desc(g *game, p gruid.Point) (desc string) {
 		if g.Depth == MaxDepth || g.Depth == WinDepth {
 			desc = "A deep chasm. If you jump into it, you'll be dead."
 		} else {
-			desc = "A chasm. If you jump into it, you'll be seriously injured."
+			desc = "A chasm. If you jump into it, you'll reach the next level, but you'll be seriously injured."
 		}
 	case WaterCell:
-		desc = "Shallow water."
+		desc = "This is shallow water. Only monsters that can swim will follow you there."
 	case RubbleCell:
-		desc = "Rubblestone is a collection of rocks broken into smaller stones."
+		desc = "Rubblestone is a collection of rocks broken into smaller stones. They are never well illuminated."
 	case CavernCell:
 		desc = "This is natural cave ground."
 	case FakeStairCell:

@@ -177,7 +177,7 @@ func (stn stone) Desc(g *game) (text string) {
 	case MappingStone:
 		text = "Activating this magical stone shows you the map layout and item locations in a wide area."
 	case SensingStone:
-		text = "Activating this magical stone shows you the current gruid.Point of monsters in a wide area."
+		text = "Activating this magical stone shows you the current position of monsters in a wide area."
 	case SealStone:
 		text = "Activating this magical stone will disable a magical barrier somewhere in the same level, usually one blocking stairs."
 	}
