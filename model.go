@@ -269,7 +269,7 @@ func (md *model) init() gruid.Effect {
 	}
 	if err != nil {
 		g.PrintfStyled("Error: %v", logError, err)
-		g.PrintStyled("Could not load saved state… starting new state.", logError)
+		g.PrintStyled("Could not load saved game… starting new game.", logError)
 	}
 
 	md.g.ComputeNoise()

@@ -67,7 +67,7 @@ func (g *game) Load() (bool, error) {
 	saveFile := filepath.Join(dataDir, "save")
 	_, err = os.Stat(saveFile)
 	if err != nil {
-		// no save file, new state
+		// no save file, new game
 		return false, nil
 	}
 	data, err := ioutil.ReadFile(saveFile)
@@ -110,7 +110,7 @@ func LoadConfig() (bool, error) {
 	saveFile := filepath.Join(dataDir, "config.gob")
 	_, err = os.Stat(saveFile)
 	if err != nil {
-		// no save file, new state
+		// no save file, new game
 		return false, nil
 	}
 	data, err := ioutil.ReadFile(saveFile)
