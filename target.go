@@ -198,7 +198,11 @@ func (md *model) drawPosInfo() {
 	if !md.targ.ex.scroll {
 		formatBox(t, desc, fg)
 	}
-	formatBox(title, strings.Join(mdesc, "\n"), mfg)
+	if !mons.Seen {
+		formatBox("unknown monster", "You sensed a monster there.", mfg)
+	} else {
+		formatBox(title, strings.Join(mdesc, "\n"), mfg)
+	}
 }
 
 func (m *monster) color(gs *game) gruid.Color {
@@ -271,6 +275,9 @@ func (md *model) updatePosInfo() {
 		pi.Unknown = true
 		if g.Noise[p] || g.NoiseIllusion[p] {
 			pi.Noise = true
+		}
+		if idx, ok := g.LastMonsterKnownAt[p]; ok && !g.Monsters[idx].Seen {
+			pi.Monster = g.Monsters[idx]
 		}
 		md.targ.ex.info = pi
 		return
