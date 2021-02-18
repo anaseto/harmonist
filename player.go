@@ -441,7 +441,7 @@ func (g *game) PushPlayerTurn() {
 }
 
 func (g *game) SwiftFog() {
-	dij := &noisePath{state: g}
+	dij := &noisePath{g: g}
 	nodes := g.PR.DijkstraMap(dij, []gruid.Point{g.Player.P}, 2)
 	for _, n := range nodes {
 		_, ok := g.Clouds[n.P]

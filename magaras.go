@@ -619,7 +619,7 @@ func (g *game) EvokeFog() error {
 }
 
 func (g *game) Fog(at gruid.Point, radius int) {
-	dij := &noisePath{state: g}
+	dij := &noisePath{g: g}
 	nodes := g.PR.DijkstraMap(dij, []gruid.Point{at}, radius)
 	for _, n := range nodes {
 		_, ok := g.Clouds[n.P]
@@ -731,7 +731,7 @@ func (g *game) EvokeLignification() error {
 }
 
 func (g *game) EvokeNoise() error {
-	dij := &noisePath{state: g}
+	dij := &noisePath{g: g}
 	const noiseDist = 23
 	g.PR.BreadthFirstMap(dij, []gruid.Point{g.Player.P}, noiseDist)
 	noises := []gruid.Point{}
@@ -747,7 +747,7 @@ func (g *game) EvokeNoise() error {
 		if mons.SeesPlayer(g) {
 			continue
 		}
-		mp := &monPath{state: g, monster: mons}
+		mp := &monPath{g: g, monster: mons}
 		target := mons.P
 		best := c
 		for {

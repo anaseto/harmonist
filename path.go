@@ -69,19 +69,16 @@ func (gp *gridPath) Estimation(from, to gruid.Point) int {
 }
 
 type mappingPath struct {
-	state *game
-	nbs   paths.Neighbors
+	g   *game
+	nbs paths.Neighbors
 }
 
 func (dp *mappingPath) Neighbors(p gruid.Point) []gruid.Point {
-	d := dp.state.Dungeon
+	d := dp.g.Dungeon
 	if terrain(d.Cell(p)) == WallCell {
 		return nil
 	}
-	keep := func(q gruid.Point) bool {
-		return valid(q)
-	}
-	return dp.nbs.Cardinal(p, keep)
+	return dp.nbs.Cardinal(p, valid)
 }
 
 func (dp *mappingPath) Cost(from, to gruid.Point) int {
@@ -143,7 +140,7 @@ func (tp *tunnelPath) Estimation(from, to gruid.Point) int {
 }
 
 type playerPath struct {
-	state *game
+	g *game
 	nbs   paths.Neighbors
 	goal  gruid.Point
 }
@@ -161,7 +158,7 @@ func (g *game) ppPassable(p gruid.Point) bool {
 }
 
 func (pp *playerPath) Neighbors(p gruid.Point) []gruid.Point {
-	nbs := pp.nbs.Cardinal(p, pp.state.ppPassable)
+	nbs := pp.nbs.Cardinal(p, pp.g.ppPassable)
 	sort.Slice(nbs, func(i, j int) bool {
 		return maxCardinalDist(nbs[i], pp.goal) <= maxCardinalDist(nbs[j], pp.goal)
 	})
@@ -169,7 +166,7 @@ func (pp *playerPath) Neighbors(p gruid.Point) []gruid.Point {
 }
 
 func (pp *playerPath) Cost(from, to gruid.Point) int {
-	if !pp.state.ExclusionsMap[from] && pp.state.ExclusionsMap[to] {
+	if !pp.g.ExclusionsMap[from] && pp.g.ExclusionsMap[to] {
 		return unreachable
 	}
 	return 1
@@ -180,13 +177,13 @@ func (pp *playerPath) Estimation(from, to gruid.Point) int {
 }
 
 type jumpPath struct {
-	state *game
+	g *game
 	nbs   paths.Neighbors
 }
 
 func (jp *jumpPath) Neighbors(p gruid.Point) []gruid.Point {
 	keep := func(q gruid.Point) bool {
-		return jp.state.PlayerCanPass(q)
+		return jp.g.PlayerCanPass(q)
 	}
 	nbs := jp.nbs.Cardinal(p, keep)
 	nbs = ShufflePos(nbs)
@@ -202,12 +199,12 @@ func (jp *jumpPath) Estimation(from, to gruid.Point) int {
 }
 
 type noisePath struct {
-	state *game
+	g *game
 	nbs   paths.Neighbors
 }
 
 func (fp *noisePath) Neighbors(p gruid.Point) []gruid.Point {
-	d := fp.state.Dungeon
+	d := fp.g.Dungeon
 	keep := func(q gruid.Point) bool {
 		return valid(q) && terrain(d.Cell(q)) != WallCell
 	}
@@ -219,18 +216,18 @@ func (fp *noisePath) Cost(from, to gruid.Point) int {
 }
 
 type autoexplorePath struct {
-	state *game
+	g *game
 	nbs   paths.Neighbors
 }
 
 func (ap *autoexplorePath) Neighbors(p gruid.Point) []gruid.Point {
-	if ap.state.ExclusionsMap[p] {
+	if ap.g.ExclusionsMap[p] {
 		return nil
 	}
-	d := ap.state.Dungeon
+	d := ap.g.Dungeon
 	keep := func(q gruid.Point) bool {
-		t, okT := ap.state.TerrainKnowledge[q]
-		if cld, ok := ap.state.Clouds[q]; ok && cld == CloudFire && (!okT || t != FoliageCell && t != DoorCell) {
+		t, okT := ap.g.TerrainKnowledge[q]
+		if cld, ok := ap.g.Clouds[q]; ok && cld == CloudFire && (!okT || t != FoliageCell && t != DoorCell) {
 			// XXX little info leak
 			return false
 		}
@@ -239,7 +236,7 @@ func (ap *autoexplorePath) Neighbors(p gruid.Point) []gruid.Point {
 		}
 		c := d.Cell(q)
 		return c.IsPlayerPassable() && (!okT && !c.IsWall() || !t.IsWall()) &&
-			!ap.state.ExclusionsMap[q]
+			!ap.g.ExclusionsMap[q]
 	}
 	nbs := ap.nbs.Cardinal(p, keep)
 	return nbs
@@ -250,7 +247,7 @@ func (ap *autoexplorePath) Cost(from, to gruid.Point) int {
 }
 
 type monPath struct {
-	state   *game
+	g   *game
 	monster *monster
 	nbs     paths.Neighbors
 }
@@ -265,7 +262,7 @@ func ShufflePos(ps []gruid.Point) []gruid.Point {
 
 func (mp *monPath) Neighbors(p gruid.Point) []gruid.Point {
 	keep := func(q gruid.Point) bool {
-		return mp.monster.CanPassDestruct(mp.state, q)
+		return mp.monster.CanPassDestruct(mp.g, q)
 	}
 	nbs := mp.nbs.Cardinal(p, keep)
 	// shuffle so that monster movement is not unnaturally predictable
@@ -274,7 +271,7 @@ func (mp *monPath) Neighbors(p gruid.Point) []gruid.Point {
 }
 
 func (mp *monPath) Cost(from, to gruid.Point) int {
-	g := mp.state
+	g := mp.g
 	mons := g.MonsterAt(to)
 	if !mons.Exists() {
 		c := g.Dungeon.Cell(to)
@@ -305,7 +302,7 @@ func (mp *monPath) Estimation(from, to gruid.Point) int {
 }
 
 func (m *monster) APath(g *game, from, to gruid.Point) []gruid.Point {
-	mp := &monPath{state: g, monster: m}
+	mp := &monPath{g: g, monster: m}
 	path := g.PR.AstarPath(mp, from, to)
 	if len(path) == 0 {
 		return nil
@@ -316,7 +313,7 @@ func (m *monster) APath(g *game, from, to gruid.Point) []gruid.Point {
 func (g *game) PlayerPath(from, to gruid.Point) []gruid.Point {
 	path := []gruid.Point{}
 	if !g.ExclusionsMap[from] && g.ExclusionsMap[to] {
-		pp := &playerPath{state: g, goal: to}
+		pp := &playerPath{g: g, goal: to}
 		path = g.PR.AstarPath(pp, from, to)
 	} else {
 		path = g.PR.JPSPath(path, from, to, g.ppPassable, false)

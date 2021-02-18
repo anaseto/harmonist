@@ -305,7 +305,7 @@ func (g *game) SeeNotable(c cell, p gruid.Point) {
 	switch terrain(c) {
 	case MagaraCell:
 		mag := g.Objects.Magaras[p]
-		dp := &mappingPath{state: g}
+		dp := &mappingPath{g: g}
 		path := g.PR.AstarPath(dp, g.Player.P, p)
 		if len(path) > 0 {
 			g.StoryPrintf("Spotted %s (distance: %d)", mag, len(path))
@@ -314,7 +314,7 @@ func (g *game) SeeNotable(c cell, p gruid.Point) {
 		}
 	case ItemCell:
 		it := g.Objects.Items[p]
-		dp := &mappingPath{state: g}
+		dp := &mappingPath{g: g}
 		path := g.PR.AstarPath(dp, g.Player.P, p)
 		if len(path) > 0 {
 			g.StoryPrintf("Spotted %s (distance: %d)", it.ShortDesc(g), len(path))
@@ -323,7 +323,7 @@ func (g *game) SeeNotable(c cell, p gruid.Point) {
 		}
 	case StairCell:
 		st := g.Objects.Stairs[p]
-		dp := &mappingPath{state: g}
+		dp := &mappingPath{g: g}
 		path := g.PR.AstarPath(dp, g.Player.P, p)
 		if len(path) > 0 {
 			g.StoryPrintf("Discovered %s (distance: %d)", st, len(path))
@@ -331,7 +331,7 @@ func (g *game) SeeNotable(c cell, p gruid.Point) {
 			g.StoryPrintf("Discovered %s", st)
 		}
 	case FakeStairCell:
-		dp := &mappingPath{state: g}
+		dp := &mappingPath{g: g}
 		path := g.PR.AstarPath(dp, g.Player.P, p)
 		if len(path) > 0 {
 			g.StoryPrintf("Discovered %s (distance: %d)", normalStairShortDesc, len(path))
@@ -341,7 +341,7 @@ func (g *game) SeeNotable(c cell, p gruid.Point) {
 	case StoryCell:
 		st := g.Objects.Story[p]
 		if st == StoryArtifactSealed {
-			dp := &mappingPath{state: g}
+			dp := &mappingPath{g: g}
 			path := g.PR.AstarPath(dp, g.Player.P, p)
 			if len(path) > 0 {
 				g.StoryPrintf("Discovered Portal Moon Gem Artifact (distance: %d)", len(path))
@@ -431,7 +431,7 @@ func (g *game) Ray(p gruid.Point) []gruid.Point {
 }
 
 func (g *game) ComputeNoise() {
-	dij := &noisePath{state: g}
+	dij := &noisePath{g: g}
 	rg := DefaultLOSRange
 	nodes := g.PR.BreadthFirstMap(dij, []gruid.Point{g.Player.P}, rg)
 	count := 0

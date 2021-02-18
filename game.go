@@ -583,7 +583,7 @@ func (g *game) Descend(style descendstyle) bool {
 		return true
 	}
 	if style != DescendNormal {
-		// TODO: add animation?
+		g.md.AbyssFallAnimation()
 		g.Print("You fall into the abyss. It hurts!")
 		g.StoryPrint("Fell into the abyss")
 	} else {

@@ -58,7 +58,7 @@ func (g *game) MakeMonstersAware() {
 }
 
 func (g *game) MakeNoise(noise int, at gruid.Point) {
-	dij := &noisePath{state: g}
+	dij := &noisePath{g: g}
 	g.PR.BreadthFirstMap(dij, []gruid.Point{at}, noise)
 	//if at.Distance(g.Player.Pos)-noise < DefaultLOSRange && noise > 4 {
 	//g.ui.LOSWavesAnimation(noise, WaveNoise, at)
@@ -87,7 +87,7 @@ func (g *game) MakeNoise(noise int, at gruid.Point) {
 }
 
 func (m *monster) LeaveRoomForPlayer(g *game) gruid.Point {
-	dij := &monPath{state: g, monster: m}
+	dij := &monPath{g: g, monster: m}
 	nodes := g.PR.DijkstraMap(dij, []gruid.Point{m.P}, 10)
 	free := invalidPos
 	dist := unreachable
@@ -112,7 +112,7 @@ func (m *monster) LeaveRoomForPlayer(g *game) gruid.Point {
 }
 
 func (g *game) FindJumpTarget(m *monster) gruid.Point {
-	dij := &jumpPath{state: g}
+	dij := &jumpPath{g: g}
 	nodes := g.PR.DijkstraMap(dij, []gruid.Point{m.P}, 10)
 	free := invalidPos
 	dist := unreachable

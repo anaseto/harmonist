@@ -841,7 +841,7 @@ const (
 var SearchAroundCache []gruid.Point
 
 func (m *monster) SearchAround(g *game, p gruid.Point, radius int) gruid.Point {
-	dij := &monPath{state: g, monster: m}
+	dij := &monPath{g: g, monster: m}
 	nodes := g.PR.DijkstraMap(dij, []gruid.Point{p}, radius)
 	SearchAroundCache = SearchAroundCache[:0]
 	for _, n := range nodes {
@@ -988,7 +988,7 @@ func (m *monster) HandleWatching(g *game) {
 		m.Alternate()
 		m.Watching++
 		if m.Kind == MonsDog {
-			dij := &monPath{state: g, monster: m}
+			dij := &monPath{g: g, monster: m}
 			g.PR.DijkstraMap(dij, []gruid.Point{m.P}, DogFlairDist)
 			if c := g.PR.DijkstraMapAt(g.Player.P); c <= DogFlairDist {
 				m.Target = g.Player.P
@@ -1793,7 +1793,7 @@ func (m *monster) GatherBand(g *game) {
 	if !MonsBands[g.Bands[m.Band].Kind].Band {
 		return
 	}
-	dij := &noisePath{state: g}
+	dij := &noisePath{g: g}
 	g.PR.BreadthFirstMap(dij, []gruid.Point{m.P}, 4)
 	for _, mons := range g.Monsters {
 		if mons.Band == m.Band {

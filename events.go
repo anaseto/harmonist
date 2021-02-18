@@ -276,7 +276,7 @@ func (cev *posEvent) Handle(g *game) {
 }
 
 func (g *game) NightFog(at gruid.Point, radius int) {
-	dij := &noisePath{state: g}
+	dij := &noisePath{g: g}
 	nodes := g.PR.DijkstraMap(dij, []gruid.Point{at}, radius)
 	for _, n := range nodes {
 		_, ok := g.Clouds[n.P]

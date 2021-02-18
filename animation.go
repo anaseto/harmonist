@@ -7,6 +7,7 @@ import (
 
 	"github.com/anaseto/gruid"
 	"github.com/anaseto/gruid/paths"
+	"github.com/anaseto/gruid/rl"
 )
 
 const (
@@ -253,7 +254,7 @@ func (g *game) Waves(maxCost int, ws wavestyle, center gruid.Point) (dists []int
 	case WaveMagicNoise:
 		dij = &gridPath{dungeon: g.Dungeon}
 	default:
-		dij = &noisePath{state: g}
+		dij = &noisePath{g: g}
 	}
 	nodes := g.PR.DijkstraMap(dij, []gruid.Point{center}, maxCost)
 	cdists = make(map[int][]int)
@@ -523,6 +524,26 @@ func (md *model) MagicMappingAnimation() {
 	}
 	md.startAnimSeq()
 	md.anims.Frame(AnimDurShort)
+}
+
+func (md *model) AbyssFallAnimation() {
+	if DisableAnimations {
+		return
+	}
+	gd := rl.NewGrid(DungeonWidth, DungeonHeight)
+	max := 5
+	gd.FillFunc(func() rl.Cell {
+		return rl.Cell(RandInt(max))
+	})
+	for i := 0; i < max; i++ {
+		it := gd.Iterator()
+		for it.Next() {
+			if it.Cell() == rl.Cell(i) {
+				md.anims.Draw(it.P(), ' ', ColorFg, ColorBgDark)
+			}
+		}
+		md.anims.Frame(AnimDurShort)
+	}
 }
 
 func (md *model) Story() {
