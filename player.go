@@ -238,11 +238,11 @@ func (g *game) Teleportation() {
 	count := 0
 	for {
 		count++
-		if count > 1000 {
+		if count > maxIterations {
 			panic("Teleportation")
 		}
 		p = g.FreePassableCell()
-		if distance(p, g.Player.P) < 15 && i < 1000 {
+		if distance(p, g.Player.P) < 15 && i < maxIterations {
 			i++
 			continue
 		}

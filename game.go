@@ -77,6 +77,7 @@ type game struct {
 	PR                *paths.PathRange
 	PRauto            *paths.PathRange
 	autosources       []gruid.Point // cache
+	nbs               paths.Neighbors
 }
 
 type specialEvent int
@@ -121,8 +122,8 @@ func (g *game) FreePassableCell() gruid.Point {
 	count := 0
 	for {
 		count++
-		if count > 1000 {
-			panic("FreeCell")
+		if count > maxIterations {
+			panic("FreePassableCell")
 		}
 		x := RandInt(DungeonWidth)
 		y := RandInt(DungeonHeight)
@@ -136,66 +137,6 @@ func (g *game) FreePassableCell() gruid.Point {
 		}
 		mons := g.MonsterAt(p)
 		if mons.Exists() {
-			continue
-		}
-		return p
-	}
-}
-
-func (g *game) FreeCellForPlayer() gruid.Point {
-	// TODO: not used now, but could be for cases when you fall into the abyss
-	center := gruid.Point{DungeonWidth / 2, DungeonHeight / 2}
-	bestpos := g.FreePassableCell()
-	for i := 0; i < 5; i++ {
-		p := g.FreePassableCell()
-		if distance(p, center) > distance(bestpos, center) {
-			bestpos = p
-		}
-	}
-	return bestpos
-}
-
-func (g *game) FreeCellForMonster() gruid.Point {
-	d := g.Dungeon
-	count := 0
-	for {
-		count++
-		if count > 1000 {
-			panic("FreeCellForMonster")
-		}
-		x := RandInt(DungeonWidth)
-		y := RandInt(DungeonHeight)
-		p := gruid.Point{x, y}
-		c := d.Cell(p)
-		if !c.IsPassable() {
-			continue
-		}
-		if g.Player != nil && distance(g.Player.P, p) < 8 {
-			continue
-		}
-		mons := g.MonsterAt(p)
-		if mons.Exists() {
-			continue
-		}
-		return p
-	}
-}
-
-func (g *game) FreeCellForBandMonster(p gruid.Point) gruid.Point {
-	count := 0
-	for {
-		count++
-		if count > 1000 {
-			return g.FreeCellForMonster()
-		}
-		neighbors := g.Dungeon.FreeNeighbors(p)
-		r := RandInt(len(neighbors))
-		p = neighbors[r]
-		if g.Player != nil && distance(g.Player.P, p) < 8 {
-			continue
-		}
-		mons := g.MonsterAt(p)
-		if mons.Exists() || !g.Dungeon.Cell(p).IsPassable() {
 			continue
 		}
 		return p

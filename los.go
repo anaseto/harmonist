@@ -17,6 +17,7 @@ package main
 
 import (
 	"github.com/anaseto/gruid"
+	"github.com/anaseto/gruid/paths"
 	"github.com/anaseto/gruid/rl"
 )
 
@@ -201,7 +202,7 @@ func (g *game) ComputeLOS() {
 	lt := &lighter{rs: rs, g: g}
 	g.Player.FOV.SetRange(visionRange(g.Player.P, maxDepth))
 	lnodes := g.Player.FOV.VisionMap(lt, g.Player.P)
-	nb := make([]gruid.Point, 8)
+	nbs := paths.Neighbors{}
 	g.Player.FOV.SSCVisionMap(
 		g.Player.P, maxDepth,
 		g.blocksSSCLOS,
@@ -216,7 +217,7 @@ func (g *game) ComputeLOS() {
 		} else if terrain(c) == TreeCell && g.Illuminated(n.P) && n.Cost <= TreeRange {
 			if terrain(g.Dungeon.Cell(n.P)) == WallCell {
 				// this is just an approximation, but ok in practice
-				nb = Neighbors(n.P, nb, func(npos gruid.Point) bool {
+				nb := nbs.All(n.P, func(npos gruid.Point) bool {
 					if !valid(npos) || !g.Illuminated(npos) || g.Dungeon.Cell(npos).IsWall() {
 						return false
 					}

@@ -11,6 +11,23 @@ import (
 
 var Rounds = 40
 
+func (d *dungeon) FreePassableCell() gruid.Point {
+	count := 0
+	for {
+		count++
+		if count > maxIterations {
+			panic("FreeCell")
+		}
+		x := RandInt(DungeonWidth)
+		y := RandInt(DungeonHeight)
+		p := gruid.Point{x, y}
+		c := d.Cell(p)
+		if c.IsPassable() {
+			return p
+		}
+	}
+}
+
 func (d *dungeon) connex(pr *paths.PathRange) bool {
 	pos := d.FreePassableCell()
 	passable := func(p gruid.Point) bool {

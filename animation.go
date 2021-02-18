@@ -232,7 +232,7 @@ func (md *model) ExplosionAnimation(es explosionStyle, p gruid.Point) {
 		colors[1] = ColorFgExplosionWallEnd
 	}
 	for i := 0; i < 3; i++ {
-		nb := g.Dungeon.FreeNeighbors(p)
+		nb := g.playerPassableNeighbors(p)
 		if es != AroundWallExplosion {
 			nb = append(nb, p)
 		}

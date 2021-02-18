@@ -168,7 +168,7 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 			return
 		}
 		if terrain(c) == WallCell {
-			if len(g.Dungeon.CardinalNonWallNeighbors(p)) == 0 {
+			if len(g.nonWallNeighbors(p)) == 0 {
 				r = ' '
 				return
 			}

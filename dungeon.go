@@ -39,32 +39,18 @@ func (d *dungeon) SetExplored(p gruid.Point) {
 	d.Grid.Set(p, rl.Cell(oc|Explored))
 }
 
-func (d *dungeon) FreePassableCell() gruid.Point {
-	count := 0
-	for {
-		count++
-		if count > 1000 {
-			panic("FreeCell")
-		}
-		x := RandInt(DungeonWidth)
-		y := RandInt(DungeonHeight)
-		p := gruid.Point{x, y}
-		c := d.Cell(p)
-		if c.IsPassable() {
-			return p
-		}
-	}
-}
+const maxIterations = 1000
 
-func (d *dungeon) WallCell() gruid.Point {
+func (dg *dgen) WallCell() gruid.Point {
+	d := dg.d
 	count := 0
 	for {
 		count++
-		if count > 1000 {
+		if count > maxIterations {
 			panic("WallCell")
 		}
-		x := RandInt(DungeonWidth)
-		y := RandInt(DungeonHeight)
+		x := dg.rand.Intn(DungeonWidth)
+		y := dg.rand.Intn(DungeonHeight)
 		p := gruid.Point{x, y}
 		c := d.Cell(p)
 		if terrain(c) == WallCell {
@@ -73,9 +59,9 @@ func (d *dungeon) WallCell() gruid.Point {
 	}
 }
 
-func (d *dungeon) HasFreeNeighbor(p gruid.Point) bool {
-	neighbors := ValidCardinalNeighbors(p)
-	for _, q := range neighbors {
+func (d *dungeon) HasFreeNeighbor(nbs *paths.Neighbors, p gruid.Point) bool {
+	nb := nbs.All(p, valid)
+	for _, q := range nb {
 		if d.Cell(q).IsPassable() {
 			return true
 		}
@@ -83,10 +69,11 @@ func (d *dungeon) HasFreeNeighbor(p gruid.Point) bool {
 	return false
 }
 
-func (d *dungeon) HasTooManyWallNeighbors(p gruid.Point) bool {
-	neighbors := ValidNeighbors(p)
-	count := 8 - len(neighbors)
-	for _, q := range neighbors {
+func (dg *dgen) HasTooManyWallNeighbors(p gruid.Point) bool {
+	d := dg.d
+	nbs := dg.neighbors.All(p, valid)
+	count := 8 - len(nbs)
+	for _, q := range nbs {
 		if !d.Cell(q).IsPassable() {
 			count++
 		}
@@ -96,7 +83,7 @@ func (d *dungeon) HasTooManyWallNeighbors(p gruid.Point) bool {
 
 func (g *game) HasNonWallExploredNeighbor(p gruid.Point) bool {
 	d := g.Dungeon
-	neighbors := ValidCardinalNeighbors(p)
+	neighbors := g.cardinalNeighbors(p)
 	for _, q := range neighbors {
 		c := d.Cell(q)
 		if t, ok := g.TerrainKnowledge[q]; ok {
@@ -125,15 +112,16 @@ func (rs roomSlice) Less(i, j int) bool {
 }
 
 type dgen struct {
-	d       *dungeon
-	tunnel  map[gruid.Point]bool
-	room    map[gruid.Point]bool
-	rooms   []*room
-	spl     places
-	special specialRoom
-	layout  maplayout
-	PR      *paths.PathRange
-	rand    *rand.Rand
+	d         *dungeon
+	tunnel    map[gruid.Point]bool
+	room      map[gruid.Point]bool
+	rooms     []*room
+	spl       places
+	special   specialRoom
+	layout    maplayout
+	PR        *paths.PathRange
+	rand      *rand.Rand
+	neighbors paths.Neighbors
 }
 
 func (dg *dgen) ConnectRoomsShortestPath(i, j int) bool {
@@ -187,21 +175,21 @@ func (dg *dgen) NewRoom(rpos gruid.Point, kind string) *room {
 			drev = 4
 		}
 	}
-	if RandInt(drev) == 0 {
-		switch RandInt(2) {
+	if dg.rand.Intn(drev) == 0 {
+		switch dg.rand.Intn(2) {
 		case 0:
 			r.vault.Reflect()
-			r.vault.Rotate(1 + 2*RandInt(2))
+			r.vault.Rotate(1 + 2*dg.rand.Intn(2))
 		default:
-			r.vault.Rotate(1 + 2*RandInt(2))
+			r.vault.Rotate(1 + 2*dg.rand.Intn(2))
 		}
 	} else {
-		switch RandInt(2) {
+		switch dg.rand.Intn(2) {
 		case 0:
 			r.vault.Reflect()
-			r.vault.Rotate(2 * RandInt(2))
+			r.vault.Rotate(2 * dg.rand.Intn(2))
 		default:
-			r.vault.Rotate(2 * RandInt(2))
+			r.vault.Rotate(2 * dg.rand.Intn(2))
 		}
 	}
 	r.w = r.vault.Size().X
@@ -241,7 +229,7 @@ func (dg *dgen) nearRoom(i int) (k int) {
 		}
 		nd := roomDistance(r, nextRoom)
 		if nd < d {
-			n := RandInt(5)
+			n := dg.rand.Intn(5)
 			if n > 0 {
 				d = nd
 				k = j
@@ -281,7 +269,7 @@ func (dg *dgen) PutHoledWalls(g *game, n int) {
 		return
 	}
 	for i := 0; i < n; i++ {
-		p := candidates[RandInt(len(candidates))]
+		p := candidates[dg.rand.Intn(len(candidates))]
 		g.Dungeon.SetCell(p, HoledWallCell)
 	}
 }
@@ -299,7 +287,7 @@ func (dg *dgen) PutWindows(g *game, n int) {
 		return
 	}
 	for i := 0; i < n; i++ {
-		p := candidates[RandInt(len(candidates))]
+		p := candidates[dg.rand.Intn(len(candidates))]
 		g.Dungeon.SetCell(p, WindowCell)
 	}
 }
@@ -328,6 +316,9 @@ const (
 )
 
 func (dg *dgen) GenRooms(templates []string, n int, pl placement) (ps []gruid.Point, ok bool) {
+	if len(templates) == 0 {
+		return nil, false
+	}
 	ok = true
 	for i := 0; i < n; i++ {
 		var r *room
@@ -338,17 +329,17 @@ func (dg *dgen) GenRooms(templates []string, n int, pl placement) (ps []gruid.Po
 			count--
 			switch pl {
 			case PlacementRandom:
-				p = gruid.Point{RandInt(DungeonWidth - 1), RandInt(DungeonHeight - 1)}
+				p = gruid.Point{dg.rand.Intn(DungeonWidth - 1), dg.rand.Intn(DungeonHeight - 1)}
 			case PlacementCenter:
-				p = gruid.Point{DungeonWidth/2 - 4 + RandInt(5), DungeonHeight/2 - 3 + RandInt(4)}
+				p = gruid.Point{DungeonWidth/2 - 4 + dg.rand.Intn(5), DungeonHeight/2 - 3 + dg.rand.Intn(4)}
 			case PlacementEdge:
-				if RandInt(2) == 0 {
-					p = gruid.Point{RandInt(DungeonWidth / 4), RandInt(DungeonHeight - 1)}
+				if dg.rand.Intn(2) == 0 {
+					p = gruid.Point{dg.rand.Intn(DungeonWidth / 4), dg.rand.Intn(DungeonHeight - 1)}
 				} else {
-					p = gruid.Point{3*DungeonWidth/4 + RandInt(DungeonWidth/4) - 1, RandInt(DungeonHeight - 1)}
+					p = gruid.Point{3*DungeonWidth/4 + dg.rand.Intn(DungeonWidth/4) - 1, dg.rand.Intn(DungeonHeight - 1)}
 				}
 			}
-			tpl = templates[RandInt(len(templates))]
+			tpl = templates[dg.rand.Intn(len(templates))]
 			r = dg.NewRoom(p, tpl)
 		}
 		if r != nil {
@@ -464,7 +455,7 @@ func (g *game) GenRoomTunnels(ml maplayout) {
 	case RandomSmallWalkCaveUrbanised:
 		dg.GenCaveMap(20 * 10)
 	case NaturalCave:
-		if RandInt(3) == 0 {
+		if dg.rand.Intn(3) == 0 {
 			dg.GenCellularAutomataCaveMap()
 		} else {
 			dg.GenCaveMap(21 * 47)
@@ -475,7 +466,7 @@ func (g *game) GenRoomTunnels(ml maplayout) {
 	if sr := g.Params.Special[g.Depth]; sr != noSpecialRoom {
 		nspecial--
 		pl := PlacementEdge
-		if RandInt(3) == 0 {
+		if dg.rand.Intn(3) == 0 {
 			pl = PlacementCenter
 		}
 		dg.special = sr
@@ -534,15 +525,15 @@ func (g *game) GenRoomTunnels(ml maplayout) {
 	dg.PutDoors(g)
 	dg.PlayerStartCell(g, places)
 	dg.ClearUnconnected(g)
-	if RandInt(10) > 0 {
+	if dg.rand.Intn(10) > 0 {
 		var c cell
-		if RandInt(5) > 1 {
+		if dg.rand.Intn(5) > 1 {
 			c = ChasmCell
 		} else {
 			c = WaterCell
 		}
 		dg.GenLake(c)
-		if RandInt(5) == 0 {
+		if dg.rand.Intn(5) == 0 {
 			dg.GenLake(c)
 		}
 	}
@@ -554,7 +545,7 @@ func (g *game) GenRoomTunnels(ml maplayout) {
 		}
 		dg.GenFakeStairs(g)
 	}
-	for i := 0; i < 4+RandInt(2); i++ {
+	for i := 0; i < 4+dg.rand.Intn(2); i++ {
 		dg.GenBarrel(g)
 	}
 	dg.AddSpecial(g, ml)
@@ -563,7 +554,7 @@ func (g *game) GenRoomTunnels(ml maplayout) {
 	}))
 	dg.GenMonsters(g)
 	dg.PutCavernCells(g)
-	if RandInt(2) == 0 {
+	if dg.rand.Intn(2) == 0 {
 		dg.GenQueenRock()
 	}
 }
@@ -610,26 +601,26 @@ func (dg *dgen) AddSpecial(g *game, ml maplayout) {
 	ntables := 4
 	switch ml {
 	case AutomataCave, RandomWalkCave, NaturalCave:
-		if RandInt(3) == 0 {
+		if dg.rand.Intn(3) == 0 {
 			ntables++
-		} else if RandInt(10) == 0 {
+		} else if dg.rand.Intn(10) == 0 {
 			ntables--
 		}
 	case RandomWalkTreeCave:
-		if RandInt(4) > 0 {
+		if dg.rand.Intn(4) > 0 {
 			ntables++
 		}
-		if RandInt(4) > 0 {
+		if dg.rand.Intn(4) > 0 {
 			ntables++
 		}
 	case RandomSmallWalkCaveUrbanised:
 		ntables += 2
-		if RandInt(4) > 0 {
+		if dg.rand.Intn(4) > 0 {
 			ntables++
 		}
 	}
 	if g.Params.Tables[g.Depth] {
-		ntables += 2 + RandInt(2)
+		ntables += 2 + dg.rand.Intn(2)
 	}
 	for i := 0; i < ntables; i++ {
 		dg.GenTable(g)
@@ -638,44 +629,44 @@ func (dg *dgen) AddSpecial(g *game, ml maplayout) {
 	ntrees := 1
 	switch ml {
 	case AutomataCave:
-		if RandInt(4) == 0 {
+		if dg.rand.Intn(4) == 0 {
 			ntrees++
-		} else if RandInt(8) == 0 {
+		} else if dg.rand.Intn(8) == 0 {
 			ntrees--
 		}
 	case RandomWalkCave:
-		if RandInt(4) > 0 {
+		if dg.rand.Intn(4) > 0 {
 			ntrees++
 		}
-		if RandInt(8) == 0 {
+		if dg.rand.Intn(8) == 0 {
 			ntrees++
 		}
 	case NaturalCave:
 		ntrees++
-		if RandInt(2) > 0 {
+		if dg.rand.Intn(2) > 0 {
 			ntrees++
 		}
 	case RandomWalkTreeCave, RandomSmallWalkCaveUrbanised:
-		if RandInt(2) == 0 {
+		if dg.rand.Intn(2) == 0 {
 			ntrees--
 		}
 	}
 	if g.Params.Trees[g.Depth] {
-		ntrees += 2 + RandInt(2)
+		ntrees += 2 + dg.rand.Intn(2)
 	}
 	for i := 0; i < ntrees; i++ {
 		dg.GenTree(g)
 	}
 	nhw := 1
-	if RandInt(3) > 0 {
+	if dg.rand.Intn(3) > 0 {
 		nhw++
 	}
 	if g.Params.Holes[g.Depth] {
-		nhw += 3 + RandInt(2)
+		nhw += 3 + dg.rand.Intn(2)
 	}
 	switch ml {
 	case RandomSmallWalkCaveUrbanised:
-		if RandInt(4) > 0 {
+		if dg.rand.Intn(4) > 0 {
 			nhw++
 		}
 	}
@@ -685,11 +676,11 @@ func (dg *dgen) AddSpecial(g *game, ml maplayout) {
 		nwin++
 	}
 	if g.Params.Windows[g.Depth] {
-		nwin += 4 + RandInt(3)
+		nwin += 4 + dg.rand.Intn(3)
 	}
 	switch ml {
 	case RandomSmallWalkCaveUrbanised:
-		if RandInt(4) > 0 {
+		if dg.rand.Intn(4) > 0 {
 			nwin++
 		}
 	}
@@ -712,10 +703,10 @@ func (dg *dgen) PutLore(g *game) {
 	count = 0
 	for {
 		count++
-		if count > 1000 {
+		if count > maxIterations {
 			panic("PutLore2")
 		}
-		i := RandInt(len(LoreMessages))
+		i := dg.rand.Intn(len(LoreMessages))
 		if g.GeneratedLore[i] {
 			continue
 		}
@@ -732,18 +723,18 @@ func (dg *dgen) GenLight(g *game) {
 	ni := 8
 	switch dg.layout {
 	case NaturalCave:
-		no += RandInt(2)
-		ni += RandInt(3)
+		no += dg.rand.Intn(2)
+		ni += dg.rand.Intn(3)
 	case AutomataCave, RandomWalkCave:
-		ni += RandInt(4)
+		ni += dg.rand.Intn(4)
 	case RandomWalkTreeCave:
 		no--
-		ni += RandInt(4)
+		ni += dg.rand.Intn(4)
 	case RandomSmallWalkCaveUrbanised:
 		no--
-		no -= RandInt(2)
+		no -= dg.rand.Intn(2)
 		ni += 2
-		ni += RandInt(4)
+		ni += dg.rand.Intn(4)
 	}
 	for i := 0; i < no; i++ {
 		p := dg.OutsideGroundCell(g)
@@ -753,7 +744,7 @@ func (dg *dgen) GenLight(g *game) {
 		p := dg.rooms[RandInt(len(dg.rooms))].RandomPlaces(PlaceSpecialOrStatic)
 		if p != InvalidPos {
 			g.Dungeon.SetCell(p, LightCell)
-		} else if RandInt(10) > 0 {
+		} else if dg.rand.Intn(10) > 0 {
 			i--
 		}
 	}
@@ -786,7 +777,7 @@ loop:
 		return
 	}
 	itpos := InvalidPos
-	neighbors := g.Dungeon.FreeNeighbors(g.Player.P)
+	neighbors := g.playerPassableNeighbors(g.Player.P)
 	for i := 0; i < len(neighbors); i++ {
 		j := RandInt(len(neighbors) - i)
 		neighbors[i], neighbors[j] = neighbors[j], neighbors[i]
@@ -826,11 +817,11 @@ func (dg *dgen) GenBanana(g *game) {
 	count := 0
 	for {
 		count++
-		if count > 1000 {
+		if count > maxIterations {
 			panic("GenBanana")
 		}
-		x := RandInt(DungeonWidth)
-		y := RandInt(DungeonHeight)
+		x := dg.rand.Intn(DungeonWidth)
+		y := dg.rand.Intn(DungeonHeight)
 		p := gruid.Point{x, y}
 		c := dg.d.Cell(p)
 		if terrain(c) == GroundCell && !dg.room[p] {
@@ -846,7 +837,7 @@ func (dg *dgen) GenPotion(g *game, ptn potion) {
 	p := InvalidPos
 	for p == InvalidPos {
 		count++
-		if count > 1000 {
+		if count > maxIterations {
 			return
 		}
 		p = dg.rooms[RandInt(len(dg.rooms))].RandomPlace(PlaceItem)
@@ -862,8 +853,8 @@ func (dg *dgen) OutsideGroundCell(g *game) gruid.Point {
 		if count > 1500 {
 			panic("OutsideGroundCell")
 		}
-		x := RandInt(DungeonWidth)
-		y := RandInt(DungeonHeight)
+		x := dg.rand.Intn(DungeonWidth)
+		y := dg.rand.Intn(DungeonHeight)
 		p := gruid.Point{x, y}
 		mons := g.MonsterAt(p)
 		if mons.Exists() {
@@ -883,8 +874,8 @@ func (dg *dgen) OutsideCavernMiddleCell(g *game) gruid.Point {
 		if count > 2500 {
 			return InvalidPos
 		}
-		x := RandInt(DungeonWidth)
-		y := RandInt(DungeonHeight)
+		x := dg.rand.Intn(DungeonWidth)
+		y := dg.rand.Intn(DungeonHeight)
 		p := gruid.Point{x, y}
 		mons := g.MonsterAt(p)
 		if mons.Exists() {
@@ -894,7 +885,7 @@ func (dg *dgen) OutsideCavernMiddleCell(g *game) gruid.Point {
 		if terrain(c) == GroundCell && count < 400 || terrain(c) == FoliageCell && count < 350 {
 			continue
 		}
-		if (c.IsGround() || terrain(c) == FoliageCell) && !dg.room[p] && !dg.d.HasTooManyWallNeighbors(p) {
+		if (c.IsGround() || terrain(c) == FoliageCell) && !dg.room[p] && !dg.HasTooManyWallNeighbors(p) {
 			return p
 		}
 	}
@@ -907,8 +898,8 @@ func (dg *dgen) SatowalgaCell(g *game) gruid.Point {
 		if count > 2000 {
 			return g.FreeCellForMonster()
 		}
-		x := RandInt(DungeonWidth)
-		y := RandInt(DungeonHeight)
+		x := dg.rand.Intn(DungeonWidth)
+		y := dg.rand.Intn(DungeonHeight)
 		p := gruid.Point{x, y}
 		mons := g.MonsterAt(p)
 		if mons.Exists() {
@@ -918,7 +909,7 @@ func (dg *dgen) SatowalgaCell(g *game) gruid.Point {
 		if terrain(c) == GroundCell && count < 400 {
 			continue
 		}
-		if c.IsGround() && !dg.room[p] && !dg.d.HasTooManyWallNeighbors(p) {
+		if c.IsGround() && !dg.room[p] && !dg.HasTooManyWallNeighbors(p) {
 			return p
 		}
 	}
@@ -931,8 +922,8 @@ func (dg *dgen) FoliageCell(g *game) gruid.Point {
 		if count > 1500 {
 			return dg.OutsideCell(g)
 		}
-		x := RandInt(DungeonWidth)
-		y := RandInt(DungeonHeight)
+		x := dg.rand.Intn(DungeonWidth)
+		y := dg.rand.Intn(DungeonHeight)
 		p := gruid.Point{x, y}
 		if distance(p, g.Player.P) < DefaultLOSRange {
 			continue
@@ -955,8 +946,8 @@ func (dg *dgen) OutsideCell(g *game) gruid.Point {
 		if count > 1500 {
 			panic("OutsideCell")
 		}
-		x := RandInt(DungeonWidth)
-		y := RandInt(DungeonHeight)
+		x := dg.rand.Intn(DungeonWidth)
+		y := dg.rand.Intn(DungeonHeight)
 		p := gruid.Point{x, y}
 		mons := g.MonsterAt(p)
 		if mons.Exists() {
@@ -976,8 +967,8 @@ func (dg *dgen) InsideCell(g *game) gruid.Point {
 		if count > 1500 {
 			panic("InsideCell")
 		}
-		x := RandInt(DungeonWidth)
-		y := RandInt(DungeonHeight)
+		x := dg.rand.Intn(DungeonWidth)
+		y := dg.rand.Intn(DungeonHeight)
 		p := gruid.Point{x, y}
 		mons := g.MonsterAt(p)
 		if mons.Exists() {
@@ -1002,7 +993,7 @@ func (dg *dgen) GenItem(g *game) {
 	count := 0
 	for p == InvalidPos {
 		count++
-		if count > 1000 {
+		if count > maxIterations {
 			panic("GenItem")
 		}
 		p = dg.rooms[RandInt(len(dg.rooms))].RandomPlace(PlaceItem)
@@ -1025,7 +1016,7 @@ func (dg *dgen) GenBarrierStone(g *game) {
 	count := 0
 	for p == InvalidPos {
 		count++
-		if count > 1000 {
+		if count > maxIterations {
 			panic("GenBarrierStone")
 		}
 		p = dg.rooms[RandInt(len(dg.rooms))].RandomPlaces(PlaceSpecialOrStatic)
@@ -1039,7 +1030,7 @@ func (dg *dgen) GenMagara(g *game) {
 	count := 0
 	for p == InvalidPos {
 		count++
-		if count > 1000 {
+		if count > maxIterations {
 			panic("GenMagara")
 		}
 		p = dg.rooms[RandInt(len(dg.rooms))].RandomPlace(PlaceItem)
@@ -1055,7 +1046,7 @@ func (dg *dgen) GenStairs(g *game, st stair) {
 	best := 0
 	for i, r := range dg.rooms {
 		for j, pl := range r.places {
-			score := distance(pl.p, g.Player.P) + RandInt(20)
+			score := distance(pl.p, g.Player.P) + dg.rand.Intn(20)
 			if !pl.used && pl.kind == PlaceSpecialStatic && score > best {
 				ri = i
 				pj = j
@@ -1085,7 +1076,7 @@ loop:
 			}
 		}
 		for j, pl := range r.places {
-			score := distance(pl.p, g.Player.P) + RandInt(20)
+			score := distance(pl.p, g.Player.P) + dg.rand.Intn(20)
 			if !pl.used && pl.kind == PlaceSpecialStatic && score > best {
 				ri = i
 				pj = j
@@ -1139,11 +1130,11 @@ func (dg *dgen) CaveGroundCell(g *game) gruid.Point {
 	count := 0
 	for {
 		count++
-		if count > 1000 {
+		if count > maxIterations {
 			panic("CaveGroundCell")
 		}
-		x := RandInt(DungeonWidth)
-		y := RandInt(DungeonHeight)
+		x := dg.rand.Intn(DungeonWidth)
+		y := dg.rand.Intn(DungeonHeight)
 		p := gruid.Point{x, y}
 		c := dg.d.Cell(p)
 		if (terrain(c) == GroundCell || terrain(c) == CavernCell || terrain(c) == QueenRockCell) && !dg.room[p] {
@@ -1164,7 +1155,7 @@ func (dg *dgen) RandomInStone(g *game) stone {
 		TeleportStone,
 		SensingStone,
 	}
-	if RandInt(2) == 0 {
+	if dg.rand.Intn(2) == 0 {
 		// fog stone less often inside
 		instones = append(instones, FogStone)
 	}
@@ -1180,17 +1171,17 @@ func (dg *dgen) RandomOutStone(g *game) stone {
 		TreeStone,
 		TeleportStone,
 	}
-	if RandInt(2) == 0 {
+	if dg.rand.Intn(2) == 0 {
 		// sensing stone less often outside
 		instones = append(instones, SensingStone)
 	}
-	return instones[RandInt(len(instones))]
+	return instones[dg.rand.Intn(len(instones))]
 }
 
 func (dg *dgen) GenStones(g *game) {
 	// Magical Stones
 	nstones := 3
-	switch RandInt(8) {
+	switch dg.rand.Intn(8) {
 	case 1, 2, 3, 4, 5:
 		nstones++
 	case 6, 7:
@@ -1198,7 +1189,7 @@ func (dg *dgen) GenStones(g *game) {
 	}
 	inroom := 2
 	if g.Params.Stones[g.Depth] {
-		nstones += 4 + RandInt(3)
+		nstones += 4 + dg.rand.Intn(3)
 		inroom += 2
 	}
 	if dg.layout == RandomSmallWalkCaveUrbanised {
@@ -1248,8 +1239,8 @@ func (dg *dgen) RunCellularAutomataCave() bool {
 
 func (dg *dgen) GenLake(c cell) {
 	walls := []gruid.Point{}
-	xshift := 10 + RandInt(5)
-	yshift := 5 + RandInt(3)
+	xshift := 10 + dg.rand.Intn(5)
+	yshift := 5 + dg.rand.Intn(3)
 	it := dg.d.Grid.Iterator()
 	for it.Next() {
 		p := it.P()
@@ -1267,7 +1258,7 @@ func (dg *dgen) GenLake(c cell) {
 	d := dg.d
 	passable := func(p gruid.Point) func(q gruid.Point) bool {
 		return func(q gruid.Point) bool {
-			return valid(q) && terrain(dg.d.Cell(q)) == WallCell && !dg.room[q] && distance(p, q) < 10+RandInt(10)
+			return valid(q) && terrain(dg.d.Cell(q)) == WallCell && !dg.room[q] && distance(p, q) < 10+dg.rand.Intn(10)
 		}
 	}
 	for {
@@ -1301,10 +1292,10 @@ func (dg *dgen) GenQueenRock() {
 	if len(cavern) == 0 {
 		return
 	}
-	for i := 0; i < 1+RandInt(2); i++ {
+	for i := 0; i < 1+dg.rand.Intn(2); i++ {
 		p := cavern[RandInt(len(cavern))]
 		passable := func(q gruid.Point) bool {
-			return valid(q) && terrain(dg.d.Cell(q)) == CavernCell && distance(q, p) < 15+RandInt(5)
+			return valid(q) && terrain(dg.d.Cell(q)) == CavernCell && distance(q, p) < 15+dg.rand.Intn(5)
 		}
 		cp := newPather(passable)
 		for _, q := range dg.PR.CCMap(cp, p) {
@@ -1365,27 +1356,28 @@ func (dg *dgen) GenCaveMap(size int) {
 	dg.Foliage(false)
 }
 
-func (d *dungeon) DigBlock(block []gruid.Point) []gruid.Point {
-	p := d.WallCell()
+func (dg *dgen) DigBlock(block []gruid.Point) []gruid.Point {
+	d := dg.d
+	p := dg.WallCell()
 	block = block[:0]
 	count := 0
 	for {
 		count++
 		if count > 3000 && count%500 == 0 {
-			p = d.WallCell()
+			p = dg.WallCell()
 			block = block[:0]
 		}
 		if count > 10000 {
 			panic("DigBlock")
 		}
 		block = append(block, p)
-		if d.HasFreeNeighbor(p) {
+		if d.HasFreeNeighbor(&dg.neighbors, p) {
 			break
 		}
-		p = RandomNeighbor(p, false)
+		p = randomNeighbor(p)
 		if !valid(p) {
 			block = block[:0]
-			p = d.WallCell()
+			p = dg.WallCell()
 			continue
 		}
 		if !valid(p) {
@@ -1412,7 +1404,7 @@ func (dg *dgen) GenTreeCaveMap() {
 	block := make([]gruid.Point, 0, 64)
 loop:
 	for cells < max {
-		block = d.DigBlock(block)
+		block = dg.DigBlock(block)
 		if len(block) == 0 {
 			continue loop
 		}
@@ -1449,7 +1441,7 @@ func (dg *dgen) BandInfoGuard(g *game, band monsterBand, pl placeKind) bandInfo 
 loop:
 	for p == InvalidPos {
 		count++
-		if count > 1000 {
+		if count > maxIterations {
 			p = dg.InsideCell(g)
 			break
 		}
@@ -1619,12 +1611,65 @@ func (dg *dgen) BandInfoFoliage(g *game, band monsterBand) bandInfo {
 	return bandinfo
 }
 
+func (g *game) FreeCellForMonster() gruid.Point {
+	d := g.Dungeon
+	count := 0
+	for {
+		count++
+		if count > maxIterations {
+			panic("FreeCellForMonster")
+		}
+		x := RandInt(DungeonWidth)
+		y := RandInt(DungeonHeight)
+		p := gruid.Point{x, y}
+		c := d.Cell(p)
+		if !c.IsPassable() {
+			continue
+		}
+		if g.Player != nil && distance(g.Player.P, p) < 8 {
+			continue
+		}
+		mons := g.MonsterAt(p)
+		if mons.Exists() {
+			continue
+		}
+		return p
+	}
+}
+
+func (g *game) FreeCellForBandMonster(p gruid.Point) gruid.Point {
+	count := 0
+	for {
+		count++
+		if count > maxIterations {
+			return g.FreeCellForMonster()
+		}
+		neighbors := g.playerPassableNeighbors(p)
+		if len(neighbors) == 0 {
+			// should not happen
+			log.Printf("no neighbors for %v", p)
+			count = maxIterations + 1
+			continue
+		}
+		r := RandInt(len(neighbors))
+		p = neighbors[r]
+		if g.Player != nil && distance(g.Player.P, p) < 8 {
+			continue
+		}
+		mons := g.MonsterAt(p)
+		if mons.Exists() || !g.Dungeon.Cell(p).IsPassable() {
+			continue
+		}
+		return p
+	}
+}
+
 func (dg *dgen) PutMonsterBand(g *game, band monsterBand) bool {
 	monsters := g.GenBand(band)
 	if monsters == nil {
 		return false
 	}
-	awake := RandInt(5) > 0
+	awake := dg.rand.Intn(5) > 0
 	var bdinf bandInfo
 	switch band {
 	case LoneYack, LoneWorm, PairYack:
@@ -1645,12 +1690,12 @@ func (dg *dgen) PutMonsterBand(g *game, band monsterBand) bool {
 		bdinf = dg.BandInfoSatowalga(g, band)
 	case SpecialLoneVampire, SpecialLoneNixe, SpecialLoneMilfid, SpecialLoneOricCelmist, SpecialLoneHarmonicCelmist, SpecialLoneHighGuard,
 		SpecialLoneHarpy, SpecialLoneTreeMushroom, SpecialLoneMirrorSpecter, SpecialLoneHazeCat, SpecialLoneSpider, SpecialLoneAcidMound, SpecialLoneDog, SpecialLoneExplosiveNadre, SpecialLoneYack, SpecialLoneBlinkingFrog:
-		if RandInt(5) > 0 {
+		if dg.rand.Intn(5) > 0 {
 			bdinf = dg.BandInfoPatrolSpecial(g, band)
 		} else {
 			bdinf = dg.BandInfoGuardSpecial(g, band)
 		}
-		if !awake && RandInt(2) > 0 {
+		if !awake && dg.rand.Intn(2) > 0 {
 			awake = true
 		}
 	case UniqueCrazyImp:
@@ -1671,7 +1716,7 @@ func (dg *dgen) PutMonsterBand(g *game, band monsterBand) bool {
 			p = g.FreeCellForMonster()
 		}
 	}
-	for _, mk := range monsters {
+	for i, mk := range monsters {
 		mons := &monster{Kind: mk}
 		if awake {
 			mons.State = Wandering
@@ -1682,7 +1727,9 @@ func (dg *dgen) PutMonsterBand(g *game, band monsterBand) bool {
 		mons.Band = len(g.Bands) - 1
 		mons.PlaceAtStart(g, p)
 		mons.Target = mons.NextTarget(g)
-		p = g.FreeCellForBandMonster(p)
+		if i < len(monsters)-1 {
+			p = g.FreeCellForBandMonster(p)
+		}
 	}
 	return true
 }
@@ -1740,7 +1787,7 @@ func (dg *dgen) GenMonsters(g *game) {
 		case roomFrogs:
 			dg.PutRandomBandN(g, []monsterBand{SpecialLoneBlinkingFrog}, 2)
 		case roomMilfids:
-			switch RandInt(6) {
+			switch dg.rand.Intn(6) {
 			case 0:
 				dg.PutRandomBandN(g, []monsterBand{SpecialLoneYack}, 2)
 			case 1:
@@ -1749,7 +1796,7 @@ func (dg *dgen) GenMonsters(g *game) {
 				dg.PutRandomBandN(g, []monsterBand{SpecialLoneMilfid}, 2)
 			}
 		case roomCelmists:
-			switch RandInt(3) {
+			switch dg.rand.Intn(3) {
 			case 0:
 				bandOricCelmists := []monsterBand{SpecialLoneOricCelmist}
 				dg.PutRandomBandN(g, bandOricCelmists, 2)
@@ -1763,19 +1810,19 @@ func (dg *dgen) GenMonsters(g *game) {
 				dg.PutRandomBandN(g, bandOricCelmists, 1)
 			}
 		case roomHarpies:
-			if RandInt(3) > 0 {
+			if dg.rand.Intn(3) > 0 {
 				dg.PutRandomBandN(g, []monsterBand{SpecialLoneHarpy}, 2)
 			} else {
 				dg.PutRandomBandN(g, []monsterBand{SpecialLoneSpider}, 2)
 			}
 		case roomTreeMushrooms:
-			if RandInt(3) > 0 {
+			if dg.rand.Intn(3) > 0 {
 				dg.PutRandomBandN(g, []monsterBand{SpecialLoneTreeMushroom}, 2)
 			} else {
 				dg.PutRandomBandN(g, []monsterBand{SpecialLoneHazeCat}, 2)
 			}
 		case roomMirrorSpecters:
-			switch RandInt(6) {
+			switch dg.rand.Intn(6) {
 			case 0:
 				dg.PutRandomBandN(g, []monsterBand{SpecialLoneAcidMound}, 2)
 			case 1:
@@ -1784,13 +1831,13 @@ func (dg *dgen) GenMonsters(g *game) {
 				dg.PutRandomBandN(g, []monsterBand{SpecialLoneMirrorSpecter}, 2)
 			}
 		case roomShaedra:
-			if RandInt(3) > 0 {
+			if dg.rand.Intn(3) > 0 {
 				dg.PutRandomBand(g, []monsterBand{SpecialLoneHighGuard})
 			} else {
 				dg.PutRandomBand(g, []monsterBand{SpecialLoneOricCelmist})
 			}
 		case roomArtifact:
-			switch RandInt(3) {
+			switch dg.rand.Intn(3) {
 			case 0:
 				dg.PutRandomBand(g, []monsterBand{SpecialLoneHarmonicCelmist})
 			case 1:
@@ -1814,8 +1861,8 @@ func (dg *dgen) GenMonsters(g *game) {
 	switch g.Depth {
 	case 1:
 		// 8-9
-		if RandInt(2) == 0 {
-			if RandInt(2) == 0 {
+		if dg.rand.Intn(2) == 0 {
+			if dg.rand.Intn(2) == 0 {
 				dg.PutRandomBandN(g, bandsGuard, 5)
 			} else {
 				dg.PutRandomBandN(g, bandsGuard, 4)
@@ -1824,7 +1871,7 @@ func (dg *dgen) GenMonsters(g *game) {
 			dg.PutRandomBandN(g, bandsAnimals, 3)
 		} else {
 			dg.PutRandomBandN(g, bandsGuard, 4)
-			if RandInt(5) > 0 {
+			if dg.rand.Intn(5) > 0 {
 				dg.PutRandomBandN(g, bandsAnimals, 5)
 			} else {
 				dg.PutRandomBandN(g, bandsAnimals, 3)
@@ -1834,7 +1881,7 @@ func (dg *dgen) GenMonsters(g *game) {
 	case 2:
 		// 10-11
 		dg.PutRandomBandN(g, bandsGuard, 3)
-		switch RandInt(5) {
+		switch dg.rand.Intn(5) {
 		case 0, 1:
 			// 7
 			dg.PutRandomBandN(g, bandsBipeds, 1)
@@ -1849,7 +1896,7 @@ func (dg *dgen) GenMonsters(g *game) {
 		case 4:
 			// 8
 			dg.PutRandomBandN(g, bandsPlants, 3)
-			if RandInt(2) == 0 {
+			if dg.rand.Intn(2) == 0 {
 				dg.PutRandomBandN(g, bandFrog, 5)
 			} else {
 				dg.PutRandomBandN(g, bandYack, 5)
@@ -1859,10 +1906,10 @@ func (dg *dgen) GenMonsters(g *game) {
 		// 11-12
 		dg.PutRandomBandN(g, bandsHighGuard, 2)
 		dg.PutRandomBandN(g, bandsGuard, 4)
-		switch RandInt(5) {
+		switch dg.rand.Intn(5) {
 		case 0, 1:
 			// 5
-			if RandInt(3) == 0 {
+			if dg.rand.Intn(3) == 0 {
 				dg.PutRandomBandN(g, bandDog, 3)
 			} else {
 				dg.PutRandomBandN(g, bandsAnimals, 3)
@@ -1881,7 +1928,7 @@ func (dg *dgen) GenMonsters(g *game) {
 	case 4:
 		// 12-13
 		dg.PutRandomBandN(g, bandsHighGuard, 2)
-		switch RandInt(5) {
+		switch dg.rand.Intn(5) {
 		case 0, 1:
 			// 10
 			dg.PutRandomBandN(g, bandsGuard, 4)
@@ -1897,7 +1944,7 @@ func (dg *dgen) GenMonsters(g *game) {
 			dg.PutRandomBandN(g, bandsPlants, 1)
 		case 4:
 			dg.PutRandomBandN(g, bandsGuard, 4)
-			if RandInt(2) == 0 {
+			if dg.rand.Intn(2) == 0 {
 				dg.PutRandomBandN(g, bandOricCelmist, 4)
 			} else {
 				dg.PutRandomBandN(g, bandHarmonicCelmist, 4)
@@ -1907,9 +1954,9 @@ func (dg *dgen) GenMonsters(g *game) {
 	case 5:
 		// 13-14
 		dg.PutRandomBandN(g, bandsHighGuard, 2)
-		if RandInt(2) == 0 {
+		if dg.rand.Intn(2) == 0 {
 			// 11
-			if RandInt(2) == 0 {
+			if dg.rand.Intn(2) == 0 {
 				dg.PutRandomBandN(g, bandsGuard, 2)
 				dg.PutRandomBandN(g, bandGuardPair, 1)
 			} else {
@@ -1924,7 +1971,7 @@ func (dg *dgen) GenMonsters(g *game) {
 			dg.PutRandomBandN(g, bandsGuard, 2)
 			dg.PutRandomBandN(g, bandsAnimals, 3)
 			dg.PutRandomBandN(g, bandsBipeds, 2)
-			if RandInt(2) == 0 {
+			if dg.rand.Intn(2) == 0 {
 				dg.PutRandomBandN(g, bandOricCelmistPair, 1)
 			} else {
 				dg.PutRandomBandN(g, bandHarmonicCelmistPair, 1)
@@ -1935,13 +1982,13 @@ func (dg *dgen) GenMonsters(g *game) {
 	case 6:
 		// 15-17
 		dg.PutRandomBandN(g, bandsHighGuard, 1)
-		if RandInt(2) == 0 {
+		if dg.rand.Intn(2) == 0 {
 			// 14
 			dg.PutRandomBandN(g, bandsGuard, 3)
 			dg.PutRandomBandN(g, bandsAnimals, 2)
 			dg.PutRandomBandN(g, bandsRare, 3)
 			dg.PutRandomBandN(g, bandsBipeds, 1)
-			if RandInt(2) == 0 {
+			if dg.rand.Intn(2) == 0 {
 				dg.PutRandomBandN(g, bandYackPair, 1)
 			} else {
 				dg.PutRandomBandN(g, bandWingedMilfidPair, 1)
@@ -1950,15 +1997,15 @@ func (dg *dgen) GenMonsters(g *game) {
 		} else {
 			// 16
 			dg.PutRandomBandN(g, bandsGuard, 2)
-			if RandInt(2) == 0 {
-				if RandInt(2) == 0 {
+			if dg.rand.Intn(2) == 0 {
+				if dg.rand.Intn(2) == 0 {
 					dg.PutRandomBandN(g, bandYack, 8)
 				} else {
 					dg.PutRandomBandN(g, bandFrog, 8)
 				}
 			} else {
 				dg.PutRandomBandN(g, bandsRare, 2)
-				if RandInt(3) == 0 {
+				if dg.rand.Intn(3) == 0 {
 					dg.PutRandomBandN(g, bandsAnimals, 4)
 					dg.PutRandomBandN(g, []monsterBand{PairWorm}, 1)
 				} else {
@@ -1971,10 +2018,10 @@ func (dg *dgen) GenMonsters(g *game) {
 	case 7:
 		// 19
 		dg.PutRandomBandN(g, bandsHighGuard, 1)
-		if RandInt(2) == 0 {
+		if dg.rand.Intn(2) == 0 {
 			// 18
 			dg.PutRandomBandN(g, bandsGuard, 4)
-			if RandInt(3) == 0 {
+			if dg.rand.Intn(3) == 0 {
 				dg.PutRandomBandN(g, bandDog, 4)
 				dg.PutRandomBandN(g, bandsAnimals, 2)
 			} else {
@@ -1989,11 +2036,11 @@ func (dg *dgen) GenMonsters(g *game) {
 			dg.PutRandomBandN(g, bandsGuard, 1)
 			dg.PutRandomBandN(g, bandsRare, 4)
 			dg.PutRandomBandN(g, bandsButterfly, 1)
-			if RandInt(3) == 0 {
+			if dg.rand.Intn(3) == 0 {
 				dg.PutRandomBandN(g, bandNadre, 7)
 			} else {
 				dg.PutRandomBandN(g, bandsAnimals, 5)
-				if RandInt(2) == 0 {
+				if dg.rand.Intn(2) == 0 {
 					dg.PutRandomBandN(g, []monsterBand{PairFrog}, 1)
 				} else {
 					dg.PutRandomBandN(g, []monsterBand{PairDog}, 1)
@@ -2004,12 +2051,12 @@ func (dg *dgen) GenMonsters(g *game) {
 	case 8:
 		// 18-19
 		dg.PutRandomBandN(g, bandsHighGuard, 4)
-		if RandInt(2) == 0 {
+		if dg.rand.Intn(2) == 0 {
 			// 14
 			dg.PutRandomBandN(g, bandsGuard, 5)
 			dg.PutRandomBandN(g, bandsRare, 1)
-			if RandInt(3) == 0 {
-				if RandInt(2) == 0 {
+			if dg.rand.Intn(3) == 0 {
+				if dg.rand.Intn(2) == 0 {
 					dg.PutRandomBandN(g, bandOricCelmist, 6)
 				} else {
 					dg.PutRandomBandN(g, bandMadNixe, 6)
@@ -2030,11 +2077,11 @@ func (dg *dgen) GenMonsters(g *game) {
 	case 9:
 		// 20-24
 		dg.PutRandomBandN(g, bandsHighGuard, 2)
-		if RandInt(2) == 0 {
+		if dg.rand.Intn(2) == 0 {
 			// 18
 			dg.PutRandomBandN(g, bandsGuard, 3)
-			if RandInt(2) == 0 {
-				switch RandInt(4) {
+			if dg.rand.Intn(2) == 0 {
+				switch dg.rand.Intn(4) {
 				case 0:
 					dg.PutRandomBandN(g, bandTreeMushroom, 4)
 					dg.PutRandomBandN(g, []monsterBand{PairTreeMushroom}, 1)
@@ -2061,7 +2108,7 @@ func (dg *dgen) GenMonsters(g *game) {
 			dg.PutRandomBandN(g, bandsButterfly, 2)
 			dg.PutRandomBandN(g, bandsGuard, 2)
 			dg.PutRandomBandN(g, bandsAnimals, 8)
-			if RandInt(2) == 0 {
+			if dg.rand.Intn(2) == 0 {
 				dg.PutRandomBandN(g, bandExplosiveNadrePair, 2)
 			} else {
 				dg.PutRandomBandN(g, bandYackPair, 2)
@@ -2073,12 +2120,12 @@ func (dg *dgen) GenMonsters(g *game) {
 	case 10:
 		// 22
 		dg.PutRandomBandN(g, bandsHighGuard, 3)
-		if RandInt(2) == 0 {
+		if dg.rand.Intn(2) == 0 {
 			// 19
 			dg.PutRandomBandN(g, bandsGuard, 7)
 			dg.PutRandomBandN(g, bandGuardPair, 1)
 			dg.PutRandomBandN(g, bandsRare, 2)
-			if RandInt(2) == 0 {
+			if dg.rand.Intn(2) == 0 {
 				dg.PutRandomBandN(g, bandsBipeds, 8)
 			} else {
 				dg.PutRandomBandN(g, bandsBipeds, 4)
@@ -2087,7 +2134,7 @@ func (dg *dgen) GenMonsters(g *game) {
 		} else {
 			// 19
 			dg.PutRandomBandN(g, bandGuardPair, 1)
-			if RandInt(3) == 0 {
+			if dg.rand.Intn(3) == 0 {
 				dg.PutRandomBandN(g, bandsGuard, 4)
 				dg.PutRandomBandN(g, bandVampire, 4)
 				dg.PutRandomBandN(g, []monsterBand{PairVampire}, 1)
@@ -2095,7 +2142,7 @@ func (dg *dgen) GenMonsters(g *game) {
 			} else {
 				dg.PutRandomBandN(g, bandsGuard, 6)
 				dg.PutRandomBandN(g, bandsBipeds, 3)
-				if RandInt(2) == 0 {
+				if dg.rand.Intn(2) == 0 {
 					dg.PutRandomBandN(g, []monsterBand{PairNixe}, 1)
 				} else {
 					dg.PutRandomBandN(g, []monsterBand{PairOricCelmist}, 1)
@@ -2109,12 +2156,12 @@ func (dg *dgen) GenMonsters(g *game) {
 	case 11:
 		// 26
 		dg.PutRandomBandN(g, bandsHighGuard, 5)
-		if RandInt(2) == 0 {
+		if dg.rand.Intn(2) == 0 {
 			// 21
 			dg.PutRandomBandN(g, bandsGuard, 5)
 			dg.PutRandomBandN(g, bandsRare, 2)
-			if RandInt(3) == 0 {
-				if RandInt(2) == 0 {
+			if dg.rand.Intn(3) == 0 {
+				if dg.rand.Intn(2) == 0 {
 					dg.PutRandomBandN(g, bandOricCelmist, 5)
 				} else {
 					dg.PutRandomBandN(g, bandHarmonicCelmist, 5)
@@ -2123,10 +2170,10 @@ func (dg *dgen) GenMonsters(g *game) {
 			} else {
 				dg.PutRandomBandN(g, bandsBipeds, 10)
 			}
-			if RandInt(2) == 0 {
+			if dg.rand.Intn(2) == 0 {
 				dg.PutRandomBandN(g, bandVampirePair, 1)
 			} else {
-				if RandInt(2) == 0 {
+				if dg.rand.Intn(2) == 0 {
 					dg.PutRandomBandN(g, bandOricCelmistPair, 1)
 				} else {
 					dg.PutRandomBandN(g, bandHarmonicCelmistPair, 1)
@@ -2140,7 +2187,7 @@ func (dg *dgen) GenMonsters(g *game) {
 			dg.PutRandomBandN(g, []monsterBand{PairGuard}, 1)
 			dg.PutRandomBandN(g, bandsRare, 1)
 			dg.PutRandomBandN(g, bandsBipeds, 7)
-			if RandInt(2) == 0 {
+			if dg.rand.Intn(2) == 0 {
 				dg.PutRandomBandN(g, bandHarmonicCelmistPair, 1)
 			} else {
 				dg.PutRandomBandN(g, bandNixePair, 1)

@@ -588,11 +588,11 @@ func (m *monster) TeleportAway(g *game) {
 	count := 0
 	for {
 		count++
-		if count > 1000 {
+		if count > maxIterations {
 			panic("TeleportOther")
 		}
 		p = g.FreePassableCell()
-		if distance(p, m.P) < 15 && i < 1000 {
+		if distance(p, m.P) < 15 && i < maxIterations {
 			i++
 			continue
 		}
@@ -750,7 +750,7 @@ func (m *monster) AttackAction(g *game) bool {
 
 func (m *monster) Explode(g *game) {
 	m.Dead = true
-	neighbors := ValidCardinalNeighbors(m.P)
+	neighbors := g.cardinalNeighbors(m.P)
 	g.Printf("%s %s explodes with a loud boom.", g.ExplosionSound(), m.Kind.Definite(true))
 	g.md.ExplosionAnimation(FireExplosion, m.P)
 	g.MakeNoise(ExplosionNoise, m.P)
@@ -1018,7 +1018,7 @@ func (m *monster) ComputePath(g *game) {
 		m.Path = m.APath(g, m.P, m.Target)
 		if len(m.Path) == 0 && !m.Status(MonsConfused) {
 			// if target is not accessible, try free neighbor cells
-			for _, npos := range g.Dungeon.FreeNeighbors(m.Target) {
+			for _, npos := range g.playerPassableNeighbors(m.Target) {
 				m.Path = m.APath(g, m.P, npos)
 				if len(m.Path) > 0 {
 					m.Target = npos
@@ -1509,7 +1509,7 @@ func (m *monster) RangeBlocked(g *game) bool {
 }
 
 func (g *game) BarrierCandidates(p gruid.Point, dir gruid.Point) []gruid.Point {
-	candidates := ValidCardinalNeighbors(p)
+	candidates := g.cardinalNeighbors(p)
 	bestpos := p.Add(dir)
 	if distance(bestpos, p) > 1 {
 		j := 0

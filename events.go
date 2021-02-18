@@ -180,7 +180,7 @@ func (cev *posEvent) Handle(g *game) {
 		if _, ok := g.Clouds[cev.P]; !ok {
 			break
 		}
-		for _, p := range g.Dungeon.FreeNeighbors(cev.P) {
+		for _, p := range g.playerPassableNeighbors(cev.P) {
 			if RandInt(10) == 0 {
 				continue
 			}
@@ -216,7 +216,7 @@ func (cev *posEvent) Handle(g *game) {
 		for it.Next() {
 			p := it.P()
 			c := cell(it.Cell())
-			if !c.IsDiggable() || !g.Dungeon.HasFreeNeighbor(p) {
+			if !c.IsDiggable() || !g.Dungeon.HasFreeNeighbor(&g.nbs, p) {
 				continue
 			}
 			if distance(cev.P, p) > RandInt(35) || RandInt(2) == 0 {
