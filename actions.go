@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"sort"
 	"strings"
 	//"time"
 
@@ -708,20 +709,12 @@ func (md *model) keysForAction(a action) string {
 			keys = append(keys, k)
 		}
 	}
-	// TODO: sort keys
-	switch len(keys) {
-	case 0:
-		return ""
-	case 1:
-		return string(keys[0])
+	ks := make([]string, len(keys))
+	for i := range ks {
+		ks[i] = string(keys[i])
 	}
-	b := strings.Builder{}
-	b.WriteString(string(keys[0]))
-	for _, k := range keys[1:] {
-		b.WriteString(" or ")
-		b.WriteString(string(k))
-	}
-	return b.String()
+	sort.Strings(ks)
+	return strings.Join(ks, " or ")
 }
 
 func (md *model) openKeyBindings() {
