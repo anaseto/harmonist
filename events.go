@@ -38,7 +38,6 @@ func (sev *playerEvent) Handle(g *game) {
 		g.ComputeNoise()
 		g.ComputeLOS() // TODO: optimize? most of the time almost redundant (unless on a tree)
 		g.ComputeMonsterLOS()
-		g.LogNextTick = g.LogIndex
 		g.AutoNext = g.AutoPlayer()
 		g.TurnStats()
 	case StorySequence:

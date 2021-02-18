@@ -14,8 +14,10 @@ func (md *model) Draw() gruid.Grid {
 		if !md.anims.draw {
 			return md.gd.Slice(gruid.Range{})
 		}
+		gdlog := md.gd.Slice(md.gd.Range().Lines(0, 2))
+		gdlog.Fill(gruid.Cell{Rune: ' '})
 		md.log.Content = md.DrawLog()
-		md.log.Draw(md.gd.Slice(md.gd.Range().Lines(0, 2)))
+		md.log.Draw(gdlog)
 		gd := md.gd.Slice(md.gd.Range().Shift(0, 2, 0, -1))
 		for _, fc := range md.anims.frames[0].Cells {
 			gd.Set(fc.P, fc.Cell)

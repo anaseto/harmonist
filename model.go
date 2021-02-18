@@ -88,6 +88,7 @@ type model struct {
 	anims       Animations
 	story       int
 	zoomlevel   int
+	critical    bool
 }
 
 type mapTargInfo struct {
@@ -652,7 +653,13 @@ func (md *model) EndTurn() gruid.Effect {
 		md.death()
 		return eff
 	}
+	if md.critical {
+		md.g.PrintStyled("*** CRITICAL HP WARNING ***", logCritic)
+		md.g.PrintStyled("[(x) to continue]", logConfirm)
+		md.critical = false
+	}
 	md.updateMapInfo()
+	md.g.LogNextTick = md.g.LogIndex
 	return eff
 }
 
