@@ -165,7 +165,7 @@ func (k action) String() (text string) {
 	case ActionLogs:
 		text = "View previous messages"
 	case ActionDump:
-		text = "Write state statistics to file"
+		text = "Write game statistics to file"
 	case ActionSave:
 		text = "Save and Quit"
 	case ActionQuit:
@@ -899,7 +899,7 @@ func (md *model) KeysHelp() {
 		"Go to nearest stairs", "G",
 		"Run in a direction", "shift+arrows or HJKL",
 		"Autoexplore (use with caution)", "o",
-		"Write state statistics to file", "#",
+		"Write game statistics to file", "#",
 		"Quit without saving", "Q",
 		"Change settings and key bindings", "=",
 	})
