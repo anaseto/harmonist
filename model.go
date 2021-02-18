@@ -5,6 +5,7 @@ import (
 	"log"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/anaseto/gruid"
 	"github.com/anaseto/gruid/ui"
@@ -89,6 +90,7 @@ type model struct {
 	story       int
 	zoomlevel   int
 	critical    bool
+	auto        bool
 }
 
 type mapTargInfo struct {
@@ -447,7 +449,7 @@ func (md *model) updateNormal(msg gruid.Msg) gruid.Effect {
 	var eff gruid.Effect
 	switch msg := msg.(type) {
 	case msgAuto:
-		if int(msg) == md.g.Turn && md.g.AutoNext {
+		if int(msg) == md.g.Turn && md.auto {
 			return md.EndTurn()
 		}
 	case gruid.MsgKeyDown:
@@ -643,22 +645,37 @@ func (md *model) updateStatusMouse(msg gruid.MsgMouse) gruid.Effect {
 	return nil
 }
 
+func (md *model) Auto() gruid.Effect {
+	md.auto = md.g.AutoPlayer()
+	if md.auto {
+		n := md.g.Turn
+		return gruid.Cmd(func() gruid.Msg {
+			t := time.NewTimer(AnimDurShort)
+			<-t.C
+			return msgAuto(n)
+		})
+	}
+	return nil
+}
+
 // EndTurn finalizes player's turn and runs other events until next player
 // turn.
 func (md *model) EndTurn() gruid.Effect {
 	md.mode = modeNormal
 	md.g.PushPlayerTurn()
-	eff := md.g.EndTurn()
+	md.g.EndTurn()
+	md.updateMapInfo()
+	md.g.TurnStats()
 	if md.g.Player.HP <= 0 {
 		md.death()
-		return eff
+		return nil
 	}
+	eff := md.Auto()
 	if md.critical {
 		md.g.PrintStyled("*** CRITICAL HP WARNING ***", logCritic)
 		md.g.PrintStyled("[(x) to continue]", logConfirm)
 		md.critical = false
 	}
-	md.updateMapInfo()
 	md.g.LogNextTick = md.g.LogIndex
 	return eff
 }

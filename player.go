@@ -435,7 +435,7 @@ func (g *game) PlayerBump(p gruid.Point) (again bool, err error) {
 }
 
 func (g *game) PushPlayerTurn() {
-	g.PushEventD(&playerEvent{Action: PlayerTurn}, DurationTurn)
+	g.Events.Push(endTurnAction, g.Turn+DurationTurn)
 }
 
 func (g *game) SwiftFog() {

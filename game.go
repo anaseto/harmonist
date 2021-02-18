@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"math/rand"
-	"time"
 
 	"github.com/anaseto/gruid"
 	"github.com/anaseto/gruid/paths"
@@ -56,7 +55,6 @@ type game struct {
 	autoDirNeighbors      dirNeighbors
 	autoDirChanged        bool
 	AutoHalt              bool
-	AutoNext              bool
 	Log                   []logEntry
 	LogIndex              int
 	LogNextTick           int
@@ -692,31 +690,23 @@ func (g *game) Died() bool {
 
 type msgAuto int
 
-func (g *game) EndTurn() gruid.Effect {
+func (g *game) EndTurn() {
 	for {
 		if g.Died() {
-			return nil
+			return
 		}
 		if g.Events.Empty() {
-			return nil
+			return
 		}
 		ev, r := g.Events.PopR()
 		g.Turn = r
-		e := ev.(event)
-		e.Handle(g)
-		switch e := e.(type) {
-		case *playerEvent:
-			if e.Action == PlayerTurn {
-				if g.AutoNext {
-					n := g.Turn
-					return gruid.Cmd(func() gruid.Msg {
-						t := time.NewTimer(AnimDurShort)
-						<-t.C
-						return msgAuto(n)
-					})
-				}
-				return nil
-			}
+		switch ev := ev.(type) {
+		case endTurnEvent:
+			return
+		case event:
+			ev.Handle(g)
+		default:
+			log.Print("bad event: %v", ev)
 		}
 	}
 }

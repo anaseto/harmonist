@@ -188,10 +188,10 @@ func (md *model) DrawLog() ui.StyledText {
 		if e.Tick {
 			tick = true
 		}
-		if stt.WithText(s+stt.Text()).Format(80).Size().Y > 2 {
+		if stt.WithText(s+stt.Text()).Format(79).Size().Y > 2 {
 			break
 		}
-		stt = stt.WithText(s + stt.Text()).Format(80)
+		stt = stt.WithText(s + stt.Text()).Format(79)
 	}
 	return stt
 }

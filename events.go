@@ -20,11 +20,14 @@ func (g *game) PushEventFirst(ev event, r int) {
 	g.Events.PushFirst(ev, r)
 }
 
+type endTurnEvent int
+
+const endTurnAction endTurnEvent = 0
+
 type playerEventAction int
 
 const (
-	PlayerTurn playerEventAction = iota
-	StorySequence
+	StorySequence playerEventAction = iota
 	AbyssFall
 )
 
@@ -34,12 +37,6 @@ type playerEvent struct {
 
 func (sev *playerEvent) Handle(g *game) {
 	switch sev.Action {
-	case PlayerTurn:
-		g.ComputeNoise()
-		g.ComputeLOS() // TODO: optimize? most of the time almost redundant (unless on a tree)
-		g.ComputeMonsterLOS()
-		g.AutoNext = g.AutoPlayer()
-		g.TurnStats()
 	case StorySequence:
 		g.ComputeLOS()
 		g.md.Story()
