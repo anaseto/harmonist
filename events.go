@@ -35,8 +35,8 @@ type playerEvent struct {
 	Action playerEventAction
 }
 
-func (sev *playerEvent) Handle(g *game) {
-	switch sev.Action {
+func (ev *playerEvent) Handle(g *game) {
+	switch ev.Action {
 	case StorySequence:
 		g.ComputeLOS()
 		g.md.Story()
