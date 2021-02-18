@@ -276,8 +276,8 @@ func (md *model) updatePosInfo() {
 		if g.Noise[p] || g.NoiseIllusion[p] {
 			pi.Noise = true
 		}
-		if idx, ok := g.LastMonsterKnownAt[p]; ok && !g.Monsters[idx].Seen {
-			pi.Monster = g.Monsters[idx]
+		if mons := g.lastMonsterKnownAt(p); mons.Exists() && !mons.Seen {
+			pi.Monster = mons
 		}
 		md.targ.ex.info = pi
 		return
@@ -297,8 +297,8 @@ func (md *model) updatePosInfo() {
 	}
 	if mons := g.MonsterAt(p); mons.Exists() && g.Player.Sees(p) {
 		pi.Monster = mons
-	} else if idx, ok := g.LastMonsterKnownAt[p]; ok {
-		pi.Monster = g.Monsters[idx]
+	} else if mons := g.lastMonsterKnownAt(p); mons.Exists() {
+		pi.Monster = mons
 	}
 	if cld, ok := g.Clouds[p]; ok && g.Player.Sees(p) {
 		pi.Cloud = cld.String()

@@ -626,8 +626,8 @@ func (m *monster) MoveTo(g *game, p gruid.Point) {
 			m.UpdateKnowledge(g, p)
 		} else {
 			delete(g.LastMonsterKnownAt, m.P)
+			m.LastKnownPos = invalidPos
 		}
-		m.LastKnownPos = invalidPos
 	}
 	if !g.Player.Sees(m.P) && g.Player.Sees(p) {
 		if !m.Seen {
