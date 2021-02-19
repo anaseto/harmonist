@@ -12,7 +12,7 @@ import (
 	"syscall/js"
 
 	"github.com/anaseto/gruid"
-	jsd "github.com/anaseto/gruid/drivers/js"
+	jsd "github.com/anaseto/gruid-js"
 	"github.com/anaseto/gruid/ui"
 )
 
