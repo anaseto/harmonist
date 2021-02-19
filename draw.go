@@ -27,6 +27,8 @@ func (md *model) Draw() gruid.Grid {
 	}
 	md.gd.Fill(gruid.Cell{Rune: ' '})
 	switch md.mode {
+	case modeQuit:
+		return md.gd.Slice(gruid.Range{})
 	case modeDump:
 		md.gd.Copy(md.pager.Draw())
 		return md.gd
