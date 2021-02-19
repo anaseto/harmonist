@@ -1663,16 +1663,16 @@ func (m *monster) NixeAttraction(g *game) bool {
 	if blocked {
 		return false
 	}
+	ray := g.Ray(m.P)
+	if len(ray) <= 1 || !g.Dungeon.Cell(ray[1]).IsPlayerPassable() {
+		return false
+	}
 	g.MakeNoise(MagicCastNoise, m.P)
 	g.PrintfStyled("%s lures you to her.", logDamage, m.Kind.Definite(true))
 	g.StoryPrintf("Lured by %s", m.Kind)
-	ray := g.Ray(m.P)
 	g.md.MonsterProjectileAnimation(ray, '*', ColorCyan)
-	if len(ray) > 1 {
-		// should always be the case
-		g.md.TeleportAnimation(g.Player.P, ray[1], true)
-		g.PlacePlayerAt(ray[1])
-	}
+	g.md.TeleportAnimation(g.Player.P, ray[1], true)
+	g.PlacePlayerAt(ray[1])
 	m.Exhaust(g)
 	return true
 }
