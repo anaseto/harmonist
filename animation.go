@@ -169,7 +169,6 @@ func (md *model) MonsterProjectileAnimation(ray []gruid.Point, r rune, fg gruid.
 		return
 	}
 	md.startAnimSeq()
-	md.anims.Frame(AnimDurShort)
 	for i := 0; i < len(ray); i++ {
 		p := ray[i]
 		or, fgColor, bgColor := md.positionDrawing(p)
