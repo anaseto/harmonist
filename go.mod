@@ -12,10 +12,10 @@ require (
 	golang.org/x/text v0.3.4 // indirect
 )
 
-replace github.com/anaseto/gruid => ../github.com/anaseto/gruid
+// replace github.com/anaseto/gruid => ../github.com/anaseto/gruid
 
-replace github.com/anaseto/gruid-sdl => ../github.com/anaseto/gruid-sdl
+// replace github.com/anaseto/gruid-sdl => ../github.com/anaseto/gruid-sdl
 
-replace github.com/anaseto/gruid-tcell => ../github.com/anaseto/gruid-tcell
+// replace github.com/anaseto/gruid-tcell => ../github.com/anaseto/gruid-tcell
 
-replace github.com/anaseto/gruid-js => ../github.com/anaseto/gruid-js
+// replace github.com/anaseto/gruid-js => ../github.com/anaseto/gruid-js
