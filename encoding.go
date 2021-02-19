@@ -14,6 +14,7 @@ func init() {
 	gob.Register(&monsterTurnEvent{})
 	gob.Register(&monsterStatusEvent{})
 	gob.Register(&posEvent{})
+	gob.Register(endTurnEvent(0))
 }
 
 func (g *game) GameSave() ([]byte, error) {
