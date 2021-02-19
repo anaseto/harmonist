@@ -1670,7 +1670,6 @@ func (m *monster) NixeAttraction(g *game) bool {
 	g.MakeNoise(MagicCastNoise, m.P)
 	g.PrintfStyled("%s lures you to her.", logDamage, m.Kind.Definite(true))
 	g.StoryPrintf("Lured by %s", m.Kind)
-	g.md.MonsterProjectileAnimation(ray, '*', ColorCyan)
 	g.md.TeleportAnimation(g.Player.P, ray[1], true)
 	g.PlacePlayerAt(ray[1])
 	m.Exhaust(g)

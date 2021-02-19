@@ -147,12 +147,13 @@ func (md *model) TeleportAnimation(from, to gruid.Point, showto bool) {
 	md.startAnimSeq()
 	_, _, bgColorf := md.positionDrawing(from)
 	_, _, bgColort := md.positionDrawing(to)
-	md.anims.Draw(from, 'Φ', ColorCyan, bgColorf)
-	md.anims.Frame(AnimDurMediumLong)
 	if showto {
 		md.anims.Draw(from, 'Φ', ColorBlue, bgColorf)
 		md.anims.Draw(to, 'Φ', ColorCyan, bgColort)
-		md.anims.Frame(AnimDurMedium)
+		md.anims.Frame(AnimDurMediumLong)
+	} else {
+		md.anims.Draw(from, 'Φ', ColorCyan, bgColorf)
+		md.anims.Frame(AnimDurMediumLong)
 	}
 }
 
