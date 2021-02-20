@@ -3,7 +3,9 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"math/rand"
 	"testing"
+	"time"
 
 	"github.com/anaseto/gruid"
 	"github.com/anaseto/gruid/paths"
@@ -64,6 +66,7 @@ func (d *dungeon) String() string {
 func TestAutomataCave(t *testing.T) {
 	for i := 0; i < Rounds; i++ {
 		g := &game{}
+		g.initrand()
 		g.InitFirstLevel()
 		g.InitLevelStructures()
 		g.GenRoomTunnels(AutomataCave)
@@ -76,6 +79,7 @@ func TestAutomataCave(t *testing.T) {
 func TestRandomWalkCave(t *testing.T) {
 	for i := 0; i < Rounds; i++ {
 		g := &game{}
+		g.initrand()
 		g.InitFirstLevel()
 		g.InitLevelStructures()
 		g.GenRoomTunnels(RandomWalkCave)
@@ -88,6 +92,7 @@ func TestRandomWalkCave(t *testing.T) {
 func TestRandomWalkTreeCave(t *testing.T) {
 	for i := 0; i < Rounds; i++ {
 		g := &game{}
+		g.initrand()
 		g.InitFirstLevel()
 		g.InitLevelStructures()
 		g.GenRoomTunnels(RandomWalkTreeCave)
@@ -100,6 +105,7 @@ func TestRandomWalkTreeCave(t *testing.T) {
 func TestRandomSmallWalkCaveUrbanised(t *testing.T) {
 	for i := 0; i < Rounds; i++ {
 		g := &game{}
+		g.initrand()
 		g.InitFirstLevel()
 		g.InitLevelStructures()
 		g.GenRoomTunnels(RandomSmallWalkCaveUrbanised)
@@ -109,9 +115,16 @@ func TestRandomSmallWalkCaveUrbanised(t *testing.T) {
 	}
 }
 
+func (g *game) initrand() {
+	if g.rand == nil {
+		g.rand = rand.New(rand.NewSource(time.Now().UnixNano()))
+	}
+}
+
 func TestNaturalCave(t *testing.T) {
 	for i := 0; i < Rounds; i++ {
 		g := &game{}
+		g.initrand()
 		g.InitFirstLevel()
 		g.InitLevelStructures()
 		g.GenRoomTunnels(NaturalCave)

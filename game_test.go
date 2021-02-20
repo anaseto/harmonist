@@ -2,14 +2,18 @@ package main
 
 //import "log"
 import "testing"
+import "github.com/anaseto/gruid"
 
 func init() {
 	Testing = true
+	DisableAnimations = true
 }
 
 func TestInitLevel(t *testing.T) {
 	for i := 0; i < 50; i++ {
-		g := &game{}
+		md := &model{}
+		g := &game{md: md}
+		md.g = g
 		for depth := 0; depth < MaxDepth; depth++ {
 			g.InitLevel()
 			if g.Player.P == invalidPos {
@@ -63,6 +67,13 @@ func TestInitLevel(t *testing.T) {
 					t.Errorf("Not free: %+v", m.P)
 				}
 			}
+			for j := 0; j < 20; j++ {
+				g.EndTurn()
+				g.PlayerBump(randomPlayerNeighbor(g.Player.P)) // wait if impossible
+				if g.Player.HP == 0 {
+					g.Player.HP = 10
+				}
+			}
 			g.Depth++
 		}
 	}
@@ -90,6 +101,46 @@ func BenchmarkInitLevel(b *testing.B) {
 		for depth := 0; depth < MaxDepth; depth++ {
 			g.InitLevel()
 			g.Depth++
+		}
+	}
+}
+
+func BenchmarkEndTurn(b *testing.B) {
+	md := &model{}
+	g := &game{md: md}
+	md.g = g
+	g.InitLevel()
+	for i := 0; i < b.N; i++ {
+		g.EndTurn()
+		if g.Player.HP == 0 {
+			g.Player.HP = 10
+		}
+	}
+}
+
+func randomPlayerNeighbor(p gruid.Point) gruid.Point {
+	switch RandInt(4) {
+	case 0:
+		return p.Add(gruid.Point{1, 0})
+	case 1:
+		return p.Add(gruid.Point{-1, 0})
+	case 2:
+		return p.Add(gruid.Point{0, 1})
+	default:
+		return p.Add(gruid.Point{0, -1})
+	}
+}
+
+func BenchmarkEndTurnPlayer(b *testing.B) {
+	md := &model{}
+	g := &game{md: md}
+	md.g = g
+	g.InitLevel()
+	for i := 0; i < b.N; i++ {
+		g.EndTurn()
+		g.PlayerBump(randomPlayerNeighbor(g.Player.P)) // wait if impossible
+		if g.Player.HP == 0 {
+			g.Player.HP = 10
 		}
 	}
 }

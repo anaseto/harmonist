@@ -539,18 +539,6 @@ func (m *monster) CanPass(g *game, p gruid.Point) bool {
 		terrain(c) == HoledWallCell && m.Kind.Size() == MonsSmall
 }
 
-func (m *monster) CanPassDestruct(g *game, p gruid.Point) bool {
-	if !valid(p) {
-		return false
-	}
-	c := g.Dungeon.Cell(p)
-	destruct := false
-	if m.Kind == MonsEarthDragon {
-		destruct = true
-	}
-	return m.CanPass(g, p) || c.IsDestructible() && destruct
-}
-
 func (m *monster) StartWatching() {
 	m.State = Watching
 	m.Watching = 0
@@ -952,6 +940,12 @@ func (m *monster) HandleMonsSpecifics(g *game) (done bool) {
 			break
 		}
 		for p, on := range g.Objects.Lights {
+			if !on && distance(p, m.P) <= DefaultMonsterLOSRange {
+				m.ComputeLOS(g)
+				break
+			}
+		}
+		for p, on := range g.Objects.Lights {
 			if !on && p == m.P {
 				g.Dungeon.SetCell(m.P, LightCell)
 				g.Objects.Lights[m.P] = true
@@ -1177,11 +1171,6 @@ func (m *monster) handleTurn(g *game) {
 	}
 	ppos := g.Player.P
 	mpos := m.P
-	switch m.Kind {
-	case MonsGuard, MonsHighGuard:
-		// they have to put lights on, could be optimized (TODO)
-		m.ComputeLOS(g)
-	}
 	m.MakeAware(g)
 	if m.State == Resting {
 		if RandInt(3000) == 0 || m.Kind.ShallowSleep() && RandInt(10) == 0 {

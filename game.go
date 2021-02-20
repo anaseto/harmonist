@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"math/rand"
+	"time"
 
 	"github.com/anaseto/gruid"
 	"github.com/anaseto/gruid/paths"
@@ -75,6 +76,7 @@ type game struct {
 	PRauto            *paths.PathRange
 	autosources       []gruid.Point // cache
 	nbs               paths.Neighbors
+	rand              *rand.Rand
 }
 
 type specialEvent int
@@ -408,6 +410,9 @@ func (g *game) InitLevelStructures() {
 var Testing = false
 
 func (g *game) InitLevel() {
+	if g.rand == nil {
+		g.rand = rand.New(rand.NewSource(time.Now().UnixNano()))
+	}
 	// Starting data
 	if g.Depth == 0 {
 		g.InitFirstLevel()
@@ -472,7 +477,7 @@ func (g *game) InitLevel() {
 	g.ComputeLOS()
 	g.MakeMonstersAware()
 	g.ComputeMonsterLOS()
-	if g.md != nil { // disable when testing
+	if !Testing { // disable when testing
 		g.md.updateStatusInfo()
 	}
 }
@@ -492,8 +497,10 @@ func (g *game) CleanEvents() {
 	for !g.Events.Empty() {
 		ev, r := g.Events.PopR()
 		if r == turn {
-			e := ev.(event)
-			e.Handle(g)
+			e, ok := ev.(event)
+			if ok {
+				e.Handle(g)
+			}
 			continue
 		}
 		g.Events.PushFirst(ev, r)
@@ -726,4 +733,11 @@ func (g *game) checks() {
 			log.Printf("bad monster: %v vs %v", mons.Index, m.Index)
 		}
 	}
+}
+
+func (g *game) randInt(n int) int {
+	if n <= 0 {
+		return 0
+	}
+	return g.rand.Intn(n)
 }

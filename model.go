@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"runtime"
 	"strings"
 	"time"
@@ -266,6 +267,8 @@ func (md *model) init() gruid.Effect {
 	if !load {
 		g.InitLevel()
 		g.checks()
+	} else {
+		g.rand = rand.New(rand.NewSource(time.Now().UnixNano()))
 	}
 	if err != nil {
 		g.PrintfStyled("Error: %v", logError, err)

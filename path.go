@@ -185,7 +185,7 @@ func (jp *jumpPath) Neighbors(p gruid.Point) []gruid.Point {
 		return jp.g.PlayerCanPass(q)
 	}
 	nbs := jp.nbs.Cardinal(p, keep)
-	nbs = ShufflePos(nbs)
+	nbs = jp.g.ShufflePos(nbs)
 	return nbs
 }
 
@@ -251,21 +251,47 @@ type monPath struct {
 	nbs     paths.Neighbors
 }
 
-func ShufflePos(ps []gruid.Point) []gruid.Point {
+func (g *game) ShufflePos(ps []gruid.Point) []gruid.Point {
 	for i := 0; i < len(ps); i++ {
-		j := i + RandInt(len(ps)-i)
+		j := i + g.randInt(len(ps)-i)
 		ps[i], ps[j] = ps[j], ps[i]
 	}
 	return ps
 }
 
+func (mp *monPath) CanPassDestruct(p gruid.Point) bool {
+	m := mp.monster
+	if m.Kind != MonsEarthDragon {
+		return mp.CanPass(p)
+	}
+	if !valid(p) {
+		return false
+	}
+	g := mp.g
+	c := g.Dungeon.Cell(p)
+	return m.CanPass(g, p) || c.IsDestructible()
+}
+
+func (mp *monPath) CanPatrolPass(p gruid.Point) bool {
+	m := mp.monster
+	if !m.CanPass(mp.g, p) {
+		return false
+	}
+	c := mp.g.Dungeon.Cell(p)
+	return c.IsNormalPatrolWay()
+}
+
+func (mp *monPath) CanPass(p gruid.Point) bool {
+	return mp.monster.CanPass(mp.g, p)
+}
+
 func (mp *monPath) Neighbors(p gruid.Point) []gruid.Point {
 	keep := func(q gruid.Point) bool {
-		return mp.monster.CanPassDestruct(mp.g, q)
+		return mp.CanPassDestruct(q)
 	}
 	nbs := mp.nbs.Cardinal(p, keep)
 	// shuffle so that monster movement is not unnaturally predictable
-	nbs = ShufflePos(nbs)
+	nbs = mp.g.ShufflePos(nbs)
 	return nbs
 }
 
@@ -302,7 +328,18 @@ func (mp *monPath) Estimation(from, to gruid.Point) int {
 
 func (m *monster) APath(g *game, from, to gruid.Point) []gruid.Point {
 	mp := &monPath{g: g, monster: m}
-	path := g.PR.AstarPath(mp, from, to)
+	var path []gruid.Point
+	if mp.monster.State != Hunting && distance(from, mp.g.Player.P) > DefaultMonsterLOSRange &&
+		distance(from, to) > DefaultLOSRange && m.Kind != MonsEarthDragon {
+		if mp.monster.Kind.Patrolling() {
+			path = g.PR.JPSPath(m.Path, from, to, mp.CanPatrolPass, false)
+		} else {
+			path = g.PR.JPSPath(m.Path, from, to, mp.CanPass, false)
+		}
+	}
+	if len(path) == 0 {
+		path = g.PR.AstarPath(mp, from, to)
+	}
 	if len(path) == 0 {
 		return nil
 	}
