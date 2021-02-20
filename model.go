@@ -92,6 +92,7 @@ type model struct {
 	zoomlevel   int
 	critical    bool
 	auto        bool
+	confirm     bool
 }
 
 type mapTargInfo struct {
@@ -675,8 +676,12 @@ func (md *model) EndTurn() gruid.Effect {
 	}
 	if md.critical {
 		md.g.PrintStyled("*** CRITICAL HP WARNING ***", logCritic)
-		md.g.PrintStyled("[(x) to continue]", logConfirm)
 		md.critical = false
+		md.confirm = true
+	}
+	if md.confirm {
+		md.g.PrintStyled("[(x) to continue]", logConfirm)
+		md.confirm = false
 	}
 	md.g.LogNextTick = md.g.LogIndex
 	return eff

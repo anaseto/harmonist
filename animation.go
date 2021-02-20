@@ -584,7 +584,7 @@ func (md *model) FreeingShaedra() {
 		md.mode = modeStory
 		g.Print("You see Shaedra. She is wounded!")
 		g.PrintStyled("Shaedra: “Oh, it's you, Syu! Let's flee with Marevor's magara!”", logSpecial)
-		g.PrintStyled("[(x) to continue]", logConfirm)
+		md.confirm = true
 	case 1:
 		if !DisableAnimations {
 			md.startAnimSeq()
@@ -642,7 +642,7 @@ func (md *model) TakingArtifact() {
 	case 0:
 		md.mode = modeStory
 		g.PrintStyled("You take and use the artifact.", logSpecial)
-		g.PrintStyled("[(x) to continue].", logConfirm)
+		md.confirm = true
 	case 1:
 		g.Dungeon.SetCell(g.Places.Artifact, GroundCell)
 		if !DisableAnimations {
