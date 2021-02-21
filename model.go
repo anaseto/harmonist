@@ -21,6 +21,7 @@ var (
 	DisableAnimations bool = false
 	Xterm256Color          = false
 	Terminal               = false
+	LogGame                = false
 )
 
 // CustomKeys tracks whether we're using custom key bindings.

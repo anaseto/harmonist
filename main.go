@@ -23,6 +23,7 @@ func main() {
 	optVersion := flag.Bool("v", false, "print version number")
 	optNoAnim := flag.Bool("n", false, "no animations")
 	optReplay := flag.String("r", "", "path to replay file (_ means default location)")
+	optLogFile := flag.String("o", "", "log to output file")
 	opt16colors := new(bool)
 	opt256colors := new(bool)
 	optFullscreen := new(bool)
@@ -63,11 +64,11 @@ func main() {
 	if *optReplay != "" {
 		RunReplay(*optReplay)
 	} else {
-		RunGame()
+		RunGame(*optLogFile)
 	}
 }
 
-func RunGame() {
+func RunGame(logfile string) {
 	gd := gruid.NewGrid(UIWidth, UIHeight)
 	m := &model{gd: gd, g: &game{}}
 	var repw io.WriteCloser
@@ -99,8 +100,18 @@ func RunGame() {
 		log.Print(err)
 	}
 
-	if !Tiles && !Testing {
-		// XXX: maybe log into a file?
+	if logfile != "" {
+		f, err := os.OpenFile(logfile, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+		if err != nil {
+			log.Printf("opening log file: %v", err)
+		} else {
+			defer f.Close()
+			LogGame = true
+			log.SetOutput(f)
+		}
+	}
+
+	if !Tiles && !LogGame {
 		log.SetOutput(ioutil.Discard)
 	}
 	app := gruid.NewApp(gruid.AppConfig{
@@ -108,11 +119,12 @@ func RunGame() {
 		Model:       m,
 		FrameWriter: repw,
 	})
-	if err := app.Start(context.Background()); err != nil {
-		log.Fatal(err)
-	}
-	if !Tiles && !Testing {
+	err = app.Start(context.Background())
+	if !Tiles && !LogGame {
 		log.SetOutput(os.Stderr)
+	}
+	if err != nil {
+		log.Fatal(err)
 	}
 }
 

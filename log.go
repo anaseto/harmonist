@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/anaseto/gruid"
 	"github.com/anaseto/gruid/ui"
@@ -94,6 +95,9 @@ func (g *game) PrintEntry(e logEntry) {
 		}
 	}
 	e.MText = e.String()
+	if LogGame {
+		log.Printf("Depth %d:Turn %d:%v", g.Depth, g.Turn, e.dumpString())
+	}
 	g.Log = append(g.Log, e)
 	g.LogIndex++
 	if len(g.Log) > 100000 {

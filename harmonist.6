@@ -11,7 +11,7 @@
 .\" WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-.Dd Feb 16, 2021
+.Dd Feb 21, 2021
 .Dt HARMONIST 6
 .Os
 .Sh NAME
@@ -19,9 +19,9 @@
 .Nd stealth roguelike game
 .Sh SYNOPSIS
 .Nm
-.Op Fl c
-.Op Fl n
 .Op Fl F
+.Op Fl o
+.Op Fl n
 .Op Fl s
 .Op Fl v
 .Op Fl x
@@ -50,10 +50,12 @@ will go smoothly...”
 .Pp
 The options are as follows:
 .Bl -tag -width Ds
-.It Fl n
-No animations.
 .It Fl F
 Launch game in fullscreen (SDL version only).
+.It Fl o Ar file
+Log game actions to output file.
+.It Fl n
+No animations.
 .It Fl r Ar file
 Watch replay file
 .Ar file
