@@ -265,7 +265,7 @@ func (md *model) updateStatusInfo() {
 	entries = append(entries, ui.MenuEntry{Text: stt.WithText(depth), Disabled: true})
 
 	// turns
-	entries = append(entries, ui.MenuEntry{Text: stt.WithTextf("T: %d ", g.Turn), Disabled: true})
+	entries = append(entries, ui.MenuEntry{Text: stt.WithTextf("T:%d ", g.Turn), Disabled: true})
 
 	// HP
 	nWounds := g.Player.HPMax() - g.Player.HP - g.Player.HPbonus
@@ -288,9 +288,9 @@ func (md *model) updateStatusInfo() {
 		)
 	} else {
 		if g.Player.HPbonus > 0 {
-			hps = fmt.Sprintf("@%c%d+%d/%d@N ", hpColor, hp, g.Player.HPbonus, g.Player.HPMax())
+			hps = fmt.Sprintf("%s@%c%d+%d/%d@N ", hps, hpColor, hp, g.Player.HPbonus, g.Player.HPMax())
 		} else {
-			hps = fmt.Sprintf("@%c%d/%d@N ", hpColor, hp, g.Player.HPMax())
+			hps = fmt.Sprintf("%s@%c%d/%d@N ", hps, hpColor, hp, g.Player.HPMax())
 		}
 	}
 	entries = append(entries, ui.MenuEntry{Text: stt.WithText(hps), Disabled: true})
@@ -310,7 +310,7 @@ func (md *model) updateStatusInfo() {
 			strings.Repeat("♥", MPspent),
 		)
 	} else {
-		mps = fmt.Sprintf("@%c%d/%d@N ", mpColor, g.Player.MP, g.Player.MPMax())
+		mps = fmt.Sprintf("%s@%c%d/%d@N ", mps, mpColor, g.Player.MP, g.Player.MPMax())
 	}
 	entries = append(entries, ui.MenuEntry{Text: stt.WithText(mps), Disabled: true})
 
