@@ -3,7 +3,7 @@ module github.com/anaseto/harmonist
 go 1.13
 
 require (
-	github.com/anaseto/gruid v0.18.0
+	github.com/anaseto/gruid v0.19.0
 	github.com/anaseto/gruid-js v0.1.1
 	github.com/anaseto/gruid-sdl v0.1.1
 	github.com/anaseto/gruid-tcell v0.1.1
