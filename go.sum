@@ -1,7 +1,7 @@
 github.com/anaseto/gruid v0.18.0 h1:aP5prHUckklRJNOyXSvr6EsVa0TdBvDy2mtPoN4t1KI=
 github.com/anaseto/gruid v0.18.0/go.mod h1:csCeg/kLRFAAF4gdrx9EYrQbKBBprmWmEdmR0QMmBc4=
-github.com/anaseto/gruid v0.19.0 h1:QTfnQNiZ+9wHMw0qWdOl+jr8cSid45/rRvn5kV4uR6w=
-github.com/anaseto/gruid v0.19.0/go.mod h1:csCeg/kLRFAAF4gdrx9EYrQbKBBprmWmEdmR0QMmBc4=
+github.com/anaseto/gruid v0.19.1 h1:pYBPl3QNuqS/IuFF/dlFZlzKtjARIu3Luq62ZDdiZKs=
+github.com/anaseto/gruid v0.19.1/go.mod h1:csCeg/kLRFAAF4gdrx9EYrQbKBBprmWmEdmR0QMmBc4=
 github.com/anaseto/gruid-js v0.1.1 h1:xWdtQYjG+cAze7M3WyzXbkzHgKg1sTthRtLew3wXj6w=
 github.com/anaseto/gruid-js v0.1.1/go.mod h1:r+3/15eg2nfmLeF0KISomQTSOci3chLkzqI4vTIU4Rw=
 github.com/anaseto/gruid-sdl v0.1.1 h1:rq7jcEVelmWDDVVPRtIl66pB+OWIKeeZkMZvhuILXcQ=
