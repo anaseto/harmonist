@@ -315,8 +315,10 @@ func (md *model) Update(msg gruid.Msg) gruid.Effect {
 		return md.init()
 	}
 	if _, ok := msg.(gruid.MsgQuit); ok {
+		if md.mode != modeQuit { // in case of already quitting
+			md.g.Save()
+		}
 		md.mode = modeQuit
-		md.g.Save() // TODO: log error ?
 		return gruid.End()
 	}
 	//log.Printf("msg %+v", msg)
