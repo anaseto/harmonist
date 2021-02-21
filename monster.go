@@ -501,7 +501,7 @@ type monster struct {
 	FireReady     bool
 	Seen          bool
 	LOS           map[gruid.Point]bool
-	LastSeenState monsterState
+	LastKnownState monsterState
 	Swapped       bool
 	Watching      int
 	Left          bool

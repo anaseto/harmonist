@@ -153,9 +153,8 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 			r = '¤'
 			fgColor = ColorFgDark
 		}
-		if mons := g.lastMonsterKnownAt(p); mons.Exists() && mons.Seen {
-			r = '☻'
-			fgColor = ColorFgSleepingMonster
+		if mons := g.lastMonsterKnownAt(p); mons.Exists() {
+			r, fgColor = mons.StyleKnowledge()
 		}
 		if g.Noise[p] {
 			r = '♫'
@@ -204,7 +203,7 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 		} else if g.Player.Sees(p) {
 			mons := g.MonsterAt(p)
 			if mons.Exists() {
-				_, fgColor = mons.Style()
+				fgColor = mons.color(g)
 			}
 		}
 		if _, ok := g.MagicalBarriers[p]; ok {
@@ -247,7 +246,7 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 			r = '♪'
 			fgColor = ColorFgMagicPlace
 		} else if mons := g.lastMonsterKnownAt(p); (!g.Wizard || g.WizardMode == WizardNormal) && mons.Exists() {
-			r, fgColor = mons.Style()
+			r, fgColor = mons.StyleKnowledge()
 		}
 		if fgColor == ColorFgLOS && g.Illuminated(p) && c.IsIlluminable() {
 			fgColor = ColorFgLOSLight
@@ -256,19 +255,18 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 	return
 }
 
-func (m *monster) Style() (r rune, fg gruid.Color) {
+func (m *monster) StyleKnowledge() (r rune, fg gruid.Color) {
 	if !m.Seen {
 		r = '☻'
-		fg = ColorFgWanderingMonster
 	} else {
 		r = m.Kind.Letter()
-		if m.LastSeenState == Resting {
-			fg = ColorFgSleepingMonster
-		} else if m.Kind.Peaceful() {
-			fg = ColorFgPlayer
-		} else {
-			fg = ColorFgWanderingMonster
-		}
+	}
+	if m.LastKnownState == Resting {
+		fg = ColorFgSleepingMonster
+	} else if m.Kind.Peaceful() && m.Seen {
+		fg = ColorFgPlayer
+	} else {
+		fg = ColorFgWanderingMonster
 	}
 	return r, fg
 }

@@ -615,7 +615,7 @@ func (m *monster) UpdateKnowledge(g *game, p gruid.Point) {
 		delete(g.LastMonsterKnownAt, m.LastKnownPos)
 	}
 	g.LastMonsterKnownAt[p] = m.Index
-	m.LastSeenState = m.State
+	m.LastKnownState = m.State
 	m.LastKnownPos = p
 }
 

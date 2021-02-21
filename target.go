@@ -185,7 +185,12 @@ func (md *model) drawPosInfo() {
 	if !info.Sees {
 		title = fmt.Sprintf("%s (seen)", mons.Kind)
 	}
-	mfg := mons.color(g)
+	var mfg gruid.Color
+	if g.Player.Sees(mons.P) {
+		mfg = mons.color(g)
+	} else {
+		_, mfg = mons.StyleKnowledge()
+	}
 	var mdesc []string
 
 	if info.Sees {
@@ -205,7 +210,7 @@ func (md *model) drawPosInfo() {
 	}
 }
 
-func (m *monster) color(gs *game) gruid.Color {
+func (m *monster) color(g *game) gruid.Color {
 	var fg gruid.Color
 	if m.Status(MonsLignified) {
 		fg = ColorFgLignifiedMonster
@@ -217,7 +222,7 @@ func (m *monster) color(gs *game) gruid.Color {
 		fg = ColorFgSleepingMonster
 	} else if m.State == Hunting {
 		fg = ColorFgMonster
-	} else if m.Peaceful(gs) {
+	} else if m.Peaceful(g) {
 		fg = ColorFgPlayer
 	} else {
 		fg = ColorFgWanderingMonster
