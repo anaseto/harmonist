@@ -99,7 +99,7 @@ func (g *game) Dump() string {
 		fmt.Fprintf(buf, "%d monsters died.\n", g.Stats.Killed)
 	}
 	fmt.Fprintf(buf, "You spent %d turns in Hareka's Underground.\n", g.Turn)
-	maxDepth := Max(g.Depth, g.ExploredLevels)
+	maxDepth := max(g.Depth, g.ExploredLevels)
 	s := "s"
 	if maxDepth == 1 {
 		s = ""
@@ -178,7 +178,7 @@ func (g *game) DetailedStatistics(w io.Writer) {
 	fmt.Fprintf(w, "You spent %d%% turns wounded.\n", g.Stats.TWounded*100/(g.Stats.Turns+1))
 	fmt.Fprintf(w, "You spent %d%% turns with monsters in sight.\n", g.Stats.TMonsLOS*100/(g.Stats.Turns+1))
 	fmt.Fprintf(w, "You spent %d%% turns wounded with monsters in sight.\n", g.Stats.TMWounded*100/(g.Stats.Turns+1))
-	maxDepth := Max(g.Depth-1, g.ExploredLevels)
+	maxDepth := max(g.Depth-1, g.ExploredLevels)
 	if g.Player.HP <= 0 {
 		maxDepth++
 	}
@@ -371,7 +371,7 @@ func (g *game) SimplifedDump(err error) string {
 		fmt.Fprint(buf, "You did not recover the Gem Portal Artifact.\n")
 	}
 	fmt.Fprintf(buf, "You spent %d turns in Hareka's Underground.\n", g.Turn)
-	maxDepth := Max(g.Depth, g.ExploredLevels)
+	maxDepth := max(g.Depth, g.ExploredLevels)
 	s := "s"
 	if maxDepth == 1 {
 		s = ""

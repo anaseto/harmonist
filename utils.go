@@ -24,7 +24,7 @@ func RandInt(n int) int {
 	return x
 }
 
-func Max(x, y int) int {
+func max(x, y int) int {
 	if x > y {
 		return x
 	}

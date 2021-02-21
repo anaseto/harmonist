@@ -159,7 +159,7 @@ func (g *game) ppPassable(p gruid.Point) bool {
 func (pp *playerPath) Neighbors(p gruid.Point) []gruid.Point {
 	nbs := pp.nbs.Cardinal(p, pp.g.ppPassable)
 	sort.Slice(nbs, func(i, j int) bool {
-		return maxCardinalDist(nbs[i], pp.goal) <= maxCardinalDist(nbs[j], pp.goal)
+		return distanceChebyshev(nbs[i], pp.goal) <= distanceChebyshev(nbs[j], pp.goal)
 	})
 	return nbs
 }

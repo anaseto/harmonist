@@ -9,7 +9,7 @@ func distance(from, to gruid.Point) int {
 	return abs(delta.X) + abs(delta.Y)
 }
 
-func maxCardinalDist(from, to gruid.Point) int {
+func distanceChebyshev(from, to gruid.Point) int {
 	delta := to.Sub(from)
 	deltaX := abs(delta.X)
 	deltaY := abs(delta.Y)
