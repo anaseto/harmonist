@@ -1,6 +1,6 @@
 module github.com/anaseto/harmonist
 
-go 1.13
+go 1.15
 
 require (
 	github.com/anaseto/gruid v0.19.0
