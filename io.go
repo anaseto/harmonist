@@ -31,24 +31,44 @@ func DataDir() (string, error) {
 	return dataDir, nil
 }
 
-func (g *game) Save() error {
+func SaveFile(filename string, data []byte) error {
 	dataDir, err := DataDir()
 	if err != nil {
-		g.Print(err.Error())
 		return err
 	}
-	saveFile := filepath.Join(dataDir, "save")
+	tempSaveFile := filepath.Join(dataDir, "temp-"+filename)
+	f, err := os.OpenFile(tempSaveFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+	if err != nil {
+		return err
+	}
+	_, err = f.Write(data)
+	if err != nil {
+		return err
+	}
+	if err := f.Sync(); err != nil {
+		return err
+	}
+	if err := f.Close(); err != nil {
+		return err
+	}
+	saveFile := filepath.Join(dataDir, filename)
+	if err := os.Rename(f.Name(), saveFile); err != nil {
+		return err
+	}
+	return err
+}
+
+func (g *game) Save() error {
 	data, err := g.GameSave()
 	if err != nil {
 		g.Print(err.Error())
 		return err
 	}
-	err = ioutil.WriteFile(saveFile, data, 0644)
+	err = SaveFile("save", data)
 	if err != nil {
 		g.Print(err.Error())
-		return err
 	}
-	return nil
+	return err
 }
 
 func RemoveSaveFile() error {
@@ -86,20 +106,11 @@ func (g *game) Load() (bool, error) {
 }
 
 func SaveConfig() error {
-	dataDir, err := DataDir()
-	if err != nil {
-		return err
-	}
-	saveFile := filepath.Join(dataDir, "config.gob")
 	data, err := GameConfig.ConfigSave()
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(saveFile, data, 0644)
-	if err != nil {
-		return err
-	}
-	return nil
+	return SaveFile("config.gob", data)
 }
 
 func LoadConfig() (bool, error) {
