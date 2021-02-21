@@ -605,7 +605,7 @@ func (md *model) FreeingShaedra() {
 		g.PrintStyled("Marevor: “And what about the mission? Take that magara!”", logSpecial)
 		g.PrintStyled("Shaedra: “Pff, don't be reckless!”", logSpecial)
 		g.PrintStyled("[(x) to continue]", logConfirm)
-	case 3:
+	case 2:
 		if !DisableAnimations {
 			md.startAnimSeq()
 			_, _, bg := md.positionDrawing(g.Places.Marevor)
