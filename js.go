@@ -324,3 +324,7 @@ func (g *game) WriteDump() error {
 	pre.Set("innerHTML", g.Dump())
 	return nil
 }
+
+func subSig(ctx context.Context, msgs chan<- gruid.Msg) {
+	// do nothing
+}

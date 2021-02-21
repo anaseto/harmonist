@@ -10,8 +10,10 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"runtime"
+	"syscall"
 
 	"github.com/anaseto/gruid"
 	"github.com/anaseto/gruid/ui"
@@ -143,5 +145,16 @@ func RunReplay(file string) {
 	})
 	if err := app.Start(context.Background()); err != nil {
 		log.Fatal(err)
+	}
+}
+
+func subSig(ctx context.Context, msgs chan<- gruid.Msg) {
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
+	defer signal.Stop(sig)
+	select {
+	case <-ctx.Done():
+	case <-sig:
+		msgs <- gruid.MsgQuit{}
 	}
 }

@@ -283,7 +283,10 @@ func (md *model) init() gruid.Effect {
 	md.targ.ex = &examination{}
 	md.CancelExamine()
 	md.initAnimations()
-	return nil
+	if runtime.GOOS == "js" {
+		return nil
+	}
+	return gruid.Sub(subSig)
 }
 
 func (md *model) more(msg gruid.Msg) bool {
