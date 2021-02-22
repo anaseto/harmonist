@@ -506,7 +506,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 			err = actionErrorUnknown
 		}
 	case ActionWizardDescend:
-		if g.Wizard && g.Depth == WinDepth {
+		if g.Wizard && g.Depth == WinDepth && !g.LiberatedShaedra {
 			g.RescuedShaedra()
 		}
 		if g.Wizard && g.Depth < MaxDepth {
