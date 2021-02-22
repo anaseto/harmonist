@@ -384,7 +384,7 @@ func (c cell) Desc(g *game, p gruid.Point) (desc string) {
 	case ExtinguishedLightCell:
 		desc = "An extinguished campfire can be lighted again by some creatures."
 	case TableCell:
-		desc = "You can hide under the table so that only adjacent creatures can see you. Most creatures cannot walk accross the table."
+		desc = "You can hide under the table so that only adjacent creatures can see you. Most creatures cannot walk across the table."
 	case TreeCell:
 		desc = "Underground banana trees grow with nearly no light sources. Their rare bananas are very appreciated by many creatures, specially some harpy species. You may find some bananas dropped by them while exploring. You can climb trees to see farther. Moreover, only big, flying or jumping creatures will be able to attack you while you stand on a tree. The top is never illuminated."
 	case HoledWallCell:
@@ -445,7 +445,7 @@ func (c cell) Desc(g *game, p gruid.Point) (desc string) {
 		autodesc += " You can hide just behind it."
 	}
 	if c.IsJumpPropulsion() {
-		autodesc += " You can use it to propulse yourself with a jump."
+		autodesc += " You can use it to propel yourself with a jump."
 	}
 	if autodesc != "" {
 		desc += "\n\n" + strings.TrimSpace(autodesc)

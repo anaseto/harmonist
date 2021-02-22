@@ -15,7 +15,7 @@ var Version string = "v0.4-dev-8"
 // game contains the game logic's state, without ui stuff. Everything could be
 // in the model struct instead, with only the game logic's fiend exported, as
 // some game functions need the model anyway (like animations), but this allows
-// to differenciate a bit things that are mainly game-logic from the stuff that
+// to differentiate a bit things that are mainly game-logic from the stuff that
 // is more about ui.
 type game struct {
 	Dungeon               *dungeon

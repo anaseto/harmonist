@@ -119,8 +119,12 @@ func (md *model) drawPosInfo() {
 	info := md.targ.ex.info
 
 	y := 2
+	stt := ui.StyledText{}.WithMarkups(map[rune]gruid.Style{
+		'h': gruid.Style{}.WithFg(ColorCyan),
+		's': gruid.Style{}.WithFg(ColorGreen),
+	})
 	formatBox := func(title, s string, fg gruid.Color) {
-		md.description.Content = md.description.Content.WithText(s).Format(DungeonWidth/2 - 3)
+		md.description.Content = stt.WithText(s).Format(DungeonWidth/2 - 3)
 		if md.description.Content.Size().Y+2 > 2+DungeonHeight {
 			md.description.Box = &ui.Box{Title: ui.NewStyledText(title, gruid.Style{}.WithFg(fg)),
 				Footer: ui.Text("scroll/page down for more...")}
@@ -196,10 +200,10 @@ func (md *model) drawPosInfo() {
 	if info.Sees {
 		statuses := mons.statusesText()
 		if statuses != "" {
-			mdesc = append(mdesc, fmt.Sprintf("Statuses: %s", statuses))
+			mdesc = append(mdesc, fmt.Sprintf("@hStatuses:@N %s", statuses))
 		}
 	}
-	mdesc = append(mdesc, "Traits: "+mons.traits())
+	mdesc = append(mdesc, "@hTraits:@N "+mons.traits())
 	if !md.targ.ex.scroll {
 		formatBox(t, desc, fg)
 	}
@@ -234,7 +238,7 @@ func (m *monster) statusesText() string {
 	infos := []string{}
 	for st, i := range m.Statuses {
 		if i > 0 {
-			infos = append(infos, fmt.Sprintf("%s %d", monsterStatus(st), m.Statuses[monsterStatus(st)]))
+			infos = append(infos, fmt.Sprintf("%s(@s%d@N)", monsterStatus(st), m.Statuses[monsterStatus(st)]))
 		}
 	}
 	return strings.Join(infos, ", ")

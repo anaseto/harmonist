@@ -121,11 +121,11 @@ func (st status) Desc() string {
 	case StatusSwift:
 		return "Allows for moving several times in a row."
 	case StatusLignification:
-		return "Makes it impossible to move."
+		return "Disallows movement."
 	case StatusConfusion:
-		return "Makes it impossible to use magaras."
+		return "Disallows magara use."
 	case StatusFlames:
-		return "Surrounded by magical flames."
+		return "Surrounded by slowing magical flames."
 	case StatusHidden:
 		return "No monster can see you."
 	case StatusUnhidden:
@@ -137,11 +137,11 @@ func (st status) Desc() string {
 	case StatusLevitation:
 		return "Allows to fly over chasm and oric barriers."
 	case StatusShadows:
-		return "Only adjacent monsters see you on dark cells."
+		return "Only adjacent monsters can see you on dark cells."
 	case StatusIlluminated:
-		return "You are always in a lighted cell."
+		return "You are magically lighted."
 	case StatusTransparent:
-		return "Only adjacent monsters see you on lighted cells."
+		return "Only adjacent monsters can see you on lighted cells."
 	case StatusDisguised:
 		return "Most monsters will ignore you, except those with good flair."
 	case StatusDelay:

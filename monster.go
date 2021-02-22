@@ -335,13 +335,13 @@ var MonsDesc = []string{
 	//MonsBrizzia:         "Brizzias are big slow moving biped creatures. They are quite hardy, and when hurt they can cause nausea, impeding the use of potions.",
 	MonsAcidMound: "Acid mounds are acidic creatures. They can corrode your magaras, reducing their number of charges.",
 	MonsDog:       "Dogs are carnivore quadrupeds. They can bark, and smell you from up to 5 tiles away when hunting or watching for you.",
-	MonsYack:      "Yacks are quite large herbivorous quadrupeds. They tend to eat grass peacefully, but upon seing you they may attack, pushing you up to 5 cells away.",
+	MonsYack:      "Yacks are quite large herbivorous quadrupeds. They tend to eat grass peacefully, but upon seeing you they may attack, pushing you up to 5 cells away.",
 	//MonsGiantBee:        "Giant bees are fragile but extremely fast moving creatures. Their bite can sometimes enrage you.",
 	MonsHighGuard: "High guards watch over a particular location. They can throw javelins.",
 	//MonsHydra:           "Hydras are enormous creatures with four heads that can hit you each at once.",
 	//MonsSkeletonWarrior: "Skeleton warriors are good fighters, clad in chain mail.",
 	MonsSpider:       "Spiders are small creatures, with panoramic vision and whose bite can confuse you.",
-	MonsWingedMilfid: "Winged milfids are  humanoids that can fly over you and make you swap positions. They tend to be very agressive creatures.",
+	MonsWingedMilfid: "Winged milfids are  humanoids that can fly over you and make you swap positions. They tend to be very aggressive creatures.",
 	MonsBlinkingFrog: "Blinking frogs are big frog-like creatures, whose bite can make you blink away. The science behind their attack is not clear, but many think it relies on some kind of oric deviation magic. They can jump to attack from below.",
 	//MonsLich:           "Liches are non-living mages wearing a leather armour. They can throw a bolt of torment at you, halving your HP.",
 	MonsEarthDragon:    "Earth dragons are big creatures from a dragon species that wander in the Underground. They are peaceful creatures, but they may hurt you inadvertently, pushing you up to 6 tiles away (3 if confused). They naturally emit powerful oric energies, allowing them to eat rocks and dig tunnels. Their oric energies can confuse you if you're close enough, for example if they hurt you or you jump over them.",
@@ -486,28 +486,28 @@ var MonsBands = []monsterBandData{
 }
 
 type monster struct {
-	Kind          monsterKind
-	Band          int
-	Index         int
-	Dir           gruid.Point
-	Attack        int
-	Dead          bool
-	State         monsterState
-	Statuses      [NMonsStatus]int
-	P             gruid.Point
-	LastKnownPos  gruid.Point
-	Target        gruid.Point
-	Path          []gruid.Point // cache
-	FireReady     bool
-	Seen          bool
-	LOS           map[gruid.Point]bool
+	Kind           monsterKind
+	Band           int
+	Index          int
+	Dir            gruid.Point
+	Attack         int
+	Dead           bool
+	State          monsterState
+	Statuses       [NMonsStatus]int
+	P              gruid.Point
+	LastKnownPos   gruid.Point
+	Target         gruid.Point
+	Path           []gruid.Point // cache
+	FireReady      bool
+	Seen           bool
+	LOS            map[gruid.Point]bool
 	LastKnownState monsterState
-	Swapped       bool
-	Watching      int
-	Left          bool
-	Search        gruid.Point
-	Alerted       bool
-	Waiting       int
+	Swapped        bool
+	Watching       int
+	Left           bool
+	Search         gruid.Point
+	Alerted        bool
+	Waiting        int
 }
 
 func (m *monster) Init() {
