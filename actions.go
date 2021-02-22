@@ -626,6 +626,7 @@ func (md *model) readScroll() {
 			stts = append(stts, ui.Text(s))
 		}
 		md.smallPager.SetLines(stts)
+		md.smallPager.SetCursor(gruid.Point{0, 0})
 		if !md.g.Stats.Lore[md.g.Depth] {
 			md.g.StoryPrint("Read lore message")
 		}
@@ -644,6 +645,7 @@ func (md *model) readScroll() {
 			stts = append(stts, ui.Text(s))
 		}
 		md.smallPager.SetLines(stts)
+		md.smallPager.SetCursor(gruid.Point{0, 0})
 	}
 }
 
@@ -869,6 +871,7 @@ func (md *model) updateKeysDescription(title string, actions []string) {
 		lines = append(lines, stt)
 	}
 	md.pager.SetLines(lines)
+	md.pager.SetCursor(gruid.Point{0, 0})
 }
 
 func (md *model) KeysHelp() {

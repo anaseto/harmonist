@@ -919,6 +919,7 @@ func (md *model) dump(err error) {
 		stts = append(stts, ui.Text(l))
 	}
 	md.pager.SetLines(stts)
+	md.pager.SetCursor(gruid.Point{0, 0})
 	//log.Printf("%v", s)
 	//log.Printf("%v", stts)
 }
