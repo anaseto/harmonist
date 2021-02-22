@@ -1,9 +1,21 @@
-v0.4 2021-?
+v0.4 2021-02-22
 
-+ Rewrite of the user interface: now it uses the gruid library. Among
-  noticeable changes for players, description for items and places is now
-  displayed just by examining them, without requiring an additional keypress.
-+ The Tk backend for tiles has been replaced with an SDL backend. 
+Highligths:
+
++ A new field of view algorithm (symmetric shadow casting combined with the
+  previous custom one) that should offer a better stealthy experience thanks to
+  expanding shadows and less permissive vision in general.
++ Overhaul of the user interface and a lot of polishing. Among most noticeable
+  changes for players, description for items and places is now displayed just
+  by examining them, without requiring an additional keypress, and using the
+  mouse does not force examination mode for keyboard anymore.
++ Improved Replay (arrow up and down moves 1 minute forward/backward).
++ New SDL driver that replaces the Tk one as graphical native driver.
++ Many minor bug fixes (including some minor gameplay tweaks).
+
+Packaging notes: the game now uses the gruid library. This means that for the
+terminal version it will use the tcell go library, and for graphical
+applications the SDL library.
 
 v0.3 2019-12-10
 
