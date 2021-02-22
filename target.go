@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/anaseto/gruid"
@@ -65,21 +66,47 @@ func (md *model) examine(p gruid.Point) {
 	md.targ.ex.scroll = false
 }
 
+func (md *model) targetMonsters() []*monster {
+	tms := []*monster{}
+	for _, m := range md.g.Monsters {
+		if !m.Exists() || !md.g.Player.Sees(m.P) {
+			continue
+		}
+		tms = append(tms, m)
+	}
+	for p, i := range md.g.LastMonsterKnownAt {
+		m := md.g.Monsters[i]
+		if !m.Exists() || md.g.Player.Sees(m.P) {
+			continue
+		}
+		mons := &monster{}
+		*mons = *m
+		mons.P = p
+		tms = append(tms, mons)
+	}
+	sort.Slice(tms, func(i, j int) bool {
+		mi := tms[i]
+		mj := tms[j]
+		if md.g.Player.Sees(mi.P) && !md.g.Player.Sees(mj.P) {
+			return true
+		}
+		if !md.g.Player.Sees(mi.P) && md.g.Player.Sees(mj.P) {
+			return false
+		}
+		return distance(md.g.Player.P, mi.P) < distance(md.g.Player.P, mj.P)
+	})
+	return tms
+}
+
 // KeyboardExamine starts keyboard examination mode, with a sensible default
 // target.
 func (md *model) KeyboardExamine() {
 	md.targ.kbTargeting = true
 	g := md.g
 	p := g.Player.P
-	minDist := 999
-	for _, mons := range g.Monsters {
-		if mons.Exists() && g.Player.LOS[mons.P] {
-			dist := distance(mons.P, g.Player.P)
-			if minDist > dist {
-				minDist = dist
-				p = mons.P
-			}
-		}
+	for _, mons := range md.targetMonsters() {
+		p = mons.P
+		break
 	}
 	md.targ.ex = &examination{
 		p:       p,
@@ -355,25 +382,23 @@ func (md *model) target() error {
 }
 
 func (md *model) nextMonster(key gruid.Key, p gruid.Point, data *examination) {
-	g := md.g
 	nmonster := data.nmonster
-	for i := 0; i < len(g.Monsters); i++ {
-		if key == "+" {
-			nmonster++
-		} else {
-			nmonster--
-		}
-		if nmonster > len(g.Monsters)-1 {
-			nmonster = 0
-		} else if nmonster < 0 {
-			nmonster = len(g.Monsters) - 1
-		}
-		mons := g.Monsters[nmonster]
-		if mons.Exists() && g.Player.LOS[mons.P] && p != mons.P {
-			p = mons.P
-			break
-		}
+	ms := md.targetMonsters()
+	if len(ms) == 0 {
+		return
 	}
+	if key == "+" {
+		nmonster++
+	} else {
+		nmonster--
+	}
+	if nmonster > len(ms)-1 {
+		nmonster = 0
+	} else if nmonster < 0 {
+		nmonster = len(ms) - 1
+	}
+	mons := ms[nmonster]
+	p = mons.P
 	data.nmonster = nmonster
 	md.Examine(p)
 }
