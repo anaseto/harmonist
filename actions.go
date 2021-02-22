@@ -470,6 +470,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 			md.logs = append(md.logs, md.pagerMarkup.WithText(e.MText))
 		}
 		md.pager.SetLines(md.logs)
+		md.pager.SetCursor(gruid.Point{0, len(md.logs)})
 		md.mode = modePager
 		md.pagerMode = modeLogs
 	case ActionSave:
