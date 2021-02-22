@@ -285,7 +285,7 @@ func (md *model) updatePosInfo() {
 		if g.Noise[p] || g.NoiseIllusion[p] {
 			pi.Noise = true
 		}
-		if mons := g.lastMonsterKnownAt(p); mons.Exists() && !mons.Seen {
+		if mons := g.lastMonsterKnownAt(p); mons.Exists() {
 			pi.Monster = mons
 		}
 		md.targ.ex.info = pi
