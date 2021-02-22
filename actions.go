@@ -540,11 +540,6 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		if err != nil {
 			g.Print(err.Error())
 		}
-		if GameConfig.DarkLOS {
-			ApplyDarkLOS()
-		} else {
-			ApplyLightLOS()
-		}
 		clearCache()
 		eff = gruid.Cmd(func() gruid.Msg { return gruid.MsgScreen{} })
 		md.mode = modeNormal

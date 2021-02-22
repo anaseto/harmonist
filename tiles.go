@@ -29,45 +29,6 @@ func (md *model) ApplyToggleTiles() {
 	clearCache()
 }
 
-//func (c gruid.Color) String() string {
-//color := "#002b36"
-//switch c {
-//case 0:
-//color = "#073642"
-//case 1:
-//color = "#dc322f"
-//case 2:
-//color = "#859900"
-//case 3:
-//color = "#b58900"
-//case 4:
-//color = "#268bd2"
-//case 5:
-//color = "#d33682"
-//case 6:
-//color = "#2aa198"
-//case 7:
-//color = "#eee8d5"
-//case 8:
-//color = "#002b36"
-//case 9:
-//color = "#cb4b16"
-//case 10:
-//color = "#586e75"
-//case 11:
-//color = "#657b83"
-//case 12:
-//color = "#839496"
-//case 13:
-//color = "#6c71c4"
-//case 14:
-//color = "#93a1a1"
-//case 15:
-//color = "#fdf6e3"
-//}
-//return color
-//}
-
 func ColorToRGBA(c gruid.Color, fg bool) color.Color {
 	cl := color.RGBA{}
 	opaque := uint8(255)

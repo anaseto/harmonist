@@ -933,9 +933,7 @@ func (md *model) applyConfig() {
 }
 
 func applyThemeConf() {
-	if GameConfig.DarkLOS {
-		ApplyDarkLOS()
-	} else {
-		ApplyLightLOS()
+	if Only8Colors && !Tiles {
+		ColorFgLOS = ColorGreen
 	}
 }

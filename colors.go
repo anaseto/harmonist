@@ -100,28 +100,6 @@ func init() {
 
 var Only8Colors bool
 
-func ApplyDarkLOS() {
-	ColorBgDark = ColorBackground
-	ColorBgLOS = ColorBackgroundSecondary
-	ColorFgDark = ColorForegroundSecondary
-	if Only8Colors && !Tiles {
-		ColorFgLOS = ColorGreen
-	} else {
-		ColorFgLOS = ColorForegroundEmph
-	}
-}
-
-func ApplyLightLOS() {
-	ColorBgDark = ColorBackgroundSecondary
-	ColorBgLOS = ColorBackground
-	ColorFgDark = ColorForeground
-	if Only8Colors && !Tiles {
-		ColorFgLOS = ColorGreen
-	} else {
-		ColorFgLOS = ColorForegroundEmph
-	}
-}
-
 const (
 	AttrInMap gruid.AttrMask = 1 + iota
 	AttrReverse
