@@ -273,8 +273,8 @@ func (md *model) init() gruid.Effect {
 		g.rand = rand.New(rand.NewSource(time.Now().UnixNano()))
 	}
 	if err != nil {
-		g.PrintfStyled("Error: %v", logError, err)
-		g.PrintStyled("Could not load saved game… starting new game.", logError)
+		g.PrintStyled("Warning: could not load old saved game… starting new game.", logError)
+		log.Printf("Error: %v", err)
 	}
 
 	md.g.ComputeNoise()
