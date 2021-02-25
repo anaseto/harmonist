@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strings"
 	//"time"
@@ -875,7 +876,7 @@ func (md *model) updateKeysDescription(title string, actions []string) {
 }
 
 func (md *model) KeysHelp() {
-	md.updateKeysDescription("Commands", []string{
+	entries := []string{
 		"Basic Commands", "",
 		"Move/Jump", "arrows or wasd or hjkl or mouse left",
 		"Wait a turn", "“.” or 5 or enter or mouse left on @",
@@ -894,7 +895,11 @@ func (md *model) KeysHelp() {
 		"Write game statistics to file", "#",
 		"Quit without saving", "Q",
 		"Change settings and key bindings", "=",
-	})
+	}
+	if Tiles && runtime.GOOS != "js" {
+		entries = append(entries, "Increase/decrease zoom", "+ and -")
+	}
+	md.updateKeysDescription("Commands", entries)
 }
 
 func (md *model) ExamineHelp() {
