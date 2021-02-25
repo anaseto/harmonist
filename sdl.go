@@ -15,6 +15,7 @@ func initDriver(fullscreen bool) {
 	dr := sdl.NewDriver(sdl.Config{
 		TileManager: &monochromeTileManager{},
 		Fullscreen:  fullscreen,
+		WindowTitle: "Harmonist",
 	})
 	driver = dr
 }
