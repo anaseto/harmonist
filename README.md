@@ -45,14 +45,14 @@ terminal, graphical SDL2, and browser.
 
 ### Terminal (ASCII)
 
-You can build a native ASCII version from source by using this command:
+You can build a native ASCII version from source by using the following
+command:
 
-+ `go get -u git.tuxfamily.org/harmonist/harmonist.git`
+	go install
 
-or using the github repository:
+Alternatively, you may use the `go build -o /path/to/bin/harmonist` to put the
+resulting binary in a particular place.
 
-+ `go get -u github.com/anaseto/harmonist`
-  
 The `harmonist` command should now be available (you may have to rename it to
 remove the `.git` suffix).
 
@@ -61,13 +61,13 @@ library.
 
 ### SDL2 (Tiles or ASCII)
 
-You can build a graphical version depending on SDL2 using this command:
+You can build a graphical version depending on SDL2 by using the following
+command:
 
-+ `go get -u --tags sdl git.tuxfamily.org/harmonist/harmonist.git`
+	go install --tags sdl
 
-or using the github repository:
-
-+ `go get -u --tags sdl github.com/anaseto/harmonist`
+Alternatively, you may use the `go build --tags sdl -o /path/to/bin/harmonist`
+to put the resulting binary in a particular place.
 
 This will install the [go-sdl2](https://github.com/veandco/go-sdl2/sdl) Go
 bindings for SDL2. You need to install
