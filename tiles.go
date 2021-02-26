@@ -5,6 +5,7 @@ package main
 import (
 	"bytes"
 	"encoding/base64"
+	"fmt"
 	"image"
 	"image/color"
 	"image/draw"
@@ -220,6 +221,20 @@ func (tm *monochromeTileManager) TileSize() gruid.Point {
 	return gruid.Point{16, 24}
 }
 
+func base64pngToRGBA(bs []byte) (*image.RGBA, error) {
+	buf := make([]byte, len(bs))
+	base64.StdEncoding.Decode(buf, bs) // TODO: check error
+	br := bytes.NewReader(buf)
+	img, err := png.Decode(br)
+	if err != nil {
+		return nil, fmt.Errorf("could not decode png: %v", err)
+	}
+	rect := img.Bounds()
+	rgbaimg := image.NewRGBA(rect)
+	draw.Draw(rgbaimg, rect, img, rect.Min, draw.Src)
+	return rgbaimg, nil
+}
+
 func (tm *monochromeTileManager) GetImage(gc gruid.Cell) image.Image {
 	var pngImg []byte
 	hastile := false
@@ -241,23 +256,19 @@ func (tm *monochromeTileManager) GetImage(gc gruid.Cell) image.Image {
 			pngImg = im
 		}
 	}
-	buf := make([]byte, len(pngImg))
-	base64.StdEncoding.Decode(buf, pngImg) // TODO: check error
-	br := bytes.NewReader(buf)
-	img, err := png.Decode(br)
+	rgbaimg, err := base64pngToRGBA(pngImg)
 	if err != nil {
-		log.Printf("Rune %s: could not decode png: %v", string(gc.Rune), err)
+		log.Printf("Rune %s: %v", string(gc.Rune), err)
+		return image.Black
 	}
-	rect := img.Bounds()
-	rgbaimg := image.NewRGBA(rect)
-	draw.Draw(rgbaimg, rect, img, rect.Min, draw.Src)
 	bgc := ColorToRGBA(gc.Style.Bg, false)
 	fgc := ColorToRGBA(gc.Style.Fg, true)
 	if gc.Style.Attrs&AttrReverse != 0 {
 		fgc, bgc = bgc, fgc
 	}
-	for y := 0; y < rect.Max.Y; y++ {
-		for x := 0; x < rect.Max.X; x++ {
+	rect := rgbaimg.Bounds()
+	for y := rect.Min.Y; y < rect.Max.Y; y++ {
+		for x := rect.Min.X; x < rect.Max.X; x++ {
 			c := rgbaimg.At(x, y)
 			r, _, _, _ := c.RGBA()
 			if r == 0 {

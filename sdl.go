@@ -3,6 +3,8 @@
 package main
 
 import (
+	"log"
+
 	"github.com/anaseto/gruid"
 	"github.com/anaseto/gruid-sdl"
 )
@@ -12,10 +14,15 @@ var isFullscreen bool
 
 func initDriver(fullscreen bool) {
 	isFullscreen = fullscreen
+	icon, err := base64pngToRGBA(TileImgs["favicon"])
+	if err != nil {
+		log.Printf("decoding window icon: %v", err)
+	}
 	dr := sdl.NewDriver(sdl.Config{
 		TileManager: &monochromeTileManager{},
 		Fullscreen:  fullscreen,
 		WindowTitle: "Harmonist",
+		WindowIcon:  icon,
 	})
 	driver = dr
 }
