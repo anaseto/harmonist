@@ -1,3 +1,14 @@
+v0.4.1 2021-03-?
+
+This is a bugfix release mainly based on helpful feedback by players.
+
++ Fixed the tiles SDL version on windows.
++ Improvements in the SDL version: window title and icon.
++ Remove an unfriendly error message when save is from a previous version and
+  thus cannot be loaded.
++ Mention zoom functionality for SDL version in key bindings help.
++ Fix a bug in pathfinding on map's left and right edges.
+
 v0.4 2021-02-22
 
 Highligths:
