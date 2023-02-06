@@ -224,6 +224,7 @@ func (md *model) drawPosInfo() {
 	}
 	var mdesc []string
 
+	mdesc = append(mdesc, mons.Kind.Desc())
 	if info.Sees {
 		statuses := mons.statusesText()
 		if statuses != "" {
