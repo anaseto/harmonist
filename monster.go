@@ -139,7 +139,7 @@ func (mk monsterKind) Peaceful() bool {
 	}
 }
 
-func (mk monsterKind) GoodFlair() bool {
+func (mk monsterKind) GoodSmell() bool {
 	switch mk {
 	case MonsDog, MonsHazeCat, MonsVampire, MonsExplosiveNadre:
 		return true
@@ -354,7 +354,7 @@ var MonsDesc = []string{
 	MonsTreeMushroom: "Tree mushrooms are big clunky creatures. They can throw lignifying spores at you, leaving you unable to move for a few turns, though the spores will also provide some protection against harm.",
 	//MonsMarevorHelith: "Marevor Helith is an ancient undead nakrus very fond of teleporting people away. He is a well-known expert in the field of magaras - items that many people simply call magical objects. His current research focus is monolith creation. Marevor, a repentant necromancer, is now searching for his old disciple Jaixel in the Underground to help him overcome the past.",
 	MonsButterfly: "Underground's butterflies, called kerejats, wander peacefully around, illuminating their surroundings.",
-	MonsCrazyImp:  "Crazy Imp is a crazy creature that likes to sing with its small guitar. It seems to be fond of monkeys and quite capable at finding them by flair. While singing it may attract unwanted attention.",
+	MonsCrazyImp:  "Crazy Imp is a crazy creature that likes to sing with its small guitar. It seems to be fond of monkeys and quite capable at finding them by smell. While singing it may attract unwanted attention.",
 	MonsHazeCat:   "Haze cats are a special variety of cats found in the Underground. They have very good night vision and are always alert.",
 }
 
@@ -970,8 +970,8 @@ func (m *monster) HandleMonsSpecifics(g *game) (done bool) {
 	return false
 }
 
-const DogFlairDist = 5
-const DisguiseFlairDist = 3
+const DogSmellDist = 5
+const DisguiseSmellDist = 3
 
 func (m *monster) HandleWatching(g *game) {
 	turns := 4
@@ -983,8 +983,8 @@ func (m *monster) HandleWatching(g *game) {
 		m.Watching++
 		if m.Kind == MonsDog {
 			dij := &monPath{g: g, monster: m}
-			g.PR.DijkstraMap(dij, []gruid.Point{m.P}, DogFlairDist)
-			if c := g.PR.DijkstraMapAt(g.Player.P); c <= DogFlairDist {
+			g.PR.DijkstraMap(dij, []gruid.Point{m.P}, DogSmellDist)
+			if c := g.PR.DijkstraMapAt(g.Player.P); c <= DogSmellDist {
 				m.Target = g.Player.P
 				m.MakeWander()
 			}
@@ -1027,7 +1027,7 @@ func (m *monster) Peaceful(g *game) bool {
 	if m.Kind.Peaceful() {
 		return true
 	}
-	if m.State != Hunting && g.Player.HasStatus(StatusDisguised) && (!m.Kind.GoodFlair() || distance(m.P, g.Player.P) > DisguiseFlairDist) {
+	if m.State != Hunting && g.Player.HasStatus(StatusDisguised) && (!m.Kind.GoodSmell() || distance(m.P, g.Player.P) > DisguiseSmellDist) {
 		return true
 	}
 	switch m.Kind {

@@ -143,7 +143,7 @@ func (st status) Desc() string {
 	case StatusTransparent:
 		return "Only adjacent monsters can see you on lighted cells."
 	case StatusDisguised:
-		return "Most monsters will ignore you, except those with good flair."
+		return "Most monsters will ignore you, except those with good sense of smell."
 	case StatusDelay:
 		return "Time remaining before the trigger."
 	case StatusDispersal:

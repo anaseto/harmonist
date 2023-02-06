@@ -295,8 +295,8 @@ func (m *monster) traits() string {
 	if m.Kind.ReflectsTeleport() {
 		info += " " + "They partially reflect back oric teleport magic."
 	}
-	if m.Kind.GoodFlair() {
-		info += " " + "They have good flair."
+	if m.Kind.GoodSmell() {
+		info += " " + "They have good sense of smell."
 	}
 	return info
 }
