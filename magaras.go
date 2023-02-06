@@ -340,11 +340,11 @@ func (mag magara) Desc(g *game) (desc string) {
 	case DisguiseMagara:
 		desc = "surrounds you with harmonic illusions that make you look like a guard. As a result, most monsters will ignore you. Monsters with good flair may see through the illusions at less than 3 tiles away. Monsters that are already hunting you will continue doing so."
 	case DelayedNoiseMagara:
-		desc = "will produce a thunderous harmonic noise in your current gruid.Point. The noise will happen after a delay."
+		desc = "will produce a thunderous harmonic noise in your current cell. The noise will happen after a delay."
 	case DispersalMagara:
 		desc = "will make monsters that attempt to hit you blink away."
 	case DelayedOricExplosionMagara:
-		desc = "will produce a big rock-destroying oric explosion at your current gruid.Point. The explosion will happen after a delay. It destroys only walls."
+		desc = "will produce a big rock-destroying oric explosion at your current cell. The explosion will happen after a delay. It destroys only walls."
 	}
 	duration := 0
 	switch mag.Kind {

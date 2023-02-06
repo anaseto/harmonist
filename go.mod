@@ -8,6 +8,7 @@ require (
 	github.com/anaseto/gruid-sdl v0.4.0
 	github.com/anaseto/gruid-tcell v0.1.1
 	github.com/gdamore/tcell/v2 v2.1.0
+	github.com/veandco/go-sdl2 v0.4.20 // indirect
 	golang.org/x/sys v0.0.0-20210124154548-22da62e12c0c // indirect
 	golang.org/x/text v0.3.4 // indirect
 )
