@@ -39,7 +39,9 @@ func (m *monster) InflictDamage(g *game, damage, max int) {
 }
 
 func (md *model) criticalHPWarning() {
-	md.mode = modeHPCritical
+	if md.mode == modeNormal {
+		md.mode = modeHPCritical
+	}
 	md.critical = true
 }
 
