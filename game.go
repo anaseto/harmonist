@@ -10,7 +10,7 @@ import (
 	"github.com/anaseto/gruid/rl"
 )
 
-var Version string = "v0.4.1"
+var Version string = "v0.5.0"
 
 // game contains the game logic's state, without ui stuff. Everything could be
 // in the model struct instead, with only the game logic's fiend exported, as
@@ -193,10 +193,10 @@ func (g *game) InitPlayer() {
 	g.Player.Statuses = map[status]int{}
 	g.Player.Expire = map[status]int{}
 	g.Player.Magaras = []magara{
-		magara{},
-		magara{},
-		magara{},
-		magara{},
+		{},
+		{},
+		{},
+		{},
 	}
 	g.GeneratedMagaras = []magaraKind{}
 	g.Player.Magaras[0] = g.RandomStartingMagara()
