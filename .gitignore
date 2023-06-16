@@ -15,3 +15,7 @@ boohu
 boohu.wasm
 harmonist.wasm
 harmonist
+*.out
+*.exe
+*.test
+*.sh

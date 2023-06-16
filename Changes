@@ -1,3 +1,10 @@
+v0.5.0 2023-06-16
+
+* Add detailed descriptions in examine mode.
+* Fix a bug in which critical HP warning could interrupt story sequence.
+* Fix some descriptions and typos.
+* Updated minimal version of some dependencies.
+
 v0.4.1 2021-03-05
 
 This is a bugfix release mainly based on helpful feedback by players.
