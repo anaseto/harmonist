@@ -1,3 +1,5 @@
+**Migrated to https://codeberg.org/anaseto/gofrundis**
+
 Harmonist: Dayoriah Clan Infiltration
 -------------------------------------
 
